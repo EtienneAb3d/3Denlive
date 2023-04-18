@@ -25,14 +25,14 @@ https://github.com/EtienneAb3d/3Denlive.git
 3- Change the project Build Path to use the SWT version for your OS (by default Linux)
 
 4- Launch the 3Denlive application with the main class<br/>
-com/cubaix/TDenlive/TDenlive.java
+`com/cubaix/TDenlive/TDenlive.java`
 
 5- You may start experimenting with the Demo Packs available on the website<br/>
 http://3denlive.com/demos/en.php
 
 # Roadmap
 
-To do: finalise the management of the sound track
+**To do**: finalise the management of the sound track
 
 <hr>
 This tool is a demonstration of our know-how.<br/>
