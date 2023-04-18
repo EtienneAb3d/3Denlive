@@ -5,8 +5,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Scale;
-import org.omg.PortableServer.ServantRetentionPolicyValue;
 
 import com.cubaix.TDenlive.TDenlive;
 
