@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="distrib/bsh-2.0b6.jar"/>
+	<classpathentry kind="lib" path="distrib/MetaDataExtractor.jar"/>
+	<classpathentry kind="lib" path="distrib/svgSalamander-1.1.2.jar"/>
+	<classpathentry kind="lib" path="distrib/xmpcore-6.0.6.jar"/>
+	<classpathentry kind="lib" path="distrib/Linux/swt.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

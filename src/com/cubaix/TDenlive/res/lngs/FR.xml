@@ -1,0 +1,221 @@
+<EntrySet label="Generic">
+	<entry label="Open">Ouvrir</entry>
+	<entry label="Close">Fermer</entry>
+	<entry label="Load">Charger</entry>
+	<entry label="Save">Enregistrer</entry>
+	<entry label="SaveAs">Enregistrer sous</entry>
+	
+	<entry label="1stMedia">1er media</entry>
+	<entry label="1stMediaShort">1er</entry>
+
+	<entry label="LeftLetter">G</entry>
+	<entry label="RightLetter">D</entry>
+
+	<entry label="RedLetter">R</entry>
+	<entry label="GreenLetter">V</entry>
+	<entry label="BlueLetter">B</entry>
+	<entry label="CyanLetter">C</entry>
+	<entry label="MagentaLetter">M</entry>
+	<entry label="YellowLetter">J</entry>
+	
+	<entry label="WidthLetter">L</entry>
+	<entry label="HeightLetter">H</entry>
+	<entry label="RotationLetter">R</entry>
+	<entry label="SizeLetter">T</entry>
+</EntrySet>
+<EntrySet label="Config">
+	<entry label="RenderDir">Dossier des rendus</entry>
+	<entry label="WorkMode">Configuration de travail</entry>
+	<entry label="FullScreenMode">Configuration de présentation</entry>
+	<entry label="RenderMode">Configuration de rendu final</entry>
+	<entry label="Done">Terminé</entry>
+</EntrySet>
+<EntrySet label="Glasses">
+	<entry label="AnaMixerRC">Anaglyphe rouge / cyan</entry>
+	<entry label="AnaMixerRC_Dubois">Anaglyphe rouge / cyan Dubois</entry>
+	<entry label="AnaMixerRC_ZhangAllister">Anaglyphe rouge / cyan Dubois (Zhang Allister)</entry>
+	<entry label="AnaMixerYB">Anaglyphe jaune / bleu</entry>
+	<entry label="AnaMixerGM">Anaglyphe vert / magenta</entry>
+	<entry label="SbsMixerP">Vues côte à côte parallèles</entry>
+	<entry label="SbsMixerX">Vues côte à côte croisées</entry>
+	<entry label="InterlacedH1">Entrelacé H1</entry>
+	<entry label="InterlacedH2">Entrelacé H2</entry>
+	<entry label="InterlacedV1">Entrelacé V1</entry>
+	<entry label="InterlacedV2">Entrelacé V2</entry>
+	<entry label="Left">Gauche</entry>
+	<entry label="Right">Droite</entry>
+	<entry label="Wobble">Alterné</entry>
+</EntrySet>
+<EntrySet label="MediaOpen">
+	<entry label="OpenX">Ajouter une vue/vidéo croisée</entry>
+	<entry label="OpenP">Ajouter une vue/vidéo parallèle</entry>
+	<entry label="OpenLR">Ajouter une vue/vidéo gauche et droite</entry>
+	<entry label="OpenFlat">Ajouter une vue/vidéo non stéréo</entry>
+	<entry label="WorkCopyProcessing">3De prépare une copy de travail du fichier\navec une taille et un débit image plus petits</entry>
+	<entry label="Done">Terminé</entry>
+	<entry label="WorkCopyChose">Vous avez sélectionné une copie de travail 3De.\nChoisissez un fichier original.</entry>
+</EntrySet>
+<EntrySet label="Monitor">AnamorphW
+	<entry label="Fast">Rapide</entry>
+	<entry label="Quality">Qualité</entry>
+</EntrySet>
+<EntrySet label="MediaProps">AnamorphW
+	<entry label="AnamorphW">Largeur</entry>
+	<entry label="RotateLeft">Tourner la vue gauche</entry>
+	<entry label="RotateRight">Tourner la vue droite</entry>
+</EntrySet>
+<EntrySet label="Processor">
+	<entry label="NotYetAvailable">Cette fonctionnalité sera disponible dans une prochaine version</entry>
+	<entry label="SelectAClip">Veuillez sélectionner un clip dans une ligne de temps</entry>
+
+	<entry label="TimeControler">Programmation</entry>
+
+	<entry label="AnaMixer">Mixeur anaglyphe</entry>
+	<entry label="Stereo">Stéréo</entry>
+	<entry label="Align">Alignement</entry>
+	<entry label="Depthmap">2D+depthmap-&gt;stéréo (carte de profondeur)</entry>
+	<entry label="DepthmapStereo">Stéréo+depthmap-&gt;stéréo (carte de profondeur stéréo)</entry>
+	
+	<entry label="AdaptColor">Adaptation des couleurs</entry>
+	<entry label="Colors">Couleurs</entry>
+	<entry label="HueSaturation">Teinte luminosité</entry>
+	<entry label="BrightnessContrast">Luminosité contraste</entry>
+	
+	<entry label="Composition">Composition</entry>
+	<entry label="Placer">Placement</entry>
+	<entry label="Cropper">Recadrage</entry>
+	<entry label="Transparency">Transparence / transition</entry>
+	<entry label="Chromakey">Clef chroma (fond vert)</entry>
+
+	<entry label="Image">Image</entry>
+	<entry label="LensCorrection">Correction de lentille (ffmpeg K1 K2)</entry>
+
+	<entry label="Design">Design</entry>
+	<entry label="Framing">Encadrement</entry>
+
+	<entry label="Expert">Expert</entry>
+	<entry label="Scripter">Script</entry>
+</EntrySet>
+<EntrySet label="TimeController">
+	<entry label="TrashClip">Supprimer le clip</entry>
+	<entry label="MoveClipUp">Déplacer vers la ligne de temps au dessus</entry>
+	<entry label="MoveClipDown">Déplacer vers la ligne de temps en dessous</entry>
+	<entry label="DuplicateClipUp">Dupliquer vers la ligne de temps au dessus</entry>
+	<entry label="TwinToAudioClip">Créer un jumeau audio</entry>
+	<entry label="StartTime">Début</entry>
+	<entry label="ShiftTime">Décalage</entry>
+	<entry label="Duration">Durée</entry>
+	<entry label="EndTime">Fin</entry>
+	<entry label="FadeIn">Fondu à l'ouverture</entry>
+	<entry label="FadeOut">Fondu à la fermeture</entry>
+</EntrySet>
+<EntrySet label="StereoAligner">
+	<entry label="AutoAlign">Alignement automatique</entry>
+	<entry label="SecureCropLeft">Découpe gauche</entry>
+	<entry label="SecureCropRight">Découpe droite</entry>
+	<entry label="SecureCropTop">Découpe haut</entry>
+	<entry label="SecureCropBottom">Découpe bas</entry>
+	<entry label="SecureResize">Zoom sécurisé</entry>
+	<entry label="ShowSecureCropBox">Montrer la boite sécurisée</entry>
+
+	<entry label="AutoDepthmap">Carte de profondeur automatique</entry>
+</EntrySet>
+<EntrySet label="ColorAdapter">
+	<entry label="RedAdapt">Adapter les rouges</entry>
+	<entry label="CyanAdapt">Adapter les cyans</entry>
+	<entry label="Quantity">Q</entry>
+	<entry label="Half">Demi</entry>
+	<entry label="Brown">Brun</entry>
+	<entry label="Orange">Orange</entry>
+	<entry label="Yellow">Jaune</entry>
+	<entry label="Green">Vert</entry>
+	<entry label="Purple">Violet</entry>
+	<entry label="Magenta">Magenta</entry>
+	<entry label="Blue">Bleu</entry>
+	<entry label="White">Blanc</entry>
+	<entry label="LightGray">Gris clair</entry>
+	<entry label="Gray">Gris</entry>
+	<entry label="DarkGray">Gris sombre</entry>
+	<entry label="NoEffect">Sans effet</entry>
+</EntrySet>
+<EntrySet label="Depthmap">
+	<entry label="BlackIsFront">Le noir est devant</entry>
+</EntrySet>
+<EntrySet label="DepthmapStereo">
+	<entry label="BlackIsFront">Le noir est devant</entry>
+	<entry label="Depthmap">Carte de profondeur</entry>
+</EntrySet>
+<EntrySet label="BrightnessContrast">
+	<entry label="ApplyTo">Appliquer à</entry>
+	<entry label="Color">Couleur</entry>
+	<entry label="Brightness">Luminosité</entry>
+	<entry label="BrightnessLetter">L</entry>
+	<entry label="Contrast">Contraste</entry>
+	<entry label="ContrastLetter">C</entry>
+	<entry label="Gamma">Gamma</entry>
+	<entry label="GammaLetter">G</entry>
+	<entry label="Th">Contraste doux (TanH)</entry>
+	<entry label="ThLetter">T</entry>
+</EntrySet>
+<EntrySet label="HueSaturation">
+	<entry label="ApplyTo">Appliquer à</entry>
+	<entry label="Color">Couleur</entry>
+	<entry label="Hue">Teinte</entry>
+	<entry label="HueLetter">T</entry>
+	<entry label="Saturation">Saturation</entry>
+	<entry label="SaturationLetter">S</entry>
+	<entry label="Brightness">Valeur</entry>
+	<entry label="BrightnessLetter">V</entry>
+	<entry label="Threshold">Seuil</entry>
+	<entry label="ThresholdLetter">S</entry>
+	<entry label="Range">Etendue</entry>
+	<entry label="RangeLetter">E</entry>
+</EntrySet>
+<EntrySet label="Cropper">
+	<entry label="ShowCutLines">Montrer les lignes de coupe</entry>
+	<entry label="LeftBorder">Bords gauches</entry>
+	<entry label="LeftL">G</entry>
+	<entry label="LeftR">D</entry>
+	<entry label="RightBorder">Bords droits</entry>
+	<entry label="RightL">G</entry>
+	<entry label="RightR">D</entry>
+	<entry label="TopBottomBorder">Bords haut et bas</entry>
+	<entry label="Top">H</entry>
+	<entry label="Bottom">B</entry>
+	<entry label="RotationBorder">Rotation</entry>
+	<entry label="Rotation">R</entry>
+	<entry label="ShearX">Cisaillement</entry>
+	<entry label="ShearXL">G</entry>
+	<entry label="ShearXR">D</entry>
+	<entry label="Transparency">Transparence</entry>
+	<entry label="TransparencyLetter">T</entry>
+</EntrySet>
+<EntrySet label="Transparency">
+	<entry label="Opacity">Opacité</entry>
+	<entry label="Bevel">Biseau</entry>
+	<entry label="BevelLetter">B</entry>
+	<entry label="X">Position stéréo</entry>
+	<entry label="Invert">Inverser</entry>
+</EntrySet>
+<EntrySet label="Chromakey">
+	<entry label="Tolerance">Tolérance</entry>
+	<entry label="ToleranceLetter">T</entry>
+	<entry label="Bevel">Biseau</entry>
+	<entry label="BevelLetter">B</entry>
+</EntrySet>
+<EntrySet label="LensCorrection">
+	<entry label="LeftToRight">Différence gauche/droite</entry>
+</EntrySet>
+<EntrySet label="Framing">
+	<entry label="Opacity">Opacité</entry>
+	<entry label="X">Position stéréo</entry>
+</EntrySet>
+<EntrySet label="Renderer">
+	<entry label="ProcessingRes">Qualité du rendu</entry>
+	<entry label="OutputRes">Qualité de la vidéo</entry>
+	<entry label="OutputFPS">FPS de la vidéo</entry>
+	<entry label="StartAtTimePos">Commencer au curseur de temps actuel</entry>
+	<entry label="Process">Calculer</entry>
+	<entry label="Stop">Stop</entry>
+	<entry label="Done">Terminé</entry>
+</EntrySet>
