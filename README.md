@@ -14,6 +14,10 @@ Download 3Denlive for <a href="http://3denlive.com/3DenliveLinux.tgz">Linux</a><
 
 <img src="http://3denlive.com/LatestScreenCopyEN.png?date=2020-12-20"/>
 
+# Roadmap
+
+To do: finalise the management of the sound track
+
 <hr>
 This tool is a demonstration of our know-how.<br/>
 If you are interested in a commercial/industrial AI linguistic project, contact us:<br/>
