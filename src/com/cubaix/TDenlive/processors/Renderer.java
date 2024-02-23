@@ -21,23 +21,28 @@ public class Renderer extends Processor {
 	String pathOut = null;
 	int width = 1280;
 	int height = 720;
-	int fps = 30;
+	double fps = 30;
+	String ffmpegVideoOpts = "";
 	boolean processing = false;
 	public int encoded = 0;
 	boolean encoding = false;
 	
-	public Renderer(TDenlive aTDe,int aWidth,int aHeight,int aFps,String aPathOut) {
+	public Renderer(TDenlive aTDe
+			,int aWidth,int aHeight
+			,double aFps,String aFfmpegVideoOpts
+			,String aPathOut) {
 		super(aTDe, null);
 		width = aWidth;
 		height = aHeight;
 		fps = aFps;
+		ffmpegVideoOpts = aFfmpegVideoOpts;
 		pathOut = aPathOut;
 		start();
 	}
 
 	void start() {
         try {
-        	ffmpeg = new FfmpegEncoder(tde,width,height,fps,pathOut);
+        	ffmpeg = new FfmpegEncoder(tde,width,height,fps,ffmpegVideoOpts,pathOut);
         	
         	processing = true;
         	

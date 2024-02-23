@@ -214,6 +214,9 @@
 	<entry label="ProcessingRes">Rendering quality</entry>
 	<entry label="OutputRes">Video quality</entry>
 	<entry label="OutputFPS">Video FPS</entry>
+	<entry label="FFmpegVideoOpts">Add FFmpeg video parameters (https://ffmpeg.org/ffmpeg.html)</entry>
+	<entry label="FFmpegVideoOptsEx">Example: -b:v 6000k -maxrate:v 9000k -minrate:v 0</entry>
+	<entry label="OutputFile">Output file (may also be like "3De_%04d_P.png")</entry>
 	<entry label="StartAtTimePos">Start at the current time cursor</entry>
 	<entry label="Process">Process</entry>
 	<entry label="Stop">Stop</entry>

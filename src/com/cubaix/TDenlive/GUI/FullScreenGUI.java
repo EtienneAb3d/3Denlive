@@ -24,6 +24,7 @@ public class FullScreenGUI {
 		shell.setText("3Denlive");
 		shell.setSize (800, 600);
 		shell.setMaximized(true);
+		shell.setFullScreen(true);
 		shell.setBackground(tde.gui.colorsSwt.BLACK);
 		shell.setImage(tde.gui.imgsSwt.getIcon("3Denlive32.png"));
 		

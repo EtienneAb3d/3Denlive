@@ -5,6 +5,10 @@ import java.text.NumberFormat;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -14,6 +18,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 
 import com.cubaix.TDenlive.TDConfig;
 import com.cubaix.TDenlive.TDenlive;
@@ -26,7 +31,7 @@ public class RendererGUI {
 	
 	String pathOut = null;
 	int outputRes = 720;
-	int outputFPS = 30;
+	double outputFPS = 30;
 	boolean playing = false;
 	boolean startAtTimePos = false;
 	long startTimePos = 0;
@@ -34,11 +39,24 @@ public class RendererGUI {
 	long timeStartMS = 0;
 	CLabel status = null;
 	int countFrames = 0;
+	String ffmpegVideoOpts = "";
 
 	Renderer renderer = null;
 	
 	public RendererGUI(TDenlive aTDe) {
 		tde = aTDe;
+		
+		NumberFormat aNF = NumberFormat.getInstance();
+		aNF.setMinimumIntegerDigits(4);
+		aNF.setGroupingUsed(false);
+		for(int i = 1;i < 10000;i++) {
+			pathOut = tde.renderDir+File.separatorChar+"3De_"+aNF.format(i)+"_P.mp4";
+			if(new File(pathOut).exists()) {
+				continue;
+			}
+			break;
+		}
+
 		createContents();
 		shell.open();
 	}
@@ -178,18 +196,67 @@ public class RendererGUI {
 		aOutFPS.setLayoutData(aOFPSGD);
 		tde.gui.applyColorFont(aOutFPS);
 		aOutFPS.setItems(TDConfig.FPSLIST);
-		aOutFPS.addSelectionListener(new SelectionListener() {
+		aOutFPS.addModifyListener(new ModifyListener() {
 			@Override
-			public void widgetSelected(SelectionEvent arg0) {
-				outputFPS = Integer.parseInt(TDConfig.FPSLIST[aOutFPS.getSelectionIndex()]);
-			}
-			@Override
-			public void widgetDefaultSelected(SelectionEvent arg0) {
-				outputFPS = Integer.parseInt(TDConfig.FPSLIST[aOutFPS.getSelectionIndex()]);
+			public void modifyText(ModifyEvent arg0) {
+				String aValue = aOutFPS.getText().trim();
+				if(aValue.matches("[0-9]+([.,][0-9]+)?")) {
+					outputFPS = Double.parseDouble(aValue);
+				}
 			}
 		});
 		aOutFPS.setText(""+outputFPS);
 
+		final CLabel aFVOL = new CLabel(shell,SWT.NONE);
+		aFVOL.setText(tde.gui.lngs.get("Renderer.FFmpegVideoOpts"));
+		tde.gui.applyColorFont(aFVOL);
+		GridData aFVOLGD = new GridData(GridData.FILL_HORIZONTAL);
+		aFVOLGD.heightHint = 20;
+		aFVOL.setLayoutData(aFVOLGD);
+		final CLabel aFVOLEx = new CLabel(shell,SWT.NONE);
+		aFVOLEx.setText(tde.gui.lngs.get("Renderer.FFmpegVideoOptsEx"));
+		tde.gui.applyColorFont(aFVOLEx);
+		GridData aFVOLExGD = new GridData(GridData.FILL_HORIZONTAL);
+		aFVOLExGD.heightHint = 20;
+		aFVOLEx.setLayoutData(aFVOLExGD);
+		final Text aFVOT = new Text(shell,SWT.BORDER);
+		tde.gui.applyColorFont(aFVOT);
+		GridData aFVOTGD = new GridData(GridData.FILL_HORIZONTAL);
+		aFVOTGD.heightHint = 20;
+		aFVOT.setLayoutData(aFVOTGD);
+		aFVOT.addKeyListener(new KeyListener() {
+			@Override
+			public void keyReleased(KeyEvent arg0) {
+				ffmpegVideoOpts = aFVOT.getText();
+			}
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+			}
+		});
+		
+		final CLabel aOutL = new CLabel(shell,SWT.NONE);
+		aOutL.setText(tde.gui.lngs.get("Renderer.OutputFile"));
+		tde.gui.applyColorFont(aOutL);
+		GridData aOutLGD = new GridData(GridData.FILL_HORIZONTAL);
+		aOutLGD.heightHint = 20;
+		aOutL.setLayoutData(aOutLGD);
+
+		final Text aOutT = new Text(shell,SWT.BORDER);
+		tde.gui.applyColorFont(aOutT);
+		GridData aOutTGD = new GridData(GridData.FILL_HORIZONTAL);
+		aOutTGD.heightHint = 20;
+		aOutT.setLayoutData(aOutTGD);
+		aOutT.addKeyListener(new KeyListener() {
+			@Override
+			public void keyReleased(KeyEvent arg0) {
+				pathOut = aOutT.getText();
+			}
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+			}
+		});
+		aOutT.setText(pathOut);
+		
 		final Button aStartPosCB = new Button(shell, SWT.CHECK);
 		tde.gui.applyColorFont(aStartPosCB);
 		GridData aSPCBGD = new GridData(GridData.FILL_HORIZONTAL);
@@ -207,7 +274,6 @@ public class RendererGUI {
 			}
 		});
 		aStartPosCB.setText(tde.gui.lngs.get("Renderer.StartAtTimePos"));
-
 		Composite aStartStop = new Composite(shell, SWT.NONE);
 		tde.gui.applyColorFont(aStartStop);
 		aStartStop.setLayout(new GridLayout(3, false));
@@ -273,8 +339,6 @@ public class RendererGUI {
 			}
 		});
 		
-
-		
 		status = new CLabel(shell, SWT.NONE);
 		tde.gui.applyColorFont(status);
 		status.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -285,16 +349,6 @@ public class RendererGUI {
 			//Not twice
 			return;
 		}
-		NumberFormat aNF = NumberFormat.getInstance();
-		aNF.setMinimumIntegerDigits(4);
-		aNF.setGroupingUsed(false);
-		for(int i = 1;i < 10000;i++) {
-			pathOut = tde.renderDir+File.separatorChar+"3De_"+aNF.format(i)+"_P.mp4";
-			if(new File(pathOut).exists()) {
-				continue;
-			}
-			break;
-		}
 
 		playing = true;
 		if(tde.gui.monitorGUI != null) {
@@ -302,7 +356,7 @@ public class RendererGUI {
 		}
 		int aHeight = outputRes;
 		int aWidth = (int)(tde.config.outRatio * outputRes);
-		renderer = new Renderer(tde,aWidth,aHeight,outputFPS,pathOut);
+		renderer = new Renderer(tde,aWidth,aHeight,outputFPS,ffmpegVideoOpts,pathOut);
 		timeStartMS = System.currentTimeMillis();
 		
 		startTimePos = startAtTimePos?tde.timeLineStack.getTimePosMS():0;

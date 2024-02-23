@@ -20,6 +20,7 @@ import com.cubaix.TDenlive.TDenlive;
 public class FfmpegEncoder extends Ffmpeg {
 	TDenlive tde = null;
 	Process p = null;
+	String ffmpegVideoOpts = "";
 	String pathOut = null;
 	public int width = 1280;
 	public int height = 720;
@@ -28,11 +29,15 @@ public class FfmpegEncoder extends Ffmpeg {
 	OutputStream os = null;
 	public boolean processing = false;
 	
-	public FfmpegEncoder(TDenlive aTDe,int aWidth,int aHeight,int aFps,String aPathOut) {
+	public FfmpegEncoder(TDenlive aTDe
+			,int aWidth,int aHeight
+			,double aFps,String aFfmpegVideoOpts
+			,String aPathOut) {
 		tde = aTDe;
 		pathOut = aPathOut;
 		width = aWidth;
 		height = aHeight;
+		ffmpegVideoOpts = aFfmpegVideoOpts;
 		fps = aFps;
 		start();
 	}
@@ -45,16 +50,24 @@ public class FfmpegEncoder extends Ffmpeg {
 			aCmdA.add(ffmpegPath);
 			aCmdA.add("-pix_fmt"); aCmdA.add("bgr24");
 			aCmdA.add("-r"); aCmdA.add(""+fps);
+//			aCmdA.add("-c:a"); aCmdA.add("copy");
 			aCmdA.add("-c:v"); aCmdA.add("bmp");
 			aCmdA.add("-i"); aCmdA.add("pipe:0");
 			aCmdA.add("-s"); aCmdA.add((width*2)+"x"+height);
 			aCmdA.add("-r"); aCmdA.add(""+fps);
 			aCmdA.add("-y"); //Overwrite the output file (if it exists)
-			aCmdA.add("-threads"); aCmdA.add("auto");
-			aCmdA.add("-c:v"); aCmdA.add("libx264");
-			aCmdA.add("-x264opts"); aCmdA.add("frame-packing=3");
-			aCmdA.add("-c:a"); aCmdA.add("copy");
-			aCmdA.add("-pix_fmt"); aCmdA.add("yuva420p");
+//			aCmdA.add("-threads"); aCmdA.add("auto");
+			if(pathOut.endsWith(".mp4")) {
+				aCmdA.add("-c:v"); aCmdA.add("libx264");
+				aCmdA.add("-x264opts"); aCmdA.add("frame-packing=3");
+				aCmdA.add("-pix_fmt"); aCmdA.add("yuva420p");
+			}
+			if(ffmpegVideoOpts != null && !ffmpegVideoOpts.trim().isEmpty()) {
+				ffmpegVideoOpts = ffmpegVideoOpts.replaceAll("[ \n\r\t]+", " ").trim();
+				for(String aC : ffmpegVideoOpts.split(" ")) {
+					aCmdA.add(aC);
+				}
+			}
 			aCmdA.add(pathOut);
 			String[] aCmd = new String[aCmdA.size()];
 			StringBuffer aCmdSB = new StringBuffer();

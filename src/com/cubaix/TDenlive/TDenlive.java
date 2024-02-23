@@ -17,7 +17,7 @@ import com.cubaix.TDenlive.xml.XmlObject;
 import com.cubaix.TDenlive.xml.XmlTag;
 
 public class TDenlive {
-	static final public String TDeVersion = "0.25.0";
+	static final public String TDeVersion = "0.26.0";
 	
 	public String tdeDir = System.getProperty("user.home")+File.separatorChar+"3Denlive";
 	{
