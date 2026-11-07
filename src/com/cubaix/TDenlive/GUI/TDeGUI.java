@@ -8,6 +8,7 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Cursor;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -15,7 +16,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 
 import com.cubaix.TDenlive.TDConfig;
 import com.cubaix.TDenlive.TDenlive;
@@ -90,7 +94,12 @@ public class TDeGUI {
 		if(aPath == null) {
 			return;
 		}
-		tde.projectDir = tde.lastDir = new File(aPath).getParent();
+		openProject(aPath);
+	}
+
+	//Opens a project in a background thread
+	public void openProject(String aPath) {
+		tde.projectDir = tde.lastDir = new File(aPath).getAbsoluteFile().getParent();
 		tde.projectName = new File(aPath).getName();
 
 		setWaitCursor(true);
@@ -104,29 +113,143 @@ public class TDeGUI {
 		aTh.start();
 	}
 
-	void saveProject() {
+	static boolean isSameFile(File aF1,File aF2) {
+		if(aF1 == null || aF2 == null) {
+			return false;
+		}
+		try {
+			return aF1.getCanonicalFile().equals(aF2.getCanonicalFile());
+		}
+		catch(Throwable t) {
+			return aF1.getAbsoluteFile().equals(aF2.getAbsoluteFile());
+		}
+	}
+
+	/**
+	 * Zip the project and its medias into the Packed folder (in the background: the videos can be big)
+	 */
+	void packProject() {
+		setWaitCursor(true);
+		Thread aTh = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				java.util.Vector<String> aMissing = new java.util.Vector<String>();
+				String aMsg;
+				int aIcon = SWT.ICON_INFORMATION;
+				try {
+					aMsg = lngs.get("Generic.PackDone")+"\n"+tde.packProject(aMissing).getPath();
+					if(aMissing.size() > 0) {
+						aIcon = SWT.ICON_WARNING;
+						aMsg += "\n\n"+lngs.get("Generic.PackMissing")+"\n"+String.join("\n", aMissing);
+					}
+				}
+				catch(Throwable t) {
+					t.printStackTrace(System.err);
+					aIcon = SWT.ICON_ERROR;
+					aMsg = lngs.get("Generic.PackError")+"\n"+t.getMessage();
+				}
+				setWaitCursor(false);
+				final String aFinalMsg = aMsg;
+				final int aFinalIcon = aIcon;
+				display.asyncExec(() -> {
+					if(shell.isDisposed()) {
+						return;
+					}
+					MessageBox aMB = new MessageBox(shell, aFinalIcon|SWT.OK);
+					aMB.setMessage(aFinalMsg);
+					aMB.open();
+				});
+			}
+		});
+		aTh.start();
+	}
+
+	/**
+	 * Ask to save the project file and save it.
+	 * Returns false if canceled, or if the saving failed
+	 */
+	boolean saveProject() {
 		FileDialog aFD = new FileDialog (shell, SWT.SAVE);
 		String [] filterNames = new String [] {"3De projects"};
 		String [] filterExtensions = new String [] {"*.3De"};
-		String filterPath = tde.lastDir == null ? tde.tdeDir:tde.lastDir;
-		aFD.setFilterNames (filterNames);
-		aFD.setFilterExtensions (filterExtensions);
+		//Current project file (opened or last saved): proposed by default, replaced without confirmation
+		File aCurrentFile = tde.projectDir != null && tde.projectName != null ? new File(tde.projectDir, tde.projectName) : null;
+		String filterPath = aCurrentFile != null ? tde.projectDir : (tde.lastDir == null ? tde.tdeDir:tde.lastDir);
+		//macOS: the save panel confirms the replacement of an existing file itself, and SWT can no longer
+		//disable it (setOverwrite(false) relies on a private method gone from recent macOS). So no extension
+		//is given to it: it returns the name without .3De, which does not exist, and asks nothing.
+		boolean aCocoa = "cocoa".equals(SWT.getPlatform());
+		if(!aCocoa) {
+			aFD.setFilterNames (filterNames);
+			aFD.setFilterExtensions (filterExtensions);
+		}
 		aFD.setFilterPath (filterPath);
 		if(tde.projectName != null) {
-			aFD.setFileName(tde.projectName);
+			//Without extension (macOS: else the panel adds the filter's one itself, and checks it)
+			aFD.setFileName(tde.projectName.replaceAll("(?i)([.]3de)+$", ""));
 		}
+		//No confirmation from the dialog itself: asked below, only for another file
+		aFD.setOverwrite(false);
 		String aPath = aFD.open ();
 		System.out.println ("Path: " + aPath);
 		if(aPath == null) {
-			return;
+			return false;
 		}
+		//macOS: an existing file chosen with its extension (typed, or clicked in the list) was already confirmed by the panel
+		boolean aConfirmedByDialog = aCocoa && new File(aPath).exists();
+		//Exactly one .3De extension, even if the dialog or the user already added one (or more)
+		aPath = aPath.replaceAll("(?i)([.]3de)+$", "") + ".3De";
+		if(new File(aPath).exists() && !aConfirmedByDialog && !isSameFile(new File(aPath), aCurrentFile)) {
+			MessageBox aMB = new MessageBox(shell, SWT.ICON_WARNING|SWT.YES|SWT.NO);
+			aMB.setText(lngs.get("Generic.SaveAs"));
+			aMB.setMessage(new File(aPath).getName()+"\n"+lngs.get("Generic.OverwriteFile"));
+			if(aMB.open() != SWT.YES) {
+				return false;
+			}
+		}
+		String aOldWorkCacheDir = tde.getWorkCacheDir();
 		tde.projectDir = tde.lastDir = new File(aPath).getParent();
 		tde.projectName = new File(aPath).getName();
 
-		if(!aPath.toLowerCase().endsWith(".3de")) {
-			aPath += ".3De";
+		if(!tde.saveProject(aPath)) {
+			MessageBox aMB = new MessageBox(shell, SWT.ICON_ERROR|SWT.OK);
+			aMB.setText(lngs.get("Generic.Save"));
+			aMB.setMessage(lngs.get("Generic.SaveError")+"\n"+aPath);
+			aMB.open();
+			return false;
 		}
-		tde.saveProject(aPath);
+		tde.markSaved();
+		//The video work copies go with the project
+		tde.copyWorkCacheFrom(aOldWorkCacheDir);
+		return true;
+	}
+
+	//Set once the quitting is accepted: not asked again by the following close events
+	boolean exitConfirmed = false;
+
+	/**
+	 * Before quitting: if the montage was modified since its last saving, propose to save it.
+	 * Returns false if the user cancels the quitting (or the saving)
+	 */
+	boolean confirmExit() {
+		if(exitConfirmed) {
+			return true;
+		}
+		if(tde.isModified()) {
+			MessageBox aMB = new MessageBox(shell, SWT.ICON_WARNING|SWT.YES|SWT.NO|SWT.CANCEL);
+			aMB.setText("3Denlive");
+			String aName = tde.projectName == null ? lngs.get("Generic.Untitled") : tde.projectName;
+			aMB.setMessage(aName+"\n"+lngs.get("Generic.SaveBeforeQuit"));
+			int aAnswer = aMB.open();
+			if(aAnswer == SWT.CANCEL) {
+				return false;
+			}
+			if(aAnswer == SWT.YES && !saveProject()) {
+				return false;
+			}
+		}
+		exitConfirmed = true;
+		return true;
 	}
 
 	private void createGUI() {
@@ -134,6 +257,7 @@ public class TDeGUI {
 		colorsSwt = new ColorsSwt(tde);
 		colorsAwt = new ColorsAwt(tde);
 		fontsSwt = new FontsSwt(tde);
+		textH = measureTextH();
 		fontsAwt = new FontsAwt(tde);
 		imgsSwt = new ImgsSwt(tde);
 		imgsAwt = new ImgsAwt(tde);
@@ -152,6 +276,9 @@ public class TDeGUI {
 		shell.setMaximized(true);
 		shell.setBackground(colorsSwt.WHITE);
 		shell.setImage(imgsSwt.getIcon("3Denlive32.png"));
+		//Closing the window, or quitting the application (macOS: Cmd+Q, application menu)
+		shell.addListener(SWT.Close, e -> e.doit = confirmExit());
+		display.addListener(SWT.Close, e -> e.doit = confirmExit());
 		
 		if(!new File(tde.configPath).exists()) {
 			new LngChooser(tde);
@@ -205,6 +332,16 @@ public class TDeGUI {
 	 * 
 	 * @param parent the parent window
 	 */
+	/**
+	 * Help message shown when the mouse is over a control: the "Tip.<aKey>" language entry
+	 */
+	public void tip(Control aC,String aKey) {
+		aC.setToolTipText(lngs.get("Tip."+aKey));
+	}
+	public void tip(MenuItem aMI,String aKey) {
+		aMI.setToolTipText(lngs.get("Tip."+aKey));
+	}
+
 	private void createContents() {
 		GridLayout aLayout = new GridLayout(1, false);
 		aLayout.marginHeight = aLayout.marginWidth = 0;
@@ -213,10 +350,10 @@ public class TDeGUI {
 		// Create the row of buttons
 		toolBar = new Composite(shell, SWT.NULL);
 		GridData aTB = new GridData(GridData.FILL_HORIZONTAL);
-		aTB.heightHint = 25;
+		aTB.heightHint = h(25);
 		toolBar.setLayoutData(aTB);
 		applyColorFont(toolBar);
-		GridLayout aGL = new GridLayout(8, false);
+		GridLayout aGL = new GridLayout(9, false);
 		applyNoMargin(aGL);
 		toolBar.setLayout(aGL);
 		
@@ -225,9 +362,10 @@ public class TDeGUI {
 		aOpenProject.setAlignment(SWT.CENTER);
 		GridData aOpenGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aOpenGD.widthHint = 32;
-		aOpenGD.heightHint = 25;
+		aOpenGD.heightHint = h(25);
 		aOpenProject.setLayoutData(aOpenGD);
 		applyColorFont(aOpenProject);
+		tip(aOpenProject, "OpenProject");
 		aOpenProject.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseUp(MouseEvent arg0) {
@@ -246,9 +384,10 @@ public class TDeGUI {
 		aSaveProject.setAlignment(SWT.CENTER);
 		GridData aSaveGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aSaveGD.widthHint = 32;
-		aSaveGD.heightHint = 25;
+		aSaveGD.heightHint = h(25);
 		aSaveProject.setLayoutData(aSaveGD);
 		applyColorFont(aSaveProject);
+		tip(aSaveProject, "SaveProject");
 		aSaveProject.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseUp(MouseEvent arg0) {
@@ -262,14 +401,26 @@ public class TDeGUI {
 			}
 		});
 
+		CLabel aPackProject = new CLabel(toolBar,SWT.NONE);
+		aPackProject.setImage(tde.gui.imgsSwt.getIcon("packProject.png"));
+		aPackProject.setAlignment(SWT.CENTER);
+		GridData aPackGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
+		aPackGD.widthHint = 32;
+		aPackGD.heightHint = h(25);
+		aPackProject.setLayoutData(aPackGD);
+		applyColorFont(aPackProject);
+		tip(aPackProject, "PackProject");
+		aPackProject.addListener(SWT.MouseDown, e -> packProject());
+
 		CLabel aSettings = new CLabel(toolBar,SWT.NONE);
 		aSettings.setImage(tde.gui.imgsSwt.getIcon("gear.gif"));
 		aSettings.setAlignment(SWT.CENTER);
 		GridData aSettingsGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aSettingsGD.widthHint = 32;
-		aSettingsGD.heightHint = 25;
+		aSettingsGD.heightHint = h(25);
 		aSettings.setLayoutData(aSettingsGD);
 		applyColorFont(aSettings);
+		tip(aSettings, "Settings");
 		aSettings.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseUp(MouseEvent arg0) {
@@ -288,9 +439,10 @@ public class TDeGUI {
 		aRender.setAlignment(SWT.CENTER);
 		GridData aRenderGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aRenderGD.widthHint = 32;
-		aRenderGD.heightHint = 25;
+		aRenderGD.heightHint = h(25);
 		aRender.setLayoutData(aRenderGD);
 		applyColorFont(aRender);
+		tip(aRender, "Render");
 		aRender.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseUp(MouseEvent arg0) {
@@ -307,7 +459,7 @@ public class TDeGUI {
 		Composite aSpace = new Composite(toolBar, SWT.SEPARATOR|SWT.FILL);
 		applyColorFont(aSpace);
 		GridData aSpaceGD = new GridData(GridData.FILL_HORIZONTAL);
-		aSpaceGD.heightHint = 25;
+		aSpaceGD.heightHint = h(25);
 		aSpace.setLayoutData(aSpaceGD);
 
 		CLabel aNewsSite = new CLabel(toolBar,SWT.NONE);
@@ -315,9 +467,10 @@ public class TDeGUI {
 		aNewsSite.setAlignment(SWT.CENTER);
 		GridData aNewsGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aNewsGD.widthHint = 32;
-		aNewsGD.heightHint = 25;
+		aNewsGD.heightHint = h(25);
 		aNewsSite.setLayoutData(aNewsGD);
 		applyColorFont(aNewsSite);
+		tip(aNewsSite, "News");
 		aNewsSite.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseUp(MouseEvent arg0) {
@@ -325,7 +478,7 @@ public class TDeGUI {
 			@Override
 			public void mouseDown(MouseEvent arg0) {
 				BrowserControl.displayURL(
-						"http://www.3denlive.com/news"+tde.config.lng.toUpperCase()+ ".php"
+						"https://www.3denlive.com/news"+tde.config.lng.toUpperCase()+ ".php"
 						);
 			}
 			@Override
@@ -338,9 +491,10 @@ public class TDeGUI {
 		aGuideSite.setAlignment(SWT.CENTER);
 		GridData aBookGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aBookGD.widthHint = 32;
-		aBookGD.heightHint = 25;
+		aBookGD.heightHint = h(25);
 		aGuideSite.setLayoutData(aBookGD);
 		applyColorFont(aGuideSite);
+		tip(aGuideSite, "Guide");
 		aGuideSite.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseUp(MouseEvent arg0) {
@@ -348,7 +502,7 @@ public class TDeGUI {
 			@Override
 			public void mouseDown(MouseEvent arg0) {
 				BrowserControl.displayURL(
-						"http://www.3denlive.com/doc/EN/"
+						"https://www.3denlive.com/doc/EN/"
 						);
 			}
 			@Override
@@ -361,9 +515,10 @@ public class TDeGUI {
 		aWebSite.setAlignment(SWT.CENTER);
 		GridData aWebSiteGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aWebSiteGD.widthHint = 32;
-		aWebSiteGD.heightHint = 25;
+		aWebSiteGD.heightHint = h(25);
 		aWebSite.setLayoutData(aWebSiteGD);
 		applyColorFont(aWebSite);
+		tip(aWebSite, "WebSite");
 		aWebSite.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseUp(MouseEvent arg0) {
@@ -371,7 +526,7 @@ public class TDeGUI {
 			@Override
 			public void mouseDown(MouseEvent arg0) {
 				BrowserControl.displayURL(
-						"http://3denlive.com/"
+						"https://3denlive.com/"
 						);
 			}
 			@Override
@@ -466,6 +621,46 @@ public class TDeGUI {
 		aC.setFont(fontsSwt.roboto);
 	}
 	
+	//Text line height the hard-coded widget heights were designed for (8pt font, ~10-12px)
+	static final int DESIGN_TEXT_H = 12;
+	//Real text line height of the SWT fonts, set by createGUI()
+	public int textH = DESIGN_TEXT_H;
+
+	//Adapts a hard-coded widget height (designed for DESIGN_TEXT_H) to the real font height
+	public int h(int aDesignH) {
+		return aDesignH + Math.max(0, textH - DESIGN_TEXT_H);
+	}
+
+	int measureTextH() {
+		GC aGC = new GC(display);
+		try {
+			aGC.setFont(fontsSwt.roboto);
+			int aH = aGC.getFontMetrics().getHeight();
+			aGC.setFont(fontsSwt.robotoBold);
+			return Math.max(aH, aGC.getFontMetrics().getHeight());
+		}
+		finally {
+			aGC.dispose();
+		}
+	}
+
+	/**
+	 * Text field with a light gray 1 px frame (SWT.BORDER is not drawn everywhere, e.g. on macOS with a white
+	 * background). The frame is the parent of the field: give the layout data to text.getParent().
+	 */
+	public Text framedText(Composite aParent,int aStyle) {
+		Composite aFrame = new Composite(aParent, SWT.NONE);
+		aFrame.setBackground(colorsSwt.LIGHTGRAY);
+		GridLayout aGL = new GridLayout(1, false);
+		applyNoMargin(aGL);
+		aGL.marginWidth = aGL.marginHeight = 1;
+		aFrame.setLayout(aGL);
+		Text aText = new Text(aFrame, aStyle & ~SWT.BORDER);
+		aText.setLayoutData(new GridData(GridData.FILL_BOTH));
+		applyColorFont(aText);
+		return aText;
+	}
+
 	public void applyNoMargin(GridLayout aGL) {
 		aGL.marginLeft = aGL.marginTop = aGL.marginRight = aGL.marginBottom = 0;
 		aGL.verticalSpacing = aGL.horizontalSpacing = 0;

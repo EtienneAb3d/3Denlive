@@ -16,11 +16,15 @@ public class MediaListGUI extends CanvasPanel {
 	}
 
 	void createContents(Composite aParent) {
+		tde.gui.tip(canvas, "MediaList");
 		canvas.addListener(SWT.MouseDown,e -> {
 			tde.mediaList.select(e.x, e.y, true);
 			tde.gui.setMultiPropsPanel(TDeGUI.MULTIPROPSPANEL_PROPS);
 			tde.gui.setMultiMonitorPanel(TDeGUI.MULTIMONITORPANEL_MONITOR);
 			if(tde.selected.medias.size() == 1) {
+				//First image of the media (Play then plays it alone)
+				tde.selected.medias.elementAt(0).setRequestedTimePosMS(0);
+				tde.gui.playerControlGUI.showClock(0);
 				tde.gui.monitorGUI.setMedia(tde.selected.medias.elementAt(0));
 				tde.gui.propsGUI.setMedia(tde.selected.medias.elementAt(0));
 			}

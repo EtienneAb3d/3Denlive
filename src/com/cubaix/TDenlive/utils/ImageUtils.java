@@ -104,6 +104,24 @@ public class ImageUtils {
 		return aHdrBI;
 	}
 	
+	/**
+	 * White / gray checkerboard of aCell x aCell pixels squares, from the top left corner
+	 */
+	static public final void checkerBck(BufferedImage aBI,int aCell) {
+		int aWidth = aBI.getWidth();
+		int aHeight = aBI.getHeight();
+		Graphics2D g2 = (Graphics2D)aBI.getGraphics();
+		g2.setColor(Color.WHITE);
+		g2.fillRect(0, 0, aWidth, aHeight);
+		g2.setColor(Color.LIGHT_GRAY);
+		for(int y = 0;y < aHeight;y += aCell) {
+			for(int x = ((y/aCell)%2)*aCell;x < aWidth;x += 2*aCell) {
+				g2.fillRect(x, y, aCell, aCell);
+			}
+		}
+		g2.dispose();
+	}
+	
 	static public final void chessBck(BufferedImage aBI) {
 		int aWidth = aBI.getWidth();
 		int aHeight = aBI.getHeight();

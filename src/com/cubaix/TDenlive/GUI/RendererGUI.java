@@ -22,6 +22,8 @@ import org.eclipse.swt.widgets.Text;
 
 import com.cubaix.TDenlive.TDConfig;
 import com.cubaix.TDenlive.TDenlive;
+import com.cubaix.TDenlive.audio.AudioMixer;
+import com.cubaix.TDenlive.ffmpeg.FfmpegEncoder;
 import com.cubaix.TDenlive.processors.Renderer;
 import com.cubaix.TDenlive.utils.StringUtils;
 
@@ -38,10 +40,13 @@ public class RendererGUI {
 	long endTimePos = 0;
 	long timeStartMS = 0;
 	CLabel status = null;
+	//Greyed while rendering
+	Button doneButton = null;
 	int countFrames = 0;
 	String ffmpegVideoOpts = "";
 
 	Renderer renderer = null;
+	File audioWav = null;
 	
 	public RendererGUI(TDenlive aTDe) {
 		tde = aTDe;
@@ -49,8 +54,10 @@ public class RendererGUI {
 		NumberFormat aNF = NumberFormat.getInstance();
 		aNF.setMinimumIntegerDigits(4);
 		aNF.setGroupingUsed(false);
+		//Named after the project once saved, 3De_ before
+		String aPrefix = tde.projectName == null ? "3De_" : tde.projectName.replaceAll("(?i)([.]3de)+$", "")+"_";
 		for(int i = 1;i < 10000;i++) {
-			pathOut = tde.renderDir+File.separatorChar+"3De_"+aNF.format(i)+"_P.mp4";
+			pathOut = tde.renderDir+File.separatorChar+aPrefix+aNF.format(i)+"_P.mp4";
 			if(new File(pathOut).exists()) {
 				continue;
 			}
@@ -72,7 +79,7 @@ public class RendererGUI {
 		//Work res
 		Composite aWorkRC = new Composite(shell,SWT.NONE);
 		GridData aWCGD = new GridData(GridData.FILL_HORIZONTAL);
-		aWCGD.heightHint = 25;
+		aWCGD.heightHint = tde.gui.h(25);
 		aWorkRC.setLayoutData(aWCGD);
 		tde.gui.applyColorFont(aWorkRC);
 		GridLayout aWCGL = new GridLayout(3, false);
@@ -81,7 +88,7 @@ public class RendererGUI {
 
 		CLabel aWorkRT = new CLabel(aWorkRC, SWT.NONE);
 		GridData aWTGD = new GridData();
-		aWTGD.heightHint = 20;
+		aWTGD.heightHint = tde.gui.h(20);
 		aWorkRT.setLayoutData(aWTGD);
 		aWorkRT.setText(tde.gui.lngs.get("Renderer.ProcessingRes"));
 		tde.gui.applyColorFont(aWorkRT);
@@ -89,15 +96,16 @@ public class RendererGUI {
 		Composite aSpaceW = new Composite(aWorkRC, SWT.SEPARATOR|SWT.FILL);
 		tde.gui.applyColorFont(aSpaceW);
 		GridData aSpaceWGD = new GridData(GridData.FILL_HORIZONTAL);
-		aSpaceWGD.heightHint = 25;
+		aSpaceWGD.heightHint = tde.gui.h(25);
 		aSpaceW.setLayoutData(aSpaceWGD);
 
 		Combo aProcessingRes = new Combo(aWorkRC, SWT.DROP_DOWN);//|SWT.READ_ONLY);
 		GridData aResGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aResGD.widthHint = 80;
-		aResGD.heightHint = 20;
+		aResGD.heightHint = tde.gui.h(20);
 		aProcessingRes.setLayoutData(aResGD);
 		tde.gui.applyColorFont(aProcessingRes);
+		tde.gui.tip(aProcessingRes, "RenderProcessingRes");
 		aProcessingRes.setItems(TDConfig.RESNAMES);
 		aProcessingRes.addSelectionListener(new SelectionListener() {
 			@Override
@@ -120,7 +128,7 @@ public class RendererGUI {
 		//Out res
 		Composite aOutRC = new Composite(shell,SWT.NONE);
 		GridData aORCGD = new GridData(GridData.FILL_HORIZONTAL);
-		aORCGD.heightHint = 25;
+		aORCGD.heightHint = tde.gui.h(25);
 		aOutRC.setLayoutData(aORCGD);
 		tde.gui.applyColorFont(aOutRC);
 		GridLayout aORCGL = new GridLayout(3, false);
@@ -129,7 +137,7 @@ public class RendererGUI {
 
 		CLabel aOutRT = new CLabel(aOutRC, SWT.NONE);
 		GridData aORTGD = new GridData();
-		aORTGD.heightHint = 20;
+		aORTGD.heightHint = tde.gui.h(20);
 		aOutRT.setLayoutData(aORTGD);
 		aOutRT.setText(tde.gui.lngs.get("Renderer.OutputRes"));
 		tde.gui.applyColorFont(aOutRT);
@@ -137,15 +145,16 @@ public class RendererGUI {
 		Composite aSpaceORT = new Composite(aOutRC, SWT.SEPARATOR|SWT.FILL);
 		tde.gui.applyColorFont(aSpaceORT);
 		GridData aSORTGD = new GridData(GridData.FILL_HORIZONTAL);
-		aSORTGD.heightHint = 25;
+		aSORTGD.heightHint = tde.gui.h(25);
 		aSpaceORT.setLayoutData(aSORTGD);
 
 		Combo aOutRes = new Combo(aOutRC, SWT.DROP_DOWN);//|SWT.READ_ONLY);
 		GridData aORGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aORGD.widthHint = 80;
-		aORGD.heightHint = 20;
+		aORGD.heightHint = tde.gui.h(20);
 		aOutRes.setLayoutData(aORGD);
 		tde.gui.applyColorFont(aOutRes);
+		tde.gui.tip(aOutRes, "RenderOutputRes");
 		aOutRes.setItems(TDConfig.RESNAMES);
 		aOutRes.addSelectionListener(new SelectionListener() {
 			@Override
@@ -169,7 +178,7 @@ public class RendererGUI {
 		//Out FPS
 		Composite aOutFPSC = new Composite(shell,SWT.NONE);
 		GridData aOFPSCGD = new GridData(GridData.FILL_HORIZONTAL);
-		aOFPSCGD.heightHint = 25;
+		aOFPSCGD.heightHint = tde.gui.h(25);
 		aOutFPSC.setLayoutData(aOFPSCGD);
 		tde.gui.applyColorFont(aOutFPSC);
 		GridLayout aOFPSCGL = new GridLayout(3, false);
@@ -178,7 +187,7 @@ public class RendererGUI {
 
 		CLabel aOutFPST = new CLabel(aOutFPSC, SWT.NONE);
 		GridData aOFPSTGD = new GridData();
-		aOFPSTGD.heightHint = 20;
+		aOFPSTGD.heightHint = tde.gui.h(20);
 		aOutFPST.setLayoutData(aOFPSTGD);
 		aOutFPST.setText(tde.gui.lngs.get("Renderer.OutputFPS"));
 		tde.gui.applyColorFont(aOutFPST);
@@ -186,15 +195,16 @@ public class RendererGUI {
 		Composite aSpaceOFPTT = new Composite(aOutFPSC, SWT.SEPARATOR|SWT.FILL);
 		tde.gui.applyColorFont(aSpaceOFPTT);
 		GridData aSOFPSGD = new GridData(GridData.FILL_HORIZONTAL);
-		aSOFPSGD.heightHint = 25;
+		aSOFPSGD.heightHint = tde.gui.h(25);
 		aSpaceOFPTT.setLayoutData(aSOFPSGD);
 
 		Combo aOutFPS = new Combo(aOutFPSC, SWT.DROP_DOWN);//|SWT.READ_ONLY);
 		GridData aOFPSGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aOFPSGD.widthHint = 80;
-		aOFPSGD.heightHint = 20;
+		aOFPSGD.heightHint = tde.gui.h(20);
 		aOutFPS.setLayoutData(aOFPSGD);
 		tde.gui.applyColorFont(aOutFPS);
+		tde.gui.tip(aOutFPS, "RenderFPS");
 		aOutFPS.setItems(TDConfig.FPSLIST);
 		aOutFPS.addModifyListener(new ModifyListener() {
 			@Override
@@ -211,19 +221,19 @@ public class RendererGUI {
 		aFVOL.setText(tde.gui.lngs.get("Renderer.FFmpegVideoOpts"));
 		tde.gui.applyColorFont(aFVOL);
 		GridData aFVOLGD = new GridData(GridData.FILL_HORIZONTAL);
-		aFVOLGD.heightHint = 20;
+		aFVOLGD.heightHint = tde.gui.h(20);
 		aFVOL.setLayoutData(aFVOLGD);
 		final CLabel aFVOLEx = new CLabel(shell,SWT.NONE);
 		aFVOLEx.setText(tde.gui.lngs.get("Renderer.FFmpegVideoOptsEx"));
 		tde.gui.applyColorFont(aFVOLEx);
 		GridData aFVOLExGD = new GridData(GridData.FILL_HORIZONTAL);
-		aFVOLExGD.heightHint = 20;
+		aFVOLExGD.heightHint = tde.gui.h(20);
 		aFVOLEx.setLayoutData(aFVOLExGD);
-		final Text aFVOT = new Text(shell,SWT.BORDER);
-		tde.gui.applyColorFont(aFVOT);
+		final Text aFVOT = tde.gui.framedText(shell,SWT.SINGLE);
+		tde.gui.tip(aFVOT, "RenderFFmpegOpts");
 		GridData aFVOTGD = new GridData(GridData.FILL_HORIZONTAL);
-		aFVOTGD.heightHint = 20;
-		aFVOT.setLayoutData(aFVOTGD);
+		aFVOTGD.heightHint = tde.gui.h(20);
+		aFVOT.getParent().setLayoutData(aFVOTGD);
 		aFVOT.addKeyListener(new KeyListener() {
 			@Override
 			public void keyReleased(KeyEvent arg0) {
@@ -238,14 +248,14 @@ public class RendererGUI {
 		aOutL.setText(tde.gui.lngs.get("Renderer.OutputFile"));
 		tde.gui.applyColorFont(aOutL);
 		GridData aOutLGD = new GridData(GridData.FILL_HORIZONTAL);
-		aOutLGD.heightHint = 20;
+		aOutLGD.heightHint = tde.gui.h(20);
 		aOutL.setLayoutData(aOutLGD);
 
-		final Text aOutT = new Text(shell,SWT.BORDER);
-		tde.gui.applyColorFont(aOutT);
+		final Text aOutT = tde.gui.framedText(shell,SWT.SINGLE);
+		tde.gui.tip(aOutT, "RenderOutputFile");
 		GridData aOutTGD = new GridData(GridData.FILL_HORIZONTAL);
-		aOutTGD.heightHint = 20;
-		aOutT.setLayoutData(aOutTGD);
+		aOutTGD.heightHint = tde.gui.h(20);
+		aOutT.getParent().setLayoutData(aOutTGD);
 		aOutT.addKeyListener(new KeyListener() {
 			@Override
 			public void keyReleased(KeyEvent arg0) {
@@ -259,8 +269,9 @@ public class RendererGUI {
 		
 		final Button aStartPosCB = new Button(shell, SWT.CHECK);
 		tde.gui.applyColorFont(aStartPosCB);
+		tde.gui.tip(aStartPosCB, "RenderStartAtTimePos");
 		GridData aSPCBGD = new GridData(GridData.FILL_HORIZONTAL);
-		aSPCBGD.heightHint = 20;
+		aSPCBGD.heightHint = tde.gui.h(20);
 		aStartPosCB.setLayoutData(aSPCBGD);
 		aStartPosCB.setSelection(false);
 		aStartPosCB.addSelectionListener(new SelectionListener() {
@@ -280,11 +291,12 @@ public class RendererGUI {
 		
 		Button aProcess = new Button(aStartStop, SWT.PUSH);
 		GridData aOGD = new GridData();
-		aOGD.heightHint = 20;
+		aOGD.heightHint = tde.gui.h(20);
 		aProcess.setLayoutData(aOGD);
 		aProcess.setText(tde.gui.lngs.get("Renderer.Process"));
 		aProcess.setImage(tde.gui.imgsSwt.getIcon("play.gif"));
 		tde.gui.applyColorFont(aProcess);
+		tde.gui.tip(aProcess, "RenderProcess");
 		aProcess.setAlignment(SWT.CENTER);
 		aProcess.addSelectionListener(new SelectionListener() {
 			@Override
@@ -299,11 +311,12 @@ public class RendererGUI {
 		
 		Button aStop = new Button(aStartStop, SWT.PUSH);
 		GridData aSGD = new GridData();
-		aSGD.heightHint = 20;
+		aSGD.heightHint = tde.gui.h(20);
 		aStop.setLayoutData(aSGD);
 		aStop.setText(tde.gui.lngs.get("Renderer.Stop"));
 		aStop.setImage(tde.gui.imgsSwt.getIcon("stop.gif"));
 		tde.gui.applyColorFont(aStop);
+		tde.gui.tip(aStop, "RenderStop");
 		aStop.setAlignment(SWT.CENTER);
 		aStop.addSelectionListener(new SelectionListener() {
 			@Override
@@ -318,12 +331,14 @@ public class RendererGUI {
 		
 		Button aOk = new Button(aStartStop, SWT.PUSH);
 		GridData aOkGD = new GridData();
-		aOkGD.heightHint = 20;
+		aOkGD.heightHint = tde.gui.h(20);
 		aOk.setLayoutData(aOkGD);
 		aOk.setText(tde.gui.lngs.get("Renderer.Done"));
 		aOk.setImage(tde.gui.imgsSwt.getIcon("checked.gif"));
 		tde.gui.applyColorFont(aOk);
+		tde.gui.tip(aOk, "RenderDone");
 		aOk.setAlignment(SWT.CENTER);
+		doneButton = aOk;
 		aOk.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
@@ -351,20 +366,50 @@ public class RendererGUI {
 		}
 
 		playing = true;
+		doneButton.setEnabled(false);
+		renderer = null;//Not the one of a previous rendering
 		if(tde.gui.monitorGUI != null) {
 			tde.gui.monitorGUI.setMedia(null);
 		}
 		int aHeight = outputRes;
 		int aWidth = (int)(tde.config.outRatio * outputRes);
-		renderer = new Renderer(tde,aWidth,aHeight,outputFPS,ffmpegVideoOpts,pathOut);
 		timeStartMS = System.currentTimeMillis();
 		
 		startTimePos = startAtTimePos?tde.timeLineStack.getTimePosMS():0;
 		endTimePos = tde.timeLineStack.getMaxTimePosMS();
 		tde.gui.setWaitCursor(true,shell);
+		status.setText(tde.gui.lngs.get("Renderer.MixingAudio"));
 		Thread aTh = new Thread(new Runnable() {
 			@Override
 			public void run() {
+				//Sound track first, mixed into a temporary WAV given to ffmpeg with the images
+				audioWav = null;
+				if(FfmpegEncoder.canHaveAudio(pathOut)) {
+					try {
+						File aWav = File.createTempFile("3De_audio_", ".wav");
+						aWav.deleteOnExit();
+						if(new AudioMixer(tde).renderWav(startTimePos, endTimePos, aWav)) {
+							audioWav = aWav;
+						}
+						else {
+							aWav.delete();
+						}
+					}
+					catch(Throwable t) {
+						t.printStackTrace(System.err);
+					}
+				}
+				if(!playing) {
+					//Stopped while mixing
+					if(audioWav != null) {
+						audioWav.delete();
+						audioWav = null;
+					}
+					return;
+				}
+				renderer = new Renderer(tde,aWidth,aHeight,outputFPS,ffmpegVideoOpts,pathOut
+						,audioWav == null ? null : audioWav.getAbsolutePath());
+				timeStartMS = System.currentTimeMillis();
 				countFrames = 0;
 				tde.timeLineStack.setTimePosMS(startTimePos);
 				tde.timeLineStack.setRequestedTimePosMS(startTimePos);
@@ -401,11 +446,13 @@ public class RendererGUI {
 			//??
 			aFps = 0.0001;
 		}
-		long aTimeLeft = (int)(outputFPS*(endTimePos-tde.timeLineStack.getTimePosMS())/aFps);
-		status.setText(StringUtils.time2Clock(tde.timeLineStack.getTimePosMS())+" "
+		//The last frame moves the position up to (or a little past) the end: never beyond it, never a negative time left
+		long aTimePos = Math.min(tde.timeLineStack.getTimePosMS(), endTimePos);
+		long aTimeLeft = Math.max(0, (long)(outputFPS*(endTimePos-aTimePos)/aFps));
+		status.setText(StringUtils.time2Clock(aTimePos)+" "
 				+countFrames+" f processed => "
 				+aNF.format(aFps)+" fps / "
-				+ renderer.encoded+ " f encoded "
+				+ (renderer == null ? 0 : renderer.encoded)+ " f encoded "
 				+ "=> "+StringUtils.time2Clock(aTimeLeft)
 				);
 	}
@@ -416,7 +463,13 @@ public class RendererGUI {
 			return;
 		}
 		playing = false;
-		renderer.stop();
+		if(renderer != null) {
+			renderer.stop();
+		}
+		if(audioWav != null) {
+			audioWav.delete();
+			audioWav = null;
+		}
 		NumberFormat aNF = NumberFormat.getInstance();
 		aNF.setMinimumFractionDigits(3);
 		aNF.setMaximumFractionDigits(3);
@@ -425,6 +478,9 @@ public class RendererGUI {
 			@Override
 			public void run() {
 				updateStatus();
+				if(!doneButton.isDisposed()) {
+					doneButton.setEnabled(true);
+				}
 				tde.timeLineStack.setTimePosMS(startTimePos);
 				tde.gui.timeLinesGUI.redraw();
 				if(tde.gui.monitorGUI != null) {

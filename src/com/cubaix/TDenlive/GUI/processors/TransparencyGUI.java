@@ -88,10 +88,11 @@ public class TransparencyGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("TransOpacity");
 		
 		lumaC = new TableCombo(wgt, SWT.NONE);
 		tde.gui.applyColorFont(lumaC);
+		tde.gui.tip(lumaC, "LumaChoice");
 		GridData aTCGD = new GridData(GridData.FILL_HORIZONTAL);
 		aTCGD.heightHint = tde.config.thumbH;
 		lumaC.setLayoutData(aTCGD);
@@ -140,7 +141,7 @@ public class TransparencyGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("TransBevel");
 
 		Label aXL = new Label(wgt,SWT.NONE);
 		tde.gui.applyColorFont(aXL);
@@ -156,12 +157,13 @@ public class TransparencyGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("TransX");
 
 		invB = new Button(wgt, SWT.CHECK);
 		tde.gui.applyColorFont(invB);
+		tde.gui.tip(invB, "Invert");
 		GridData aIGD = new GridData(GridData.FILL_HORIZONTAL);
-		aIGD.heightHint = 20;
+		aIGD.heightHint = tde.gui.h(20);
 		invB.setLayoutData(aIGD);
 		invB.addSelectionListener(new SelectionListener() {
 			@Override

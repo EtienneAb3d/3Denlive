@@ -83,7 +83,7 @@ public class ChromakeyGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("ChromaTolerance");
 		
 		Composite aCC = new Composite(wgt,SWT.NONE);
 		tde.gui.applyColorFont(aCC);
@@ -96,9 +96,10 @@ public class ChromakeyGUI extends ProcessorGUI {
 		aPickColor.setAlignment(SWT.CENTER);
 		GridData aPCGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aPCGD.widthHint = 32;
-		aPCGD.heightHint = 25;
+		aPCGD.heightHint = tde.gui.h(25);
 		aPickColor.setLayoutData(aPCGD);
 		tde.gui.applyColorFont(aPickColor);
+		tde.gui.tip(aPickColor, "PickColor");
 		aPickColor.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseUp(MouseEvent arg0) {}
@@ -124,7 +125,7 @@ public class ChromakeyGUI extends ProcessorGUI {
 		tde.gui.applyColorFont(colorL);
 		GridData aCLGD = new GridData(GridData.FILL_HORIZONTAL);
 //		aCLGD.widthHint = 32;
-		aCLGD.heightHint = 25;
+		aCLGD.heightHint = tde.gui.h(25);
 		colorL.setLayoutData(aCLGD);
 		int aColor = ck.getColor(aSelectedKey);
 		RGB aRGB = new RGB(aColor>>16&0xFF,aColor>>8&0xFF,aColor&0xFF);
@@ -134,9 +135,10 @@ public class ChromakeyGUI extends ProcessorGUI {
 		aChooseColor.setAlignment(SWT.CENTER);
 		GridData aCCGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aCCGD.widthHint = 32;
-		aCCGD.heightHint = 25;
+		aCCGD.heightHint = tde.gui.h(25);
 		aChooseColor.setLayoutData(aCCGD);
 		tde.gui.applyColorFont(aChooseColor);
+		tde.gui.tip(aChooseColor, "ChooseColor");
 		aChooseColor.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseUp(MouseEvent arg0) {}
@@ -170,7 +172,7 @@ public class ChromakeyGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("ChromaBevel");
 
 		tde.timeLineStack.addTimeListener(this);
 	}

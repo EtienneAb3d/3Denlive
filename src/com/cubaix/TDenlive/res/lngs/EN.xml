@@ -4,6 +4,13 @@
 	<entry label="Load">Load</entry>
 	<entry label="Save">Save</entry>
 	<entry label="SaveAs">Save as</entry>
+	<entry label="OverwriteFile">The file already exists. Replace it?</entry>
+	<entry label="SaveBeforeQuit">The project has unsaved changes. Save them before quitting?</entry>
+	<entry label="SaveError">The project could not be saved:</entry>
+	<entry label="Untitled">New project</entry>
+	<entry label="PackDone">Project packed into:</entry>
+	<entry label="PackMissing">Files not found (not in the zip):</entry>
+	<entry label="PackError">Packing failed:</entry>
 
 	<entry label="Generic.1stMedia">1st media</entry>
 	<entry label="Generic.1stMediaShort">1st</entry>
@@ -30,6 +37,12 @@
 	<entry label="RenderMode">Final rendering configuration</entry>
 	<entry label="Done">Done</entry>
 </EntrySet>
+<EntrySet label="ColorBck">
+	<entry label="Title">Plain color clip</entry>
+	<entry label="Palette">Palette...</entry>
+	<entry label="Create">Create</entry>
+	<entry label="Cancel">Cancel</entry>
+</EntrySet>
 <EntrySet label="Glasses">
 	<entry label="AnaMixerRC">Red / cyan anaglyph</entry>
 	<entry label="AnaMixerRC_Dubois">Red / cyan anaglyph Dubois</entry>
@@ -51,6 +64,8 @@
 	<entry label="OpenP">Add a parallel view/video</entry>
 	<entry label="OpenLR">Add a left and right view/video</entry>
 	<entry label="OpenFlat">Add a not-stereo view/video</entry>
+	<entry label="OpenAudio">Add a sound (music, voice...)</entry>
+	<entry label="Audio">Sound</entry>
 	<entry label="WorkCopyProcessing">3De is preparing a working copy of the file\nwith smaller size and frame rate</entry>
 	<entry label="Done">Done</entry>
 	<entry label="WorkCopyChose">You selected a 3De work copy.\nChoose an original file.</entry>
@@ -67,6 +82,8 @@
 <EntrySet label="Processor">
 	<entry label="NotYetAvailable">This feature will be available in a next version</entry>
 	<entry label="SelectAClip">Please select a clip in a time line</entry>
+	<entry label="SelectAnAudioClip">This processor works on sound: please select a clip with a sound (video or audio)</entry>
+	<entry label="SelectAVideoClip">This processor works on images: please select a clip in a video time line (V1, V2...)</entry>
 
 	<entry label="TimeControler">Programming</entry>
 
@@ -95,9 +112,15 @@
 
 	<entry label="Expert">Expert</entry>
 	<entry label="Scripter">Script</entry>
+
+	<entry label="Audio">Sound</entry>
+	<entry label="Volume">Volume / balance</entry>
 </EntrySet>
 <EntrySet label="TimeController">
 	<entry label="TrashClip">Delete clip</entry>
+	<entry label="TrashClipAndTwins">Delete clip (and its twins)</entry>
+	<entry label="UnlinkTwins">Unlink the twin clips (video / sound)</entry>
+	<entry label="SoundOn">Sound of the clip</entry>
 	<entry label="MoveClipUp">Move to above timeline</entry>
 	<entry label="MoveClipDown">Move to below timeline</entry>
 	<entry label="DuplicateClipUp">Duplicate to above timeline</entry>
@@ -210,6 +233,19 @@
 	<entry label="Opacity">Opacity</entry>
 	<entry label="X">Stereo position</entry>
 </EntrySet>
+<EntrySet label="Volume">
+	<entry label="Gain">Volume (100% = unchanged)</entry>
+	<entry label="GainLetter">V</entry>
+	<entry label="Pan">Balance left / right</entry>
+	<entry label="PanLetter">B</entry>
+</EntrySet>
+<EntrySet label="TimeLine">
+	<entry label="ZoomIn">Zoom in (time)</entry>
+	<entry label="ZoomOut">Zoom out (time)</entry>
+	<entry label="ZoomReset">Default time scale</entry>
+	<entry label="ZoomFit">Fit the time scale to the whole montage</entry>
+	<entry label="Zoom">Time scale</entry>
+</EntrySet>
 <EntrySet label="Renderer">
 	<entry label="ProcessingRes">Rendering quality</entry>
 	<entry label="OutputRes">Video quality</entry>
@@ -218,7 +254,196 @@
 	<entry label="FFmpegVideoOptsEx">Example: -b:v 6000k -maxrate:v 9000k -minrate:v 0</entry>
 	<entry label="OutputFile">Output file (may also be like "3De_%04d_P.png")</entry>
 	<entry label="StartAtTimePos">Start at the current time cursor</entry>
+	<entry label="MixingAudio">Mixing the sound...</entry>
 	<entry label="Process">Process</entry>
 	<entry label="Stop">Stop</entry>
 	<entry label="Done">Done</entry>
+</EntrySet>
+<EntrySet label="Tip">
+	<entry label="OpenProject">Open a 3Denlive project (.3De)</entry>
+	<entry label="SaveProject">Save the project (.3De file)</entry>
+	<entry label="PackProject">Pack the project and its medias into a zip (Packed folder)</entry>
+	<entry label="Settings">Settings: render folder, quality of the work, presentation and rendering modes</entry>
+	<entry label="Render">Render the montage to a video file or an image sequence</entry>
+	<entry label="News">News of 3Denlive (web site)</entry>
+	<entry label="Guide">User guide (web site)</entry>
+	<entry label="WebSite">3Denlive web site</entry>
+
+	<entry label="AddMedia">Add photos, videos or sounds to the media list</entry>
+	<entry label="AddColor">Add a plain color background to the media list</entry>
+	<entry label="MediaList">Click: select and preview a media\nDouble-click: add it to the time lines</entry>
+
+	<entry label="Ratio">Image ratio of the montage (width / height)</entry>
+	<entry label="WorkRes">Preview resolution (lower is faster)</entry>
+	<entry label="WorkHdr">Color depth of the preview (HDR is more precise but slower)</entry>
+	<entry label="FastMode">Preview computation: fast or full quality</entry>
+	<entry label="Glasses">Stereo view mode (anaglyph glasses, side by side, interlaced...)</entry>
+	<entry label="Grid">Show a grid over the preview</entry>
+	<entry label="EdgesOff">Show the edges (helps to check the left / right alignment)</entry>
+	<entry label="EdgesOn">Hide the edges</entry>
+	<entry label="SaveView">Save the current image in full quality in the render folder (left, right, parallel and crossed PNG)</entry>
+	<entry label="FullScreen">Full screen presentation</entry>
+	<entry label="Status">Preview computation speed (frames per second)</entry>
+	<entry label="GridNone">No grid</entry>
+	<entry label="GridLines">Grid of %n lines in each direction</entry>
+
+	<entry label="Glasses_AnaMixerRC">Anaglyph for red (left) / cyan (right) glasses</entry>
+	<entry label="Glasses_AnaMixerRC_Dubois">Red / cyan anaglyph with the Dubois method: less ghosting, better colors</entry>
+	<entry label="Glasses_AnaMixerRC_ZhangAllister">Red / cyan anaglyph with the Dubois method, Zhang and Allister variant</entry>
+	<entry label="Glasses_AnaMixerYB">Anaglyph for yellow / blue glasses</entry>
+	<entry label="Glasses_AnaMixerGM">Anaglyph for green / magenta glasses</entry>
+	<entry label="Glasses_SbsMixerP">Left view on the left, right view on the right (parallel viewing, 3D TV, VR headsets)</entry>
+	<entry label="Glasses_SbsMixerX">Right view on the left, left view on the right (cross-eyed viewing)</entry>
+	<entry label="Glasses_InterlacedH1">Horizontal lines alternating the views, left view first (passive 3D screens)</entry>
+	<entry label="Glasses_InterlacedH2">Horizontal lines alternating the views, right view first (passive 3D screens)</entry>
+	<entry label="Glasses_InterlacedV1">Vertical columns alternating the views, left view first (autostereoscopic screens)</entry>
+	<entry label="Glasses_InterlacedV2">Vertical columns alternating the views, right view first (autostereoscopic screens)</entry>
+	<entry label="Glasses_Left">Left view only</entry>
+	<entry label="Glasses_Right">Right view only</entry>
+	<entry label="Glasses_Wobble">Alternate the left and right views every second</entry>
+
+	<entry label="Play">Play the montage from the time cursor</entry>
+	<entry label="Stop">Stop playing</entry>
+	<entry label="Clock">Position of the time cursor</entry>
+	<entry label="PrevFrame">Previous frame</entry>
+	<entry label="NextFrame">Next frame</entry>
+	<entry label="MonitorZoomIn">Zoom in the preview</entry>
+	<entry label="MonitorZoomOut">Zoom out the preview</entry>
+	<entry label="MonitorZoomFit">Fit the preview to the window</entry>
+
+	<entry label="AddVideoLine">Add a video time line</entry>
+	<entry label="AddAudioLine">Add a sound time line</entry>
+	<entry label="LineActive">Enable / disable this line (images and sound) in the preview and the rendering</entry>
+	<entry label="AudioLineActive">Enable / disable this sound line in the playing and the rendering</entry>
+	<entry label="LineSound">Mute / unmute the sound of the clips of this line</entry>
+	<entry label="Ruler">Click or drag to move the time cursor</entry>
+
+	<entry label="ProcTitle">Click to show / hide the settings of this processor</entry>
+	<entry label="ProcCollapseAll">Hide the settings of all the processors</entry>
+	<entry label="ProcActive">Enable / disable this processor</entry>
+	<entry label="ProcUp">Move this processor up (applied earlier)</entry>
+	<entry label="ProcDown">Move this processor down (applied later)</entry>
+	<entry label="ProcLoad">Load the settings of this processor from a file</entry>
+	<entry label="ProcSave">Save the settings of this processor to a file</entry>
+	<entry label="ProcDelete">Remove this processor from the clip</entry>
+
+	<entry label="ProcLib">Double-click a processor to add it to the selected clip</entry>
+	<entry label="ProcLib_StereoAligner">Align the left and right views (position, size, rotation)</entry>
+	<entry label="ProcLib_ColorAdapter">Adapt the reds and cyans to reduce the ghosting of anaglyphs</entry>
+	<entry label="ProcLib_Depthmap">Build a stereo pair from a 2D image and its depth map</entry>
+	<entry label="ProcLib_DepthmapStereo">Change the depth of a stereo pair with a depth map</entry>
+	<entry label="ProcLib_HueSaturation">Change the hue, saturation and brightness</entry>
+	<entry label="ProcLib_BrightnessContrast">Change the brightness, contrast and gamma</entry>
+	<entry label="ProcLib_LensCorrection">Correct the lens distortion (ffmpeg K1 K2 coefficients)</entry>
+	<entry label="ProcLib_Cropper">Crop the borders, rotate and shear the image</entry>
+	<entry label="ProcLib_Placer">Move and resize the image in the frame and in depth</entry>
+	<entry label="ProcLib_Transparency">Opacity and transitions with luma masks</entry>
+	<entry label="ProcLib_Chromakey">Make a background color transparent (green screen)</entry>
+	<entry label="ProcLib_Framing">Add a decorative frame over the image</entry>
+	<entry label="ProcLib_Volume">Change the volume and the left / right balance of the sound</entry>
+	<entry label="ProcLib_Scripter">Process the images with a BeanShell script</entry>
+
+	<entry label="ScaleMinus">Decrease (Shift or Ctrl: bigger step)</entry>
+	<entry label="ScaleZero">Back to the default value</entry>
+	<entry label="ScalePlus">Increase (Shift or Ctrl: bigger step)</entry>
+	<entry label="KeyPrev">Go to the previous key frame</entry>
+	<entry label="KeyAdd">Add a key frame at the time cursor</entry>
+	<entry label="KeyDelete">Delete the selected key frame</entry>
+	<entry label="KeyNext">Go to the next key frame</entry>
+
+	<entry label="RenderDir">Folder where the rendered videos and the saved views are written</entry>
+	<entry label="ModeRes">Processing resolution of this mode</entry>
+	<entry label="ModeHdr">Color depth of this mode (HDR is more precise but slower)</entry>
+	<entry label="CloseWindow">Close this window</entry>
+	<entry label="RenderProcessingRes">Resolution of the image processing (before encoding)</entry>
+	<entry label="RenderOutputRes">Resolution of the output video</entry>
+	<entry label="RenderFPS">Frames per second of the output video</entry>
+	<entry label="RenderFFmpegOpts">Extra ffmpeg parameters for the video encoding (optional)</entry>
+	<entry label="RenderOutputFile">Path of the output file. With a pattern like "3De_%04d_P.png", an image sequence is written</entry>
+	<entry label="RenderStartAtTimePos">Render from the time cursor instead of the beginning</entry>
+	<entry label="RenderProcess">Start the rendering</entry>
+	<entry label="RenderStop">Stop the rendering in progress</entry>
+	<entry label="RenderDone">Stop the rendering and close this window</entry>
+
+	<entry label="OpenX">Image or video with the right view on the left and the left view on the right</entry>
+	<entry label="OpenP">Image or video with the left view on the left and the right view on the right (MPO files too)</entry>
+	<entry label="OpenLR">Two separate files: first the left view, then the right view</entry>
+	<entry label="OpenFlat">2D image or video, used for both eyes</entry>
+	<entry label="OpenAudio">Sound file, placed on a sound time line</entry>
+
+	<entry label="SecureCropLeft">Crop the left border so that the empty areas made by the alignment are not visible</entry>
+	<entry label="SecureCropRight">Crop the right border so that the empty areas made by the alignment are not visible</entry>
+	<entry label="SecureCropTop">Crop the top border so that the empty areas made by the alignment are not visible</entry>
+	<entry label="SecureCropBottom">Crop the bottom border so that the empty areas made by the alignment are not visible</entry>
+	<entry label="SecureResize">Zoom the cropped image to fill the frame again</entry>
+	<entry label="ShowSecureCropBox">Show the secure crop box on the preview</entry>
+	<entry label="AutoAlign">Compute the left / right alignment automatically on the current image</entry>
+	<entry label="ShowCutLines">Show the cut lines on the preview</entry>
+	<entry label="Invert">Invert the luma mask (opposite direction of the transition)</entry>
+	<entry label="LumaChoice">Luma mask of the transition</entry>
+	<entry label="FrameChoice">Frame image laid over the clip</entry>
+	<entry label="BlackIsFront">Check if the dark areas of the depth map are in the front</entry>
+	<entry label="ClipSoundOn">Hear the sound of this clip</entry>
+	<entry label="MoveClipUp">Move this clip to the time line above</entry>
+	<entry label="MoveClipDown">Move this clip to the time line below</entry>
+	<entry label="DuplicateClipUp">Copy this clip to the time line above (copy without sound)</entry>
+	<entry label="UnlinkTwins">Unlink the twin clips: they can then be moved separately</entry>
+	<entry label="TrashClip">Delete this clip from the time line</entry>
+	<entry label="PickColor">Pick the color to make transparent by clicking on the preview</entry>
+	<entry label="ChooseColor">Choose the color to make transparent</entry>
+	<entry label="ChooseScript">Choose the BeanShell script (.bsh) to run</entry>
+	<entry label="KeyFrames">Key frames of this processor on the clip duration: click or drag to move the time cursor</entry>
+	<entry label="HScroll">Scroll the time lines (touchpad and tilt wheel work too)</entry>
+	<entry label="ClipStart">Go to the start of the selected clip (or of the montage if no clip is selected)</entry>
+	<entry label="ClipEnd">Go to the end of the selected clip (or of the montage if no clip is selected)</entry>
+
+	<entry label="AlignX">Horizontal shift between the left and right views (depth of the whole image)</entry>
+	<entry label="AlignY">Vertical shift between the left and right views</entry>
+	<entry label="AlignW">Width difference between the left and right views</entry>
+	<entry label="AlignH">Height difference between the left and right views</entry>
+	<entry label="AlignR">Rotation difference between the left and right views</entry>
+	<entry label="DepthZ">Depth intensity given by the depth map</entry>
+	<entry label="DepthX">Distribution of the shift between the left and right views (stereo position)</entry>
+	<entry label="DepthP">Perspective: shift growing with the distance to the image center</entry>
+	<entry label="PlaceX">Horizontal position of the image</entry>
+	<entry label="PlaceY">Vertical position of the image</entry>
+	<entry label="PlaceS">Size of the image</entry>
+	<entry label="LensK1">K1: main radial distortion (barrel / pincushion)</entry>
+	<entry label="LensK2">K2: secondary radial distortion (mostly on the borders)</entry>
+	<entry label="LensCX">Horizontal position of the distortion center</entry>
+	<entry label="LensCY">Vertical position of the distortion center</entry>
+	<entry label="LensK1LR">Difference of K1 between the left and right views</entry>
+	<entry label="LensK2LR">Difference of K2 between the left and right views</entry>
+	<entry label="LensCXLR">Difference of the horizontal center between the left and right views</entry>
+	<entry label="LensCYLR">Difference of the vertical center between the left and right views</entry>
+	<entry label="TransOpacity">Opacity of the clip (or progress of the transition with a luma mask)</entry>
+	<entry label="TransBevel">Softness of the edge of the transition</entry>
+	<entry label="TransX">Depth of the transition mask</entry>
+	<entry label="FrameOpacity">Opacity of the frame</entry>
+	<entry label="FrameX">Depth of the frame</entry>
+	<entry label="ChromaTolerance">Color distance still made transparent</entry>
+	<entry label="ChromaBevel">Softness of the edges of the transparent areas</entry>
+	<entry label="AdaptRed">Strength of the adaptation of the reds</entry>
+	<entry label="AdaptCyan">Strength of the adaptation of the cyans</entry>
+	<entry label="Gain">Volume of the sound (100% = unchanged)</entry>
+	<entry label="Pan">Balance between the left and right speakers</entry>
+	<entry label="CropLeftL">Left border of the left view</entry>
+	<entry label="CropLeftR">Left border of the right view</entry>
+	<entry label="CropRightL">Right border of the left view</entry>
+	<entry label="CropRightR">Right border of the right view</entry>
+	<entry label="CropTop">Top border</entry>
+	<entry label="CropBottom">Bottom border</entry>
+	<entry label="CropRotation">Rotation of the image</entry>
+	<entry label="CropShearL">Horizontal shear of the left view</entry>
+	<entry label="CropShearR">Horizontal shear of the right view</entry>
+	<entry label="CropTransparency">Transparency of the cropped areas</entry>
+	<entry label="Hue">Hue shift</entry>
+	<entry label="Saturation">Saturation (color intensity)</entry>
+	<entry label="HSBrightness">Brightness</entry>
+	<entry label="Threshold">Threshold of the selected color: which pixels are changed</entry>
+	<entry label="Range">Hue range around the selected color</entry>
+	<entry label="Brightness">Brightness</entry>
+	<entry label="Contrast">Contrast</entry>
+	<entry label="Gamma">Gamma (brightness of the mid-tones)</entry>
+	<entry label="SmoothContrast">Smooth contrast (TanH curve)</entry>
 </EntrySet>

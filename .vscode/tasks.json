@@ -1,0 +1,45 @@
+{
+	// Terminal > Run Task... (on Windows, set Git Bash as the default terminal shell)
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Install dev environment (ffmpeg only)",
+			"type": "shell",
+			"command": "./Install-Dev.sh --ffmpeg-only",
+			"problemMatcher": []
+		},
+		{
+			"label": "Install build environment (ffmpeg + JVMs)",
+			"type": "shell",
+			"command": "./Install-Dev.sh",
+			"problemMatcher": []
+		},
+		{
+			"label": "Update ffmpeg and JVMs to the latest releases",
+			"type": "shell",
+			"command": "./Install-Dev.sh -f",
+			"problemMatcher": []
+		},
+		{
+			"label": "Build all deliveries",
+			"type": "shell",
+			"command": "./build_delivery.sh",
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "Build one delivery",
+			"type": "shell",
+			"command": "./build_delivery.sh ${input:config}",
+			"problemMatcher": []
+		}
+	],
+	"inputs": [
+		{
+			"id": "config",
+			"type": "pickString",
+			"description": "Configuration to build",
+			"options": ["MacSilicon", "MacIntel", "Linux", "PPC64le", "Win-x64"]
+		}
+	]
+}

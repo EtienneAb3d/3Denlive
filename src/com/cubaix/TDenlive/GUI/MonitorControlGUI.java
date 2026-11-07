@@ -52,7 +52,7 @@ public class MonitorControlGUI extends CompositePanel {
 	void createContents() {
 		toolBar = new Composite(container, SWT.NULL);
 		GridData aTB = new GridData(GridData.FILL_HORIZONTAL);
-		aTB.heightHint = 25;
+		aTB.heightHint = tde.gui.h(25);
 		toolBar.setLayoutData(aTB);
 		tde.gui.applyColorFont(toolBar);
 		GridLayout aGL = new GridLayout(11, false);
@@ -62,14 +62,16 @@ public class MonitorControlGUI extends CompositePanel {
 		processingRatio = new Combo(toolBar, SWT.DROP_DOWN);//|SWT.READ_ONLY);
 		GridData aResGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aResGD.widthHint = 80;
-		aResGD.heightHint = 20;
+		aResGD.heightHint = tde.gui.h(20);
 		processingRatio.setLayoutData(aResGD);
 		tde.gui.applyColorFont(processingRatio);
+		tde.gui.tip(processingRatio, "Ratio");
 		processingRatio.setItems(TDConfig.RATIONAMES);
 		processingRatio.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
 				if(processingRatio.getSelectionIndex() == 0) {
+					tde.updateFirstMediaRatio();
 					tde.config.outRatio = tde.config.origRatio;
 					isRatio1mSelected = true;
 				}
@@ -84,6 +86,7 @@ public class MonitorControlGUI extends CompositePanel {
 			@Override
 			public void widgetDefaultSelected(SelectionEvent arg0) {
 				if(processingRatio.getSelectionIndex() == 0) {
+					tde.updateFirstMediaRatio();
 					tde.config.outRatio = tde.config.origRatio;
 					isRatio1mSelected = true;
 				}
@@ -100,9 +103,10 @@ public class MonitorControlGUI extends CompositePanel {
 		processingRes = new Combo(toolBar, SWT.DROP_DOWN);//|SWT.READ_ONLY);
 		aResGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aResGD.widthHint = 80;
-		aResGD.heightHint = 20;
+		aResGD.heightHint = tde.gui.h(20);
 		processingRes.setLayoutData(aResGD);
 		tde.gui.applyColorFont(processingRes);
+		tde.gui.tip(processingRes, "WorkRes");
 		processingRes.setItems(TDConfig.RESNAMES);
 		processingRes.addSelectionListener(new SelectionListener() {
 			@Override
@@ -124,9 +128,10 @@ public class MonitorControlGUI extends CompositePanel {
 		processingHdr = new Combo(toolBar, SWT.DROP_DOWN);//|SWT.READ_ONLY);
 		GridData aHdrGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aHdrGD.widthHint = 80;
-		aHdrGD.heightHint = 20;
+		aHdrGD.heightHint = tde.gui.h(20);
 		processingHdr.setLayoutData(aHdrGD);
 		tde.gui.applyColorFont(processingHdr);
+		tde.gui.tip(processingHdr, "WorkHdr");
 		processingHdr.setItems(TDConfig.HDRLIST);
 		processingHdr.addSelectionListener(new SelectionListener() {
 			@Override
@@ -144,9 +149,10 @@ public class MonitorControlGUI extends CompositePanel {
 		fastMode = new Combo(toolBar, SWT.DROP_DOWN);//|SWT.READ_ONLY);
 		GridData aFastGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aFastGD.widthHint = 80;
-		aFastGD.heightHint = 20;
+		aFastGD.heightHint = tde.gui.h(20);
 		fastMode.setLayoutData(aFastGD);
 		tde.gui.applyColorFont(fastMode);
+		tde.gui.tip(fastMode, "FastMode");
 		fastMode.setItems(new String[] {
 				tde.gui.lngs.get("Monitor.Fast")
 				,tde.gui.lngs.get("Monitor.Quality")
@@ -170,9 +176,10 @@ public class MonitorControlGUI extends CompositePanel {
 		glasses.setAlignment(SWT.CENTER);
 		GridData aGlassesGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aGlassesGD.widthHint = 32;
-		aGlassesGD.heightHint = 25;
+		aGlassesGD.heightHint = tde.gui.h(25);
 		glasses.setLayoutData(aGlassesGD);
 		tde.gui.applyColorFont(glasses);
+		tde.gui.tip(glasses, "Glasses");
 		glasses.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseUp(MouseEvent arg0) {
@@ -212,6 +219,7 @@ public class MonitorControlGUI extends CompositePanel {
 			final MenuItem itemGrid = new MenuItem(glassesValues, SWT.PUSH);
 			itemGrid.setText(m[1]);
 			itemGrid.setData(m[0]);
+			tde.gui.tip(itemGrid, "Glasses_"+m[0]);
 			itemGrid.addListener(SWT.Selection, new Listener() {
 				public void handleEvent(Event event) {
 					if("Wobble".equals((String)itemGrid.getData())) {
@@ -287,9 +295,10 @@ public class MonitorControlGUI extends CompositePanel {
 		grid.setAlignment(SWT.CENTER);
 		GridData aGridGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aGridGD.widthHint = 32;
-		aGridGD.heightHint = 25;
+		aGridGD.heightHint = tde.gui.h(25);
 		grid.setLayoutData(aGridGD);
 		tde.gui.applyColorFont(grid);
+		tde.gui.tip(grid, "Grid");
 		grid.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseUp(MouseEvent arg0) {
@@ -305,6 +314,8 @@ public class MonitorControlGUI extends CompositePanel {
 		for(String g : new String[] {"0","1","2","3","4","5","10","15","20","30"}){
 			final MenuItem itemGrid = new MenuItem(gridValues, SWT.PUSH);
 			itemGrid.setText(g);
+			itemGrid.setToolTipText("0".equals(g) ? tde.gui.lngs.get("Tip.GridNone")
+					: tde.gui.lngs.get("Tip.GridLines").replace("%n", g));
 			itemGrid.addListener(SWT.Selection, new Listener() {
 				public void handleEvent(Event event) {
 					tde.gui.monitorGUI.grid = Integer.parseInt(itemGrid.getText());
@@ -334,9 +345,10 @@ public class MonitorControlGUI extends CompositePanel {
 		edgesView.setAlignment(SWT.CENTER);
 		GridData aEdgesGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aEdgesGD.widthHint = 32;
-		aEdgesGD.heightHint = 25;
+		aEdgesGD.heightHint = tde.gui.h(25);
 		edgesView.setLayoutData(aEdgesGD);
 		tde.gui.applyColorFont(edgesView);
+		tde.gui.tip(edgesView, "EdgesOff");
 		edgesView.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseUp(MouseEvent arg0) {
@@ -347,9 +359,11 @@ public class MonitorControlGUI extends CompositePanel {
 				edgesViewOn = !edgesViewOn;
 				if(edgesViewOn) {
 					edgesView.setImage(tde.gui.imgsSwt.getIcon("edgesOn.png"));
+					tde.gui.tip(edgesView, "EdgesOn");
 				}
 				else {
 					edgesView.setImage(tde.gui.imgsSwt.getIcon("edgesOff.png"));
+					tde.gui.tip(edgesView, "EdgesOff");
 				}
 				tde.gui.monitorGUI.setEdgeDetector(edgesViewOn);
 			}
@@ -362,7 +376,7 @@ public class MonitorControlGUI extends CompositePanel {
 		Composite aSpace = new Composite(toolBar, SWT.SEPARATOR|SWT.FILL);
 		tde.gui.applyColorFont(aSpace);
 		GridData aSpaceGD = new GridData(GridData.FILL_HORIZONTAL);
-		aSpaceGD.heightHint = 25;
+		aSpaceGD.heightHint = tde.gui.h(25);
 		aSpace.setLayoutData(aSpaceGD);
 		
 		Label aSave = new Label(toolBar,SWT.NONE);
@@ -370,9 +384,10 @@ public class MonitorControlGUI extends CompositePanel {
 		aSave.setAlignment(SWT.CENTER);
 		GridData aSaveGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aSaveGD.widthHint = 32;
-		aSaveGD.heightHint = 25;
+		aSaveGD.heightHint = tde.gui.h(25);
 		aSave.setLayoutData(aSaveGD);
 		tde.gui.applyColorFont(aSave);
+		tde.gui.tip(aSave, "SaveView");
 		aSave.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseUp(MouseEvent arg0) {
@@ -435,9 +450,10 @@ public class MonitorControlGUI extends CompositePanel {
 		aFullScreen.setAlignment(SWT.CENTER);
 		GridData aFullScreenGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aFullScreenGD.widthHint = 32;
-		aFullScreenGD.heightHint = 25;
+		aFullScreenGD.heightHint = tde.gui.h(25);
 		aFullScreen.setLayoutData(aFullScreenGD);
 		tde.gui.applyColorFont(aFullScreen);
+		tde.gui.tip(aFullScreen, "FullScreen");
 		aFullScreen.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseUp(MouseEvent arg0) {
@@ -458,9 +474,10 @@ public class MonitorControlGUI extends CompositePanel {
 		status.setAlignment(SWT.CENTER);
 		GridData aStatusGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aStatusGD.widthHint = 100;
-		aStatusGD.heightHint = 25;
+		aStatusGD.heightHint = tde.gui.h(25);
 		status.setLayoutData(aStatusGD);
 		tde.gui.applyColorFont(status);
+		tde.gui.tip(status, "Status");
 		
 		processingRatio.setText(tde.config.outRatioName);
 		processingRes.setText(tde.config.processingResNames[0]);

@@ -4,6 +4,13 @@
 	<entry label="Load">Charger</entry>
 	<entry label="Save">Enregistrer</entry>
 	<entry label="SaveAs">Enregistrer sous</entry>
+	<entry label="OverwriteFile">Le fichier existe déjà. Le remplacer ?</entry>
+	<entry label="SaveBeforeQuit">Le projet a des modifications non enregistrées. Les enregistrer avant de quitter ?</entry>
+	<entry label="SaveError">Le projet n'a pas pu être enregistré :</entry>
+	<entry label="Untitled">Nouveau projet</entry>
+	<entry label="PackDone">Projet archivé dans :</entry>
+	<entry label="PackMissing">Fichiers introuvables (absents du zip) :</entry>
+	<entry label="PackError">Échec de l'archivage :</entry>
 	
 	<entry label="1stMedia">1er media</entry>
 	<entry label="1stMediaShort">1er</entry>
@@ -30,6 +37,12 @@
 	<entry label="RenderMode">Configuration de rendu final</entry>
 	<entry label="Done">Terminé</entry>
 </EntrySet>
+<EntrySet label="ColorBck">
+	<entry label="Title">Clip de couleur unie</entry>
+	<entry label="Palette">Palette...</entry>
+	<entry label="Create">Créer</entry>
+	<entry label="Cancel">Annuler</entry>
+</EntrySet>
 <EntrySet label="Glasses">
 	<entry label="AnaMixerRC">Anaglyphe rouge / cyan</entry>
 	<entry label="AnaMixerRC_Dubois">Anaglyphe rouge / cyan Dubois</entry>
@@ -51,6 +64,8 @@
 	<entry label="OpenP">Ajouter une vue/vidéo parallèle</entry>
 	<entry label="OpenLR">Ajouter une vue/vidéo gauche et droite</entry>
 	<entry label="OpenFlat">Ajouter une vue/vidéo non stéréo</entry>
+	<entry label="OpenAudio">Ajouter un son (musique, voix...)</entry>
+	<entry label="Audio">Son</entry>
 	<entry label="WorkCopyProcessing">3De prépare une copy de travail du fichier\navec une taille et un débit image plus petits</entry>
 	<entry label="Done">Terminé</entry>
 	<entry label="WorkCopyChose">Vous avez sélectionné une copie de travail 3De.\nChoisissez un fichier original.</entry>
@@ -67,6 +82,8 @@
 <EntrySet label="Processor">
 	<entry label="NotYetAvailable">Cette fonctionnalité sera disponible dans une prochaine version</entry>
 	<entry label="SelectAClip">Veuillez sélectionner un clip dans une ligne de temps</entry>
+	<entry label="SelectAnAudioClip">Ce traitement agit sur le son : veuillez sélectionner un clip qui a du son (vidéo ou audio)</entry>
+	<entry label="SelectAVideoClip">Ce traitement agit sur l'image : veuillez sélectionner un clip dans une ligne de temps vidéo (V1, V2...)</entry>
 
 	<entry label="TimeControler">Programmation</entry>
 
@@ -95,9 +112,15 @@
 
 	<entry label="Expert">Expert</entry>
 	<entry label="Scripter">Script</entry>
+
+	<entry label="Audio">Son</entry>
+	<entry label="Volume">Volume / balance</entry>
 </EntrySet>
 <EntrySet label="TimeController">
 	<entry label="TrashClip">Supprimer le clip</entry>
+	<entry label="TrashClipAndTwins">Supprimer le clip (et ses jumeaux)</entry>
+	<entry label="UnlinkTwins">Délier les clips jumeaux (vidéo / son)</entry>
+	<entry label="SoundOn">Son du clip</entry>
 	<entry label="MoveClipUp">Déplacer vers la ligne de temps au dessus</entry>
 	<entry label="MoveClipDown">Déplacer vers la ligne de temps en dessous</entry>
 	<entry label="DuplicateClipUp">Dupliquer vers la ligne de temps au dessus</entry>
@@ -210,6 +233,19 @@
 	<entry label="Opacity">Opacité</entry>
 	<entry label="X">Position stéréo</entry>
 </EntrySet>
+<EntrySet label="Volume">
+	<entry label="Gain">Volume (100% = inchangé)</entry>
+	<entry label="GainLetter">V</entry>
+	<entry label="Pan">Balance gauche / droite</entry>
+	<entry label="PanLetter">B</entry>
+</EntrySet>
+<EntrySet label="TimeLine">
+	<entry label="ZoomIn">Zoomer (temps)</entry>
+	<entry label="ZoomOut">Dézoomer (temps)</entry>
+	<entry label="ZoomReset">Échelle de temps par défaut</entry>
+	<entry label="ZoomFit">Ajuster l'échelle de temps à la durée totale du montage</entry>
+	<entry label="Zoom">Échelle de temps</entry>
+</EntrySet>
 <EntrySet label="Renderer">
 	<entry label="ProcessingRes">Qualité du rendu</entry>
 	<entry label="OutputRes">Qualité de la vidéo</entry>
@@ -218,7 +254,196 @@
 	<entry label="FFmpegVideoOptsEx">Exemple : -b:v 6000k -maxrate:v 9000k -minrate:v 0</entry>
 	<entry label="OutputFile">Fichier de sortie (peut aussi être de la forme "3De_%04d_P.png")</entry>
 	<entry label="StartAtTimePos">Commencer au curseur de temps actuel</entry>
+	<entry label="MixingAudio">Mixage du son...</entry>
 	<entry label="Process">Calculer</entry>
 	<entry label="Stop">Stop</entry>
 	<entry label="Done">Terminé</entry>
+</EntrySet>
+<EntrySet label="Tip">
+	<entry label="OpenProject">Ouvrir un projet 3Denlive (.3De)</entry>
+	<entry label="SaveProject">Enregistrer le projet (fichier .3De)</entry>
+	<entry label="PackProject">Archiver le projet et ses médias dans un zip (dossier Packed)</entry>
+	<entry label="Settings">Réglages : dossier de rendu, qualité des modes travail, présentation et rendu</entry>
+	<entry label="Render">Générer le montage en fichier vidéo ou en suite d'images</entry>
+	<entry label="News">Nouveautés de 3Denlive (site web)</entry>
+	<entry label="Guide">Guide d'utilisation (site web)</entry>
+	<entry label="WebSite">Site web de 3Denlive</entry>
+
+	<entry label="AddMedia">Ajouter des photos, vidéos ou sons à la liste des médias</entry>
+	<entry label="AddColor">Ajouter un fond de couleur unie à la liste des médias</entry>
+	<entry label="MediaList">Clic : sélectionner et prévisualiser un média\nDouble-clic : l'ajouter aux lignes de temps</entry>
+
+	<entry label="Ratio">Format d'image du montage (largeur / hauteur)</entry>
+	<entry label="WorkRes">Résolution de la prévisualisation (plus basse = plus rapide)</entry>
+	<entry label="WorkHdr">Profondeur de couleur de la prévisualisation (HDR plus précis mais plus lent)</entry>
+	<entry label="FastMode">Calcul de la prévisualisation : rapide ou pleine qualité</entry>
+	<entry label="Glasses">Mode de vision stéréo (lunettes anaglyphes, côte à côte, entrelacé...)</entry>
+	<entry label="Grid">Afficher une grille sur la prévisualisation</entry>
+	<entry label="EdgesOff">Afficher les contours (aide à vérifier l'alignement gauche / droite)</entry>
+	<entry label="EdgesOn">Masquer les contours</entry>
+	<entry label="SaveView">Enregistrer l'image courante en pleine qualité dans le dossier de rendu (PNG gauche, droite, parallèle et croisé)</entry>
+	<entry label="FullScreen">Présentation en plein écran</entry>
+	<entry label="Status">Vitesse de calcul de la prévisualisation (images par seconde)</entry>
+	<entry label="GridNone">Pas de grille</entry>
+	<entry label="GridLines">Grille de %n lignes dans chaque sens</entry>
+
+	<entry label="Glasses_AnaMixerRC">Anaglyphe pour lunettes rouge (gauche) / cyan (droite)</entry>
+	<entry label="Glasses_AnaMixerRC_Dubois">Anaglyphe rouge / cyan par la méthode Dubois : moins d'images fantômes, meilleures couleurs</entry>
+	<entry label="Glasses_AnaMixerRC_ZhangAllister">Anaglyphe rouge / cyan par la méthode Dubois, variante Zhang et Allister</entry>
+	<entry label="Glasses_AnaMixerYB">Anaglyphe pour lunettes jaune / bleu</entry>
+	<entry label="Glasses_AnaMixerGM">Anaglyphe pour lunettes vert / magenta</entry>
+	<entry label="Glasses_SbsMixerP">Vue gauche à gauche, vue droite à droite (vision parallèle, TV 3D, casques VR)</entry>
+	<entry label="Glasses_SbsMixerX">Vue droite à gauche, vue gauche à droite (vision croisée)</entry>
+	<entry label="Glasses_InterlacedH1">Lignes horizontales alternant les vues, vue gauche en premier (écrans 3D passifs)</entry>
+	<entry label="Glasses_InterlacedH2">Lignes horizontales alternant les vues, vue droite en premier (écrans 3D passifs)</entry>
+	<entry label="Glasses_InterlacedV1">Colonnes verticales alternant les vues, vue gauche en premier (écrans autostéréoscopiques)</entry>
+	<entry label="Glasses_InterlacedV2">Colonnes verticales alternant les vues, vue droite en premier (écrans autostéréoscopiques)</entry>
+	<entry label="Glasses_Left">Vue gauche seule</entry>
+	<entry label="Glasses_Right">Vue droite seule</entry>
+	<entry label="Glasses_Wobble">Alterner les vues gauche et droite chaque seconde</entry>
+
+	<entry label="Play">Lire le montage depuis le curseur de temps</entry>
+	<entry label="Stop">Arrêter la lecture</entry>
+	<entry label="Clock">Position du curseur de temps</entry>
+	<entry label="PrevFrame">Image précédente</entry>
+	<entry label="NextFrame">Image suivante</entry>
+	<entry label="MonitorZoomIn">Agrandir la prévisualisation</entry>
+	<entry label="MonitorZoomOut">Réduire la prévisualisation</entry>
+	<entry label="MonitorZoomFit">Ajuster la prévisualisation à la fenêtre</entry>
+
+	<entry label="AddVideoLine">Ajouter une ligne de temps vidéo</entry>
+	<entry label="AddAudioLine">Ajouter une ligne de temps son</entry>
+	<entry label="LineActive">Activer / désactiver cette ligne (images et son) dans la prévisualisation et le rendu</entry>
+	<entry label="AudioLineActive">Activer / désactiver cette ligne son dans la lecture et le rendu</entry>
+	<entry label="LineSound">Couper / remettre le son des clips de cette ligne</entry>
+	<entry label="Ruler">Cliquer ou glisser pour déplacer le curseur de temps</entry>
+
+	<entry label="ProcTitle">Cliquer pour afficher / masquer les réglages de ce traitement</entry>
+	<entry label="ProcCollapseAll">Masquer les réglages de tous les traitements</entry>
+	<entry label="ProcActive">Activer / désactiver ce traitement</entry>
+	<entry label="ProcUp">Monter ce traitement (appliqué plus tôt)</entry>
+	<entry label="ProcDown">Descendre ce traitement (appliqué plus tard)</entry>
+	<entry label="ProcLoad">Charger les réglages de ce traitement depuis un fichier</entry>
+	<entry label="ProcSave">Enregistrer les réglages de ce traitement dans un fichier</entry>
+	<entry label="ProcDelete">Retirer ce traitement du clip</entry>
+
+	<entry label="ProcLib">Double-cliquer sur un traitement pour l'ajouter au clip sélectionné</entry>
+	<entry label="ProcLib_StereoAligner">Aligner les vues gauche et droite (position, taille, rotation)</entry>
+	<entry label="ProcLib_ColorAdapter">Adapter les rouges et les cyans pour réduire les images fantômes des anaglyphes</entry>
+	<entry label="ProcLib_Depthmap">Construire une paire stéréo à partir d'une image 2D et de sa carte de profondeur</entry>
+	<entry label="ProcLib_DepthmapStereo">Modifier la profondeur d'une paire stéréo avec une carte de profondeur</entry>
+	<entry label="ProcLib_HueSaturation">Modifier la teinte, la saturation et la luminosité</entry>
+	<entry label="ProcLib_BrightnessContrast">Modifier la luminosité, le contraste et le gamma</entry>
+	<entry label="ProcLib_LensCorrection">Corriger la distorsion de l'objectif (coefficients K1 K2 de ffmpeg)</entry>
+	<entry label="ProcLib_Cropper">Rogner les bords, tourner et incliner l'image</entry>
+	<entry label="ProcLib_Placer">Déplacer et redimensionner l'image dans le cadre et en profondeur</entry>
+	<entry label="ProcLib_Transparency">Opacité et transitions par masques de luminance</entry>
+	<entry label="ProcLib_Chromakey">Rendre transparente une couleur de fond (fond vert)</entry>
+	<entry label="ProcLib_Framing">Ajouter un cadre décoratif sur l'image</entry>
+	<entry label="ProcLib_Volume">Modifier le volume et la balance gauche / droite du son</entry>
+	<entry label="ProcLib_Scripter">Traiter les images avec un script BeanShell</entry>
+
+	<entry label="ScaleMinus">Diminuer (Maj ou Ctrl : pas plus grand)</entry>
+	<entry label="ScaleZero">Revenir à la valeur par défaut</entry>
+	<entry label="ScalePlus">Augmenter (Maj ou Ctrl : pas plus grand)</entry>
+	<entry label="KeyPrev">Aller à l'image clé précédente</entry>
+	<entry label="KeyAdd">Ajouter une image clé au curseur de temps</entry>
+	<entry label="KeyDelete">Supprimer l'image clé sélectionnée</entry>
+	<entry label="KeyNext">Aller à l'image clé suivante</entry>
+
+	<entry label="RenderDir">Dossier où sont écrits les vidéos générées et les vues enregistrées</entry>
+	<entry label="ModeRes">Résolution de calcul de ce mode</entry>
+	<entry label="ModeHdr">Profondeur de couleur de ce mode (HDR plus précis mais plus lent)</entry>
+	<entry label="CloseWindow">Fermer cette fenêtre</entry>
+	<entry label="RenderProcessingRes">Résolution du traitement des images (avant l'encodage)</entry>
+	<entry label="RenderOutputRes">Résolution de la vidéo générée</entry>
+	<entry label="RenderFPS">Images par seconde de la vidéo générée</entry>
+	<entry label="RenderFFmpegOpts">Paramètres ffmpeg supplémentaires pour l'encodage vidéo (facultatif)</entry>
+	<entry label="RenderOutputFile">Chemin du fichier généré. Avec un modèle comme "3De_%04d_P.png", une suite d'images est écrite</entry>
+	<entry label="RenderStartAtTimePos">Générer à partir du curseur de temps au lieu du début</entry>
+	<entry label="RenderProcess">Lancer la génération</entry>
+	<entry label="RenderStop">Arrêter la génération en cours</entry>
+	<entry label="RenderDone">Arrêter la génération et fermer cette fenêtre</entry>
+
+	<entry label="OpenX">Image ou vidéo avec la vue droite à gauche et la vue gauche à droite</entry>
+	<entry label="OpenP">Image ou vidéo avec la vue gauche à gauche et la vue droite à droite (fichiers MPO aussi)</entry>
+	<entry label="OpenLR">Deux fichiers séparés : d'abord la vue gauche, puis la vue droite</entry>
+	<entry label="OpenFlat">Image ou vidéo 2D, utilisée pour les deux yeux</entry>
+	<entry label="OpenAudio">Fichier son, placé sur une ligne de temps son</entry>
+
+	<entry label="SecureCropLeft">Rogner le bord gauche pour cacher les zones vides créées par l'alignement</entry>
+	<entry label="SecureCropRight">Rogner le bord droit pour cacher les zones vides créées par l'alignement</entry>
+	<entry label="SecureCropTop">Rogner le bord haut pour cacher les zones vides créées par l'alignement</entry>
+	<entry label="SecureCropBottom">Rogner le bord bas pour cacher les zones vides créées par l'alignement</entry>
+	<entry label="SecureResize">Agrandir l'image rognée pour remplir à nouveau le cadre</entry>
+	<entry label="ShowSecureCropBox">Afficher le cadre de rognage de sécurité sur la prévisualisation</entry>
+	<entry label="AutoAlign">Calculer automatiquement l'alignement gauche / droite sur l'image courante</entry>
+	<entry label="ShowCutLines">Afficher les lignes de coupe sur la prévisualisation</entry>
+	<entry label="Invert">Inverser le masque de luminance (transition dans l'autre sens)</entry>
+	<entry label="LumaChoice">Masque de luminance de la transition</entry>
+	<entry label="FrameChoice">Image de cadre posée sur le clip</entry>
+	<entry label="BlackIsFront">Cocher si les zones sombres de la carte de profondeur sont au premier plan</entry>
+	<entry label="ClipSoundOn">Entendre le son de ce clip</entry>
+	<entry label="MoveClipUp">Déplacer ce clip sur la ligne de temps du dessus</entry>
+	<entry label="MoveClipDown">Déplacer ce clip sur la ligne de temps du dessous</entry>
+	<entry label="DuplicateClipUp">Copier ce clip sur la ligne de temps du dessus (copie sans le son)</entry>
+	<entry label="UnlinkTwins">Délier les clips jumeaux : ils peuvent ensuite être déplacés séparément</entry>
+	<entry label="TrashClip">Supprimer ce clip de la ligne de temps</entry>
+	<entry label="PickColor">Choisir la couleur à rendre transparente en cliquant sur la prévisualisation</entry>
+	<entry label="ChooseColor">Choisir la couleur à rendre transparente</entry>
+	<entry label="ChooseScript">Choisir le script BeanShell (.bsh) à exécuter</entry>
+	<entry label="KeyFrames">Images clés de ce traitement sur la durée du clip : cliquer ou glisser pour déplacer le curseur de temps</entry>
+	<entry label="HScroll">Faire défiler les lignes de temps (le pavé tactile et la molette inclinable fonctionnent aussi)</entry>
+	<entry label="ClipStart">Aller au début du clip sélectionné (ou du montage si aucun clip n'est sélectionné)</entry>
+	<entry label="ClipEnd">Aller à la fin du clip sélectionné (ou du montage si aucun clip n'est sélectionné)</entry>
+
+	<entry label="AlignX">Décalage horizontal entre les vues gauche et droite (profondeur de toute l'image)</entry>
+	<entry label="AlignY">Décalage vertical entre les vues gauche et droite</entry>
+	<entry label="AlignW">Différence de largeur entre les vues gauche et droite</entry>
+	<entry label="AlignH">Différence de hauteur entre les vues gauche et droite</entry>
+	<entry label="AlignR">Différence de rotation entre les vues gauche et droite</entry>
+	<entry label="DepthZ">Intensité de la profondeur donnée par la carte de profondeur</entry>
+	<entry label="DepthX">Répartition du décalage entre les vues gauche et droite (position stéréo)</entry>
+	<entry label="DepthP">Perspective : décalage croissant avec la distance au centre de l'image</entry>
+	<entry label="PlaceX">Position horizontale de l'image</entry>
+	<entry label="PlaceY">Position verticale de l'image</entry>
+	<entry label="PlaceS">Taille de l'image</entry>
+	<entry label="LensK1">K1 : distorsion radiale principale (barillet / coussinet)</entry>
+	<entry label="LensK2">K2 : distorsion radiale secondaire (surtout sur les bords)</entry>
+	<entry label="LensCX">Position horizontale du centre de la distorsion</entry>
+	<entry label="LensCY">Position verticale du centre de la distorsion</entry>
+	<entry label="LensK1LR">Différence de K1 entre les vues gauche et droite</entry>
+	<entry label="LensK2LR">Différence de K2 entre les vues gauche et droite</entry>
+	<entry label="LensCXLR">Différence du centre horizontal entre les vues gauche et droite</entry>
+	<entry label="LensCYLR">Différence du centre vertical entre les vues gauche et droite</entry>
+	<entry label="TransOpacity">Opacité du clip (ou avancement de la transition avec un masque de luminance)</entry>
+	<entry label="TransBevel">Douceur du bord de la transition</entry>
+	<entry label="TransX">Profondeur du masque de transition</entry>
+	<entry label="FrameOpacity">Opacité du cadre</entry>
+	<entry label="FrameX">Profondeur du cadre</entry>
+	<entry label="ChromaTolerance">Écart de couleur encore rendu transparent</entry>
+	<entry label="ChromaBevel">Douceur des bords des zones transparentes</entry>
+	<entry label="AdaptRed">Force de l'adaptation des rouges</entry>
+	<entry label="AdaptCyan">Force de l'adaptation des cyans</entry>
+	<entry label="Gain">Volume du son (100% = inchangé)</entry>
+	<entry label="Pan">Balance entre les haut-parleurs gauche et droit</entry>
+	<entry label="CropLeftL">Bord gauche de la vue gauche</entry>
+	<entry label="CropLeftR">Bord gauche de la vue droite</entry>
+	<entry label="CropRightL">Bord droit de la vue gauche</entry>
+	<entry label="CropRightR">Bord droit de la vue droite</entry>
+	<entry label="CropTop">Bord haut</entry>
+	<entry label="CropBottom">Bord bas</entry>
+	<entry label="CropRotation">Rotation de l'image</entry>
+	<entry label="CropShearL">Inclinaison horizontale de la vue gauche</entry>
+	<entry label="CropShearR">Inclinaison horizontale de la vue droite</entry>
+	<entry label="CropTransparency">Transparence des zones rognées</entry>
+	<entry label="Hue">Décalage de teinte</entry>
+	<entry label="Saturation">Saturation (intensité des couleurs)</entry>
+	<entry label="HSBrightness">Luminosité</entry>
+	<entry label="Threshold">Seuil de la couleur choisie : quels pixels sont modifiés</entry>
+	<entry label="Range">Étendue de teinte autour de la couleur choisie</entry>
+	<entry label="Brightness">Luminosité</entry>
+	<entry label="Contrast">Contraste</entry>
+	<entry label="Gamma">Gamma (luminosité des tons moyens)</entry>
+	<entry label="SmoothContrast">Contraste doux (courbe TanH)</entry>
 </EntrySet>

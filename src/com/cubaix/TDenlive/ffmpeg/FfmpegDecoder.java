@@ -41,6 +41,8 @@ public class FfmpegDecoder extends Ffmpeg {
 			String ffmpegPath = getFfmpeg();
 			ArrayList<String> aCmdA = new ArrayList<String>();
 			aCmdA.add(ffmpegPath);
+			aCmdA.add("-hide_banner");
+			aCmdA.add("-nostats");//No progress line every 0.5 s while waiting for the reader
 			aCmdA.add("-ss"); aCmdA.add(timeOffset+"ms");
 			aCmdA.add("-i"); aCmdA.add(pathIn);
 			if(resizeOpt != null && !resizeOpt.trim().isEmpty()) {
@@ -90,7 +92,7 @@ public class FfmpegDecoder extends Ffmpeg {
 	
 	public BufferedImage getImg() {
 		try {
-			return (BufferedImage)ImageIO.read(is);
+			return readBmp(is);
 		}
 		catch(Throwable t) {
 			t.printStackTrace(System.err);

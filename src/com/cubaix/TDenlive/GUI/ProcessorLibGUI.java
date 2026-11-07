@@ -11,6 +11,8 @@ import com.cubaix.TDenlive.TDenlive;
 import com.cubaix.TDenlive.medias.Clip;
 
 public class ProcessorLibGUI extends TreeView {
+	//Processors working on the sound (see Processor.isAudio())
+	static final String AUDIO_PROCESSORS = ";Volume;";
 	
 	public ProcessorLibGUI(TDenlive aTDe, Composite aParent) {
 		super(aTDe, aParent);
@@ -36,8 +38,23 @@ public class ProcessorLibGUI extends TreeView {
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.Chromakey"), "Chromakey",true);
 		aFolder = createFolder(tree, tde.gui.lngs.get("Processor.Design"));
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.Framing"), "Framing",true);
+		aFolder = createFolder(tree, tde.gui.lngs.get("Processor.Audio"));
+		createProcessor(aFolder,tde.gui.lngs.get("Processor.Volume"), "Volume",true);
 		aFolder = createFolder(tree, tde.gui.lngs.get("Processor.Expert"));
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.Scripter"), "Scripter",true);
+		
+		//Help message: description of the processor under the mouse
+		tde.gui.tip(tree, "ProcLib");
+		tree.addListener(SWT.MouseMove, e -> {
+			TreeItem aTI = tree.getItem(new Point(e.x, e.y));
+			String aTip = tde.gui.lngs.get("Tip.ProcLib");
+			if(aTI != null && aTI.getData() instanceof String && !"Unavailable".equals(aTI.getData())) {
+				aTip = tde.gui.lngs.get("Tip.ProcLib_"+aTI.getData())+"\n"+aTip;
+			}
+			if(!aTip.equals(tree.getToolTipText())) {
+				tree.setToolTipText(aTip);
+			}
+		});
 		
 		tree.addListener(SWT.MouseDoubleClick, e -> {
 			Point point = new Point(e.x, e.y);
@@ -59,6 +76,16 @@ public class ProcessorLibGUI extends TreeView {
 				return;
 			}
 			Clip aClip = tde.selected.clips.lastElement();
+			//Sound processors only on clips with a sound, image processors not on the audio lines
+			boolean aIsAudioClip = tde.timeLineStack.isAudioClip(aClip);
+			boolean aIsAudioProc = AUDIO_PROCESSORS.indexOf(";"+aTI.getData()+";") >= 0;
+			boolean aHasSound = aClip.getMedia() != null && aClip.getMedia().getAudioReader() != null;
+			if((aIsAudioProc && !aHasSound) || (!aIsAudioProc && aIsAudioClip)) {
+				MessageBox messageBox = new MessageBox(tde.gui.shell,SWT.ICON_INFORMATION|SWT.OK);
+			    messageBox.setMessage(tde.gui.lngs.get(aIsAudioProc ? "Processor.SelectAnAudioClip" : "Processor.SelectAVideoClip"));
+			    messageBox.open();
+				return;
+			}
 			aClip.addProcessor((String)aTI.getData());
 			tde.gui.monitorGUI.redraw();
 		});

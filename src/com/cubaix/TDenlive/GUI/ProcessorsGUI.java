@@ -39,6 +39,7 @@ import com.cubaix.TDenlive.GUI.processors.ScripterGUI;
 import com.cubaix.TDenlive.GUI.processors.StereoAlignerGUI;
 import com.cubaix.TDenlive.GUI.processors.TimeControllerGUI;
 import com.cubaix.TDenlive.GUI.processors.TransparencyGUI;
+import com.cubaix.TDenlive.GUI.processors.VolumeGUI;
 import com.cubaix.TDenlive.medias.Clip;
 import com.cubaix.TDenlive.processors.Processor;
 import com.cubaix.TDenlive.xml.XmlMinimalParser;
@@ -107,6 +108,7 @@ public class ProcessorsGUI extends CompositePanel {
 			aTitle.setText(aP.name);
 			aTitle.setData(aP);
 			aTitle.setImage(tde.gui.imgsSwt.getIcon(aP.icon));
+			tde.gui.tip(aTitle, "ProcTitle");
 			aTitle.addListener(SWT.MouseDown, new Listener() {
 				@Override
 				public void handleEvent(Event arg0) {
@@ -136,6 +138,7 @@ public class ProcessorsGUI extends CompositePanel {
 				aAllUp.setFont(tde.gui.fontsSwt.robotoBold);
 				aAllUp.setData(aP);
 				aAllUp.setImage(tde.gui.imgsSwt.getIcon("collapseUp.gif"));
+				tde.gui.tip(aAllUp, "ProcCollapseAll");
 				aAllUp.addListener(SWT.MouseDown,e -> {
 					for(Processor p : aProcessors) {
 						p.isExpended = false;
@@ -153,6 +156,7 @@ public class ProcessorsGUI extends CompositePanel {
 			if(aP.isDeactivable) {
 				Button aActCB = new Button(aTitleC,SWT.CHECK);
 				tde.gui.applyColorFont(aActCB);
+				tde.gui.tip(aActCB, "ProcActive");
 				aActCB.setSelection(aP.isActive);
 				aActCB.addSelectionListener(new SelectionListener() {
 					@Override
@@ -181,6 +185,7 @@ public class ProcessorsGUI extends CompositePanel {
 			aUp.setData(aP);
 			if(!aP.isUnmovable) {
 				aUp.setImage(tde.gui.imgsSwt.getIcon("arrowUp.png"));
+				tde.gui.tip(aUp, "ProcUp");
 				aUp.addListener(SWT.MouseDown,e -> {
 					((Clip)aP.targetMedia).upProcessor(aP);
 					tde.gui.processorGUI.setProcessors(((Clip)aP.targetMedia).getProcessors());
@@ -199,6 +204,7 @@ public class ProcessorsGUI extends CompositePanel {
 			aDown.setData(aP);
 			if(!aP.isUnmovable) {
 				aDown.setImage(tde.gui.imgsSwt.getIcon("arrowDown.png"));
+				tde.gui.tip(aDown, "ProcDown");
 				aDown.addListener(SWT.MouseDown,e -> {
 					((Clip)aP.targetMedia).downProcessor(aP);
 					tde.gui.processorGUI.setProcessors(((Clip)aP.targetMedia).getProcessors());
@@ -216,6 +222,7 @@ public class ProcessorsGUI extends CompositePanel {
 			aLoad.setFont(tde.gui.fontsSwt.robotoBold);
 			aLoad.setData(aP);
 			aLoad.setImage(tde.gui.imgsSwt.getIcon("open.gif"));
+			tde.gui.tip(aLoad, "ProcLoad");
 			aLoad.addListener(SWT.MouseDown,e -> {
 				loadProcessor(aP);
 				tde.gui.processorGUI.setProcessors(((Clip)aP.targetMedia).getProcessors());
@@ -229,6 +236,7 @@ public class ProcessorsGUI extends CompositePanel {
 			aSave.setFont(tde.gui.fontsSwt.robotoBold);
 			aSave.setData(aP);
 			aSave.setImage(tde.gui.imgsSwt.getIcon("save.gif"));
+			tde.gui.tip(aSave, "ProcSave");
 			aSave.addListener(SWT.MouseDown,e -> {
 				saveProcessor(aP);
 				tde.gui.processorGUI.setProcessors(((Clip)aP.targetMedia).getProcessors());
@@ -243,6 +251,7 @@ public class ProcessorsGUI extends CompositePanel {
 			aDel.setData(aP);
 			if(!aP.isUndeletable) {
 				aDel.setImage(tde.gui.imgsSwt.getIcon("trash.png"));
+				tde.gui.tip(aDel, "ProcDelete");
 				aDel.addListener(SWT.MouseDown,e -> {
 					((Clip)aP.targetMedia).removeProcessor(aP);
 					aBox.dispose();
@@ -317,6 +326,10 @@ public class ProcessorsGUI extends CompositePanel {
 		}
 		if("LensCorrection".equals(aClassP)) {
 			aBox.setData(new LensCorrectionGUI(tde, aBox,aP));
+			return;
+		}
+		if("Volume".equals(aClassP)) {
+			aBox.setData(new VolumeGUI(tde, aBox,aP));
 			return;
 		}
 		

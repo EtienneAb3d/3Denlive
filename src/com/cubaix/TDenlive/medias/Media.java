@@ -9,6 +9,7 @@ import org.eclipse.swt.graphics.Image;
 
 import com.cubaix.TDenlive.TDenlive;
 import com.cubaix.TDenlive.GUI.Drawable;
+import com.cubaix.TDenlive.ffmpeg.AudioReader;
 import com.cubaix.TDenlive.utils.StringUtils;
 import com.cubaix.TDenlive.xml.XmlObject;
 import com.drew.imaging.ImageMetadataReader;
@@ -17,7 +18,13 @@ import com.drew.metadata.Metadata;
 import com.drew.metadata.Tag;
 
 public abstract class Media extends Drawable {
-	public long UID = System.currentTimeMillis();
+	static long lastUID = 0;
+	//Unique even when several medias/clips are created in the same millisecond
+	static synchronized long nextUID() {
+		lastUID = Math.max(lastUID+1, System.currentTimeMillis());
+		return lastUID;
+	}
+	public long UID = nextUID();
 	
 	Vector<TimeListener> timeListeners = new Vector<TimeListener>();
 	Vector<TimeListener> timeListenersRemove = new Vector<TimeListener>();
@@ -56,6 +63,7 @@ public abstract class Media extends Drawable {
 
 	public void setAnamorphW(String anamorphW) {
 		this.anamorphW = anamorphW;
+		tde.updateFirstMediaRatio();
 	}
 
 	public void setRotateL(String aVal) {
@@ -64,6 +72,35 @@ public abstract class Media extends Drawable {
 		thumbAwt = null;
 		thumbSwt = null;
 		buildThumb();
+		tde.updateFirstMediaRatio();
+	}
+
+	/**
+	 * Source files of the media (to pack the project), none by default
+	 */
+	public java.util.Vector<String> getFilePaths() {
+		return new java.util.Vector<String>();
+	}
+
+	/**
+	 * Width / height ratio of the media as displayed (left view, after rotation and anamorphosis),
+	 * 0 if the media has no image size of its own (not loaded, sound, color background)
+	 */
+	public double getDisplayRatio() {
+		if(origRes <= 0 || origRatio <= 0) {
+			return 0;
+		}
+		double aRatio = origRatio;
+		try {
+			aRatio *= Double.parseDouble(anamorphW);
+		}
+		catch(Throwable t) {
+			t.printStackTrace(System.err);
+		}
+		if(rotateL.matches("-?90|270")) {
+			aRatio = 1.0/aRatio;
+		}
+		return aRatio;
 	}
 	
 	public void setRotateR(String aVal) {
@@ -152,6 +189,13 @@ public abstract class Media extends Drawable {
 	public abstract BufferedImage getFinalLeft(int aProcessingMode,long aTime);
 	public abstract BufferedImage getFinalRight(int aProcessingMode,long aTime);
 	
+	/**
+	 * Sound track of the media, null if the media can't have one (still images)
+	 */
+	public AudioReader getAudioReader() {
+		return null;
+	}
+	
 	public float getAlpha(long aTime) {
 		return -1.0f;//not known by default
 	}
@@ -184,6 +228,18 @@ public abstract class Media extends Drawable {
 			buildThumb();
 		}
 		return thumbAwt;
+	}
+	
+	/**
+	 * Thumbnail of the media at a time of the media (film strip of the time lines).
+	 * Same image whatever the time by default.
+	 */
+	public BufferedImage getThumbAwtAt(long aTimeMS) {
+		return getThumbAwt();
+	}
+	
+	protected boolean hasThumb() {
+		return thumbAwt != null;
 	}
 	
 	public void setThumbAwt(BufferedImage thumb) {

@@ -80,7 +80,7 @@ public class BrightnessContrastGUI extends ProcessorGUI {
 				bc.setBrightness(aValue/10000.0);
 				tde.gui.monitorGUI.redraw();
 			}
-		};
+		}.tip("Brightness");
 		CLabel aCL = new CLabel(aWGT, SWT.NONE);
 		tde.gui.applyColorFont(aCL);
 		aCL.setText(tde.gui.lngs.get("BrightnessContrast.Contrast"));
@@ -90,7 +90,7 @@ public class BrightnessContrastGUI extends ProcessorGUI {
 				bc.setContrast(aValue/1000.0);
 				tde.gui.monitorGUI.redraw();
 			}
-		};
+		}.tip("Contrast");
 		CLabel aGL = new CLabel(aWGT, SWT.NONE);
 		tde.gui.applyColorFont(aGL);
 		aGL.setText(tde.gui.lngs.get("BrightnessContrast.Gamma"));
@@ -100,7 +100,7 @@ public class BrightnessContrastGUI extends ProcessorGUI {
 				bc.setGamma(aValue/10000.0);
 				tde.gui.monitorGUI.redraw();
 			}
-		};
+		}.tip("Gamma");
 		CLabel aTL = new CLabel(aWGT, SWT.NONE);
 		tde.gui.applyColorFont(aTL);
 		aTL.setText(tde.gui.lngs.get("BrightnessContrast.Th"));
@@ -110,6 +110,6 @@ public class BrightnessContrastGUI extends ProcessorGUI {
 				bc.setTh(aValue/10000.0);
 				tde.gui.monitorGUI.redraw();
 			}
-		};
+		}.tip("SmoothContrast");
 	}
 }

@@ -15,10 +15,25 @@ public class StringUtils {
 		}
 		return null;
 	}
-	public static String path2workingcopy(String aPath) {
-		return aPath.substring(0, aPath.lastIndexOf("."))+"_3De_WorkCopy."
-//				+ "avi";
-				+ "mp4";
+	/**
+	 * Low resolution copy of a video used for the work preview, in the work folder of the project
+	 * (TDenlive.getWorkCacheDir()): <video>_<key>_3De_WorkCopy.mp4, the key telling apart the videos
+	 * of the same name in different folders.
+	 * A work copy made by 1.0.15 and before, next to the video, is still used if there is no other.
+	 */
+	public static String path2workingcopy(String aPath,String aWorkCacheDir) {
+		File aIn = new File(aPath);
+		String aBase = aIn.getName().replaceAll("[.][^.]*$", "");
+		String aLegacy = new File(aIn.getParentFile(), aBase+"_3De_WorkCopy.mp4").getPath();
+		if(aWorkCacheDir == null) {
+			return aLegacy;
+		}
+		String aKey = Integer.toHexString(aIn.getAbsolutePath().hashCode());
+		String aWork = new File(aWorkCacheDir, aBase.replaceAll("[^A-Za-z0-9._-]", "_")+"_"+aKey+"_3De_WorkCopy.mp4").getPath();
+		if(!new File(aWork).exists() && !new File(path2processing(aWork)).exists() && new File(aLegacy).isFile()) {
+			return aLegacy;
+		}
+		return aWork;
 	}
 	
 	public static String time2Ffmpeg(long aTimeMS) {

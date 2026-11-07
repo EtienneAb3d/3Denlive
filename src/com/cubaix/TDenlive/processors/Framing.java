@@ -1,5 +1,6 @@
 package com.cubaix.TDenlive.processors;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -273,19 +274,18 @@ public class Framing extends Processor {
 			aFG.fillRect(0, 0, aWidth, aHeight);
 		}
 		else {
-			if(aIsL) {
-				aFG.drawImage(aKey.frame.bi
-						, (aKey.x>=0?0:(int)(aKey.x*aWidth)), (int)(-Math.abs(aKey.x)*aHeight/2)
-						, aWidth+(aKey.x>0?(int)(Math.abs(aKey.x)*aWidth):0), aHeight+(int)(Math.abs(aKey.x)*aHeight)
-						, 0, 0, aKey.frame.bi.getWidth(), aKey.frame.bi.getHeight(), null);
-			}
-			else {
-				aFG.drawImage(aKey.frame.bi
-						, (aKey.x<=0?0:(int)(-aKey.x*aWidth)), (int)(-Math.abs(aKey.x)*aHeight/2)
-						, aWidth+(aKey.x<0?(int)(Math.abs(aKey.x)*aWidth):0), aHeight+(int)(Math.abs(aKey.x)*aHeight)
-						, 0, 0, aKey.frame.bi.getWidth(), aKey.frame.bi.getHeight(), null);
-			}
+			//Depth of the frame: the motif keeps the size of the image and is only shifted horizontally,
+			//by +x*w/2 on the left view and -x*w/2 on the right one (no zoom to cover the margins).
+			//What the shift uncovers is black, like the border of the motifs: opaque.
+			aFG.setColor(Color.BLACK);
+			aFG.fillRect(0, 0, aWidth, aHeight);
+			aFG.setComposite(AlphaComposite.Src);
+			int aShift = (int)Math.round((aIsL ? 1 : -1)*aKey.x*aWidth/2.0);
+			aFG.drawImage(aKey.frame.bi
+					, aShift, 0, aShift+aWidth, aHeight
+					, 0, 0, aKey.frame.bi.getWidth(), aKey.frame.bi.getHeight(), null);
 		}
+		aFG.dispose();
 		
 		//Apply mask
 		if(aIsHdr) {

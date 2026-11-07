@@ -22,6 +22,7 @@ public class FfmpegEncoder extends Ffmpeg {
 	Process p = null;
 	String ffmpegVideoOpts = "";
 	String pathOut = null;
+	String audioPathIn = null;//Mixed sound track (WAV), null if none
 	public int width = 1280;
 	public int height = 720;
 	StreamReader ffmpegOut = null;
@@ -32,9 +33,10 @@ public class FfmpegEncoder extends Ffmpeg {
 	public FfmpegEncoder(TDenlive aTDe
 			,int aWidth,int aHeight
 			,double aFps,String aFfmpegVideoOpts
-			,String aPathOut) {
+			,String aPathOut,String aAudioPathIn) {
 		tde = aTDe;
 		pathOut = aPathOut;
+		audioPathIn = aAudioPathIn;
 		width = aWidth;
 		height = aHeight;
 		ffmpegVideoOpts = aFfmpegVideoOpts;
@@ -53,6 +55,12 @@ public class FfmpegEncoder extends Ffmpeg {
 //			aCmdA.add("-c:a"); aCmdA.add("copy");
 			aCmdA.add("-c:v"); aCmdA.add("bmp");
 			aCmdA.add("-i"); aCmdA.add("pipe:0");
+			boolean aWithAudio = audioPathIn != null && canHaveAudio(pathOut);
+			if(aWithAudio) {
+				aCmdA.add("-i"); aCmdA.add(audioPathIn);
+				aCmdA.add("-map"); aCmdA.add("0:v:0");
+				aCmdA.add("-map"); aCmdA.add("1:a:0");
+			}
 			aCmdA.add("-s"); aCmdA.add((width*2)+"x"+height);
 			aCmdA.add("-r"); aCmdA.add(""+fps);
 			aCmdA.add("-y"); //Overwrite the output file (if it exists)
@@ -61,6 +69,10 @@ public class FfmpegEncoder extends Ffmpeg {
 				aCmdA.add("-c:v"); aCmdA.add("libx264");
 				aCmdA.add("-x264opts"); aCmdA.add("frame-packing=3");
 				aCmdA.add("-pix_fmt"); aCmdA.add("yuva420p");
+				if(aWithAudio) {
+					aCmdA.add("-c:a"); aCmdA.add("aac");
+					aCmdA.add("-b:a"); aCmdA.add("192k");
+				}
 			}
 			if(ffmpegVideoOpts != null && !ffmpegVideoOpts.trim().isEmpty()) {
 				ffmpegVideoOpts = ffmpegVideoOpts.replaceAll("[ \n\r\t]+", " ").trim();
@@ -99,6 +111,12 @@ public class FfmpegEncoder extends Ffmpeg {
 			}
 		});
 		aTh.start();
+	}
+	
+	//Image sequences (3De_%04d_P.png...) can't hold a sound track
+	public static boolean canHaveAudio(String aPathOut) {
+		String aP = aPathOut.toLowerCase();
+		return !aP.contains("%") && !aP.matches(".*[.](png|jpg|jpeg|bmp|tif|tiff|gif|webp)");
 	}
 	
 	public void addImg(BufferedImage aBI) {

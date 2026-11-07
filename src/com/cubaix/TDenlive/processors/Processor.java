@@ -41,5 +41,15 @@ public abstract class Processor {
 	public long getTime(int aKey) {return -1;}
 	public abstract Image process2Swt(Media aMedia,int aProcessingMode,Rectangle aTargetSize,long aTime);
 	public abstract void process2Awt(Media aMedia,int aProcessingMode,long aTime);
+	/**
+	 * Sound processing, for the processors of the audio clips.
+	 * aBuf holds aNbFrames interleaved stereo samples (L R, -1..1) of the clip,
+	 * the first one at aTimeMS on the time line. Default: no effect.
+	 */
+	public void processAudio(Media aMedia,float[] aBuf,int aNbFrames,long aTimeMS,double aFrameMS) {}
+	/**
+	 * True for the processors working on the sound (only for the audio clips)
+	 */
+	public boolean isAudio() {return false;}
 
 }

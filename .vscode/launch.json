@@ -1,0 +1,95 @@
+{
+	// Run/debug 3Denlive with the SWT library of your platform.
+	// Prerequisites: JDK 27+ as the Java runtime of VS Code, and `./Install-Dev.sh --ffmpeg-only` (ffmpeg for videos).
+	// The working directory is distrib/ (ffmpeg/, lumas/ and frames/ are loaded from there).
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "java",
+			"name": "3Denlive (macOS Apple Silicon)",
+			"request": "launch",
+			"mainClass": "com.cubaix.TDenlive.TDenlive",
+			"cwd": "${workspaceFolder}/distrib",
+			"classPaths": [
+				"${workspaceFolder}/bin",
+				"${workspaceFolder}/src",
+				"${workspaceFolder}/distrib/MetaDataExtractor.jar",
+				"${workspaceFolder}/distrib/xmpcore-6.0.6.jar",
+				"${workspaceFolder}/distrib/svgSalamander-1.1.2.jar",
+				"${workspaceFolder}/distrib/bsh-2.0b6.jar",
+				"${workspaceFolder}/distrib/MacSilicon/swt.jar"
+			],
+			"vmArgs": "-XstartOnFirstThread -Xmx4G --enable-native-access=ALL-UNNAMED -Djava.library.path=${workspaceFolder}/distrib/MacSilicon/lib"
+		},
+		{
+			"type": "java",
+			"name": "3Denlive (macOS Intel)",
+			"request": "launch",
+			"mainClass": "com.cubaix.TDenlive.TDenlive",
+			"cwd": "${workspaceFolder}/distrib",
+			"classPaths": [
+				"${workspaceFolder}/bin",
+				"${workspaceFolder}/src",
+				"${workspaceFolder}/distrib/MetaDataExtractor.jar",
+				"${workspaceFolder}/distrib/xmpcore-6.0.6.jar",
+				"${workspaceFolder}/distrib/svgSalamander-1.1.2.jar",
+				"${workspaceFolder}/distrib/bsh-2.0b6.jar",
+				"${workspaceFolder}/distrib/MacIntel/swt.jar"
+			],
+			"vmArgs": "-XstartOnFirstThread -Xmx4G --enable-native-access=ALL-UNNAMED -Djava.library.path=${workspaceFolder}/distrib/MacIntel/lib"
+		},
+		{
+			"type": "java",
+			"name": "3Denlive (Linux x64)",
+			"request": "launch",
+			"mainClass": "com.cubaix.TDenlive.TDenlive",
+			"cwd": "${workspaceFolder}/distrib",
+			"classPaths": [
+				"${workspaceFolder}/bin",
+				"${workspaceFolder}/src",
+				"${workspaceFolder}/distrib/MetaDataExtractor.jar",
+				"${workspaceFolder}/distrib/xmpcore-6.0.6.jar",
+				"${workspaceFolder}/distrib/svgSalamander-1.1.2.jar",
+				"${workspaceFolder}/distrib/bsh-2.0b6.jar",
+				"${workspaceFolder}/distrib/Linux/swt.jar"
+			],
+			"vmArgs": "-Xmx4G --enable-native-access=ALL-UNNAMED -Djava.library.path=${workspaceFolder}/distrib/Linux/lib",
+			"env": { "GTK_OVERLAY_SCROLLING": "0" }
+		},
+		{
+			"type": "java",
+			"name": "3Denlive (Linux PPC64le)",
+			"request": "launch",
+			"mainClass": "com.cubaix.TDenlive.TDenlive",
+			"cwd": "${workspaceFolder}/distrib",
+			"classPaths": [
+				"${workspaceFolder}/bin",
+				"${workspaceFolder}/src",
+				"${workspaceFolder}/distrib/MetaDataExtractor.jar",
+				"${workspaceFolder}/distrib/xmpcore-6.0.6.jar",
+				"${workspaceFolder}/distrib/svgSalamander-1.1.2.jar",
+				"${workspaceFolder}/distrib/bsh-2.0b6.jar",
+				"${workspaceFolder}/distrib/PPC64le/swt-PPC64le.jar"
+			],
+			"vmArgs": "-Xmx4G --enable-native-access=ALL-UNNAMED -Djava.library.path=${workspaceFolder}/distrib/PPC64le/lib",
+			"env": { "GTK_OVERLAY_SCROLLING": "0" }
+		},
+		{
+			"type": "java",
+			"name": "3Denlive (Windows x64)",
+			"request": "launch",
+			"mainClass": "com.cubaix.TDenlive.TDenlive",
+			"cwd": "${workspaceFolder}/distrib",
+			"classPaths": [
+				"${workspaceFolder}/bin",
+				"${workspaceFolder}/src",
+				"${workspaceFolder}/distrib/MetaDataExtractor.jar",
+				"${workspaceFolder}/distrib/xmpcore-6.0.6.jar",
+				"${workspaceFolder}/distrib/svgSalamander-1.1.2.jar",
+				"${workspaceFolder}/distrib/bsh-2.0b6.jar",
+				"${workspaceFolder}/distrib/Win-x64/swt.jar"
+			],
+			"vmArgs": "-Xmx4G --enable-native-access=ALL-UNNAMED"
+		}
+	]
+}

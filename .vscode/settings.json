@@ -1,0 +1,25 @@
+{
+	// Plain Java project (no Maven/Gradle): handled by the VS Code Java extension as an "unmanaged folder"
+	"java.project.sourcePaths": ["src"],
+	"java.project.outputPath": "bin",
+	// Any platform's SWT jar is fine for compiling (same API); the platform one is chosen at launch (launch.json)
+	"java.project.referencedLibraries": [
+		"distrib/*.jar",
+		"distrib/Linux/swt.jar"
+	],
+	// Keep the Java language server's generated metadata out of the repository
+	"java.import.generatesMetadataFilesAtProjectRoot": false,
+	"files.exclude": {
+		"bin": true
+	},
+	"search.exclude": {
+		"bin": true,
+		"delivery": true,
+		"JVMs": true,
+		"distrib/ffmpeg": true
+	},
+	"[java]": {
+		"editor.insertSpaces": false,
+		"editor.detectIndentation": false
+	}
+}

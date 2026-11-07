@@ -22,6 +22,8 @@ public abstract class Mixer extends Processor {
 	double lastH = 9;
 	double lastSizedW = 16;
 	double lastSizedH = 9;
+	//Side of the squares of the checkerboard behind the work preview (pixels of the screen)
+	static final int CHECKER_CELL = 5;
 	
 	public Mixer(TDenlive aTDe, Media aTargetMedia) {
 		super(aTDe, aTargetMedia);
@@ -73,6 +75,11 @@ public abstract class Mixer extends Processor {
 		lastH = aH;
 		lastSizedW = aSizedW;
 		lastSizedH = aSizedH;
+		if(aProcessingMode == TDConfig.PROCESSING_MODE_WORK) {
+			//Work preview: the image is drawn over a fixed checkerboard, to see the transparencies
+			//not filled (and the missing parts on the margins), black otherwise
+			ImageUtils.checkerBck(aSizedBI, CHECKER_CELL);
+		}
 		Graphics2D aGL2 = (Graphics2D)aSizedBI.getGraphics();
 		if(!tde.config.fastMode || aProcessingMode == TDConfig.PROCESSING_MODE_RENDER) {
 			aGL2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);

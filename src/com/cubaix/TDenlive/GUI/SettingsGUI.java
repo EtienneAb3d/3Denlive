@@ -38,6 +38,7 @@ public class SettingsGUI {
 		Button aRB = new Button(shell, SWT.PUSH);
 		tde.gui.applyColorFont(aRB);
 		aRB.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		tde.gui.tip(aRB, "RenderDir");
 		aRB.setText(tde.gui.lngs.get("Config.RenderDir")+"="+tde.renderDir);
 		aRB.addSelectionListener(new SelectionListener() {
 			@Override
@@ -62,11 +63,12 @@ public class SettingsGUI {
 		
 		Button aOk = new Button(shell, SWT.PUSH);
 		GridData aOGD = new GridData();
-		aOGD.heightHint = 20;
+		aOGD.heightHint = tde.gui.h(20);
 		aOk.setLayoutData(aOGD);
 		aOk.setText(tde.gui.lngs.get("Config.Done"));
 		aOk.setImage(tde.gui.imgsSwt.getIcon("checked.gif"));
 		tde.gui.applyColorFont(aOk);
+		tde.gui.tip(aOk, "CloseWindow");
 		aOk.setAlignment(SWT.CENTER);
 		aOk.addSelectionListener(new SelectionListener() {
 			@Override
@@ -85,7 +87,7 @@ public class SettingsGUI {
 	void addModeLine(final int aMode,String aText) {
 		Composite aWorkC = new Composite(shell,SWT.NONE); 
 		GridData aWCGD = new GridData(GridData.FILL_HORIZONTAL);
-		aWCGD.heightHint = 25;
+		aWCGD.heightHint = tde.gui.h(25);
 		aWorkC.setLayoutData(aWCGD);
 		tde.gui.applyColorFont(aWorkC);
 		GridLayout aGL = new GridLayout(4, false);
@@ -94,7 +96,7 @@ public class SettingsGUI {
 
 		CLabel aWork = new CLabel(aWorkC, SWT.NONE);
 		GridData aWGD = new GridData();
-		aWGD.heightHint = 20;
+		aWGD.heightHint = tde.gui.h(20);
 		aWork.setLayoutData(aWGD);
 		aWork.setText(aText);
 		tde.gui.applyColorFont(aWork);
@@ -102,15 +104,16 @@ public class SettingsGUI {
 		Composite aSpace = new Composite(aWorkC, SWT.SEPARATOR|SWT.FILL);
 		tde.gui.applyColorFont(aSpace);
 		GridData aSpaceGD = new GridData(GridData.FILL_HORIZONTAL);
-		aSpaceGD.heightHint = 25;
+		aSpaceGD.heightHint = tde.gui.h(25);
 		aSpace.setLayoutData(aSpaceGD);
 
 		Combo processingRes = new Combo(aWorkC, SWT.DROP_DOWN);//|SWT.READ_ONLY);
 		GridData aResGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aResGD.widthHint = 80;
-		aResGD.heightHint = 20;
+		aResGD.heightHint = tde.gui.h(20);
 		processingRes.setLayoutData(aResGD);
 		tde.gui.applyColorFont(processingRes);
+		tde.gui.tip(processingRes, "ModeRes");
 		processingRes.setItems(TDConfig.RESNAMES);
 		processingRes.addSelectionListener(new SelectionListener() {
 			@Override
@@ -133,9 +136,10 @@ public class SettingsGUI {
 		Combo processingHdr = new Combo(aWorkC, SWT.DROP_DOWN);//|SWT.READ_ONLY);
 		GridData aHdrGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aHdrGD.widthHint = 80;
-		aHdrGD.heightHint = 20;
+		aHdrGD.heightHint = tde.gui.h(20);
 		processingHdr.setLayoutData(aHdrGD);
 		tde.gui.applyColorFont(processingHdr);
+		tde.gui.tip(processingHdr, "ModeHdr");
 		processingHdr.setItems(TDConfig.HDRLIST);
 		processingHdr.addSelectionListener(new SelectionListener() {
 			@Override

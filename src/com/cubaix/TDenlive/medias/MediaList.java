@@ -16,6 +16,7 @@ import com.cubaix.TDenlive.xml.XmlTag;
 public class MediaList extends Drawable {
 	static final String VIDEO_FILE_RE = ".*[.](mpg|mpeg|mp4|avi|mov|mkv|flv|vob|ogv|ts|m2s|m2ts|divx|dvx|wmv)";
 	static final String SVG_FILE_RE = ".*[.]svg";
+	public static final String AUDIO_FILE_RE = ".*[.](mp3|wav|wave|ogg|oga|opus|flac|aac|m4a|wma|aif|aiff|ac3|mka)";
 	public Vector<Media> mediaList = new Vector<Media>();
 	
 	public MediaList(TDenlive aTDe) {
@@ -50,6 +51,11 @@ public class MediaList extends Drawable {
 					StereoMovie aSM = new StereoMovie(tde);
 					mediaList.add(aSM);
 					o = aSM.openProject(aOs, o);
+				}
+				if("AudioMedia".equalsIgnoreCase(aT.tagName)) {
+					AudioMedia aAM = new AudioMedia(tde);
+					mediaList.add(aAM);
+					o = aAM.openProject(aOs, o);
 				}
 				if("StereoSvg".equalsIgnoreCase(aT.tagName)) {
 					StereoSvg aSG = new StereoSvg(tde);
@@ -87,6 +93,11 @@ public class MediaList extends Drawable {
 	}
 	
 	public void loadImageLR(String aPathL,String aPathR,int aProcessingMode,long aTime) throws Exception {
+		if(aPathL.toLowerCase().matches(AUDIO_FILE_RE)) {
+			//A sound file, whatever the stereo format asked
+			loadAudio(aPathL);
+			return;
+		}
 		StereoImage aSI = null;
 		if(aPathL.toLowerCase().matches(VIDEO_FILE_RE)) {
 			aSI = new StereoMovie(tde);
@@ -99,9 +110,15 @@ public class MediaList extends Drawable {
 		}
 		aSI.loadImageLR(aPathL,aPathR,aProcessingMode,aTime);
 		mediaList.add(aSI);
+		tde.updateFirstMediaRatio();
 	}
 
 	public void loadImageX(String aPath,int aProcessingMode,long aTime) throws Exception {
+		if(aPath.toLowerCase().matches(AUDIO_FILE_RE)) {
+			//A sound file, whatever the stereo format asked
+			loadAudio(aPath);
+			return;
+		}
 		StereoImage aSI = null;
 		if(aPath.toLowerCase().matches(VIDEO_FILE_RE)) {
 			aSI = new StereoMovie(tde);
@@ -114,9 +131,15 @@ public class MediaList extends Drawable {
 		}
 		aSI.loadImageX(aPath,aProcessingMode,aTime);
 		mediaList.add(aSI);
+		tde.updateFirstMediaRatio();
 	}
 
 	public void loadImageP(String aPath,int aProcessingMode,long aTime) throws Exception {
+		if(aPath.toLowerCase().matches(AUDIO_FILE_RE)) {
+			//A sound file, whatever the stereo format asked
+			loadAudio(aPath);
+			return;
+		}
 		StereoImage aSI = null;
 		if(aPath.toLowerCase().matches(VIDEO_FILE_RE)) {
 			aSI = new StereoMovie(tde);
@@ -129,9 +152,15 @@ public class MediaList extends Drawable {
 		}
 		aSI.loadImageP(aPath,aProcessingMode,aTime);
 		mediaList.add(aSI);
+		tde.updateFirstMediaRatio();
 	}
 
 	public void loadImageMPO(String aPath) throws Exception {
+		if(aPath.toLowerCase().matches(AUDIO_FILE_RE)) {
+			//A sound file, whatever the stereo format asked
+			loadAudio(aPath);
+			return;
+		}
 		StereoImage aSI = null;
 		if(aPath.toLowerCase().matches(VIDEO_FILE_RE)) {
 			aSI = new StereoMovie(tde);
@@ -141,6 +170,14 @@ public class MediaList extends Drawable {
 		}
 		aSI.loadImageMPO(aPath);
 		mediaList.add(aSI);
+		tde.updateFirstMediaRatio();
+	}
+	
+	public void loadAudio(String aPath) {
+		AudioMedia aAM = new AudioMedia(tde);
+		aAM.load(aPath);
+		mediaList.add(aAM);
+		tde.updateFirstMediaRatio();
 	}
 	
 	public void createColorBck(int aR,int aG, int aB,int aProcessingMode) {
@@ -153,6 +190,7 @@ public class MediaList extends Drawable {
 			t.printStackTrace(System.err);
 		}
 		mediaList.add(aCB);
+		tde.updateFirstMediaRatio();
 	}
 
 	public Rectangle drawSwt(GC aGC,int aX, int aY,Rectangle aClippingR) {

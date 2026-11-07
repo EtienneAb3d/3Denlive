@@ -23,6 +23,7 @@ public class FfmpegTranscoder extends Ffmpeg {
 				try {
 					String aPI = aPathIn;
 					String aPW = aPathWork;
+					new File(aPW).getAbsoluteFile().getParentFile().mkdirs();
 					String ffmpegPath = getFfmpeg();
 //					if(File.separatorChar == '/') {
 //						ffmpegPath = ffmpegPath.replaceAll(" ", "\\");

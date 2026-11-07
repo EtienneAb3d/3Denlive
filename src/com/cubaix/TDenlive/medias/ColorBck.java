@@ -51,11 +51,27 @@ public class ColorBck extends StereoImage {
 		color = new Color(aR, aG, aB);
 	}
 	
+	//Output ratio used for the last image (the color fills the whole output frame)
+	double lastProcessedRatio = 0;
+
+	@Override
+	public java.util.Vector<String> getFilePaths() {
+		//No file
+		return new java.util.Vector<String>();
+	}
+
+	@Override
+	public double getDisplayRatio() {
+		//No size of its own: follows the output ratio
+		return 0;
+	}
+
 	@Override
 	public void reBuild(int aProcessingMode,long aTime) {
 		if(workLeft != null && workRight != null
 				&& lastProcessedRes == tde.config.processingResValues[aProcessingMode]
-						&& lastProcessedHdr == tde.config.processingHdr[aProcessingMode]) {
+						&& lastProcessedHdr == tde.config.processingHdr[aProcessingMode]
+								&& lastProcessedRatio == tde.config.outRatio) {
 			return;
 		}
 		workLeft = workRight = null;
@@ -74,7 +90,8 @@ public class ColorBck extends StereoImage {
 	@Override
 	BufferedImage loadImage(String aPath, int aProcessingMode, long aTime, boolean aIsLeft) throws Exception {
 		int aHeight = tde.config.processingResValues[aProcessingMode];
-		int aWidth = (int)(aHeight*tde.config.origRatio);
+		lastProcessedRatio = tde.config.outRatio;
+		int aWidth = Math.max(1, (int)(aHeight*lastProcessedRatio));
 		BufferedImage aBI = ImageUtils.createImage(aWidth, aHeight);
 		Graphics aG = aBI.getGraphics();
 		aG.setColor(color);

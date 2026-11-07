@@ -84,10 +84,11 @@ public class FramingGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("FrameOpacity");
 		
 		frameC = new TableCombo(wgt, SWT.NONE);
 		tde.gui.applyColorFont(frameC);
+		tde.gui.tip(frameC, "FrameChoice");
 		GridData aTCGD = new GridData(GridData.FILL_HORIZONTAL);
 		aTCGD.heightHint = tde.config.thumbH;
 		frameC.setLayoutData(aTCGD);
@@ -136,7 +137,7 @@ public class FramingGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("FrameX");
 
 		tde.timeLineStack.addTimeListener(this);
 	}

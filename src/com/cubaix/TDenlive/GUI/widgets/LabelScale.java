@@ -4,6 +4,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 
 import com.cubaix.TDenlive.TDenlive;
@@ -82,6 +83,7 @@ public abstract class LabelScale extends Widget {
 		aLeft.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 		aLeft.setImage(tde.gui.imgsSwt.getIcon("arrowLeftSmallCubaixBlue.gif"));
 		aLeft.setBackground(tde.gui.colorsSwt.WHITE);
+		tde.gui.tip(aLeft, "ScaleMinus");
 		aLeft.addListener(SWT.MouseDown,e -> {
 			if((e.stateMask & SWT.SHIFT) != 0 || (e.stateMask & SWT.CTRL) != 0) {
 				sb.setSelection(sb.getSelection()-sb.getPageIncrement());
@@ -95,6 +97,7 @@ public abstract class LabelScale extends Widget {
 		aMid.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 		aMid.setImage(tde.gui.imgsSwt.getIcon("goalCubaixBlueLight.png"));
 		aMid.setBackground(tde.gui.colorsSwt.WHITE);
+		tde.gui.tip(aMid, "ScaleZero");
 		aMid.addListener(SWT.MouseDown,e -> {
 			sb.setSelection(zero);
 			change(sb.getSelection());
@@ -104,6 +107,7 @@ public abstract class LabelScale extends Widget {
 		aRight.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 		aRight.setImage(tde.gui.imgsSwt.getIcon("arrowRightSmallCubaixBlue.gif"));
 		aRight.setBackground(tde.gui.colorsSwt.WHITE);
+		tde.gui.tip(aRight, "ScalePlus");
 		aRight.addListener(SWT.MouseDown,e -> {
 			if((e.stateMask & SWT.SHIFT) != 0 || (e.stateMask & SWT.CTRL) != 0) {
 				sb.setSelection(sb.getSelection()+sb.getPageIncrement());
@@ -113,6 +117,19 @@ public abstract class LabelScale extends Widget {
 			}
 			change(sb.getSelection());
 		});
+	}
+
+	/**
+	 * Help message of this slider: the "Tip.<aKey>" language entry, shown on the letter and the bar,
+	 * and before the help of the -, default and + buttons
+	 */
+	public LabelScale tip(String aKey) {
+		String aTip = tde.gui.lngs.get("Tip."+aKey);
+		for(Control aC : container.getChildren()) {
+			String aOwn = aC.getToolTipText();
+			aC.setToolTipText(aOwn == null ? aTip : aTip+"\n"+aOwn);
+		}
+		return this;
 	}
 
 	public abstract void change(int aValue);

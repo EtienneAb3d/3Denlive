@@ -7,7 +7,6 @@ import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.ColorDialog;
 import org.eclipse.swt.widgets.Composite;
 
 import com.cubaix.TDenlive.TDConfig;
@@ -26,7 +25,7 @@ public class MediaListControlGUI extends CompositePanel {
 	void createContents() {
 		toolBar = new Composite(container, SWT.NULL);
 		GridData aTB = new GridData(GridData.FILL_HORIZONTAL);
-		aTB.heightHint = 25;
+		aTB.heightHint = tde.gui.h(25);
 		toolBar.setLayoutData(aTB);
 		tde.gui.applyColorFont(toolBar);
 		GridLayout aGL = new GridLayout(3, false);
@@ -38,9 +37,10 @@ public class MediaListControlGUI extends CompositePanel {
 		addMedia.setAlignment(SWT.CENTER);
 		GridData aEdgesGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aEdgesGD.widthHint = 32;
-		aEdgesGD.heightHint = 25;
+		aEdgesGD.heightHint = tde.gui.h(25);
 		addMedia.setLayoutData(aEdgesGD);
 		tde.gui.applyColorFont(addMedia);
+		tde.gui.tip(addMedia, "AddMedia");
 		addMedia.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseUp(MouseEvent arg0) {}
@@ -57,19 +57,16 @@ public class MediaListControlGUI extends CompositePanel {
 		addColor.setAlignment(SWT.CENTER);
 		GridData aColorGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aColorGD.widthHint = 32;
-		aColorGD.heightHint = 25;
+		aColorGD.heightHint = tde.gui.h(25);
 		addColor.setLayoutData(aColorGD);
 		tde.gui.applyColorFont(addColor);
+		tde.gui.tip(addColor, "AddColor");
 		addColor.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseUp(MouseEvent arg0) {}
 			@Override
 			public void mouseDown(MouseEvent arg0) {
-				ColorDialog aCD = new ColorDialog(tde.gui.shell);
-				if(lastRGB != null) {
-					aCD.setRGB(lastRGB);
-				}
-				RGB aRGB = aCD.open();
+				RGB aRGB = new ColorBckGUI(tde, lastRGB).open();
 				if(aRGB != null) {
 					lastRGB = aRGB;
 					tde.mediaList.createColorBck(aRGB.red,aRGB.green,aRGB.blue,TDConfig.PROCESSING_MODE_RENDER);
@@ -85,7 +82,7 @@ public class MediaListControlGUI extends CompositePanel {
 		aSpace.setForeground(tde.gui.colorsSwt.CUBAIX_BLUE);
 		aSpace.setFont(tde.gui.fontsSwt.roboto);
 		GridData aSpaceGD = new GridData(GridData.FILL_HORIZONTAL);
-		aSpaceGD.heightHint = 25;
+		aSpaceGD.heightHint = tde.gui.h(25);
 		aSpace.setLayoutData(aSpaceGD);
 	}
 

@@ -53,22 +53,21 @@ public abstract class LabelText extends Widget {
 		tde.gui.applyColorFont(aSpace);
 		GridData aSGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER | GridData.VERTICAL_ALIGN_CENTER); 
 		aSGD.widthHint = 3;
-		aSGD.heightHint = 12;//First element set the real height of the Widget
+		aSGD.heightHint = tde.gui.h(12);//First element set the real height of the Widget
 		aSpace.setLayoutData(aSGD);
 
 		Label aL = new Label(container, SWT.NONE);
 		tde.gui.applyColorFont(aL);
 		GridData aLGD = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING|GridData.VERTICAL_ALIGN_CENTER);//GridData.FILL_HORIZONTAL);
-		aLGD.heightHint = 12;
+		aLGD.heightHint = tde.gui.h(12);
 		aL.setLayoutData(aLGD);
 		aL.setText(label);
 		tde.gui.applyColorFont(aL);
 
-		text = new Text(container, textStyle);
+		text = tde.gui.framedText(container, textStyle);
 		GridData aCGD = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER);//GridData.HORIZONTAL_ALIGN_END|GridData.VERTICAL_ALIGN_CENTER);
-		aCGD.heightHint = 12;
-		text.setLayoutData(aCGD);
-		tde.gui.applyColorFont(text);
+		aCGD.heightHint = tde.gui.h(12)+2;//+ the frame
+		text.getParent().setLayoutData(aCGD);
 		text.setText(value);
 		text.addModifyListener(new ModifyListener() {
 			@Override

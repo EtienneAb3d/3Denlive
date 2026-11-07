@@ -5,20 +5,33 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 
 import com.cubaix.TDenlive.utils.StringUtils;
 
 public class Ffmpeg {
-	long duration = -1;
-	double fps = -1;
+	volatile long duration = -1;
+	volatile double fps = -1;
+	//Set by the stderr reader: the input has an audio stream / the input description is fully read
+	volatile boolean hasAudioStream = false;
+	volatile boolean inputParsed = false;
 
 	public Ffmpeg() {
 	}
 	
+	//Folder holding the bundled binaries, relative to the working directory (like lumas/ and frames/)
+	//Filled in dev by Install-Dev.sh, shipped next to the launch script in distributions
+	static final String FFMPEG_DIR = "ffmpeg";
+	static String ffmpegPath = null;
+
 	String getFfmpeg() {
+		if(ffmpegPath == null) {
+			ffmpegPath = findFfmpeg();
+			System.err.println("ffmpeg: " + ffmpegPath);
+		}
+		return ffmpegPath;
+	}
+
+	static String findFfmpeg() {
 		if(new File("/usr/bin/ffmpeg").exists()) {
 			return "/usr/bin/ffmpeg";
 		}
@@ -27,48 +40,60 @@ public class Ffmpeg {
 		boolean isWindows = os.contains("windows");
 		boolean isMac = os.contains("mac");
 
-		File dirFolder = new File(System.getProperty("java.io.tmpdir"), "3De/");
-		if (!dirFolder.exists()) {
-			dirFolder.mkdirs();
-		}
-
+		//Bundled binary: ffmpeg-amd64(.exe), ffmpeg-x86_64-osx, ffmpeg-aarch64-osx, ...
 		String suffix = isWindows ? ".exe" : (isMac ? "-osx" : "");
 		String arch = System.getProperty("os.arch");
-
-		File ffmpegFile = new File(dirFolder, "ffmpeg-" + arch + suffix);
-
-		if (ffmpegFile.exists()) {
-			return ffmpegFile.getAbsolutePath();
+		File aBundled = new File(FFMPEG_DIR, "ffmpeg-" + arch + suffix);
+		if(aBundled.isFile()) {
+			if(!isWindows && !aBundled.canExecute()) {
+				aBundled.setExecutable(true);
+			}
+			return aBundled.getAbsolutePath();
 		}
 
-		copyFile("ffmpeg-" + arch + suffix, ffmpegFile);
-
-		if (!isWindows) {
-			try {
-				Runtime.getRuntime().exec(new String[] {"/bin/chmod", "755", ffmpegFile.getAbsolutePath()});
-			} 
-			catch (Throwable t) {
-				t.printStackTrace(System.err);
+		//Installed ffmpeg (PATH, then usual package manager locations not always in the PATH of a GUI app)
+		String aExe = isWindows ? "ffmpeg.exe" : "ffmpeg";
+		String aPath = System.getenv("PATH");
+		if(aPath != null) {
+			for(String aDir : aPath.split(File.pathSeparator)) {
+				File aF = new File(aDir, aExe);
+				if(aF.isFile() && aF.canExecute()) {
+					return aF.getAbsolutePath();
+				}
+			}
+		}
+		for(String aCandidate : new String[] {"/opt/homebrew/bin/ffmpeg", "/usr/local/bin/ffmpeg"}) {
+			if(new File(aCandidate).canExecute()) {
+				return aCandidate;
 			}
 		}
 
-		if (ffmpegFile.exists()){
-			return ffmpegFile.getAbsolutePath();
-		}
-
+		System.err.println("ffmpeg not found: run Install-Dev.sh, or put " + aBundled.getAbsolutePath() + " in place, or install ffmpeg");
 		return null;
 	}
 	
-	private void copyFile(String path, File dest) {
-		String resourceName = "bin/" + path;
+	/**
+	 * Read the next BMP image of a stream of concatenated BMPs (ffmpeg image2pipe), null at the end.
+	 * Each file is first cut with the size of its header: ImageIO alone may leave the padding
+	 * of the last row (width*3 not multiple of 4) in the stream, and then misread all the next images.
+	 */
+	public static java.awt.image.BufferedImage readBmp(InputStream aIS) throws IOException {
+		java.io.DataInputStream aDIS = new java.io.DataInputStream(aIS);
+		byte[] aHeader = new byte[14];
 		try {
-			InputStream is = FfmpegDecoder.class.getResourceAsStream(resourceName);
-			Files.copy(is, Paths.get(dest.getAbsolutePath()), StandardCopyOption.REPLACE_EXISTING);
-			is.close();
+			aDIS.readFully(aHeader);
 		}
-		catch (Throwable t) {
-			t.printStackTrace(System.err);
+		catch(java.io.EOFException e) {
+			return null;
 		}
+		if(aHeader[0] != 'B' || aHeader[1] != 'M') {
+			throw new IOException("Not a BMP stream");
+		}
+		int aSize = (aHeader[2] & 0xFF) | (aHeader[3] & 0xFF) << 8 | (aHeader[4] & 0xFF) << 16 | (aHeader[5] & 0xFF) << 24;
+		byte[] aFile = new byte[aSize];
+		System.arraycopy(aHeader, 0, aFile, 0, 14);
+		aDIS.readFully(aFile, 14, aSize-14);
+		return javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(aFile));
 	}
 	
 	class StreamReader implements Runnable {
@@ -100,6 +125,13 @@ public class Ffmpeg {
 	            		String aFps = aLine.substring(0, aLine.indexOf("fps,"));
 	            		aFps = aFps.substring(aFps.lastIndexOf(",")+1).trim();
 	            		fps = Double.parseDouble(aFps);
+	            	}
+	            	if(aLine.matches("Stream #.*: Audio: .*")) {
+	            		hasAudioStream = true;
+	            	}
+	            	if(aLine.startsWith("Output #") || aLine.startsWith("Stream mapping:")
+	            			|| aLine.matches(".*matches no streams.*")) {
+	            		inputParsed = true;
 	            	}
 	            }
 	        } catch (IOException e) {

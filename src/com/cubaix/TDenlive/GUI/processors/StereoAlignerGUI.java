@@ -51,8 +51,9 @@ public class StereoAlignerGUI extends ProcessorGUI {
 		
 		Button aCropL = new Button(aCropContainer, SWT.CHECK);
 		tde.gui.applyColorFont(aCropL);
+		tde.gui.tip(aCropL, "SecureCropLeft");
 		GridData aCLGD = new GridData(GridData.FILL_HORIZONTAL);
-		aCLGD.heightHint = 20;
+		aCLGD.heightHint = tde.gui.h(20);
 		aCropL.setLayoutData(aCLGD);
 		aCropL.setSelection(sa.isSecureCropLeft());
 		aCropL.addSelectionListener(new SelectionListener() {
@@ -71,8 +72,9 @@ public class StereoAlignerGUI extends ProcessorGUI {
 		
 		final Button aCropR = new Button(aCropContainer, SWT.CHECK);
 		tde.gui.applyColorFont(aCropR);
+		tde.gui.tip(aCropR, "SecureCropRight");
 		GridData aCRGD = new GridData(GridData.FILL_HORIZONTAL);
-		aCRGD.heightHint = 20;
+		aCRGD.heightHint = tde.gui.h(20);
 		aCropR.setLayoutData(aCRGD);
 		aCropR.setSelection(sa.isSecureCropRight());
 		aCropR.addSelectionListener(new SelectionListener() {
@@ -91,8 +93,9 @@ public class StereoAlignerGUI extends ProcessorGUI {
 		
 		final Button aCropT = new Button(aCropContainer, SWT.CHECK);
 		tde.gui.applyColorFont(aCropT);
+		tde.gui.tip(aCropT, "SecureCropTop");
 		GridData aCTGD = new GridData(GridData.FILL_HORIZONTAL);
-		aCTGD.heightHint = 20;
+		aCTGD.heightHint = tde.gui.h(20);
 		aCropT.setLayoutData(aCTGD);
 		aCropT.setSelection(sa.isSecureCropTop());
 		aCropT.addSelectionListener(new SelectionListener() {
@@ -111,8 +114,9 @@ public class StereoAlignerGUI extends ProcessorGUI {
 		
 		final Button aCropB = new Button(aCropContainer, SWT.CHECK);
 		tde.gui.applyColorFont(aCropB);
+		tde.gui.tip(aCropB, "SecureCropBottom");
 		GridData aCBGD = new GridData(GridData.FILL_HORIZONTAL);
-		aCBGD.heightHint = 20;
+		aCBGD.heightHint = tde.gui.h(20);
 		aCropB.setLayoutData(aCBGD);
 		aCropB.setSelection(sa.isSecureCropBottom());
 		aCropB.addSelectionListener(new SelectionListener() {
@@ -131,8 +135,9 @@ public class StereoAlignerGUI extends ProcessorGUI {
 		
 		final Button aResizeS = new Button(aCropContainer, SWT.CHECK);
 		tde.gui.applyColorFont(aResizeS);
+		tde.gui.tip(aResizeS, "SecureResize");
 		GridData aCRSGD = new GridData(GridData.FILL_HORIZONTAL);
-		aCRSGD.heightHint = 20;
+		aCRSGD.heightHint = tde.gui.h(20);
 		aResizeS.setLayoutData(aCRSGD);
 		aResizeS.setSelection(sa.isSecureResize());
 		aResizeS.addSelectionListener(new SelectionListener() {
@@ -151,8 +156,9 @@ public class StereoAlignerGUI extends ProcessorGUI {
 		
 		final Button aDrawCropRectS = new Button(aCropContainer, SWT.CHECK);
 		tde.gui.applyColorFont(aDrawCropRectS);
+		tde.gui.tip(aDrawCropRectS, "ShowSecureCropBox");
 		GridData aDCSGD = new GridData(GridData.FILL_HORIZONTAL);
-		aDCSGD.heightHint = 20;
+		aDCSGD.heightHint = tde.gui.h(20);
 		aDrawCropRectS.setLayoutData(aDCSGD);
 		aDrawCropRectS.setSelection(sa.isShowSecureCropBox());
 		aDrawCropRectS.addSelectionListener(new SelectionListener() {
@@ -176,7 +182,7 @@ public class StereoAlignerGUI extends ProcessorGUI {
 				AutoAligner aAA = new AutoAligner(tde,aMedia);
 				aAA.process2Awt(aMedia, 3, tde.timeLineStack.getTimePosMS());
 			}
-		};
+		}.tip("AutoAlign");
 
 //		LabelImageButton aAutoDM = new LabelImageButton(tde,wgt,tde.gui.lngs.get("StereoAligner.AutoDepthmap"),"rhino.gif") {
 //			@Override
@@ -220,7 +226,7 @@ public class StereoAlignerGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("AlignX");
 		yLLS = new LabelScale(tde,wgt,"Y",-3000,0,3000,(int)(-sa.getYL(aSelectedKey)*10000)) {
 			@Override
 			public void change(int aValue) {
@@ -229,7 +235,7 @@ public class StereoAlignerGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("AlignY");
 		wLLS = new LabelScale(tde,wgt,tde.gui.lngs.get("Generic.WidthLetter"),-3000,0,3000,(int)((sa.getWL(aSelectedKey)-1.0)*10000)) {
 			@Override
 			public void change(int aValue) {
@@ -238,7 +244,7 @@ public class StereoAlignerGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("AlignW");
 		hLLS = new LabelScale(tde,wgt,tde.gui.lngs.get("Generic.HeightLetter"),-3000,0,3000,(int)((sa.getHL(aSelectedKey)-1.0)*10000)) {
 			@Override
 			public void change(int aValue) {
@@ -247,7 +253,7 @@ public class StereoAlignerGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("AlignH");
 		rLLS = new LabelScale(tde,wgt,tde.gui.lngs.get("Generic.RotationLetter"),-1000,0,1000,(int)(-(sa.getRL(aSelectedKey)/Math.PI)*10000)) {
 			@Override
 			public void change(int aValue) {
@@ -256,7 +262,7 @@ public class StereoAlignerGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("AlignR");
 
 		tde.timeLineStack.addTimeListener(this);
 	}

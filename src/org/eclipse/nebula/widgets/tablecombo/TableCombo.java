@@ -55,7 +55,6 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.TypedListener;
 import org.eclipse.swt.widgets.Widget;
 
 /**
@@ -330,8 +329,7 @@ public class TableCombo extends Composite {
 		if (listener == null) {
 			SWT.error(SWT.ERROR_NULL_ARGUMENT);
 		}
-		final TypedListener typedListener = new TypedListener(listener);
-		addListener(SWT.Modify, typedListener);
+		addTypedListener(listener, SWT.Modify);
 	}
 
 	/**
@@ -370,9 +368,7 @@ public class TableCombo extends Composite {
 			SWT.error(SWT.ERROR_NULL_ARGUMENT);
 		}
 
-		final TypedListener typedListener = new TypedListener(listener);
-		addListener(SWT.Selection, typedListener);
-		addListener(SWT.DefaultSelection, typedListener);
+		addTypedListener(listener, SWT.Selection, SWT.DefaultSelection);
 	}
 
 	/**
@@ -461,8 +457,7 @@ public class TableCombo extends Composite {
 		if (listener == null) {
 			SWT.error(SWT.ERROR_NULL_ARGUMENT);
 		}
-		final TypedListener typedListener = new TypedListener(listener);
-		addListener(SWT.Verify, typedListener);
+		addTypedListener(listener, SWT.Verify);
 	}
 
 	/**
@@ -1776,7 +1771,7 @@ public class TableCombo extends Composite {
 		if (listener == null) {
 			SWT.error(SWT.ERROR_NULL_ARGUMENT);
 		}
-		removeListener(SWT.Modify, listener);
+		removeTypedListener(SWT.Modify, listener);
 	}
 
 	/**
@@ -1806,8 +1801,8 @@ public class TableCombo extends Composite {
 		if (listener == null) {
 			SWT.error(SWT.ERROR_NULL_ARGUMENT);
 		}
-		removeListener(SWT.Selection, listener);
-		removeListener(SWT.DefaultSelection, listener);
+		removeTypedListener(SWT.Selection, listener);
+		removeTypedListener(SWT.DefaultSelection, listener);
 	}
 
 	/**
@@ -1839,7 +1834,7 @@ public class TableCombo extends Composite {
 		if (listener == null) {
 			SWT.error(SWT.ERROR_NULL_ARGUMENT);
 		}
-		removeListener(SWT.Verify, listener);
+		removeTypedListener(SWT.Verify, listener);
 	}
 
 	/**

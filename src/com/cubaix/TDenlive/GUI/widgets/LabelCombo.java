@@ -42,21 +42,21 @@ public abstract class LabelCombo extends Widget {
 		aSpace.setForeground(tde.gui.colorsSwt.CUBAIX_BLUE);
 		GridData aSGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER | GridData.VERTICAL_ALIGN_CENTER); 
 		aSGD.widthHint = 3;
-		aSGD.heightHint = 20;//First element set the real height of the Widget
+		aSGD.heightHint = tde.gui.h(20);//First element set the real height of the Widget
 		aSpace.setLayoutData(aSGD);
 
 		Label aL = new Label(container, SWT.NONE);
 		aL.setBackground(tde.gui.colorsSwt.WHITE);
 		aL.setForeground(tde.gui.colorsSwt.CUBAIX_BLUE);
 		GridData aLGD = new GridData(GridData.FILL_HORIZONTAL);
-		aLGD.heightHint = 16;
+		aLGD.heightHint = tde.gui.h(16);
 		aL.setLayoutData(aLGD);
 		aL.setText(label);
 		aL.setFont(tde.gui.fontsSwt.roboto);
 
 		combo = new Combo(container, SWT.DROP_DOWN|SWT.READ_ONLY);
 		GridData aCGD = new GridData(GridData.HORIZONTAL_ALIGN_END|GridData.VERTICAL_ALIGN_CENTER);
-		aCGD.heightHint = 25;
+		aCGD.heightHint = tde.gui.h(25);
 		combo.setLayoutData(aCGD);
 		combo.setBackground(tde.gui.colorsSwt.WHITE);
 		combo.setForeground(tde.gui.colorsSwt.CUBAIX_BLUE);

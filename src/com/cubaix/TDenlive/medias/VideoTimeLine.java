@@ -1,5 +1,6 @@
 package com.cubaix.TDenlive.medias;
 
+import java.awt.BasicStroke;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -19,6 +20,10 @@ public class VideoTimeLine extends Media {
 	public Vector<Clip> clipList = new Vector<Clip>();
 	String name = null;
 	Rectangle isActiveCheckboxBounds = null;
+	Rectangle soundIconBounds = null;
+	public static final int SOUND_BAR_H = 16;
+	//Sound of the clips of this line not heard (play and rendering)
+	public boolean soundMuted = false;
 
 	public VideoTimeLine(TDenlive aTDe,String aName) {
 		super(aTDe);
@@ -36,6 +41,14 @@ public class VideoTimeLine extends Media {
 						|| "/TimeLine".equalsIgnoreCase(aT.tagName)) {
 					return o;
 				}
+				if("isActive".equalsIgnoreCase(aT.tagName)) {
+					o++;
+					isActive = !"false".equalsIgnoreCase(aOs.elementAt(o).text);
+				}
+				if("soundMuted".equalsIgnoreCase(aT.tagName)) {
+					o++;
+					soundMuted = "true".equalsIgnoreCase(aOs.elementAt(o).text);
+				}
 				if("Clip".equalsIgnoreCase(aT.tagName)) {
 					Clip aC = new Clip(tde, null);
 					clipList.add(aC);
@@ -49,18 +62,46 @@ public class VideoTimeLine extends Media {
 	@Override
 	public void saveProject(StringBuffer aSB) throws Exception {
 		aSB.append("			<VideoTimeLine>\n");
+		aSB.append("				<isActive>" + isActive + "</isActive>\n");
+		aSB.append("				<soundMuted>" + soundMuted + "</soundMuted>\n");
 		for(Clip aTL : clipList) {
 			aTL.saveProject(aSB);
 		}
 		aSB.append("			</VideoTimeLine>\n");
 	}
 
+	/**
+	 * New clip for a media placed on this time line
+	 */
+	protected Clip newClip(Media aMedia) {
+		return new Clip(tde,aMedia);
+	}
+	
+	protected Rectangle drawClipAwt(Clip aC,Graphics2D aGC, int aX, int aY, Rectangle aClippingR) {
+		return aC.drawAwt(aGC, aX, aY, aClippingR, SOUND_BAR_H, soundMuted || !isActive);
+	}
+	
+	/**
+	 * True if no clip of this time line overlaps [aStartMS, aEndMS[
+	 */
+	public boolean isFree(long aStartMS,long aEndMS,Clip aIgnored) {
+		for(Clip aC : clipList) {
+			if(aC == aIgnored) {
+				continue;
+			}
+			if(aC.getStartTimeMS() < aEndMS && aC.getStartTimeMS()+aC.getDurationMS() > aStartMS) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	public boolean addMedia(Media aMedia,boolean aOnlyAfterSelected) {
 		Clip aClipNew = null;
 		for(int c = 0;c < clipList.size();c++) {
 			Clip aClip = clipList.elementAt(c);
 			if(aClip.selState > 0) {
-				aClipNew = new Clip(tde,aMedia);
+				aClipNew = newClip(aMedia);
 				clipList.add(c,aClipNew);
 				aClip.selState = 0;
 				aClipNew.startTimeMS = aClip.startTimeMS+aClip.durationMS;
@@ -71,7 +112,7 @@ public class VideoTimeLine extends Media {
 			}
 		}
 		if(!aOnlyAfterSelected || selState > 0) {
-			aClipNew = new Clip(tde,aMedia);
+			aClipNew = newClip(aMedia);
 			if(clipList.size() > 0) {
 				aClipNew.startTimeMS = clipList.lastElement().startTimeMS+clipList.lastElement().durationMS;
 			}
@@ -176,30 +217,42 @@ public class VideoTimeLine extends Media {
 
 	@Override
 	public Rectangle drawAwt(Graphics2D aGC, int aX, int aY, Rectangle aClippingR) {
+		int aRowH = getRowH();
 		aGC.setClip(aClippingR.x,aClippingR.y,aClippingR.width,aClippingR.height);
 		aGC.setColor(selState == 0 ? tde.gui.colorsAwt.WHITE : tde.gui.colorsAwt.BLUE_L60);
-		aGC.fillRect(aClippingR.x, aY, aClippingR.width, tde.config.thumbH);
+		aGC.fillRect(aClippingR.x, aY, aClippingR.width, aRowH);
 		aGC.setColor(selState == 0 ? tde.gui.colorsAwt.CUBAIX_BLUE : tde.gui.colorsAwt.WHITE);
 		
 		aGC.setFont(tde.gui.fontsAwt.robotoBold);
 		Rectangle2D aFR = aGC.getFontMetrics().getStringBounds(name,aGC);
 		aGC.drawString(name, aClippingR.x+10, aY+10+(int)aFR.getHeight());
-		//Some else to write...
-		//..
 		
 		isActiveCheckboxBounds = new Rectangle(aClippingR.x+tde.config.thumbW-20, aY+8, 16, 16);
 		aGC.drawImage(tde.gui.imgsAwt.getIcon(isActive?"checkboxBlackChecked.gif":"checkboxBlackUnchecked.gif")
 				, isActiveCheckboxBounds.x, isActiveCheckboxBounds.y,null);
+		if(hasSoundIcon()) {
+			//Mute / unmute the sound of the clips of the line, left of the checkbox
+			soundIconBounds = new Rectangle(isActiveCheckboxBounds.x-20, aY+8, 16, 16);
+			aGC.drawImage(tde.gui.imgsAwt.getIcon("sound.gif")
+					, soundIconBounds.x, soundIconBounds.y, 16, 16, null);
+			if(soundMuted) {
+				aGC.setColor(tde.gui.colorsAwt.RED);
+				aGC.setStroke(new BasicStroke(2));
+				aGC.drawLine(soundIconBounds.x, soundIconBounds.y+soundIconBounds.height
+						, soundIconBounds.x+soundIconBounds.width, soundIconBounds.y);
+				aGC.setStroke(new BasicStroke(1));
+			}
+		}
 		
 		aGC.setColor(tde.gui.colorsAwt.CUBAIX_BLUE);
-		aGC.drawLine(tde.config.thumbW, aY, tde.config.thumbW, aY+tde.config.thumbH);
+		aGC.drawLine(tde.config.thumbW, aY, tde.config.thumbW, aY+aRowH);
 		
 		int aStart = aX+tde.config.thumbW;
 		Rectangle aClippingNew = new Rectangle(aClippingR.x+tde.config.thumbW+2,Math.max(aClippingR.y,aY)
-				,aClippingR.width-tde.config.thumbW, tde.config.thumbH);
+				,aClippingR.width-tde.config.thumbW, aRowH);
 		int aW = 0;
 		for(Clip aC : clipList) {
-			Rectangle aR = aC.drawAwt(aGC, aStart, aY, aClippingNew);
+			Rectangle aR = drawClipAwt(aC, aGC, aStart, aY, aClippingNew);
 			if(aX+aW < aR.x+aR.width) {
 				aW = aR.x+aR.width-aX;
 			}
@@ -207,16 +260,80 @@ public class VideoTimeLine extends Media {
 		
 		if(selState > 0) {
 			aGC.setColor(tde.gui.colorsAwt.CUBAIX_BLUE);
-			aGC.drawRect(aStart, aY, aW-1, tde.config.thumbH-1);
+			aGC.drawRect(aStart, aY, aW-1, aRowH-1);
 		}
 		
-		return bounds = new Rectangle(aX, aY, Math.max(aW+200,aClippingR.x+aClippingR.width-aX), tde.config.thumbH);
+		return bounds = new Rectangle(aX, aY, Math.max(aW+200,aClippingR.x+aClippingR.width-aX), aRowH);
+	}
+
+	/**
+	 * Height of the line: images, and the sound bar below them
+	 */
+	public int getRowH() {
+		return tde.config.thumbH+SOUND_BAR_H;
+	}
+	
+	protected boolean hasSoundIcon() {
+		return true;
+	}
+	
+	/**
+	 * Add the sound of the clips of the line to aOut (see Clip.mixAudio).
+	 * Nothing if the line is off or muted.
+	 */
+	public void mixAudio(long aStartFrame,float[] aOut,int aNbFrames) {
+		if(!isActive || soundMuted) {
+			return;
+		}
+		for(Clip aC : new Vector<Clip>(clipList)) {
+			if(!aC.soundOn) {
+				continue;
+			}
+			try {
+				aC.mixAudio(aStartFrame, aOut, aNbFrames);
+			}
+			catch(Throwable t) {
+				t.printStackTrace(System.err);
+			}
+		}
+	}
+	
+	/**
+	 * True if something can be heard from this line
+	 */
+	public boolean hasSound() {
+		if(!isActive || soundMuted) {
+			return false;
+		}
+		for(Clip aC : new Vector<Clip>(clipList)) {
+			if(aC.soundOn && aC.hasSound()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Key (in the "Tip" language section) of the help message of the widget at this place, or null
+	 */
+	public String getWidgetTip(int aX, int aY) {
+		if(isActiveCheckboxBounds != null && isActiveCheckboxBounds.contains(aX,aY)) {
+			return (this instanceof AudioTimeLine) ? "AudioLineActive" : "LineActive";
+		}
+		if(hasSoundIcon() && soundIconBounds != null && soundIconBounds.contains(aX,aY)) {
+			return "LineSound";
+		}
+		return null;
 	}
 
 	@Override
 	public boolean selectWidget(int aX, int aY) {
 		if(isActiveCheckboxBounds != null && isActiveCheckboxBounds.contains(aX,aY)) {
 			isActive = !isActive;
+			return true;
+		}
+		if(hasSoundIcon() && soundIconBounds != null && soundIconBounds.contains(aX,aY)) {
+			soundMuted = !soundMuted;
 			return true;
 		}
 		return false;

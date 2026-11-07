@@ -70,8 +70,9 @@ public class DepthmapGUI extends ProcessorGUI {
 
 		final Button aBIFB = new Button(wgt, SWT.CHECK);
 		tde.gui.applyColorFont(aBIFB);
+		tde.gui.tip(aBIFB, "BlackIsFront");
 		GridData aBIFGD = new GridData(GridData.FILL_HORIZONTAL);
-		aBIFGD.heightHint = 20;
+		aBIFGD.heightHint = tde.gui.h(20);
 		aBIFB.setLayoutData(aBIFGD);
 		aBIFB.setSelection(pl.getBlackIsFront(aSelectedKey));
 		aBIFB.addSelectionListener(new SelectionListener() {
@@ -97,7 +98,7 @@ public class DepthmapGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("DepthZ");
 		xLS = new LabelScale(tde,wgt,"X",-10000,0,10000,(int)(pl.getX(aSelectedKey)*1000)) {
 			@Override
 			public void change(int aValue) {
@@ -106,7 +107,7 @@ public class DepthmapGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("DepthX");
 		pLS = new LabelScale(tde,wgt,"P",-10000,0,10000,(int)(pl.getP(aSelectedKey)*10000)) {
 			@Override
 			public void change(int aValue) {
@@ -115,7 +116,7 @@ public class DepthmapGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("DepthP");
 		
 		tde.timeLineStack.addTimeListener(this);
 	}

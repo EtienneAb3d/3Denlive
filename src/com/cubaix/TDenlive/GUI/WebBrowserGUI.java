@@ -22,7 +22,7 @@ public class WebBrowserGUI extends CompositePanel {
 		try {
 			Browser aBrowser = new Browser(container, SWT.NONE);
 			aBrowser.setLayoutData(new GridData(GridData.FILL_BOTH));
-			String aURL = "http://3denlive.com/news"+tde.config.lng.toUpperCase()+".php";
+			String aURL = "https://3denlive.com/news"+tde.config.lng.toUpperCase()+".php";
 			Browser.setCookie("COOKU=3De; expires=Sun, 10 Jan 2038 07:59:59 GMT", aURL);
 			Browser.setCookie("CN=3De; expires=Sun, 10 Jan 2038 07:59:59 GMT", aURL);
 			aBrowser.setUrl(aURL);

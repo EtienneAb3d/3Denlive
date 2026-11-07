@@ -113,6 +113,17 @@ public class StereoImage extends Media {
 	public void saveProject(StringBuffer aSB) throws Exception {
 		saveProject(aSB, "StereoImage");
 	}
+
+	@Override
+	public java.util.Vector<String> getFilePaths() {
+		java.util.Vector<String> aPaths = new java.util.Vector<String>();
+		for(String aP : new String[] {pathL, pathR}) {
+			if(aP != null && !"null".equals(aP) && !aPaths.contains(aP)) {
+				aPaths.add(aP);
+			}
+		}
+		return aPaths;
+	}
 	public void saveProject(StringBuffer aSB,String aType) throws Exception {
 		aSB.append("		<"+aType+">\n");
 		aSB.append("			<UID>" + UID + "</UID>\n");
@@ -422,19 +433,26 @@ public class StereoImage extends Media {
 		int aW = 0;
 		int aH = 0;
 		
+		//The 2 or 3 text lines may be higher than the thumbnail with big fonts
+		aGC.setFont(tde.gui.fontsSwt.robotoBold);
+		int aLinesH = aGC.getFontMetrics().getHeight();
+		aGC.setFont(tde.gui.fontsSwt.roboto);
+		aLinesH += (isSizeAuto ? 1 : 2) * aGC.getFontMetrics().getHeight();
+		int aFullH = Math.max(tde.config.thumbH, aLinesH);
+
 		aGC.setBackground(selState == 0 ? tde.gui.colorsSwt.WHITE : tde.gui.colorsSwt.BLUE_L60);
 		aGC.setForeground(selState == 0 ? tde.gui.colorsSwt.CUBAIX_BLUE : tde.gui.colorsSwt.WHITE);
-		aGC.fillRectangle(aClippingR.x, aY, aClippingR.width, tde.config.thumbH);
-		
+		aGC.fillRectangle(aClippingR.x, aY, aClippingR.width, aFullH);
+
 		if(getThumbSwt() == null || fileName == null) {//While loading, not yet available
-			return new Rectangle(aClippingR.x, aY, aClippingR.width, tde.config.thumbH);
+			return new Rectangle(aClippingR.x, aY, aClippingR.width, aFullH);
 		}
 
 		aGC.drawImage(getThumbSwt(), aX, aY);
 
 		aW += tde.config.thumbW;
-		
-		aGC.fillRectangle(aX+aW, aY, aClippingR.width, tde.config.thumbH);
+
+		aGC.fillRectangle(aX+aW, aY, aClippingR.width, aFullH);
 		
 		aW += 3;
 		

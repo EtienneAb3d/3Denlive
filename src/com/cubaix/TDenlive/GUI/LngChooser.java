@@ -43,6 +43,7 @@ public class LngChooser {
 		aFR.setBackground(tde.gui.colorsSwt.WHITE);
 		aFR.setForeground(tde.gui.colorsSwt.CUBAIX_BLUE);
 		aFR.setFont(tde.gui.fontsSwt.roboto);
+		aFR.setToolTipText("Français");
 		aFR.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
@@ -64,6 +65,7 @@ public class LngChooser {
 		aEN.setBackground(tde.gui.colorsSwt.WHITE);
 		aEN.setForeground(tde.gui.colorsSwt.CUBAIX_BLUE);
 		aEN.setFont(tde.gui.fontsSwt.roboto);
+		aEN.setToolTipText("English");
 		aEN.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {

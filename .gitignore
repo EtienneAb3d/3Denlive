@@ -1,1 +1,6 @@
 /bin/
+/distrib/ffmpeg/
+.DS_Store
+/delivery/
+/JVMs/
+/log/

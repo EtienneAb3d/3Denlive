@@ -103,7 +103,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("LensK1");
 
 		k2LS = new LabelScale(tde,wgt,"K2",-10000,0,10000,(int)(lc.getK2(aSelectedKey)*10000)) {
 			@Override
@@ -114,7 +114,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("LensK2");
 		
 		cxLS = new LabelScale(tde,wgt,"CX",0,5000,10000,(int)(lc.getCX(aSelectedKey)*10000)) {
 			@Override
@@ -125,7 +125,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("LensCX");
 
 		cyLS = new LabelScale(tde,wgt,"CY",0,5000,10000,(int)(lc.getCY(aSelectedKey)*10000)) {
 			@Override
@@ -136,7 +136,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("LensCY");
 
 		Composite aTKs = new Composite(wgt, SWT.NONE);
 		tde.gui.applyColorFont(aTKs);
@@ -281,7 +281,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("LensK1LR");
 
 		k2LRLS = new LabelScale(tde,wgt,"K2",-10000,0,10000,(int)(lc.getK2LR(aSelectedKey)*10000)) {
 			@Override
@@ -292,7 +292,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("LensK2LR");
 		
 		cxLRLS = new LabelScale(tde,wgt,"CX",-10000,0,10000,(int)(lc.getCXLR(aSelectedKey)*10000)) {
 			@Override
@@ -303,7 +303,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("LensCXLR");
 
 		cyLRLS = new LabelScale(tde,wgt,"CY",-10000,0,10000,(int)(lc.getCYLR(aSelectedKey)*10000)) {
 			@Override
@@ -314,7 +314,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("LensCYLR");
 
 		Composite aTKLRs = new Composite(wgt, SWT.NONE);
 		tde.gui.applyColorFont(aTKLRs);

@@ -3,6 +3,7 @@ package com.cubaix.TDenlive.GUI.processors;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
@@ -47,51 +48,91 @@ public class TimeControllerGUI extends ProcessorGUI {
 		aName.setText(tc.targetMedia.fileName);
 		aName.setAlignment(SWT.CENTER);
 		
-		LabelImageButton aMvupClip = new LabelImageButton(tde,aWGT,tde.gui.lngs.get("TimeController.MoveClipUp"),"arrowUp.png") {
-			@Override
-			public void clicked() {
-				tde.timeLineStack.moveUpVideo((Clip)tc.targetMedia);
-				tde.gui.timeLinesGUI.redraw();
-				tde.gui.monitorGUI.redraw();
-			}
-		};
+		Clip aClip = (Clip)tc.targetMedia;
+		if(tde.timeLineStack.isAudioClip(aClip)) {
+			//Sound clip: moves between the audio time lines
+			new LabelImageButton(tde,aWGT,tde.gui.lngs.get("TimeController.MoveClipUp"),"arrowUp.png") {
+				@Override
+				public void clicked() {
+					tde.timeLineStack.moveUpAudio(aClip);
+					tde.gui.timeLinesGUI.redraw();
+				}
+			}.tip("MoveClipUp");
+			new LabelImageButton(tde,aWGT,tde.gui.lngs.get("TimeController.MoveClipDown"),"arrowDown.png") {
+				@Override
+				public void clicked() {
+					tde.timeLineStack.moveDownAudio(aClip);
+					tde.gui.timeLinesGUI.redraw();
+				}
+			}.tip("MoveClipDown");
+		}
+		else {
+			new LabelImageButton(tde,aWGT,tde.gui.lngs.get("TimeController.MoveClipUp"),"arrowUp.png") {
+				@Override
+				public void clicked() {
+					tde.timeLineStack.moveUpVideo(aClip);
+					tde.gui.timeLinesGUI.redraw();
+					tde.gui.monitorGUI.redraw();
+				}
+			}.tip("MoveClipUp");
+
+			new LabelImageButton(tde,aWGT,tde.gui.lngs.get("TimeController.MoveClipDown"),"arrowDown.png") {
+				@Override
+				public void clicked() {
+					tde.timeLineStack.moveDownVideo(aClip);
+					tde.gui.timeLinesGUI.redraw();
+					tde.gui.monitorGUI.redraw();
+				}
+			}.tip("MoveClipDown");
+
+			new LabelImageButton(tde,aWGT,tde.gui.lngs.get("TimeController.DuplicateClipUp"),"copy.png") {
+				@Override
+				public void clicked() {
+					tde.timeLineStack.duplicateUpVideo(aClip);
+					tde.gui.timeLinesGUI.redraw();
+					tde.gui.monitorGUI.redraw();
+				}
+			}.tip("DuplicateClipUp");
+
+		}
 		
-		LabelImageButton aMvdwnClip = new LabelImageButton(tde,aWGT,tde.gui.lngs.get("TimeController.MoveClipDown"),"arrowDown.png") {
-			@Override
-			public void clicked() {
-				tde.timeLineStack.moveDownVideo((Clip)tc.targetMedia);
+		if(aClip.getMedia() != null && aClip.getMedia().getAudioReader() != null) {
+			//Sound of this clip heard or not (the line can also be muted)
+			Button aSoundB = new Button(aWGT, SWT.CHECK);
+			tde.gui.applyColorFont(aSoundB);
+			tde.gui.tip(aSoundB, "ClipSoundOn");
+			GridData aSGD = new GridData(GridData.FILL_HORIZONTAL);
+			aSGD.heightHint = tde.gui.h(20);
+			aSoundB.setLayoutData(aSGD);
+			aSoundB.setText(tde.gui.lngs.get("TimeController.SoundOn"));
+			aSoundB.setSelection(aClip.soundOn);
+			aSoundB.addListener(SWT.Selection, e -> {
+				aClip.soundOn = aSoundB.getSelection();
 				tde.gui.timeLinesGUI.redraw();
-				tde.gui.monitorGUI.redraw();
-			}
-		};
+			});
+		}
 		
-		LabelImageButton aDupClip = new LabelImageButton(tde,aWGT,tde.gui.lngs.get("TimeController.DuplicateClipUp"),"copy.png") {
-			@Override
-			public void clicked() {
-				tde.timeLineStack.duplicateUpVideo((Clip)tc.targetMedia);
-				tde.gui.timeLinesGUI.redraw();
-				tde.gui.monitorGUI.redraw();
-			}
-		};
+		if(aClip.getTwinClips().size() > 0) {
+			new LabelImageButton(tde,aWGT,tde.gui.lngs.get("TimeController.UnlinkTwins"),"cut.gif") {
+				@Override
+				public void clicked() {
+					aClip.unlinkTwins();
+					//Rebuild this panel after the end of the click event
+					tde.gui.display.asyncExec(() -> tde.gui.processorGUI.setProcessors(aClip.getProcessors()));
+				}
+			}.tip("UnlinkTwins");
+		}
 		
-		LabelImageButton aTwinToAudioClip = new LabelImageButton(tde,aWGT,tde.gui.lngs.get("TimeController.TwinToAudioClip"),"sound.gif") {
+		new LabelImageButton(tde,aWGT,tde.gui.lngs.get(aClip.getTwinClips().size() > 0 ? "TimeController.TrashClipAndTwins" : "TimeController.TrashClip"),"trash.png") {
 			@Override
 			public void clicked() {
-				tde.timeLineStack.twinToAudio((Clip)tc.targetMedia);
+				tde.timeLineStack.trashClip(aClip);
+				//Remove this panel after the end of the click event
+				tde.gui.display.asyncExec(() -> tde.gui.processorGUI.clean());
 				tde.gui.timeLinesGUI.redraw();
 				tde.gui.monitorGUI.redraw();
 			}
-		};
-		
-		LabelImageButton aTrashClip = new LabelImageButton(tde,aWGT,tde.gui.lngs.get("TimeController.TrashClip"),"trash.png") {
-			@Override
-			public void clicked() {
-				tde.timeLineStack.trashVideoClip((Clip)tc.targetMedia);
-				tde.timeLineStack.trashAudioClip((Clip)tc.targetMedia);
-				tde.gui.timeLinesGUI.redraw();
-				tde.gui.monitorGUI.redraw();
-			}
-		};
+		}.tip("TrashClip");
 		
 		startTime = new LabelText(tde,aWGT,tde.gui.lngs.get("TimeController.StartTime"),tc.getStartClock()) {
 			@Override

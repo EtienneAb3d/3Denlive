@@ -56,7 +56,7 @@ public class TDConfig {
 	
 	public String renderDir = "";
 	
-	public int fontSize = 8;
+	public int fontSize = 0;//<= 0 : system font size
 	public int sashWith = 2;
 	public int thumbW = 80;//160/2
 	public int thumbH = 45;//90/2

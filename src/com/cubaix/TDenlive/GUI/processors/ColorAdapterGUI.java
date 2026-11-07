@@ -55,7 +55,7 @@ public class ColorAdapterGUI extends ProcessorGUI {
 				ca.settRH(1.0 - aValue/10000.0);
 				tde.gui.monitorGUI.redraw();
 			}
-		};
+		}.tip("AdaptRed");
 		
 		Vector<String[]> aValTextsC = new Vector<String[]>();
 		String[] aValsC = ca.getPresetListC();
@@ -77,6 +77,6 @@ public class ColorAdapterGUI extends ProcessorGUI {
 				ca.settRL(aValue/10000.0);
 				tde.gui.monitorGUI.redraw();
 			}
-		};
+		}.tip("AdaptCyan");
 	}
 }

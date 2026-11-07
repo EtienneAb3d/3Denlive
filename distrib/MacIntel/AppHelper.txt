@@ -1,0 +1,18 @@
+https://photo-3d.groups.io/g/main/message/127682
+
+Do the following to launch the app for the *first* time.  Perform a
+right-click (hold down the "control" key while clicking with the one
+button mouse or trackpad) on the "3De" icon which is a black screen
+with the word "exec" in green.  A menu should pop-up.  Select "Open
+With" and from there pick "Terminal.app" which should be the default.
+Depending upon the version of your Mac's operating system, you'll get
+a pop-up asking if you really want to run this app from an unknown
+developer.  Confirm that you do and supply the necessary username and
+password if asked.  From this point on, the app will be trusted and
+you can just double click on the icon to launch it.
+
+When the app starts, it first opens up a terminal window and some text
+will fly by.  But very quickly the app's GUI will appear, hiding the
+terminal window.  Use the app as you normally would use any Mac app --
+you can ignore the terminal window which will automatically disappear
+when you exit the app.

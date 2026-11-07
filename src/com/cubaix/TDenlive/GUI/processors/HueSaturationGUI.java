@@ -78,7 +78,7 @@ public class HueSaturationGUI extends ProcessorGUI {
 				hs.setHue(aValue/100.0);
 				tde.gui.monitorGUI.redraw();
 			}
-		};
+		}.tip("Hue");
 		CLabel aCL = new CLabel(aWGT, SWT.NONE);
 		tde.gui.applyColorFont(aCL);
 		aCL.setText(tde.gui.lngs.get("HueSaturation.Saturation"));
@@ -90,7 +90,7 @@ public class HueSaturationGUI extends ProcessorGUI {
 				hs.setSaturation(aValue >= 0 ? 1.0+aValue/1000.0 : 1.0+aValue/10000.0);
 				tde.gui.monitorGUI.redraw();
 			}
-		};
+		}.tip("Saturation");
 		CLabel aBL = new CLabel(aWGT, SWT.NONE);
 		tde.gui.applyColorFont(aBL);
 		aBL.setText(tde.gui.lngs.get("HueSaturation.Brightness"));
@@ -102,7 +102,7 @@ public class HueSaturationGUI extends ProcessorGUI {
 				hs.setBrightness(aValue >= 0 ? 1.0+aValue/4000.0:1.0/(1.0-aValue/4000.0));
 				tde.gui.monitorGUI.redraw();
 			}
-		};
+		}.tip("HSBrightness");
 		CLabel aTL = new CLabel(aWGT, SWT.NONE);
 		tde.gui.applyColorFont(aTL);
 		aTL.setText(tde.gui.lngs.get("HueSaturation.Threshold"));
@@ -113,7 +113,7 @@ public class HueSaturationGUI extends ProcessorGUI {
 				hs.setThreshold(aValue / 10000.0);
 				tde.gui.monitorGUI.redraw();
 			}
-		};
+		}.tip("Threshold");
 		CLabel aRL = new CLabel(aWGT, SWT.NONE);
 		tde.gui.applyColorFont(aRL);
 		aRL.setText(tde.gui.lngs.get("HueSaturation.Range"));
@@ -124,6 +124,6 @@ public class HueSaturationGUI extends ProcessorGUI {
 				hs.setRange(aValue / 100.0);
 				tde.gui.monitorGUI.redraw();
 			}
-		};
+		}.tip("Range");
 	}
 }

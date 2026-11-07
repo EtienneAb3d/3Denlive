@@ -19,6 +19,7 @@ public class Renderer extends Processor {
 	Vector<BufferedImage[]> waitingPairs = new Vector<BufferedImage[]>();
 	Vector<BufferedImage> waitingPs = new Vector<BufferedImage>();
 	String pathOut = null;
+	String audioPathIn = null;
 	int width = 1280;
 	int height = 720;
 	double fps = 30;
@@ -30,8 +31,9 @@ public class Renderer extends Processor {
 	public Renderer(TDenlive aTDe
 			,int aWidth,int aHeight
 			,double aFps,String aFfmpegVideoOpts
-			,String aPathOut) {
+			,String aPathOut,String aAudioPathIn) {
 		super(aTDe, null);
+		audioPathIn = aAudioPathIn;
 		width = aWidth;
 		height = aHeight;
 		fps = aFps;
@@ -42,7 +44,7 @@ public class Renderer extends Processor {
 
 	void start() {
         try {
-        	ffmpeg = new FfmpegEncoder(tde,width,height,fps,ffmpegVideoOpts,pathOut);
+        	ffmpeg = new FfmpegEncoder(tde,width,height,fps,ffmpegVideoOpts,pathOut,audioPathIn);
         	
         	processing = true;
         	
@@ -58,15 +60,26 @@ public class Renderer extends Processor {
 						}
 						if(aPair != null) {
 				        	encoding = true;//Be sure the flag is set before taking the pair
+							//Always one image per pair, black where a view is missing: an error here must
+							//neither stop this thread (the rendering would wait for it forever) nor shift the sound
 							BufferedImage aP = new BufferedImage(2*width, height, BufferedImage.TYPE_3BYTE_BGR);
-							Graphics2D aG = (Graphics2D)aP.getGraphics();
-							aG.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-							aG.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
-							aG.drawImage(aPair[0], 0, 0,width,height
-									,0,0,aPair[0].getWidth(),aPair[0].getHeight(), null);
-							aG.drawImage(aPair[1], width, 0,2*width,height
-									,0,0,aPair[1].getWidth(),aPair[1].getHeight(), null);
-							aG.dispose();
+							try {
+								Graphics2D aG = (Graphics2D)aP.getGraphics();
+								aG.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+								aG.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
+								if(aPair[0] != null) {
+									aG.drawImage(aPair[0], 0, 0,width,height
+											,0,0,aPair[0].getWidth(),aPair[0].getHeight(), null);
+								}
+								if(aPair[1] != null) {
+									aG.drawImage(aPair[1], width, 0,2*width,height
+											,0,0,aPair[1].getWidth(),aPair[1].getHeight(), null);
+								}
+								aG.dispose();
+							}
+							catch(Throwable t) {
+								t.printStackTrace(System.err);
+							}
 							synchronized (waitingPs) {
 								waitingPs.add(aP);
 							}

@@ -46,10 +46,12 @@ public abstract class LabelKeyFrame extends Widget {
 		addMode = aMode;
 		if(addMode) {
 			addDelete.setImage(tde.gui.imgsSwt.getIcon("add.gif"));
+			tde.gui.tip(addDelete, "KeyAdd");
 			addMode = true;
 		}
 		else {
 			addDelete.setImage(tde.gui.imgsSwt.getIcon("delete.png"));
+			tde.gui.tip(addDelete, "KeyDelete");
 			addMode = false;
 		}
 	}
@@ -96,10 +98,14 @@ public abstract class LabelKeyFrame extends Widget {
 			}
 		};
 		
+		tde.gui.tip(aL, "KeyFrames");
+		tde.gui.tip(kf.container, "KeyFrames");
+		
 		Label aLeft = new Label(container,SWT.NONE);
 		aLeft.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 		aLeft.setImage(tde.gui.imgsSwt.getIcon("arrowLeftSmallCubaixBlue.gif"));
 		aLeft.setBackground(tde.gui.colorsSwt.WHITE);
+		tde.gui.tip(aLeft, "KeyPrev");
 		aLeft.addListener(SWT.MouseDown,e -> {
 			int aKey = proc.getPrevKeyGT(tde.timeLineStack.getTimePosMS()-1);
 			if(aKey < 0) {
@@ -120,6 +126,7 @@ public abstract class LabelKeyFrame extends Widget {
 		addDelete = new Label(container, SWT.NONE);
 		addDelete.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 		addDelete.setImage(tde.gui.imgsSwt.getIcon("add.gif"));
+		tde.gui.tip(addDelete, "KeyAdd");
 		addDelete.setBackground(tde.gui.colorsSwt.WHITE);
 		addDelete.addListener(SWT.MouseDown,e -> {
 			int aKey = -1;
@@ -145,6 +152,7 @@ public abstract class LabelKeyFrame extends Widget {
 		aRight.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 		aRight.setImage(tde.gui.imgsSwt.getIcon("arrowRightSmallCubaixBlue.gif"));
 		aRight.setBackground(tde.gui.colorsSwt.WHITE);
+		tde.gui.tip(aRight, "KeyNext");
 		aRight.addListener(SWT.MouseDown,e -> {
 			int aKey = proc.getNextKeyGT(tde.timeLineStack.getTimePosMS());
 			if(aKey < 0) {
@@ -156,6 +164,7 @@ public abstract class LabelKeyFrame extends Widget {
 				tde.timeLineStack.setTimePosMS(aTimeNew-1);
 				tde.timeLineStack.setRequestedTimePosMS(aTimeNew-1);
 				addDelete.setImage(tde.gui.imgsSwt.getIcon("add.gif"));
+				tde.gui.tip(addDelete, "KeyAdd");
 				addMode = true;
 			}
 			else {
@@ -164,6 +173,7 @@ public abstract class LabelKeyFrame extends Widget {
 				tde.timeLineStack.setTimePosMS(aTimeNew);
 				tde.timeLineStack.setRequestedTimePosMS(aTimeNew);
 				addDelete.setImage(tde.gui.imgsSwt.getIcon("delete.png"));
+				tde.gui.tip(addDelete, "KeyDelete");
 				addMode = false;
 			}
 			kf.setSelection(aKey);

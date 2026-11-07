@@ -36,8 +36,9 @@ public class CropperGUI extends ProcessorGUI {
 
 		final Button aDrawCropRectS = new Button(aWGT, SWT.CHECK);
 		tde.gui.applyColorFont(aDrawCropRectS);
+		tde.gui.tip(aDrawCropRectS, "ShowCutLines");
 		GridData aDCSGD = new GridData(GridData.FILL_HORIZONTAL);
-		aDCSGD.heightHint = 20;
+		aDCSGD.heightHint = tde.gui.h(20);
 		aDrawCropRectS.setLayoutData(aDCSGD);
 		aDrawCropRectS.setSelection(crp.isShowCutLines());
 		aDrawCropRectS.addSelectionListener(new SelectionListener() {
@@ -66,14 +67,14 @@ public class CropperGUI extends ProcessorGUI {
 				crp.setLeftL(aValue/10000.0);
 				tde.gui.monitorGUI.redraw();
 			}
-		};
+		}.tip("CropLeftL");
 		new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.LeftR"),0,0,10000,(int)(crp.getLeftR()*10000)) {
 			@Override
 			public void change(int aValue) {
 				crp.setLeftR(aValue/10000.0);
 				tde.gui.monitorGUI.redraw();
 			}
-		};
+		}.tip("CropLeftR");
 
 		CLabel aRight = new CLabel(aWGT, SWT.NONE);
 		tde.gui.applyColorFont(aRight);
@@ -86,14 +87,14 @@ public class CropperGUI extends ProcessorGUI {
 				crp.setRightL(aValue/10000.0);
 				tde.gui.monitorGUI.redraw();
 			}
-		};
+		}.tip("CropRightL");
 		new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.RightR"),0,10000,10000,(int)(crp.getRightR()*10000)) {
 			@Override
 			public void change(int aValue) {
 				crp.setRightR(aValue/10000.0);
 				tde.gui.monitorGUI.redraw();
 			}
-		};
+		}.tip("CropRightR");
 		
 		CLabel aTopBottom = new CLabel(aWGT, SWT.NONE);
 		tde.gui.applyColorFont(aTopBottom);
@@ -106,14 +107,14 @@ public class CropperGUI extends ProcessorGUI {
 				crp.setTop(1-(aValue/10000.0));
 				tde.gui.monitorGUI.redraw();
 			}
-		};
+		}.tip("CropTop");
 		new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.Bottom"),0,0,10000,(int)((1-crp.getBottom())*10000)) {
 			@Override
 			public void change(int aValue) {
 				crp.setBottom(1.0-(aValue/10000.0));
 				tde.gui.monitorGUI.redraw();
 			}
-		};
+		}.tip("CropBottom");
 
 		CLabel aRot = new CLabel(aWGT, SWT.NONE);
 		tde.gui.applyColorFont(aRot);
@@ -126,7 +127,7 @@ public class CropperGUI extends ProcessorGUI {
 				crp.setAngle(aValue/1000.0);
 				tde.gui.monitorGUI.redraw();
 			}
-		};
+		}.tip("CropRotation");
 
 		CLabel aShear = new CLabel(aWGT, SWT.NONE);
 		tde.gui.applyColorFont(aShear);
@@ -139,14 +140,14 @@ public class CropperGUI extends ProcessorGUI {
 				crp.setShearX(aValue/50000.0);
 				tde.gui.monitorGUI.redraw();
 			}
-		};
+		}.tip("CropShearL");
 		new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.ShearXR"),-10000,0,10000,(int)(crp.getShearY()*50000)) {
 			@Override
 			public void change(int aValue) {
 				crp.setShearY(aValue/50000.0);
 				tde.gui.monitorGUI.redraw();
 			}
-		};
+		}.tip("CropShearR");
 
 		CLabel aTransp = new CLabel(aWGT, SWT.NONE);
 		tde.gui.applyColorFont(aTransp);
@@ -159,7 +160,7 @@ public class CropperGUI extends ProcessorGUI {
 				crp.setTransparency(aValue/10000.0);
 				tde.gui.monitorGUI.redraw();
 			}
-		};
+		}.tip("CropTransparency");
 	}
 	
 	int scale2bar(double aValue) {

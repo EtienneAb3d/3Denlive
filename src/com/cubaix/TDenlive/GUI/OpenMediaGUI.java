@@ -1,5 +1,6 @@
 package com.cubaix.TDenlive.GUI;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -22,6 +23,7 @@ import org.eclipse.swt.widgets.Shell;
 import com.cubaix.TDenlive.TDConfig;
 import com.cubaix.TDenlive.TDenlive;
 import com.cubaix.TDenlive.GUI.widgets.LabelImageButton;
+import com.cubaix.TDenlive.medias.Media;
 import com.cubaix.TDenlive.medias.StereoImage;
 import com.cubaix.TDenlive.utils.ImageUtils;
 import com.cubaix.TDenlive.utils.StringUtils;
@@ -70,12 +72,12 @@ public class OpenMediaGUI {
 								tde.gui.display.syncExec(new Runnable() {
 									@Override
 									public void run() {
-										if(new File(StringUtils.path2processing(StringUtils.path2workingcopy(aPath))).exists()) {
+										if(new File(StringUtils.path2processing(StringUtils.path2workingcopy(aPath, tde.getWorkCacheDir()))).exists()) {
 											MessageBox messageBox = new MessageBox(shell,SWT.ICON_INFORMATION|SWT.OK);
 										    messageBox.setMessage(tde.gui.lngs.get("MediaOpen.WorkCopyProcessing"));
 										    int rc = messageBox.open();
 										}
-										preview.setImage(ImageUtils.imageToSwt(tde.gui.display,ImageUtils.toRes(((StereoImage)tde.mediaList.mediaList.lastElement()).loadedLeft,300,false,false,true)));
+										showPreview();
 										preview.layout(true);
 										tde.gui.mediaListGUI.redraw();
 										tde.gui.setWaitCursor(false,shell);
@@ -90,7 +92,7 @@ public class OpenMediaGUI {
 					aTh.start();
 				}
 			}
-		};
+		}.tip("OpenX");
 		new LabelImageButton(tde,shell,tde.gui.lngs.get("MediaOpen.OpenP"),"openObject.png"){
 			@Override
 			public void clicked() {
@@ -112,12 +114,12 @@ public class OpenMediaGUI {
 								tde.gui.display.syncExec(new Runnable() {
 									@Override
 									public void run() {
-										if(new File(StringUtils.path2processing(StringUtils.path2workingcopy(aPath))).exists()) {
+										if(new File(StringUtils.path2processing(StringUtils.path2workingcopy(aPath, tde.getWorkCacheDir()))).exists()) {
 											MessageBox messageBox = new MessageBox(shell,SWT.ICON_INFORMATION|SWT.OK);
 										    messageBox.setMessage(tde.gui.lngs.get("MediaOpen.WorkCopyProcessing"));
 										    int rc = messageBox.open();
 										}
-										preview.setImage(ImageUtils.imageToSwt(tde.gui.display,ImageUtils.toRes(((StereoImage)tde.mediaList.mediaList.lastElement()).loadedLeft,300,false,false,true)));
+										showPreview();
 										preview.layout(true);
 										tde.gui.mediaListGUI.redraw();
 										tde.gui.setWaitCursor(false,shell);
@@ -132,7 +134,7 @@ public class OpenMediaGUI {
 					aTh.start();
 				}
 			}
-		};
+		}.tip("OpenP");
 		new LabelImageButton(tde,shell,tde.gui.lngs.get("MediaOpen.OpenLR"),"openObject.png"){
 			@Override
 			public void clicked() {
@@ -163,12 +165,12 @@ public class OpenMediaGUI {
 									tde.gui.display.syncExec(new Runnable() {
 										@Override
 										public void run() {
-											if(new File(StringUtils.path2processing(StringUtils.path2workingcopy(aPaths[0]))).exists()) {
+											if(new File(StringUtils.path2processing(StringUtils.path2workingcopy(aPaths[0], tde.getWorkCacheDir()))).exists()) {
 												MessageBox messageBox = new MessageBox(shell,SWT.ICON_INFORMATION|SWT.OK);
 											    messageBox.setMessage(tde.gui.lngs.get("MediaOpen.WorkCopyProcessing"));
 											    int rc = messageBox.open();
 											}
-											preview.setImage(ImageUtils.imageToSwt(tde.gui.display,ImageUtils.toRes(((StereoImage)tde.mediaList.mediaList.lastElement()).loadedLeft,300,false,false,true)));
+											showPreview();
 											preview.layout(true);
 											tde.gui.mediaListGUI.redraw();
 											tde.gui.setWaitCursor(false,shell);
@@ -184,7 +186,7 @@ public class OpenMediaGUI {
 					}
 				}
 			}
-		};
+		}.tip("OpenLR");
 		
 		new LabelImageButton(tde,shell,tde.gui.lngs.get("MediaOpen.OpenFlat"),"openObject.png"){
 			@Override
@@ -207,12 +209,12 @@ public class OpenMediaGUI {
 								tde.gui.display.syncExec(new Runnable() {
 									@Override
 									public void run() {
-										if(new File(StringUtils.path2processing(StringUtils.path2workingcopy(aPath))).exists()) {
+										if(new File(StringUtils.path2processing(StringUtils.path2workingcopy(aPath, tde.getWorkCacheDir()))).exists()) {
 											MessageBox messageBox = new MessageBox(shell,SWT.ICON_INFORMATION|SWT.OK);
 										    messageBox.setMessage(tde.gui.lngs.get("MediaOpen.WorkCopyProcessing"));
 										    int rc = messageBox.open();
 										}
-										preview.setImage(ImageUtils.imageToSwt(tde.gui.display,ImageUtils.toRes(((StereoImage)tde.mediaList.mediaList.lastElement()).loadedLeft,300,false,false,true)));
+										showPreview();
 										preview.layout(true);
 										tde.gui.mediaListGUI.redraw();
 										tde.gui.setWaitCursor(false,shell);
@@ -227,15 +229,49 @@ public class OpenMediaGUI {
 					aTh.start();
 				}
 			}
-		};
+		}.tip("OpenFlat");
+
+		new LabelImageButton(tde,shell,tde.gui.lngs.get("MediaOpen.OpenAudio"),"sound.gif"){
+			@Override
+			public void clicked() {
+				String aPath = fileChoose(currentMediaDir == null ? currentMediaDir = tde.tdeDir:currentMediaDir,true);
+				if(aPath != null){
+					currentMediaDir = new File(aPath).getParent();
+					savePath();
+					tde.gui.setWaitCursor(true,shell);
+					Thread aTh = new Thread(new Runnable() {
+						@Override
+						public void run() {
+							try {
+								tde.mediaList.loadAudio(aPath);
+							}
+							catch(Throwable t) {
+								t.printStackTrace(System.err);
+							}
+							tde.gui.display.syncExec(new Runnable() {
+								@Override
+								public void run() {
+									showPreview();
+									preview.layout(true);
+									tde.gui.mediaListGUI.redraw();
+									tde.gui.setWaitCursor(false,shell);
+								}
+							});
+						}
+					});
+					aTh.start();
+				}
+			}
+		}.tip("OpenAudio");
 
 		Button aOk = new Button(shell, SWT.PUSH);
 		GridData aOGD = new GridData();
-		aOGD.heightHint = 20;
+		aOGD.heightHint = tde.gui.h(20);
 		aOk.setLayoutData(aOGD);
 		aOk.setText(tde.gui.lngs.get("MediaOpen.Done"));
 		aOk.setImage(tde.gui.imgsSwt.getIcon("checked.gif"));
 		tde.gui.applyColorFont(aOk);
+		tde.gui.tip(aOk, "CloseWindow");
 		aOk.setAlignment(SWT.CENTER);
 		aOk.addSelectionListener(new SelectionListener() {
 			@Override
@@ -256,6 +292,18 @@ public class OpenMediaGUI {
 		preview.setFont(tde.gui.fontsSwt.roboto);
 		preview.setLayoutData(new GridData(GridData.FILL_BOTH));
 		preview.setAlignment(SWT.CENTER);
+	}
+
+	void showPreview() {
+		if(tde.mediaList.mediaList.size() <= 0) {
+			return;
+		}
+		Media aM = tde.mediaList.mediaList.lastElement();
+		BufferedImage aBI = aM instanceof StereoImage ? ((StereoImage)aM).loadedLeft
+				: aM.getFinalLeft(TDConfig.PROCESSING_MODE_WORK, 0);
+		if(aBI != null) {
+			preview.setImage(ImageUtils.imageToSwt(tde.gui.display,ImageUtils.toRes(aBI,300,false,false,true)));
+		}
 	}
 
 	void savePath() {
@@ -288,10 +336,16 @@ public class OpenMediaGUI {
 		}
 	}
 	
+	static final String AUDIO_EXTS = "*.mp3;*.wav;*.wave;*.ogg;*.oga;*.opus;*.flac;*.aac;*.m4a;*.wma;*.aif;*.aiff;*.ac3;*.mka;";
+	
 	String fileChoose(String filterPath) {
+		return fileChoose(filterPath, false);
+	}
+	
+	String fileChoose(String filterPath,boolean aAudio) {
 		FileDialog aFD = new FileDialog (shell, SWT.OPEN);
-		String [] filterNames = new String [] {"Image Files", "All Files (*)"};
-		String aExts = "*.gif;*.png;*.xpm;*.jpg;*.jpeg;*.tiff;*.mpo;"
+		String [] filterNames = new String [] {aAudio ? "Sound Files" : "Image Files", "All Files (*)"};
+		String aExts = aAudio ? AUDIO_EXTS : "*.gif;*.png;*.xpm;*.jpg;*.jpeg;*.tiff;*.mpo;"
 				+ "*.mp4;*.mpg;*.mpeg;*.avi;*.mov;*.mkv;*.vob;*.ogv;*.wmv;*.ts;*.mts;*.m2ts;*.flv;*.dv;"
 				+ "*.svg;";
 		String [] filterExtensions = new String [] {aExts+aExts.toUpperCase(), "*"};

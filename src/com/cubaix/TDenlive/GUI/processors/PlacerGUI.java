@@ -68,7 +68,7 @@ public class PlacerGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("PlaceX");
 		yLS = new LabelScale(tde,wgt,"Y",-10000,0,10000,(int)(-pl.getY(aSelectedKey)*10000)) {
 			@Override
 			public void change(int aValue) {
@@ -77,7 +77,7 @@ public class PlacerGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("PlaceY");
 		sLS = new LabelScale(tde,wgt,tde.gui.lngs.get("Generic.SizeLetter"),-10000,0,10000,scale2bar(pl.getScale(aSelectedKey))) {
 			@Override
 			public void change(int aValue) {
@@ -86,7 +86,7 @@ public class PlacerGUI extends ProcessorGUI {
 					tde.gui.monitorGUI.redraw();
 				}
 			}
-		};
+		}.tip("PlaceS");
 		
 		tde.timeLineStack.addTimeListener(this);
 	}

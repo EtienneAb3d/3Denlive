@@ -20,10 +20,13 @@ public class FontsSwt {
 	public FontsSwt(TDenlive aTDe) {
 		tde = aTDe;
 		try {
+			//fontSize <= 0 : follow the system font size (13pt on macOS, ~9pt on Windows/Linux)
+			int aSize = tde.config.fontSize > 0 ? tde.config.fontSize
+					: tde.gui.display.getSystemFont().getFontData()[0].getHeight();
 			loadFont(tde.gui.display,"Roboto-Regular.ttf");
-			roboto = new Font(tde.gui.display,"Robot",tde.config.fontSize,SWT.NORMAL);
+			roboto = new Font(tde.gui.display,"Roboto",aSize,SWT.NORMAL);
 			loadFont(tde.gui.display,"Roboto-Bold.ttf");
-			robotoBold = new Font(tde.gui.display,"Robot",tde.config.fontSize,SWT.BOLD);
+			robotoBold = new Font(tde.gui.display,"Roboto",aSize,SWT.BOLD);
 		}
 		catch(Throwable t) {
 			t.printStackTrace(System.err);
@@ -39,8 +42,9 @@ public class FontsSwt {
 		InputStream is = FontsSwt.class.getResourceAsStream("fonts/"+aFileName);
 		OutputStream os = new FileOutputStream(tempFile);
 		byte[] aBuf = new byte[1024];
-		while(is.read(aBuf) > 0) {
-			os.write(aBuf);
+		int aRead;
+		while((aRead = is.read(aBuf)) > 0) {
+			os.write(aBuf, 0, aRead);
 		}
 		os.flush();
 		os.close();

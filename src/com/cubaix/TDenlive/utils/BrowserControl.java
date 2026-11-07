@@ -14,7 +14,7 @@ public class BrowserControl {
 	 * Display a file in the system browser. If you want to display a file, you must include the absolute path name.
 	 * 
 	 * @param url
-	 *            the file's url (the url must start with either "http://" or "file://").
+	 *            the file's url (the url must start with either "https://", "http://" or "file://").
 	 */
 	// Used to identify the windows platform.
 	private static final String WIN_ID = "Windows";
@@ -76,7 +76,7 @@ public class BrowserControl {
 //		String cmd = null;
 //		try {
 //			if (windows) {
-//				// cmd = 'rundll32 url.dll,FileProtocolHandler http://...'
+//				// cmd = 'rundll32 url.dll,FileProtocolHandler https://...'
 //				cmd = WIN_PATH + " " + WIN_FLAG + " " + url;
 //				Process p = Runtime.getRuntime().exec(cmd);
 //			} else {
@@ -84,7 +84,7 @@ public class BrowserControl {
 //				// command to work. So, we try sending the command and
 //				// check for an exit value. If the exit command is 0,
 //				// it worked, otherwise we need to start the browser.
-//				// cmd = 'netscape -remote openURL(http://www.javaworld.com)'
+//				// cmd = 'netscape -remote openURL(https://www.javaworld.com)'
 //				cmd = UNIX_PATH + " " + UNIX_FLAG + "(" + url + ")";
 //				Process p = Runtime.getRuntime().exec(cmd);
 //				try {
@@ -93,7 +93,7 @@ public class BrowserControl {
 //					int exitCode = p.waitFor();
 //					if (exitCode != 0) {
 //						// Command failed, start up the browser
-//						// cmd = 'netscape http://www.javaworld.com'
+//						// cmd = 'netscape https://www.javaworld.com'
 //						cmd = UNIX_PATH + " " + url;
 //						p = Runtime.getRuntime().exec(cmd);
 //					}
@@ -126,6 +126,6 @@ public class BrowserControl {
 	 * Simple example.
 	 */
 	public static void main(String[] args) {
-		displayURL("http://www.javaworld.com");
+		displayURL("https://www.javaworld.com");
 	}
 }

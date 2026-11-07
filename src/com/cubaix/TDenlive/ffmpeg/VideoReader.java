@@ -30,6 +30,10 @@ public class VideoReader {
 	
 	VideoReader sync = null;
 	
+	//Last image given, and its processing mode: shown again past the last frame of the video
+	BufferedImage lastImage = null;
+	int lastImageMode = -1;
+	
 	public VideoReader(TDenlive aTDe,String aPath,VideoReader aSync) {
 		tde = aTDe;
 		path = aPath;
@@ -42,7 +46,7 @@ public class VideoReader {
 			origWidth = aBI.getWidth();
 			origHeight = aBI.getHeight();
 			
-			String aPathWork = StringUtils.path2workingcopy(path);
+			String aPathWork = StringUtils.path2workingcopy(path, tde == null ? null : tde.getWorkCacheDir());
 			if(!new File(aPathWork).exists() && !new File(StringUtils.path2processing(aPathWork)).exists()) {
 				int aWorkWidth = origWidth;
 				int aWorkHeight = origHeight;
@@ -63,7 +67,7 @@ public class VideoReader {
 	
 	public void read(int aProcessingMode,long aTimeOffset,int aNbFrames,String aResize,double aFps) {
 		long aTime = System.currentTimeMillis();
-		String aPath = StringUtils.path2workingcopy(path);
+		String aPath = StringUtils.path2workingcopy(path, tde == null ? null : tde.getWorkCacheDir());
 		if(aProcessingMode == TDConfig.PROCESSING_MODE_RENDER || !new File(aPath).exists()) {
 			aPath = path;
 		}
@@ -74,6 +78,10 @@ public class VideoReader {
 		}
 		for(int f = 0;f < aNbFrames;f++) {
 			BufferedImage aBI = decoder.getImg();
+			if(aBI == null) {
+				//No frame at this time (past the last frame of the video) or decoding error
+				break;
+			}
 			currentFps = decoder.fps;
 			currentWidth = aBI.getWidth();
 			currentHeight = aBI.getHeight();
@@ -219,7 +227,15 @@ public class VideoReader {
 				}
 			}
 		}
-		if(aBI == null) {
+		if(aBI != null) {
+			lastImage = aBI;
+			lastImageMode = aProcessingMode;
+		}
+		else if(lastImage != null && lastImageMode == aProcessingMode) {
+			//Past the last frame (the clip can last a few ms more than the frames): keep the last one
+			aBI = lastImage;
+		}
+		else {
 			aBI = ImageUtils.createImage(origWidth, origHeight);
 		}
 		return aBI;

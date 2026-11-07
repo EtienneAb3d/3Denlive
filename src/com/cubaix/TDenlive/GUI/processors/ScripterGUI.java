@@ -72,9 +72,10 @@ public class ScripterGUI extends ProcessorGUI {
 		aChooseScript.setAlignment(SWT.CENTER);
 		GridData aCSGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
 		aCSGD.widthHint = 32;
-		aCSGD.heightHint = 25;
+		aCSGD.heightHint = tde.gui.h(25);
 		aChooseScript.setLayoutData(aCSGD);
 		tde.gui.applyColorFont(aChooseScript);
+		tde.gui.tip(aChooseScript, "ChooseScript");
 		aChooseScript.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseUp(MouseEvent arg0) {}

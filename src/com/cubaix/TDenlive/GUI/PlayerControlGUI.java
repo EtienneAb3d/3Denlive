@@ -9,12 +9,18 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
 import com.cubaix.TDenlive.TDenlive;
+import com.cubaix.TDenlive.audio.AudioPlayer;
+import com.cubaix.TDenlive.medias.Clip;
+import com.cubaix.TDenlive.medias.Media;
 import com.cubaix.TDenlive.medias.TimeListener;
 import com.cubaix.TDenlive.utils.StringUtils;
 
 public class PlayerControlGUI extends CompositePanel {
 	Composite toolBar = null;
-	boolean playing = false;
+	volatile boolean playing = false;
+	//Incremented at each start: a previous playing thread not yet ended stops by itself
+	volatile int playGen = 0;
+	Label playStop = null;
 	Label clock = null;
 
 	public PlayerControlGUI(TDenlive aTDe, Composite aParent) {
@@ -27,48 +33,80 @@ public class PlayerControlGUI extends CompositePanel {
 		
 		toolBar = new Composite(container, SWT.NULL);
 		GridData aTB = new GridData(GridData.FILL_HORIZONTAL);
-		aTB.heightHint = 25;
+		aTB.heightHint = tde.gui.h(25);
 		toolBar.setLayoutData(aTB);
 		tde.gui.applyColorFont(toolBar);
-		GridLayout aGL = new GridLayout(9, false);
+		GridLayout aGL = new GridLayout(10, false);
 		tde.gui.applyNoMargin(aGL);
 		toolBar.setLayout(aGL);
 
-		Label play = new Label(toolBar,SWT.NONE);
-		play.setImage(tde.gui.imgsSwt.getIcon("play.gif"));
-		play.setAlignment(SWT.CENTER);
+		//Single button: play, and stop while playing
+		playStop = new Label(toolBar,SWT.NONE);
+		playStop.setAlignment(SWT.CENTER);
 		GridData aPlayGD = new GridData();
 		aPlayGD.widthHint = 25;
-		aPlayGD.heightHint = 25;
-		play.setLayoutData(aPlayGD);
-		tde.gui.applyColorFont(play);
-		play.addMouseListener(new MouseListener() {
+		aPlayGD.heightHint = tde.gui.h(25);
+		playStop.setLayoutData(aPlayGD);
+		tde.gui.applyColorFont(playStop);
+		setPlaying(false);
+		playStop.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseUp(MouseEvent arg0) {
 			}
 			@Override
 			public void mouseDown(MouseEvent arg0) {
 				if(playing) {
-					//Not twice
+					setPlaying(false);
 					return;
 				}
-				playing = true;
-				tde.gui.monitorGUI.setMedia(tde.timeLineStack);
+				setPlaying(true);
+				final int aGen = ++playGen;
+				//A library media shown in the monitor is played alone, otherwise the montage
+				Media aShown = tde.gui.monitorGUI.getMedia();
+				final boolean aIsLibMedia = aShown != null && tde.mediaList.mediaList.contains(aShown);
+				final Media aPlayed = aIsLibMedia ? aShown : tde.timeLineStack;
+				//Cursor position at the click, restored at the stop
+				final long aTimePosStart = aIsLibMedia ? aPlayed.getRequestedTimePosMS() : aPlayed.getTimePosMS();
+				tde.gui.monitorGUI.setMedia(aPlayed);
 				Thread aTh = new Thread(new Runnable() {
 					@Override
 					public void run() {
 						long aTimeStart = System.currentTimeMillis();
-						long aTimePosStart = tde.timeLineStack.getTimePosMS();
-						tde.timeLineStack.setRequestedTimePosMS(aTimePosStart);
-						while(playing) {
+						aPlayed.setRequestedTimePosMS(aTimePosStart);
+						//The sound card gives the time while playing, otherwise the system clock
+						AudioPlayer aAudio = aIsLibMedia ? new AudioPlayer(tde, aPlayed) : new AudioPlayer(tde);
+						boolean aAudioClock = aAudio.start(aTimePosStart);
+						final boolean[] aShownChanged = new boolean[] {false};
+						while(playing && aGen == playGen) {
 							long aTimeStartRedraw = System.currentTimeMillis();
 							tde.gui.display.syncExec(new Runnable() {
 								@Override
 								public void run() {
+									if(tde.gui.monitorGUI.getMedia() != aPlayed) {
+										//Another media or the montage clicked: stop playing this one
+										aShownChanged[0] = true;
+										return;
+									}
 									tde.gui.monitorGUI.redraw();
-									tde.gui.timeLinesGUI.redraw();
+									if(aIsLibMedia) {
+										showClock(aPlayed.getRequestedTimePosMS());
+									}
+									else {
+										tde.gui.timeLinesGUI.redraw();
+									}
 								}
 							});
+							if(aShownChanged[0]) {
+								tde.gui.display.syncExec(new Runnable() {
+									@Override
+									public void run() {
+										if(aGen == playGen && !playStop.isDisposed()) {
+											setPlaying(false);
+										}
+									}
+								});
+								break;
+							}
 							if(System.currentTimeMillis()-aTimeStartRedraw < 5) {
 								//No more than 200 fps at screen, CPU respect (certainly waiting for an image calculation)
 								try{
@@ -78,13 +116,54 @@ public class PlayerControlGUI extends CompositePanel {
 									t.printStackTrace(System.err);
 								}
 							}
-							long aTimePosNew = aTimePosStart+System.currentTimeMillis()-aTimeStart;
-							if(aTimePosNew-tde.timeLineStack.getTimePosMS() > 200) {
-								//Dilate time
-								aTimePosNew = tde.timeLineStack.getTimePosMS()+200;
+							long aTimePosNew;
+							if(aAudioClock) {
+								//Images follow the sound (frames are skipped if the processing is too slow)
+								aTimePosNew = aAudio.getPositionMS();
 							}
-							tde.timeLineStack.setRequestedTimePosMS(aTimePosNew);
+							else {
+								aTimePosNew = aTimePosStart+System.currentTimeMillis()-aTimeStart;
+								long aTimePosCur = aIsLibMedia ? aPlayed.getRequestedTimePosMS() : aPlayed.getTimePosMS();
+								if(aTimePosNew-aTimePosCur > 200) {
+									//Dilate time
+									aTimePosNew = aTimePosCur+200;
+								}
+							}
+							//Stop at the end of the media, or of the last clip of the montage
+							if(aTimePosNew >= aPlayed.getMaxTimePosMS()) {
+								tde.gui.display.syncExec(new Runnable() {
+									@Override
+									public void run() {
+										if(aGen == playGen && !playStop.isDisposed()) {
+											setPlaying(false);
+										}
+									}
+								});
+								break;
+							}
+							aPlayed.setRequestedTimePosMS(aTimePosNew);
 						}
+						aAudio.stop();
+						//Back to the start position, done here (the loop has ended, it no longer moves the cursor),
+						//unless a new play has started in the meantime
+						tde.gui.display.syncExec(new Runnable() {
+							@Override
+							public void run() {
+								if(aGen != playGen || playing || playStop.isDisposed()) {
+									return;
+								}
+								aPlayed.setRequestedTimePosMS(aTimePosStart);
+								if(tde.gui.monitorGUI.getMedia() == aPlayed) {
+									tde.gui.monitorGUI.redraw();
+									if(aIsLibMedia) {
+										showClock(aTimePosStart);
+									}
+								}
+								if(!aIsLibMedia) {
+									tde.gui.timeLinesGUI.redraw();
+								}
+							}
+						});
 					}
 				});
 				aTh.start();
@@ -94,40 +173,27 @@ public class PlayerControlGUI extends CompositePanel {
 			}
 		});
 		
-		Label stop = new Label(toolBar,SWT.NONE);
-		stop.setImage(tde.gui.imgsSwt.getIcon("stop.gif"));
-		stop.setAlignment(SWT.CENTER);
-		GridData aStopGD = new GridData();
-		aStopGD.widthHint = 25;
-		aStopGD.heightHint = 25;
-		stop.setLayoutData(aStopGD);
-		tde.gui.applyColorFont(stop);
-		stop.addMouseListener(new MouseListener() {
-			@Override
-			public void mouseUp(MouseEvent arg0) {
-			}
-			@Override
-			public void mouseDown(MouseEvent arg0) {
-				playing = false;
-			}
-			@Override
-			public void mouseDoubleClick(MouseEvent arg0) {
-			}
-		});
-		
 		clock = new Label(toolBar,SWT.NONE);
 		clock.setText(StringUtils.time2Clock(0));
 		clock.setAlignment(SWT.CENTER);
-		GridData aClockGD = new GridData();
-		aClockGD.widthHint = 80;
-		aClockGD.heightHint = 12;
-		clock.setLayoutData(aClockGD);
 		tde.gui.applyColorFont(clock);
+		tde.gui.tip(clock, "Clock");
+		GridData aClockGD = new GridData();
+		aClockGD.widthHint = Math.max(80, clock.computeSize(SWT.DEFAULT, SWT.DEFAULT).x + 8);
+		aClockGD.heightHint = tde.gui.h(12);
+		clock.setLayoutData(aClockGD);
 		
+		Label aStart = new Label(toolBar,SWT.NONE);
+		aStart.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+		aStart.setImage(tde.gui.imgsSwt.getIcon("arrowLeftWall.gif"));
+		aStart.setBackground(tde.gui.colorsSwt.WHITE);
+		tde.gui.tip(aStart, "ClipStart");
+		aStart.addListener(SWT.MouseDown,e -> goToTime(getStartEnd()[0]));
 		Label aLeft = new Label(toolBar,SWT.NONE);
 		aLeft.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 		aLeft.setImage(tde.gui.imgsSwt.getIcon("arrowLeftSmallCubaixBlue.gif"));
 		aLeft.setBackground(tde.gui.colorsSwt.WHITE);
+		tde.gui.tip(aLeft, "PrevFrame");
 		aLeft.addListener(SWT.MouseDown,e -> {
 			tde.timeLineStack.setRequestedTimePosMS(tde.timeLineStack.getTimePosMS()-(int)(1000.0/tde.config.outFps));
 			tde.gui.monitorGUI.redraw();
@@ -136,10 +202,17 @@ public class PlayerControlGUI extends CompositePanel {
 		aRight.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 		aRight.setImage(tde.gui.imgsSwt.getIcon("arrowRightSmallCubaixBlue.gif"));
 		aRight.setBackground(tde.gui.colorsSwt.WHITE);
+		tde.gui.tip(aRight, "NextFrame");
 		aRight.addListener(SWT.MouseDown,e -> {
 			tde.timeLineStack.setRequestedTimePosMS(tde.timeLineStack.getTimePosMS()+(int)(1000.0/tde.config.outFps));
 			tde.gui.monitorGUI.redraw();
 		});
+		Label aEnd = new Label(toolBar,SWT.NONE);
+		aEnd.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+		aEnd.setImage(tde.gui.imgsSwt.getIcon("arrowRightWall.gif"));
+		aEnd.setBackground(tde.gui.colorsSwt.WHITE);
+		tde.gui.tip(aEnd, "ClipEnd");
+		aEnd.addListener(SWT.MouseDown,e -> goToTime(getStartEnd()[1]));
 
 		Label aBlank = new Label(toolBar,SWT.NONE);
 		tde.gui.applyColorFont(aBlank);
@@ -150,9 +223,10 @@ public class PlayerControlGUI extends CompositePanel {
 		aZoomIn.setAlignment(SWT.CENTER);
 		GridData aZIGD = new GridData();
 		aZIGD.widthHint = 25;
-		aZIGD.heightHint = 25;
+		aZIGD.heightHint = tde.gui.h(25);
 		aZoomIn.setLayoutData(aZIGD);
 		tde.gui.applyColorFont(aZoomIn);
+		tde.gui.tip(aZoomIn, "MonitorZoomIn");
 		aZoomIn.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseUp(MouseEvent arg0) {
@@ -171,9 +245,10 @@ public class PlayerControlGUI extends CompositePanel {
 		aZoomOut.setAlignment(SWT.CENTER);
 		GridData aZOGD = new GridData();
 		aZOGD.widthHint = 25;
-		aZOGD.heightHint = 25;
+		aZOGD.heightHint = tde.gui.h(25);
 		aZoomOut.setLayoutData(aZOGD);
 		tde.gui.applyColorFont(aZoomOut);
+		tde.gui.tip(aZoomOut, "MonitorZoomOut");
 		aZoomOut.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseUp(MouseEvent arg0) {
@@ -192,9 +267,10 @@ public class PlayerControlGUI extends CompositePanel {
 		aZoomFit.setAlignment(SWT.CENTER);
 		GridData aZFGD = new GridData();
 		aZFGD.widthHint = 25;
-		aZFGD.heightHint = 25;
+		aZFGD.heightHint = tde.gui.h(25);
 		aZoomFit.setLayoutData(aZFGD);
 		tde.gui.applyColorFont(aZoomFit);
+		tde.gui.tip(aZoomFit, "MonitorZoomFit");
 		aZoomFit.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseUp(MouseEvent arg0) {
@@ -209,6 +285,43 @@ public class PlayerControlGUI extends CompositePanel {
 		});
 		
 		tde.timeLineStack.addTimeListener(this);
+	}
+
+	/**
+	 * Start and end times of the selected clip, or of the whole montage if no clip is selected.
+	 * The end is the last displayed time (1 ms before the end).
+	 */
+	long[] getStartEnd() {
+		if(tde.selected.clips.size() > 0) {
+			Clip aClip = tde.selected.clips.lastElement();
+			long aStart = aClip.getStartTimeMS();
+			return new long[] {aStart, Math.max(aStart, aStart+aClip.getDurationMS()-1)};
+		}
+		return new long[] {0, Math.max(0, tde.timeLineStack.getMaxTimePosMS()-1)};
+	}
+	
+	void goToTime(long aTime) {
+		tde.timeLineStack.setRequestedTimePosMS(aTime);
+		tde.gui.monitorGUI.redraw();
+		tde.gui.timeLinesGUI.redraw();
+	}
+
+	/**
+	 * Time shown by the clock (SWT thread)
+	 */
+	public void showClock(long aTimeMS) {
+		if(!clock.isDisposed()) {
+			clock.setText(StringUtils.time2Clock(aTimeMS));
+		}
+	}
+
+	/**
+	 * Playing state, with the icon and the help message of the play / stop button (SWT thread)
+	 */
+	void setPlaying(boolean aPlaying) {
+		playing = aPlaying;
+		playStop.setImage(tde.gui.imgsSwt.getIcon(aPlaying ? "stop.gif" : "play.gif"));
+		tde.gui.tip(playStop, aPlaying ? "Stop" : "Play");
 	}
 
 	@Override
