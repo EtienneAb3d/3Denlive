@@ -99,7 +99,7 @@ for c in "${CONFIGS[@]}"; do
 	cp "$BUILD/3Denlive.jar" "$stage/"
 	for j in "${COMMON_JARS[@]}"; do cp "$DISTRIB/$j" "$stage/"; done
 	cp -RP "$DISTRIB/lumas" "$DISTRIB/frames" "$stage/"
-	# Platform files: SWT jar + natives, launcher, helper/icon
+	# Platform files: SWT jar + natives, launcher
 	cp -RP "$DISTRIB/$c/." "$stage/"
 	f="$(ffmpeg_name "$c")"
 	if [ -n "$f" ]; then

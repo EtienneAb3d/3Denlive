@@ -15,7 +15,6 @@ Download 3Denlive for <a href="https://3denlive.com/3DenliveLinux.tar.gz">Linux 
 Download 3Denlive for <a href="https://3denlive.com/3DenlivePPC64le.tar.gz">Linux PPC64le</a> (uses the ffmpeg installed on the system)<br/>
 
 To launch it, extract the archive, then run `3Denlive.bat` (Windows) or `3Denlive.sh` (macOS, Linux).
-On macOS, see `AppHelper.txt` in the package.
 
 <img src="https://3denlive.com/LatestScreenCopyEN.png?date=2020-12-20"/>
 
