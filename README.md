@@ -71,10 +71,6 @@ It compiles the application (JDK 27+ required) and creates one self-contained ar
 `3DenliveLinux.tar.gz`, `3DenlivePPC64le.tar.gz`, `3DenliveMacIntel.tar.gz`, `3DenliveMacSilicon.tar.gz` and `3DenliveWin-x64.zip`.<br/>
 Each archive includes its own Java runtime, the platform's ffmpeg, and a launcher (`3Denlive.sh`, or `3Denlive.bat` on Windows).
 
-# Roadmap
-
-**To do**: finalise the management of the sound track
-
 <hr>
 This tool is a demonstration of our know-how.<br/>
 If you are interested in a commercial/industrial AI linguistic project, contact us:<br/>
