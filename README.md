@@ -1,6 +1,6 @@
 # 3Denlive
 
-Stereoscopic photo/video montage software
+Stereoscopic photo/video editor
 
 Documentation, videos and tutorials: <a href="https://3denlive.com">3Denlive</a>
 
