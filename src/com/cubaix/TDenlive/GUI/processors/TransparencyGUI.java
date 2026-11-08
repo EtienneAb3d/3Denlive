@@ -84,7 +84,7 @@ public class TransparencyGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					tr.setOpacity(lkf.getSelection(),aValue/10000.0);
+					tr.setOpacity(lkf.editKey(),aValue/10000.0);
 					tde.gui.monitorGUI.redraw();
 				}
 			}
@@ -116,12 +116,12 @@ public class TransparencyGUI extends ProcessorGUI {
 		lumaC.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
-				tr.setLuma(lkf.getSelection(),tde.gui.lumas.listLumas().elementAt(lumaC.getSelectionIndex()));
+				tr.setLuma(lkf.editKey(),tde.gui.lumas.listLumas().elementAt(lumaC.getSelectionIndex()));
 				tde.gui.monitorGUI.redraw();
 			}
 			@Override
 			public void widgetDefaultSelected(SelectionEvent arg0) {
-				tr.setLuma(lkf.getSelection(),tde.gui.lumas.listLumas().elementAt(lumaC.getSelectionIndex()));
+				tr.setLuma(lkf.editKey(),tde.gui.lumas.listLumas().elementAt(lumaC.getSelectionIndex()));
 				tde.gui.monitorGUI.redraw();
 			}
 		});
@@ -137,7 +137,7 @@ public class TransparencyGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					tr.setBevel(lkf.getSelection(),aValue/10000.0);
+					tr.setBevel(lkf.editKey(),aValue/10000.0);
 					tde.gui.monitorGUI.redraw();
 				}
 			}
@@ -153,7 +153,7 @@ public class TransparencyGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					tr.setX(lkf.getSelection(),aValue/40000.0);
+					tr.setX(lkf.editKey(),aValue/40000.0);
 					tde.gui.monitorGUI.redraw();
 				}
 			}
@@ -168,12 +168,12 @@ public class TransparencyGUI extends ProcessorGUI {
 		invB.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
-				tr.setInvert(lkf.getSelection(), invB.getSelection());
+				tr.setInvert(lkf.editKey(), invB.getSelection());
 				tde.gui.monitorGUI.redraw();
 			}
 			@Override
 			public void widgetDefaultSelected(SelectionEvent arg0) {
-				tr.setInvert(lkf.getSelection(), invB.getSelection());
+				tr.setInvert(lkf.editKey(), invB.getSelection());
 				tde.gui.monitorGUI.redraw();
 			}
 		});

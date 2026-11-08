@@ -79,7 +79,7 @@ public class ChromakeyGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					ck.setTolerance(lkf.getSelection(),aValue/10000.0);
+					ck.setTolerance(lkf.editKey(),aValue/10000.0);
 					tde.gui.monitorGUI.redraw();
 				}
 			}
@@ -109,7 +109,7 @@ public class ChromakeyGUI extends ProcessorGUI {
 				tde.gui.monitorGUI.addMonitorListener(new MonitorListener() {
 					@Override
 					public void click(double aPIX, double aPIY,int aColor) {
-						ck.setColor(lkf.getSelection(), aColor);
+						ck.setColor(lkf.editKey(), aColor);
 						RGB aRGB = new RGB(aColor>>16&0xFF,aColor>>8&0xFF,aColor&0xFF);
 						colorL.setBackground(new Color(aRGB));
 						tde.gui.monitorGUI.removeMonitorListener(this);
@@ -149,7 +149,7 @@ public class ChromakeyGUI extends ProcessorGUI {
 				RGB aRGB = new RGB(aColor>>16&0xFF,aColor>>8&0xFF,aColor&0xFF);
 				aRGB = aCD.open();
 				if(aRGB != null) {
-					ck.setColor(lkf.getSelection(),0xFF000000|((aRGB.red&0xFF)<<16)|((aRGB.green&0xFF)<<8)|(aRGB.blue&0xFF));
+					ck.setColor(lkf.editKey(),0xFF000000|((aRGB.red&0xFF)<<16)|((aRGB.green&0xFF)<<8)|(aRGB.blue&0xFF));
 					colorL.setBackground(new Color(aRGB));
 					tde.gui.monitorGUI.redraw();
 				}
@@ -168,7 +168,7 @@ public class ChromakeyGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					ck.setBevel(lkf.getSelection(),aValue/10000.0);
+					ck.setBevel(lkf.editKey(),aValue/10000.0);
 					tde.gui.monitorGUI.redraw();
 				}
 			}

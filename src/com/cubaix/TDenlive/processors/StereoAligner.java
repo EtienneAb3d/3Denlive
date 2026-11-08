@@ -417,6 +417,175 @@ public class StereoAligner extends Processor {
 		return null;
 	}
 
+	/**
+	 * Transforms of the left and right images (input aWidth x aHeight) into the output frame, and the secure crop
+	 */
+	class Geometry {
+		AffineTransform left = null;
+		AffineTransform right = null;
+		java.awt.Rectangle crop = null;
+		int widthOut = 0;
+		int heightOut = 0;
+	}
+
+	Geometry computeGeometry(int aWidth,int aHeight,int aProcessingMode,long aTime) {
+		java.awt.Rectangle aSrcRect = new java.awt.Rectangle(0,0,aWidth,aHeight);
+		java.awt.Rectangle aOptimalRect = new java.awt.Rectangle(0,0,aWidth,aHeight);
+
+		Key aKey = getInterKeyGT(aTime);
+
+		AffineTransform aATL = new AffineTransform();
+		aATL.translate(aWidth/2, aHeight/2);
+		aATL.scale(aKey.wL, aKey.hL);
+		aATL.translate(aKey.xL*aWidth, aKey.yL*aHeight);
+		aATL.rotate(aKey.rL);
+		aATL.translate(-aWidth/2, -aHeight/2);
+		
+		Shape aTargetL = aATL.createTransformedShape(aSrcRect);
+		double[] aSegL = new double[6];
+		PathIterator aPIL = aTargetL.getPathIterator(null);
+		aPIL.next();//Top right
+		aPIL.currentSegment(aSegL);
+		if(aOptimalRect.x+aOptimalRect.width > aSegL[0]) {
+			aOptimalRect.width = (int)aSegL[0]-aOptimalRect.x;
+		}
+		if(aOptimalRect.y < aSegL[1]) {
+			aOptimalRect.height -= (int)aSegL[1]-aOptimalRect.y;
+			aOptimalRect.y = (int)aSegL[1];
+		}
+		aPIL.next();//Bottom right
+		aPIL.currentSegment(aSegL);
+		if(aOptimalRect.x+aOptimalRect.width > aSegL[0]) {
+			aOptimalRect.width = (int)aSegL[0]-aOptimalRect.x;
+		}
+		if(aOptimalRect.y+aOptimalRect.height > aSegL[1]) {
+			aOptimalRect.height = (int)aSegL[1] - aOptimalRect.y;
+		}
+		aPIL.next();//Bottom left
+		aPIL.currentSegment(aSegL);
+		if(aOptimalRect.x < aSegL[0]) {
+			aOptimalRect.width -= (int)aSegL[0]-aOptimalRect.x;
+			aOptimalRect.x = (int)aSegL[0];
+		}
+		if(aOptimalRect.y+aOptimalRect.height > aSegL[1]) {
+			aOptimalRect.height = (int)aSegL[1] - aOptimalRect.y;
+		}
+		aPIL.next();//Top left
+		aPIL.currentSegment(aSegL);
+		if(aOptimalRect.x < aSegL[0]) {
+			aOptimalRect.width -= (int)aSegL[0]-aOptimalRect.x;
+			aOptimalRect.x = (int)aSegL[0];
+		}
+		if(aOptimalRect.y < aSegL[1]) {
+			aOptimalRect.height -= (int)aSegL[1]-aOptimalRect.y;
+			aOptimalRect.y = (int)aSegL[1];
+		}
+
+		AffineTransform aATR = new AffineTransform();
+		aATR.translate(aWidth/2, aHeight/2);
+		aATR.scale(aKey.wR, aKey.hR);
+		aATR.translate(aKey.xR*aWidth, aKey.yR*aHeight);
+		aATR.rotate(aKey.rR);
+		aATR.translate(-aWidth/2, -aHeight/2);
+
+		Shape aTargetR = aATR.createTransformedShape(aSrcRect);
+		double[] aSegR = new double[6];
+		PathIterator aPIR = aTargetR.getPathIterator(null);
+		aPIR.next();//Top right
+		aPIR.currentSegment(aSegR);
+		if(aOptimalRect.x+aOptimalRect.width > aSegR[0]) {
+			aOptimalRect.width = (int)aSegR[0]-aOptimalRect.x;
+		}
+		if(aOptimalRect.y < aSegR[1]) {
+			aOptimalRect.height -= (int)aSegR[1]-aOptimalRect.y;
+			aOptimalRect.y = (int)aSegR[1];
+		}
+		aPIR.next();//Bottom right
+		aPIR.currentSegment(aSegR);
+		if(aOptimalRect.x+aOptimalRect.width > aSegR[0]) {
+			aOptimalRect.width = (int)aSegR[0]-aOptimalRect.x;
+		}
+		if(aOptimalRect.y+aOptimalRect.height > aSegR[1]) {
+			aOptimalRect.height = (int)aSegR[1] - aOptimalRect.y;
+		}
+		aPIR.next();//Bottom left
+		aPIR.currentSegment(aSegR);
+		if(aOptimalRect.x < aSegR[0]) {
+			aOptimalRect.width -= (int)aSegR[0]-aOptimalRect.x;
+			aOptimalRect.x = (int)aSegR[0];
+		}
+		if(aOptimalRect.y+aOptimalRect.height > aSegR[1]) {
+			aOptimalRect.height = (int)aSegR[1] - aOptimalRect.y;
+			aOptimalRect.y = (int)aSegR[1];
+		}
+		aPIR.next();//Top left
+		aPIR.currentSegment(aSegR);
+		if(aOptimalRect.x < aSegR[0]) {
+			aOptimalRect.width -= (int)aSegR[0]-aOptimalRect.x;
+			aOptimalRect.x = (int)aSegR[0];
+		}
+		if(aOptimalRect.y < aSegR[1]) {
+			aOptimalRect.height -= (int)aSegR[1]-aOptimalRect.y;
+			aOptimalRect.y = (int)aSegR[1];
+		}
+		
+		AffineTransform aResizeL = null;
+		AffineTransform aResizeR = null;
+		if(secureResize
+				//always with auto align
+				|| aProcessingMode == 3) {
+			aResizeL = new AffineTransform();
+			aResizeR = new AffineTransform();
+			double aFact = Math.max(aWidth/(double)aOptimalRect.width, aHeight/(double)aOptimalRect.height);
+			
+			aResizeL.translate(aWidth/2,aHeight/2);
+			aResizeL.scale(aFact, aFact);
+			aResizeL.translate(-aOptimalRect.width/2-aOptimalRect.x, -aOptimalRect.height/2-aOptimalRect.y);
+			
+			aResizeR.translate(aWidth/2,aHeight/2);
+			aResizeR.scale(aFact, aFact);
+			aResizeR.translate(-aOptimalRect.width/2-aOptimalRect.x, -aOptimalRect.height/2-aOptimalRect.y);
+			
+			aOptimalRect = aResizeL.createTransformedShape(aOptimalRect).getBounds();
+			
+			aResizeL.concatenate(aATL);
+			aResizeR.concatenate(aATR);
+		}
+
+		int aWidthOut = (int)(tde.config.outRatio*tde.config.processingResValues[aProcessingMode]);
+		int aHeightOut = tde.config.processingResValues[aProcessingMode];
+
+		final AffineTransform aFinalL = new AffineTransform();
+		aFinalL.translate((aWidthOut - aWidth)/2, (aHeightOut - aHeight)/2);
+		aFinalL.concatenate(secureResize
+				//always with auto align
+				|| aProcessingMode == 3?aResizeL:aATL);
+		final AffineTransform aFinalR = new AffineTransform();
+		aFinalR.translate((aWidthOut - aWidth)/2, (aHeightOut - aHeight)/2);
+		aFinalR.concatenate(secureResize
+				//always with auto align
+				|| aProcessingMode == TDConfig.PROCESSING_MODE_AUTOALIGN?aResizeR:aATR);
+		
+		aOptimalRect.x += (aWidthOut - aWidth)/2;
+		aOptimalRect.y += (aHeightOut - aHeight)/2;
+		
+		Geometry aGeo = new Geometry();
+		aGeo.left = aFinalL;
+		aGeo.right = aFinalR;
+		aGeo.crop = aOptimalRect;
+		aGeo.widthOut = aWidthOut;
+		aGeo.heightOut = aHeightOut;
+		return aGeo;
+	}
+
+	@Override
+	public AffineTransform getGeometry(int aEye,long aTime,int aProcessingMode,int aInW,int aInH,int[] aOutSize) {
+		Geometry aGeo = computeGeometry(aInW, aInH, aProcessingMode, aTime);
+		aOutSize[0] = aGeo.widthOut;
+		aOutSize[1] = aGeo.heightOut;
+		return new AffineTransform(aEye < 0 ? aGeo.left : aGeo.right);
+	}
+
 	@Override
 	public void process2Awt(Media aMedia,int aProcessingMode,long aTime) {
 		try {
@@ -425,147 +594,12 @@ public class StereoAligner extends Processor {
 			int aWidth = aBIL.getWidth();
 			int aHeight = aBIL.getHeight();
 			
-			java.awt.Rectangle aSrcRect = new java.awt.Rectangle(0,0,aWidth,aHeight);
-			java.awt.Rectangle aOptimalRect = new java.awt.Rectangle(0,0,aWidth,aHeight);
-
-			Key aKey = getInterKeyGT(aTime);
-
-			AffineTransform aATL = new AffineTransform();
-			aATL.translate(aWidth/2, aHeight/2);
-			aATL.scale(aKey.wL, aKey.hL);
-			aATL.translate(aKey.xL*aWidth, aKey.yL*aHeight);
-			aATL.rotate(aKey.rL);
-			aATL.translate(-aWidth/2, -aHeight/2);
-			
-			Shape aTargetL = aATL.createTransformedShape(aSrcRect);
-			double[] aSegL = new double[6];
-			PathIterator aPIL = aTargetL.getPathIterator(null);
-			aPIL.next();//Top right
-			aPIL.currentSegment(aSegL);
-			if(aOptimalRect.x+aOptimalRect.width > aSegL[0]) {
-				aOptimalRect.width = (int)aSegL[0]-aOptimalRect.x;
-			}
-			if(aOptimalRect.y < aSegL[1]) {
-				aOptimalRect.height -= (int)aSegL[1]-aOptimalRect.y;
-				aOptimalRect.y = (int)aSegL[1];
-			}
-			aPIL.next();//Bottom right
-			aPIL.currentSegment(aSegL);
-			if(aOptimalRect.x+aOptimalRect.width > aSegL[0]) {
-				aOptimalRect.width = (int)aSegL[0]-aOptimalRect.x;
-			}
-			if(aOptimalRect.y+aOptimalRect.height > aSegL[1]) {
-				aOptimalRect.height = (int)aSegL[1] - aOptimalRect.y;
-			}
-			aPIL.next();//Bottom left
-			aPIL.currentSegment(aSegL);
-			if(aOptimalRect.x < aSegL[0]) {
-				aOptimalRect.width -= (int)aSegL[0]-aOptimalRect.x;
-				aOptimalRect.x = (int)aSegL[0];
-			}
-			if(aOptimalRect.y+aOptimalRect.height > aSegL[1]) {
-				aOptimalRect.height = (int)aSegL[1] - aOptimalRect.y;
-			}
-			aPIL.next();//Top left
-			aPIL.currentSegment(aSegL);
-			if(aOptimalRect.x < aSegL[0]) {
-				aOptimalRect.width -= (int)aSegL[0]-aOptimalRect.x;
-				aOptimalRect.x = (int)aSegL[0];
-			}
-			if(aOptimalRect.y < aSegL[1]) {
-				aOptimalRect.height -= (int)aSegL[1]-aOptimalRect.y;
-				aOptimalRect.y = (int)aSegL[1];
-			}
-
-			AffineTransform aATR = new AffineTransform();
-			aATR.translate(aWidth/2, aHeight/2);
-			aATR.scale(aKey.wR, aKey.hR);
-			aATR.translate(aKey.xR*aWidth, aKey.yR*aHeight);
-			aATR.rotate(aKey.rR);
-			aATR.translate(-aWidth/2, -aHeight/2);
-
-			Shape aTargetR = aATR.createTransformedShape(aSrcRect);
-			double[] aSegR = new double[6];
-			PathIterator aPIR = aTargetR.getPathIterator(null);
-			aPIR.next();//Top right
-			aPIR.currentSegment(aSegR);
-			if(aOptimalRect.x+aOptimalRect.width > aSegR[0]) {
-				aOptimalRect.width = (int)aSegR[0]-aOptimalRect.x;
-			}
-			if(aOptimalRect.y < aSegR[1]) {
-				aOptimalRect.height -= (int)aSegR[1]-aOptimalRect.y;
-				aOptimalRect.y = (int)aSegR[1];
-			}
-			aPIR.next();//Bottom right
-			aPIR.currentSegment(aSegR);
-			if(aOptimalRect.x+aOptimalRect.width > aSegR[0]) {
-				aOptimalRect.width = (int)aSegR[0]-aOptimalRect.x;
-			}
-			if(aOptimalRect.y+aOptimalRect.height > aSegR[1]) {
-				aOptimalRect.height = (int)aSegR[1] - aOptimalRect.y;
-			}
-			aPIR.next();//Bottom left
-			aPIR.currentSegment(aSegR);
-			if(aOptimalRect.x < aSegR[0]) {
-				aOptimalRect.width -= (int)aSegR[0]-aOptimalRect.x;
-				aOptimalRect.x = (int)aSegR[0];
-			}
-			if(aOptimalRect.y+aOptimalRect.height > aSegR[1]) {
-				aOptimalRect.height = (int)aSegR[1] - aOptimalRect.y;
-				aOptimalRect.y = (int)aSegR[1];
-			}
-			aPIR.next();//Top left
-			aPIR.currentSegment(aSegR);
-			if(aOptimalRect.x < aSegR[0]) {
-				aOptimalRect.width -= (int)aSegR[0]-aOptimalRect.x;
-				aOptimalRect.x = (int)aSegR[0];
-			}
-			if(aOptimalRect.y < aSegR[1]) {
-				aOptimalRect.height -= (int)aSegR[1]-aOptimalRect.y;
-				aOptimalRect.y = (int)aSegR[1];
-			}
-			
-			AffineTransform aResizeL = null;
-			AffineTransform aResizeR = null;
-			if(secureResize
-					//always with auto align
-					|| aProcessingMode == 3) {
-				aResizeL = new AffineTransform();
-				aResizeR = new AffineTransform();
-				double aFact = Math.max(aWidth/(double)aOptimalRect.width, aHeight/(double)aOptimalRect.height);
-				
-				aResizeL.translate(aWidth/2,aHeight/2);
-				aResizeL.scale(aFact, aFact);
-				aResizeL.translate(-aOptimalRect.width/2-aOptimalRect.x, -aOptimalRect.height/2-aOptimalRect.y);
-				
-				aResizeR.translate(aWidth/2,aHeight/2);
-				aResizeR.scale(aFact, aFact);
-				aResizeR.translate(-aOptimalRect.width/2-aOptimalRect.x, -aOptimalRect.height/2-aOptimalRect.y);
-				
-				aOptimalRect = aResizeL.createTransformedShape(aOptimalRect).getBounds();
-				
-				aResizeL.concatenate(aATL);
-				aResizeR.concatenate(aATR);
-			}
-
-			int aWidthOut = (int)(tde.config.outRatio*tde.config.processingResValues[aProcessingMode]);
-			int aHeightOut = tde.config.processingResValues[aProcessingMode];
-
-			final AffineTransform aFinalL = new AffineTransform();
-			aFinalL.translate((aWidthOut - aWidth)/2, (aHeightOut - aHeight)/2);
-			aFinalL.concatenate(secureResize
-					//always with auto align
-					|| aProcessingMode == 3?aResizeL:aATL);
-			final AffineTransform aFinalR = new AffineTransform();
-			aFinalR.translate((aWidthOut - aWidth)/2, (aHeightOut - aHeight)/2);
-			aFinalR.concatenate(secureResize
-					//always with auto align
-					|| aProcessingMode == TDConfig.PROCESSING_MODE_AUTOALIGN?aResizeR:aATR);
-			
-			aOptimalRect.x += (aWidthOut - aWidth)/2;
-			aOptimalRect.y += (aHeightOut - aHeight)/2;
-			
-			final java.awt.Rectangle aCropRect = aOptimalRect;
+			Geometry aGeo = computeGeometry(aWidth, aHeight, aProcessingMode, aTime);
+			final int aWidthOut = aGeo.widthOut;
+			final int aHeightOut = aGeo.heightOut;
+			final AffineTransform aFinalL = aGeo.left;
+			final AffineTransform aFinalR = aGeo.right;
+			final java.awt.Rectangle aCropRect = aGeo.crop;
 
 			Thread aThL = new Thread(new Runnable() {
 				@Override

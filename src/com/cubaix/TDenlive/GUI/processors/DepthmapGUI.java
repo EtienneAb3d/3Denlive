@@ -78,12 +78,12 @@ public class DepthmapGUI extends ProcessorGUI {
 		aBIFB.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
-				pl.setBlackIsFront(lkf.getSelection(), aBIFB.getSelection());
+				pl.setBlackIsFront(lkf.editKey(), aBIFB.getSelection());
 				tde.gui.monitorGUI.redraw();
 			}
 			@Override
 			public void widgetDefaultSelected(SelectionEvent arg0) {
-				pl.setBlackIsFront(lkf.getSelection(), aBIFB.getSelection());
+				pl.setBlackIsFront(lkf.editKey(), aBIFB.getSelection());
 				tde.gui.monitorGUI.redraw();
 			}
 		});
@@ -94,7 +94,7 @@ public class DepthmapGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					pl.setD(lkf.getSelection(),-aValue/30000.0);
+					pl.setD(lkf.editKey(),-aValue/30000.0);
 					tde.gui.monitorGUI.redraw();
 				}
 			}
@@ -103,7 +103,7 @@ public class DepthmapGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					pl.setX(lkf.getSelection(),aValue/1000.0);
+					pl.setX(lkf.editKey(),aValue/1000.0);
 					tde.gui.monitorGUI.redraw();
 				}
 			}
@@ -112,7 +112,7 @@ public class DepthmapGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					pl.setP(lkf.getSelection(),aValue/10000.0);
+					pl.setP(lkf.editKey(),aValue/10000.0);
 					tde.gui.monitorGUI.redraw();
 				}
 			}

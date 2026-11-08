@@ -43,6 +43,37 @@
 	<entry label="Create">Créer</entry>
 	<entry label="Cancel">Annuler</entry>
 </EntrySet>
+<EntrySet label="Shapes">
+	<entry label="Title">Clip de formes</entry>
+	<entry label="Save">Enregistrer</entry>
+	<entry label="Cancel">Annuler</entry>
+	<entry label="MediaName">Formes</entry>
+	<entry label="Select">Sélectionner, déplacer, redimensionner (poignées), déplacer les angles, tourner (poignée ronde)</entry>
+	<entry label="Rectangle">Rectangle</entry>
+	<entry label="Ellipse">Ellipse</entry>
+	<entry label="Triangle">Triangle</entry>
+	<entry label="RightTriangle">Triangle rectangle</entry>
+	<entry label="Diamond">Losange</entry>
+	<entry label="Hexagon">Hexagone</entry>
+	<entry label="Star">Étoile</entry>
+	<entry label="Arrow">Flèche</entry>
+	<entry label="Line">Ligne</entry>
+	<entry label="LineArrow">Ligne fléchée</entry>
+	<entry label="Solid">Plein</entry>
+	<entry label="Dashed">Tirets</entry>
+	<entry label="Dotted">Pointillés</entry>
+	<entry label="DashDot">Tiret point</entry>
+	<entry label="Fill">Remplissage</entry>
+	<entry label="Border">Bord</entry>
+	<entry label="Visible">Visible</entry>
+	<entry label="Hidden">masquée</entry>
+	<entry label="Opacity">Opacité</entry>
+	<entry label="Depth">Profondeur (parallaxe stéréo)</entry>
+	<entry label="DepthLetter">P</entry>
+	<entry label="HintCreate">Tracez la forme sur l'image (ou cliquez)</entry>
+	<entry label="HintSelect">Cliquez une forme pour la sélectionner</entry>
+	<entry label="HintClip">Les formes se modifient sur l'image, au curseur de temps : la première modification y ajoute une clé, les valeurs sont interpolées entre les clés. Une forme supprimée est seulement masquée à partir de sa clé (très claire tant que le clip est sélectionné).</entry>
+</EntrySet>
 <EntrySet label="Glasses">
 	<entry label="AnaMixerRC">Anaglyphe rouge / cyan</entry>
 	<entry label="AnaMixerRC_Dubois">Anaglyphe rouge / cyan Dubois</entry>
@@ -115,6 +146,7 @@
 
 	<entry label="Audio">Son</entry>
 	<entry label="Volume">Volume / balance</entry>
+	<entry label="Shapes">Formes</entry>
 </EntrySet>
 <EntrySet label="TimeController">
 	<entry label="TrashClip">Supprimer le clip</entry>
@@ -271,6 +303,18 @@
 
 	<entry label="AddMedia">Ajouter des photos, vidéos ou sons à la liste des médias</entry>
 	<entry label="AddColor">Ajouter un fond de couleur unie à la liste des médias</entry>
+	<entry label="AddShapes">Ajouter un clip de formes (rectangles, ellipses, flèches...) à la liste des médias</entry>
+	<entry label="ShapesHide">Supprimer la forme sélectionnée à partir de cette clé (elle est seulement masquée)</entry>
+	<entry label="ShapesDelete">Supprimer la forme sélectionnée (SUPPR)</entry>
+	<entry label="ShapesDuplicate">Dupliquer la forme sélectionnée</entry>
+	<entry label="ShapesFront">Mettre la forme sélectionnée au premier plan</entry>
+	<entry label="ShapesBack">Mettre la forme sélectionnée à l'arrière-plan</entry>
+	<entry label="ShapesVisible">Afficher / masquer la forme sélectionnée à partir de cette clé</entry>
+	<entry label="ShapesColor">Choisir la couleur</entry>
+	<entry label="ShapesWidth">Épaisseur du bord (millièmes de la hauteur de l'image)</entry>
+	<entry label="ShapesStyle">Style du bord</entry>
+	<entry label="ShapesOpacity">Opacité de la forme</entry>
+	<entry label="ShapesDepth">Profondeur de la forme : décalage entre les vues gauche et droite (&gt; 0 : derrière l'écran)</entry>
 	<entry label="MediaList">Clic : sélectionner et prévisualiser un média\nDouble-clic : l'ajouter aux lignes de temps</entry>
 
 	<entry label="Ratio">Format d'image du montage (largeur / hauteur)</entry>

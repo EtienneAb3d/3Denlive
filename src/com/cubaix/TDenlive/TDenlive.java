@@ -352,7 +352,9 @@ public class TDenlive {
 	 */
 	void installDemo() {
 		File aRoot = new File(tdeDir).getAbsoluteFile();
-		if(new File(aRoot, "DemoLogo"+File.separatorChar+"DemoLogo.3De").exists()) {
+		//One extraction per version (the media paths of the project are relative)
+		String aDir = "DemoLogo_"+TDeVersion;
+		if(new File(aRoot, aDir+File.separatorChar+"DemoLogo.3De").exists()) {
 			return;
 		}
 		try(InputStream aIs = TDenlive.class.getResourceAsStream("/demo/DemoLogo.zip")) {
@@ -363,7 +365,11 @@ public class TDenlive {
 			java.util.zip.ZipInputStream aZIS = new java.util.zip.ZipInputStream(aIs);
 			java.util.zip.ZipEntry aZE;
 			while((aZE = aZIS.getNextEntry()) != null) {
-				File aF = new File(aRoot, aZE.getName()).getCanonicalFile();
+				String aName = aZE.getName();
+				if(aName.equals("DemoLogo") || aName.startsWith("DemoLogo/")) {
+					aName = aDir + aName.substring("DemoLogo".length());
+				}
+				File aF = new File(aRoot, aName).getCanonicalFile();
 				if(!aF.toPath().startsWith(aRoot.getCanonicalFile().toPath())) {
 					//Never outside ~/3Denlive
 					continue;
@@ -381,7 +387,7 @@ public class TDenlive {
 					aF.setLastModified(aZE.getTime());
 				}
 			}
-			System.out.println("Demo project installed: "+new File(aRoot, "DemoLogo"));
+			System.out.println("Demo project installed: "+new File(aRoot, aDir));
 		}
 		catch(Throwable t) {
 			t.printStackTrace(System.err);

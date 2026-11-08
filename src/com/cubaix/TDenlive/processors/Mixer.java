@@ -69,6 +69,20 @@ public abstract class Mixer extends Processor {
 		return lastSizedH;
 	}
 
+	/**
+	 * Number of views of the frame side by side in the mixed image
+	 */
+	public int getNbViews() {
+		return 1;
+	}
+
+	/**
+	 * Eye shown in a view: -1 left, 1 right, 0 both (anaglyph...)
+	 */
+	public int getViewEye(int aView) {
+		return 0;
+	}
+
 	public void resize(BufferedImage aBI,BufferedImage aSizedBI,int aProcessingMode
 			,int aW,int aH,int aSizedW,int aSizedH) {
 		lastW = aW;

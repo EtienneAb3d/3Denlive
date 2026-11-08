@@ -1,5 +1,6 @@
 package com.cubaix.TDenlive.processors;
 
+import java.awt.geom.AffineTransform;
 import java.io.BufferedWriter;
 import java.util.Vector;
 
@@ -51,5 +52,17 @@ public abstract class Processor {
 	 * True for the processors working on the sound (only for the audio clips)
 	 */
 	public boolean isAudio() {return false;}
+	/**
+	 * Geometry of the image made by this processor (to show and edit the shapes of the clip
+	 * where they are displayed): transform from the pixels of its input image (aInW x aInH)
+	 * to the pixels of its output image, whose size is put in aOutSize, for the eye aEye
+	 * (-1 left, 1 right) at aTime. By default the image is not moved (colors, masks,
+	 * deformations that are not affine).
+	 */
+	public AffineTransform getGeometry(int aEye,long aTime,int aProcessingMode,int aInW,int aInH,int[] aOutSize) {
+		aOutSize[0] = aInW;
+		aOutSize[1] = aInH;
+		return new AffineTransform();
+	}
 
 }

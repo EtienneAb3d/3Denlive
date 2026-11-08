@@ -245,6 +245,25 @@ public class Placer extends Processor {
 	}
 	
 	@Override
+	public AffineTransform getGeometry(int aEye,long aTime,int aProcessingMode,int aInW,int aInH,int[] aOutSize) {
+		if(isZero()) {
+			return super.getGeometry(aEye, aTime, aProcessingMode, aInW, aInH, aOutSize);
+		}
+		//Same as process2Awt()
+		int aWidthOut = (int)(tde.config.outRatio*tde.config.processingResValues[aProcessingMode]);
+		int aHeightOut = tde.config.processingResValues[aProcessingMode];
+		aOutSize[0] = aWidthOut;
+		aOutSize[1] = aHeightOut;
+		Key aKey = getInterKeyGT(aTime);
+		AffineTransform aAT = new AffineTransform();
+		aAT.translate(aKey.x * (aWidthOut+aInW*aKey.scale)/2,aKey.y * (aHeightOut+aInH*aKey.scale)/2);
+		aAT.translate(aInW/2.0, aInH/2.0);
+		aAT.scale(aKey.scale, aKey.scale);
+		aAT.translate(-aInW/2.0, -aInH/2.0);
+		return aAT;
+	}
+
+	@Override
 	public void process2Awt(Media aMedia,int aProcessingMode,long aTime) {
 		if(isZero()) {
 			return;

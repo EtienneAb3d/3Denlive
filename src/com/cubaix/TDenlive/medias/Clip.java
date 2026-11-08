@@ -24,6 +24,7 @@ import com.cubaix.TDenlive.processors.LensCorrection;
 import com.cubaix.TDenlive.processors.Placer;
 import com.cubaix.TDenlive.processors.Processor;
 import com.cubaix.TDenlive.processors.Scripter;
+import com.cubaix.TDenlive.processors.Shapes;
 import com.cubaix.TDenlive.processors.StereoAligner;
 import com.cubaix.TDenlive.processors.TimeController;
 import com.cubaix.TDenlive.processors.Transparency;
@@ -58,6 +59,10 @@ public class Clip extends Media {
 		durationMS = media != null ? media.durationMS : 5*1000;
 		fileName = media != null ? media.fileName:"??";
 		processors.add(new TimeController(tde,this));
+		if(media instanceof ShapesMedia) {
+			//Mandatory: draws the shapes of the clip
+			processors.add(new Shapes(tde,this));
+		}
 		if(!(media instanceof AudioMedia)) {
 			processors.add(new StereoAligner(tde,this));
 		}
@@ -146,6 +151,11 @@ public class Clip extends Media {
 					StereoAligner aSA = new StereoAligner(tde,this);
 					processors.add(aSA);
 					o = aSA.openProject(aOs, o);
+				}
+				if("Shapes".equalsIgnoreCase(aT.tagName)) {
+					Shapes aP = new Shapes(tde,this);
+					processors.add(aP);
+					o = aP.openProject(aOs, o);
 				}
 				if("ColorAdapter".equalsIgnoreCase(aT.tagName)) {
 					ColorAdapter aCA = new ColorAdapter(tde,this);
@@ -924,7 +934,7 @@ public class Clip extends Media {
 	public void upProcessor(Processor aP) {
 		for(int p = 0;p < processors.size();p++) {
 			if(processors.elementAt(p) == aP) {
-				if(p <= 1){
+				if(p <= 1 || processors.elementAt(p-1).isUnmovable){
 					return;
 				}
 				processors.remove(p);

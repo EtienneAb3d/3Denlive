@@ -24,11 +24,15 @@ import org.eclipse.swt.widgets.ScrollBar;
 
 import com.cubaix.TDenlive.TDConfig;
 import com.cubaix.TDenlive.TDenlive;
+import com.cubaix.TDenlive.medias.Clip;
 import com.cubaix.TDenlive.medias.Media;
 import com.cubaix.TDenlive.processors.AnaMixer;
 import com.cubaix.TDenlive.processors.EdgeDetector;
 import com.cubaix.TDenlive.processors.Mixer;
+import com.cubaix.TDenlive.processors.Processor;
 import com.cubaix.TDenlive.processors.SbsMixer;
+import com.cubaix.TDenlive.processors.Shapes;
+import com.cubaix.TDenlive.shapes.ShapesEditor;
 
 public class MonitorGUI {
 	static final boolean _TRACE_DRAW_TIME = true;
@@ -62,6 +66,20 @@ public class MonitorGUI {
 	double clickedMixerX = 0;
 	double clickedMixerY = 0;
 	Point lastMousePos = null;
+
+	//Shapes of the selected clip edited on the image: editor being dragged, views of the frame
+	ShapesEditor shapesDragged = null;
+	Vector<ShapesEditor.View> shapesViews = null;
+	ShapesEditor.Listener shapesListener = new ShapesEditor.Listener() {
+		@Override
+		public void shapesChanged() {
+			redraw();
+		}
+		@Override
+		public void selectionChanged() {
+			redraw();
+		}
+	};
 
 	Vector<MonitorListener> monitorListeners = new Vector<MonitorListener>();
 	Vector<MonitorListener> monitorListenersToRemove = new Vector<MonitorListener>();
@@ -124,6 +142,11 @@ public class MonitorGUI {
 			@Override
 			public void mouseUp(MouseEvent arg0) {
 				isMouseDown = false;
+				if(shapesDragged != null) {
+					ShapesEditor aE = shapesDragged;
+					shapesDragged = null;
+					aE.mouseUp(arg0.x, arg0.y);
+				}
 				//Refresh in case of a move
 				if(isDrag) {
 				}
@@ -153,6 +176,18 @@ public class MonitorGUI {
 					monitorListeners.remove(aML);
 				}
 				monitorListenersToRemove.clear();
+				
+				//Shapes of the selected clip: edited on the image (else the image is moved)
+				Shapes aSh = getEditedShapes();
+				if(aSh != null && shapesViews != null && e.button == 1) {
+					canvas.setFocus();
+					ShapesEditor aE = aSh.getEditor();
+					aE.addListener(shapesListener);
+					aE.setViews(shapesViews);
+					if(aE.mouseDown(e.x, e.y)) {
+						shapesDragged = aE;
+					}
+				}
 			}
 			@Override
 			public void mouseDoubleClick(MouseEvent arg0) {
@@ -162,6 +197,20 @@ public class MonitorGUI {
 		canvas.addMouseMoveListener(new MouseMoveListener() {
 			@Override
 			public void mouseMove(MouseEvent e) {
+				if(shapesDragged != null) {
+					shapesDragged.mouseMove(e.x, e.y);
+					return;
+				}
+				if(!isMouseDown) {
+					//Cursor over the shapes of the selected clip
+					Shapes aSh = getEditedShapes();
+					int aC = -1;
+					if(aSh != null && shapesViews != null) {
+						aSh.getEditor().setViews(shapesViews);
+						aC = aSh.getEditor().getCursorAt(e.x, e.y);
+					}
+					canvas.setCursor(aC < 0 ? null : tde.gui.display.getSystemCursor(aC));
+				}
 				if(isMouseDown) {
 					isDrag = true;
 					double aDx = -(e.x - clickedMousePos.x)/(mixer.getZoom()*mixer.getLastSizedW());
@@ -177,6 +226,108 @@ public class MonitorGUI {
 		canvas.addListener (SWT.Paint, e -> {
 			draw(e.gc);
 		});
+		
+		canvas.addListener(SWT.KeyDown, e -> {
+			Shapes aSh = getEditedShapes();
+			if(aSh == null) {
+				return;
+			}
+			if(e.keyCode == SWT.DEL || e.keyCode == SWT.BS) {
+				aSh.getEditor().addListener(shapesListener);
+				aSh.getEditor().deleteSelected();
+			}
+			else if(e.keyCode == SWT.ESC) {
+				aSh.getEditor().setTool(-1);
+				aSh.getEditor().select(-1);
+			}
+		});
+	}
+	
+	/**
+	 * Shapes processor of the selected clip when it can be edited on the image
+	 * (main monitor, work mode, montage, current time in the clip), else null
+	 */
+	public Shapes getEditedShapes() {
+		if(tde.gui == null || tde.gui.monitorGUI != this || media != tde.timeLineStack
+				|| processingMode != TDConfig.PROCESSING_MODE_WORK || tde.selected.clips.size() <= 0) {
+			return null;
+		}
+		Clip aClip = tde.selected.clips.lastElement();
+		long aTime = tde.timeLineStack.getTimePosMS();
+		if(aTime < aClip.getStartTimeMS() || aTime >= aClip.getStartTimeMS()+aClip.getDurationMS()) {
+			return null;
+		}
+		for(Processor aP : aClip.getProcessors()) {
+			if(aP instanceof Shapes) {
+				return (Shapes)aP;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Frames of the montage on the screen (one per view of the mixer): {x, y, width, height, eye}
+	 */
+	Vector<ShapesEditor.View> computeShapesViews(Shapes aSh,Rectangle aPI) {
+		Vector<ShapesEditor.View> aVs = new Vector<ShapesEditor.View>();
+		long aTime = tde.timeLineStack.getTimePosMS();
+		int aN = Math.max(1, mixer.getNbViews());
+		double aZ = mixer.getZoom();
+		double aSW = aPI.width/(double)aN;
+		double aFW = aZ*aSW;
+		double aFH = aZ*aPI.height;
+		for(int v = 0;v < aN;v++) {
+			double aFX = aPI.x+v*aSW-(mixer.getX()+0.5*(1.0-1.0/aZ))*aFW;
+			double aFY = aPI.y-(mixer.getY()+0.5*(1.0-1.0/aZ))*aFH;
+			int aEye = mixer.getViewEye(v);
+			//Both eyes on the same image (anaglyph...): a view per eye, the handles of a shape
+			//shifted in depth are doubled
+			int[] aEyes = aEye == 0 ? new int[] {-1,1} : new int[] {aEye};
+			for(int aE : aEyes) {
+				ShapesEditor.View aV = new ShapesEditor.View(aFX, aFY, aFW, aFH, aE);
+				aV.group = v;
+				//Where the processors after the shapes put them
+				aV.setChain(aSh.getChainTransform(aE, aTime));
+				aVs.add(aV);
+			}
+		}
+		return aVs;
+	}
+	
+	/**
+	 * Hidden shapes, selection and handles of the shapes of the selected clip
+	 */
+	void drawShapesOverlay(GC aGC,Rectangle aPI) {
+		Shapes aSh = getEditedShapes();
+		if(aSh == null) {
+			shapesViews = null;
+			return;
+		}
+		ShapesEditor aE = aSh.getEditor();
+		aE.addListener(shapesListener);
+		shapesViews = computeShapesViews(aSh, aPI);
+		int aNbGroups = Math.max(1, mixer.getNbViews());
+		if(aNbGroups == 1) {
+			aE.setViews(shapesViews);
+			aE.drawOverlay(aGC);
+			return;
+		}
+		//Side by side: each half with its views
+		Rectangle aOldClip = aGC.getClipping();
+		int aSW = aPI.width/aNbGroups;
+		for(int g = 0;g < aNbGroups;g++) {
+			aGC.setClipping(new Rectangle(aPI.x+g*aSW, 0, aSW, canvas.getClientArea().height).intersection(aOldClip));
+			Vector<ShapesEditor.View> aGroup = new Vector<ShapesEditor.View>();
+			for(ShapesEditor.View aV : shapesViews) {
+				if(aV.group == g) {
+					aGroup.add(aV);
+				}
+			}
+			aE.setViews(aGroup);
+			aE.drawOverlay(aGC);
+		}
+		aGC.setClipping(aOldClip);
+		aE.setViews(shapesViews);
 	}
 	
 	public void addMonitorListener(MonitorListener aML) {
@@ -366,6 +517,8 @@ public class MonitorGUI {
 		aGC.drawImage(processedI,aX, aY);
 		aGC.setForeground(tde.gui.colorsSwt.WHITE);
 		aGC.drawRectangle(aX, aY, aLeftR.width-1, aLeftR.height-1);
+		piBounds = new Rectangle(aX, aY, aLeftR.width, aLeftR.height);
+		drawShapesOverlay(aGC, piBounds);
 		
 		if(processing == 2) {
 			long aDuration = System.currentTimeMillis() - processingStart;

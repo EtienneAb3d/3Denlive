@@ -42,6 +42,17 @@ public class MediaList extends Drawable {
 						t.printStackTrace(System.err);
 					}
 				}
+				if("ShapesMedia".equalsIgnoreCase(aT.tagName)) {
+					ShapesMedia aSM = new ShapesMedia(tde);
+					mediaList.add(aSM);
+					o = aSM.openProject(aOs, o);
+					try {
+						aSM.reloadOrig(TDConfig.PROCESSING_MODE_RENDER, -1);
+					}
+					catch(Throwable t) {
+						t.printStackTrace(System.err);
+					}
+				}
 				if("StereoImage".equalsIgnoreCase(aT.tagName)) {
 					StereoImage aSI = new StereoImage(tde);
 					mediaList.add(aSI);
@@ -190,6 +201,19 @@ public class MediaList extends Drawable {
 			t.printStackTrace(System.err);
 		}
 		mediaList.add(aCB);
+		tde.updateFirstMediaRatio();
+	}
+
+	public void createShapes(Vector<com.cubaix.TDenlive.shapes.Shape> aShapes,int aProcessingMode) {
+		ShapesMedia aSM = new ShapesMedia(tde);
+		aSM.setShapes(aShapes);
+		try {
+			aSM.reloadOrig(aProcessingMode, -1);
+		}
+		catch(Throwable t) {
+			t.printStackTrace(System.err);
+		}
+		mediaList.add(aSM);
 		tde.updateFirstMediaRatio();
 	}
 

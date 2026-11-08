@@ -80,7 +80,7 @@ public class FramingGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					fr.setOpacity(lkf.getSelection(),aValue/10000.0);
+					fr.setOpacity(lkf.editKey(),aValue/10000.0);
 					tde.gui.monitorGUI.redraw();
 				}
 			}
@@ -112,12 +112,12 @@ public class FramingGUI extends ProcessorGUI {
 		frameC.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
-				fr.setFrame(lkf.getSelection(),tde.gui.frames.listFrames().elementAt(frameC.getSelectionIndex()));
+				fr.setFrame(lkf.editKey(),tde.gui.frames.listFrames().elementAt(frameC.getSelectionIndex()));
 				tde.gui.monitorGUI.redraw();
 			}
 			@Override
 			public void widgetDefaultSelected(SelectionEvent arg0) {
-				fr.setFrame(lkf.getSelection(),tde.gui.frames.listFrames().elementAt(frameC.getSelectionIndex()));
+				fr.setFrame(lkf.editKey(),tde.gui.frames.listFrames().elementAt(frameC.getSelectionIndex()));
 				tde.gui.monitorGUI.redraw();
 			}
 		});
@@ -133,7 +133,7 @@ public class FramingGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					fr.setX(lkf.getSelection(),aValue/40000.0);
+					fr.setX(lkf.editKey(),aValue/40000.0);
 					tde.gui.monitorGUI.redraw();
 				}
 			}

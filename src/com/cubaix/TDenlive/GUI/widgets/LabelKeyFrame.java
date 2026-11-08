@@ -59,6 +59,41 @@ public abstract class LabelKeyFrame extends Widget {
 	public int getSelection() {
 		return kf.getSelection();
 	}
+
+	/**
+	 * Key to modify for a parameter change at the time cursor: the key exactly at the cursor,
+	 * otherwise a new key inserted there (interpolated values) and selected.
+	 * Outside the clip, the selected key.
+	 * The widgets are refreshed from the key after the current event, once the change is stored.
+	 */
+	public int editKey() {
+		long aTimePos = tde.timeLineStack.getTimePosMS();
+		long aStart = ((Clip)proc.targetMedia).getStartTimeMS();
+		int aKey = proc.getPrevKeyGT(aTimePos);
+		if(aKey >= 0 && proc.getTime(aKey)+aStart == aTimePos) {
+			if(kf.getSelection() != aKey) {
+				kf.setSelection(aKey);
+				kf.container.redraw();
+			}
+			setAddMode(false);
+			return aKey;
+		}
+		int aNew = proc.addKeyGT(aTimePos);
+		if(aNew < 0) {
+			return kf.getSelection();
+		}
+		kf.setSelection(aNew);
+		setAddMode(false);
+		kf.container.redraw();
+		tde.gui.timeLinesGUI.redraw();
+		final int aK = aNew;
+		tde.gui.display.asyncExec(() -> {
+			if(!container.isDisposed() && kf.getSelection() == aK) {
+				change(aK);
+			}
+		});
+		return aNew;
+	}
 	
 	@Override
 	void createContents() {

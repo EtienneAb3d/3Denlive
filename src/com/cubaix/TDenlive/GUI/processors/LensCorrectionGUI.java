@@ -98,7 +98,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					lc.setK1(lkf.getSelection(),aValue/10000.0);
+					lc.setK1(lkf.editKey(),aValue/10000.0);
 					k1LT.setValue(""+aValue/10000.0);
 					tde.gui.monitorGUI.redraw();
 				}
@@ -109,7 +109,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					lc.setK2(lkf.getSelection(),aValue/10000.0);
+					lc.setK2(lkf.editKey(),aValue/10000.0);
 					k2LT.setValue(""+aValue/10000.0);
 					tde.gui.monitorGUI.redraw();
 				}
@@ -120,7 +120,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					lc.setCX(lkf.getSelection(),aValue/10000.0);
+					lc.setCX(lkf.editKey(),aValue/10000.0);
 					cxLT.setValue(""+aValue/10000.0);
 					tde.gui.monitorGUI.redraw();
 				}
@@ -131,7 +131,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					lc.setCY(lkf.getSelection(),aValue/10000.0);
+					lc.setCY(lkf.editKey(),aValue/10000.0);
 					cyLT.setValue(""+aValue/10000.0);
 					tde.gui.monitorGUI.redraw();
 				}
@@ -169,7 +169,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 				}
 				else {
 					k1LT.setWarning(false);
-					lc.setK1(lkf.getSelection(),aV);
+					lc.setK1(lkf.editKey(),aV);
 					k1LS.setSelection((int)(aV*10000));
 					tde.gui.monitorGUI.redraw();
 				}
@@ -200,7 +200,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 				}
 				else {
 					k2LT.setWarning(false);
-					lc.setK2(lkf.getSelection(),aV);
+					lc.setK2(lkf.editKey(),aV);
 					k2LS.setSelection((int)(aV*10000));
 					tde.gui.monitorGUI.redraw();
 				}
@@ -230,7 +230,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 				}
 				else {
 					cxLT.setWarning(false);
-					lc.setCX(lkf.getSelection(),aV);
+					lc.setCX(lkf.editKey(),aV);
 					cxLS.setSelection((int)(aV*10000));
 					tde.gui.monitorGUI.redraw();
 				}
@@ -260,7 +260,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 				}
 				else {
 					cyLT.setWarning(false);
-					lc.setCY(lkf.getSelection(),aV);
+					lc.setCY(lkf.editKey(),aV);
 					cyLS.setSelection((int)(aV*10000));
 					tde.gui.monitorGUI.redraw();
 				}
@@ -276,7 +276,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					lc.setK1LR(lkf.getSelection(),aValue/10000.0);
+					lc.setK1LR(lkf.editKey(),aValue/10000.0);
 					k1LRLT.setValue(""+aValue/10000.0);
 					tde.gui.monitorGUI.redraw();
 				}
@@ -287,7 +287,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					lc.setK2LR(lkf.getSelection(),aValue/10000.0);
+					lc.setK2LR(lkf.editKey(),aValue/10000.0);
 					k2LRLT.setValue(""+aValue/10000.0);
 					tde.gui.monitorGUI.redraw();
 				}
@@ -298,7 +298,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					lc.setCXLR(lkf.getSelection(),aValue/10000.0);
+					lc.setCXLR(lkf.editKey(),aValue/10000.0);
 					cxLRLT.setValue(""+aValue/10000.0);
 					tde.gui.monitorGUI.redraw();
 				}
@@ -309,7 +309,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					lc.setCYLR(lkf.getSelection(),aValue/10000.0);
+					lc.setCYLR(lkf.editKey(),aValue/10000.0);
 					cyLRLT.setValue(""+aValue/10000.0);
 					tde.gui.monitorGUI.redraw();
 				}
@@ -347,7 +347,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 				}
 				else {
 					k1LRLT.setWarning(false);
-					lc.setK1LR(lkf.getSelection(),aV);
+					lc.setK1LR(lkf.editKey(),aV);
 					k1LRLS.setSelection((int)(aV*10000));
 					tde.gui.monitorGUI.redraw();
 				}
@@ -378,7 +378,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 				}
 				else {
 					k2LRLT.setWarning(false);
-					lc.setK2LR(lkf.getSelection(),aV);
+					lc.setK2LR(lkf.editKey(),aV);
 					k2LRLS.setSelection((int)(aV*10000));
 					tde.gui.monitorGUI.redraw();
 				}
@@ -408,7 +408,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 				}
 				else {
 					cxLRLT.setWarning(false);
-					lc.setCXLR(lkf.getSelection(),aV);
+					lc.setCXLR(lkf.editKey(),aV);
 					cxLRLS.setSelection((int)(aV*10000));
 					tde.gui.monitorGUI.redraw();
 				}
@@ -438,7 +438,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 				}
 				else {
 					cyLRLT.setWarning(false);
-					lc.setCYLR(lkf.getSelection(),aV);
+					lc.setCYLR(lkf.editKey(),aV);
 					cyLRLS.setSelection((int)(aV*10000));
 					tde.gui.monitorGUI.redraw();
 				}

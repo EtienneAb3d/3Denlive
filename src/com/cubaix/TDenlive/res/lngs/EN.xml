@@ -43,6 +43,37 @@
 	<entry label="Create">Create</entry>
 	<entry label="Cancel">Cancel</entry>
 </EntrySet>
+<EntrySet label="Shapes">
+	<entry label="Title">Shapes clip</entry>
+	<entry label="Save">Save</entry>
+	<entry label="Cancel">Cancel</entry>
+	<entry label="MediaName">Shapes</entry>
+	<entry label="Select">Select, move, resize (handles), move the corners, rotate (round handle)</entry>
+	<entry label="Rectangle">Rectangle</entry>
+	<entry label="Ellipse">Ellipse</entry>
+	<entry label="Triangle">Triangle</entry>
+	<entry label="RightTriangle">Right triangle</entry>
+	<entry label="Diamond">Diamond</entry>
+	<entry label="Hexagon">Hexagon</entry>
+	<entry label="Star">Star</entry>
+	<entry label="Arrow">Arrow</entry>
+	<entry label="Line">Line</entry>
+	<entry label="LineArrow">Line with an arrow</entry>
+	<entry label="Solid">Solid</entry>
+	<entry label="Dashed">Dashed</entry>
+	<entry label="Dotted">Dotted</entry>
+	<entry label="DashDot">Dash dot</entry>
+	<entry label="Fill">Fill</entry>
+	<entry label="Border">Border</entry>
+	<entry label="Visible">Visible</entry>
+	<entry label="Hidden">hidden</entry>
+	<entry label="Opacity">Opacity</entry>
+	<entry label="Depth">Depth (stereo parallax)</entry>
+	<entry label="DepthLetter">D</entry>
+	<entry label="HintCreate">Draw the shape on the image (or click)</entry>
+	<entry label="HintSelect">Click a shape to select it</entry>
+	<entry label="HintClip">The shapes are edited on the image, at the time cursor: the first change adds a key there, the values are interpolated between the keys. A deleted shape is only hidden from its key on (very light while the clip is selected).</entry>
+</EntrySet>
 <EntrySet label="Glasses">
 	<entry label="AnaMixerRC">Red / cyan anaglyph</entry>
 	<entry label="AnaMixerRC_Dubois">Red / cyan anaglyph Dubois</entry>
@@ -115,6 +146,7 @@
 
 	<entry label="Audio">Sound</entry>
 	<entry label="Volume">Volume / balance</entry>
+	<entry label="Shapes">Shapes</entry>
 </EntrySet>
 <EntrySet label="TimeController">
 	<entry label="TrashClip">Delete clip</entry>
@@ -271,6 +303,18 @@
 
 	<entry label="AddMedia">Add photos, videos or sounds to the media list</entry>
 	<entry label="AddColor">Add a plain color background to the media list</entry>
+	<entry label="AddShapes">Add a shapes clip (rectangles, ellipses, arrows...) to the media list</entry>
+	<entry label="ShapesHide">Delete the selected shape from this key on (it is only hidden)</entry>
+	<entry label="ShapesDelete">Delete the selected shape (DEL)</entry>
+	<entry label="ShapesDuplicate">Duplicate the selected shape</entry>
+	<entry label="ShapesFront">Bring the selected shape to the front</entry>
+	<entry label="ShapesBack">Send the selected shape to the back</entry>
+	<entry label="ShapesVisible">Show / hide the selected shape from this key on</entry>
+	<entry label="ShapesColor">Choose the color</entry>
+	<entry label="ShapesWidth">Width of the border (thousandths of the image height)</entry>
+	<entry label="ShapesStyle">Style of the border</entry>
+	<entry label="ShapesOpacity">Opacity of the shape</entry>
+	<entry label="ShapesDepth">Depth of the shape: shift between the left and right views (&gt; 0: behind the screen)</entry>
 	<entry label="MediaList">Click: select and preview a media\nDouble-click: add it to the time lines</entry>
 
 	<entry label="Ratio">Image ratio of the montage (width / height)</entry>

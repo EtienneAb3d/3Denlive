@@ -36,6 +36,7 @@ import com.cubaix.TDenlive.GUI.processors.LensCorrectionGUI;
 import com.cubaix.TDenlive.GUI.processors.PlacerGUI;
 import com.cubaix.TDenlive.GUI.processors.ProcessorGUI;
 import com.cubaix.TDenlive.GUI.processors.ScripterGUI;
+import com.cubaix.TDenlive.GUI.processors.ShapesGUI;
 import com.cubaix.TDenlive.GUI.processors.StereoAlignerGUI;
 import com.cubaix.TDenlive.GUI.processors.TimeControllerGUI;
 import com.cubaix.TDenlive.GUI.processors.TransparencyGUI;
@@ -274,6 +275,10 @@ public class ProcessorsGUI extends CompositePanel {
 		String aClassP = aP.getClassName();
 		if("TimeController".equals(aClassP)) {
 			aBox.setData(new TimeControllerGUI(tde, aBox,aP));
+			return;
+		}
+		if("Shapes".equals(aClassP)) {
+			aBox.setData(new ShapesGUI(tde, aBox,aP));
 			return;
 		}
 		if("StereoAligner".equals(aClassP)) {

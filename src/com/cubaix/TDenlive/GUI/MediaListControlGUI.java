@@ -1,5 +1,7 @@
 package com.cubaix.TDenlive.GUI;
 
+import java.util.Vector;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.MouseEvent;
@@ -11,6 +13,7 @@ import org.eclipse.swt.widgets.Composite;
 
 import com.cubaix.TDenlive.TDConfig;
 import com.cubaix.TDenlive.TDenlive;
+import com.cubaix.TDenlive.shapes.Shape;
 
 public class MediaListControlGUI extends CompositePanel {
 	Composite toolBar = null;
@@ -28,7 +31,7 @@ public class MediaListControlGUI extends CompositePanel {
 		aTB.heightHint = tde.gui.h(25);
 		toolBar.setLayoutData(aTB);
 		tde.gui.applyColorFont(toolBar);
-		GridLayout aGL = new GridLayout(3, false);
+		GridLayout aGL = new GridLayout(4, false);
 		tde.gui.applyNoMargin(aGL);
 		toolBar.setLayout(aGL);
 		
@@ -70,6 +73,30 @@ public class MediaListControlGUI extends CompositePanel {
 				if(aRGB != null) {
 					lastRGB = aRGB;
 					tde.mediaList.createColorBck(aRGB.red,aRGB.green,aRGB.blue,TDConfig.PROCESSING_MODE_RENDER);
+					tde.gui.mediaListGUI.redraw();
+				}
+			}
+			@Override
+			public void mouseDoubleClick(MouseEvent arg0) {}
+		});
+		
+		CLabel addShapes = new CLabel(toolBar,SWT.NONE);
+		addShapes.setImage(tde.gui.imgsSwt.getIcon("colorObjects.png"));
+		addShapes.setAlignment(SWT.CENTER);
+		GridData aShapesGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
+		aShapesGD.widthHint = 32;
+		aShapesGD.heightHint = tde.gui.h(25);
+		addShapes.setLayoutData(aShapesGD);
+		tde.gui.applyColorFont(addShapes);
+		tde.gui.tip(addShapes, "AddShapes");
+		addShapes.addMouseListener(new MouseListener() {
+			@Override
+			public void mouseUp(MouseEvent arg0) {}
+			@Override
+			public void mouseDown(MouseEvent arg0) {
+				Vector<Shape> aShapes = new ShapesClipGUI(tde).open();
+				if(aShapes != null) {
+					tde.mediaList.createShapes(aShapes,TDConfig.PROCESSING_MODE_RENDER);
 					tde.gui.mediaListGUI.redraw();
 				}
 			}

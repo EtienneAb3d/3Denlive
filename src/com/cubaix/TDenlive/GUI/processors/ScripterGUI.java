@@ -83,7 +83,7 @@ public class ScripterGUI extends ProcessorGUI {
 			public void mouseDown(MouseEvent arg0) {
 				String aPath = fileChoose();
 				if(aPath != null && new File(aPath).exists()) {
-					int aSelectedKey = scr.getPrevKeyGT(tde.timeLineStack.getTimePosMS());
+					int aSelectedKey = lkf.editKey();
 					scr.setScript(aSelectedKey, aPath);
 					scriptL.setText(new File(scr.getScript(aSelectedKey)).getName());
 					tde.gui.monitorGUI.redraw();

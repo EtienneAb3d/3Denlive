@@ -31,6 +31,11 @@ public class AnaMixer extends Mixer {
 	public String getClassName() {return "AnaMixer";}
 
 	@Override
+	public int getViewEye(int aView) {
+		return mode == 9 ? -1 : (mode == 10 ? 1 : 0);
+	}
+
+	@Override
 	public int openProject(Vector<XmlObject> aOs, int o) throws Exception {
 		return o;
 	}

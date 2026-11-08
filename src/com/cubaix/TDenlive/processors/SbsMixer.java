@@ -30,6 +30,17 @@ public class SbsMixer extends Mixer {
 	public String getClassName() {return "SbsMixer";}
 
 	@Override
+	public int getNbViews() {
+		return 2;
+	}
+
+	@Override
+	public int getViewEye(int aView) {
+		//Parallel: left view on the left, crossed: on the right
+		return (mode == 0) == (aView == 0) ? -1 : 1;
+	}
+
+	@Override
 	public int openProject(Vector<XmlObject> aOs, int o) throws Exception {
 		return o;
 	}
