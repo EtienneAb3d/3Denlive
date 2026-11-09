@@ -37,6 +37,14 @@ public class StereoImage extends Media {
 		super(aTDe);
 	}
 
+	public String getPathL() {
+		return pathL;
+	}
+
+	public String getPathR() {
+		return pathR;
+	}
+
 	@Override
 	public int openProject(Vector<XmlObject> aOs,int o) throws Exception{
 		return openProject(aOs, o, "StereoImage");

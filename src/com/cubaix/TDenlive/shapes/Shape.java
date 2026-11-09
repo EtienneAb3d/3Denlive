@@ -1,6 +1,9 @@
 package com.cubaix.TDenlive.shapes;
 
 import java.awt.geom.Path2D;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Vector;
 
 import com.cubaix.TDenlive.xml.XmlObject;
@@ -23,9 +26,17 @@ public class Shape {
 	public static final int ARROW = 7;
 	public static final int LINE = 8;
 	public static final int LINE_ARROW = 9;
+	//Text in the box of its 4 points (TL, TR, BR, BL), stretched to it
+	public static final int TEXT = 10;
 	//Label keys (Shapes.<name>) and order of the tools
 	public static final String[] TYPE_NAMES = {"Rectangle","Ellipse","Triangle","RightTriangle"
-			,"Diamond","Hexagon","Star","Arrow","Line","LineArrow"};
+			,"Diamond","Hexagon","Star","Arrow","Line","LineArrow","Text"};
+
+	public static final int ALIGN_LEFT = 0;
+	public static final int ALIGN_CENTER = 1;
+	public static final int ALIGN_RIGHT = 2;
+	public static final String[] ALIGN_NAMES = {"AlignLeft","AlignCenter","AlignRight"};
+	public static final String DEFAULT_TEXT = "Text";
 
 	public static final int STYLE_SOLID = 0;
 	public static final int STYLE_DASHED = 1;
@@ -48,8 +59,16 @@ public class Shape {
 	public int strokeStyle = STYLE_SOLID;
 	public double depth = 0;//Parallax, part of the frame width (> 0: behind the screen)
 	public double opacity = 1.0;
+	//Radius of the rounded corners, part of the frame height (0: sharp corners). Polygons and rectangles only
+	public double cornerRadius = 0;
 	//Deleted from the clip (from its key on), kept to be restored
 	public boolean hidden = false;
+	//TEXT: the text (lines separated by \n) and its font
+	public String text = DEFAULT_TEXT;
+	public String fontName = ShapeText.DEFAULT_FONT;
+	public boolean bold = false;
+	public boolean italic = false;
+	public int align = ALIGN_CENTER;
 
 	public Shape() {
 	}
@@ -66,7 +85,7 @@ public class Shape {
 	}
 
 	/**
-	 * Colors, border, depth and opacity of aS (not the geometry, not the visibility)
+	 * Colors, border, corners, depth, opacity, text and font of aS (not the geometry, not the visibility)
 	 */
 	public void copyStyle(Shape aS) {
 		filled = aS.filled;
@@ -77,10 +96,75 @@ public class Shape {
 		strokeStyle = aS.strokeStyle;
 		depth = aS.depth;
 		opacity = aS.opacity;
+		cornerRadius = aS.cornerRadius;
+		text = aS.text;
+		fontName = aS.fontName;
+		bold = aS.bold;
+		italic = aS.italic;
+		align = aS.align;
 	}
 
 	public boolean isLine() {
 		return type == LINE || type == LINE_ARROW;
+	}
+
+	/**
+	 * Its corners can be rounded (not the ellipses, lines and texts)
+	 */
+	public boolean canRound() {
+		return type != ELLIPSE && type != TEXT && !isLine();
+	}
+
+	public boolean isText() {
+		return type == TEXT && xs.length == 4;
+	}
+
+	/**
+	 * Same text and font as aS (what changes the layout of the glyphs)
+	 */
+	public boolean sameText(Shape aS) {
+		return aS != null && java.util.Objects.equals(text, aS.text) && java.util.Objects.equals(fontName, aS.fontName)
+				&& bold == aS.bold && italic == aS.italic && align == aS.align;
+	}
+
+	/**
+	 * TEXT: width / height of the text block (font units)
+	 */
+	public double textRatio() {
+		return ShapeText.getRatio(this);
+	}
+
+	/**
+	 * TEXT: after a change of the text or of the font, the width of the box follows the
+	 * text (its height, top left corner and orientation stay). aFrameRatio is width / height of the frame
+	 */
+	public void fitText(double aFrameRatio) {
+		if(!isText() || aFrameRatio <= 0) {
+			return;
+		}
+		//In pixels of a frame of height 1
+		double aV1X = (xs[1]-xs[0])*aFrameRatio;
+		double aV1Y = ys[1]-ys[0];
+		double aV3X = (xs[3]-xs[0])*aFrameRatio;
+		double aV3Y = ys[3]-ys[0];
+		double aHLen = Math.hypot(aV3X, aV3Y);
+		double aWLen = Math.hypot(aV1X, aV1Y);
+		if(aHLen < 1e-9) {
+			return;
+		}
+		double aNewW = aHLen*textRatio();
+		if(aWLen < 1e-9) {
+			//Perpendicular to the height
+			aV1X = aV3Y;
+			aV1Y = -aV3X;
+			aWLen = aHLen;
+		}
+		aV1X *= aNewW/aWLen;
+		aV1Y *= aNewW/aWLen;
+		xs[1] = xs[0]+aV1X/aFrameRatio;
+		ys[1] = ys[0]+aV1Y;
+		xs[2] = xs[3]+aV1X/aFrameRatio;
+		ys[2] = ys[3]+aV1Y;
 	}
 
 	public int nbPoints() {
@@ -132,6 +216,9 @@ public class Shape {
 		aS.type = aType;
 		if(aStyle != null) {
 			aS.copyStyle(aStyle);
+		}
+		if(aType == TEXT && (aS.text == null || aS.text.trim().isEmpty())) {
+			aS.text = DEFAULT_TEXT;
 		}
 		if(!aS.isLine()) {
 			double aMinX = Math.min(aX0, aX1);
@@ -195,9 +282,88 @@ public class Shape {
 			aP.closePath();
 			return aP;
 		}
+		if(isText()) {
+			return ShapeText.outline(this, aX[0], aY[0], aX[1], aY[1], aX[3], aY[3]);
+		}
+		if(cornerRadius > 0 && aN >= 3 && canRound()) {
+			return roundedPolygon(aX, aY, cornerRadius*aH);
+		}
 		aP.moveTo(aX[0], aY[0]);
 		for(int p = 1;p < aN;p++) {
 			aP.lineTo(aX[p], aY[p]);
+		}
+		aP.closePath();
+		return aP;
+	}
+
+	/**
+	 * Closed polygon (pixels) whose corners are circle arcs of radius aR (pixels), each arc
+	 * reduced so that it takes at most half of its two sides
+	 */
+	static Path2D.Double roundedPolygon(double[] aX,double[] aY,double aR) {
+		int aN = aX.length;
+		//Start and end of the arc of each corner, and its Bezier control points
+		double[] aSX = new double[aN];
+		double[] aSY = new double[aN];
+		double[] aEX = new double[aN];
+		double[] aEY = new double[aN];
+		double[] aK = new double[aN];
+		for(int p = 0;p < aN;p++) {
+			int aPrev = (p+aN-1)%aN;
+			int aNext = (p+1)%aN;
+			double aPX = aX[aPrev]-aX[p];
+			double aPY = aY[aPrev]-aY[p];
+			double aNX = aX[aNext]-aX[p];
+			double aNY = aY[aNext]-aY[p];
+			double aPL = Math.hypot(aPX, aPY);
+			double aNL = Math.hypot(aNX, aNY);
+			aSX[p] = aEX[p] = aX[p];
+			aSY[p] = aEY[p] = aY[p];
+			aK[p] = 0;
+			if(aPL < 1e-9 || aNL < 1e-9) {
+				continue;
+			}
+			//Angle at the vertex, and turn of the outline (angle of the arc)
+			double aCos = Math.max(-1, Math.min(1, (aPX*aNX+aPY*aNY)/(aPL*aNL)));
+			double aTurn = Math.PI-Math.acos(aCos);
+			if(aTurn < 1e-6 || aTurn > Math.PI-1e-6) {
+				continue;
+			}
+			//Distance from the vertex to the points where the arc touches the sides
+			double aT = Math.min(aR*Math.tan(aTurn/2), Math.min(aPL, aNL)/2);
+			aSX[p] = aX[p]+aPX/aPL*aT;
+			aSY[p] = aY[p]+aPY/aPL*aT;
+			aEX[p] = aX[p]+aNX/aNL*aT;
+			aEY[p] = aY[p]+aNY/aNL*aT;
+			//Cubic approximation of the arc: control points toward the vertex
+			aK[p] = 4.0/3.0*Math.tan(aTurn/4)/Math.tan(aTurn/2);
+		}
+		Path2D.Double aP = new Path2D.Double();
+		aP.moveTo(aEX[aN-1], aEY[aN-1]);
+		for(int p = 0;p < aN;p++) {
+			aP.lineTo(aSX[p], aSY[p]);
+			if(aK[p] > 0) {
+				aP.curveTo(aSX[p]+aK[p]*(aX[p]-aSX[p]), aSY[p]+aK[p]*(aY[p]-aSY[p])
+						, aEX[p]+aK[p]*(aX[p]-aEX[p]), aEY[p]+aK[p]*(aY[p]-aEY[p])
+						, aEX[p], aEY[p]);
+			}
+		}
+		aP.closePath();
+		return aP;
+	}
+
+	/**
+	 * Polygon of the points (the box of a text), for the selection
+	 */
+	public Path2D.Double buildPolygon(double aOX,double aOY,double aW,double aH,double aShiftX) {
+		Path2D.Double aP = new Path2D.Double();
+		for(int p = 0;p < xs.length;p++) {
+			if(p == 0) {
+				aP.moveTo(aOX+aShiftX+xs[p]*aW, aOY+ys[p]*aH);
+			}
+			else {
+				aP.lineTo(aOX+aShiftX+xs[p]*aW, aOY+ys[p]*aH);
+			}
 		}
 		aP.closePath();
 		return aP;
@@ -257,10 +423,74 @@ public class Shape {
 	}
 
 	/**
-	 * Shape between a0 (aF = 0) and a1 (aF = 1): geometry, colors, width, depth and opacity
+	 * Shape between a0 (aF = 0) and a1 (aF = 1): geometry, colors, width, depth, opacity and corner radius
 	 * are interpolated, the type, styles and visibility are those of a0
 	 */
 	public static Shape lerp(Shape a0,Shape a1,double aF) {
+		return lerp(a0, a1, aF, 0);
+	}
+
+	/**
+	 * Same, aFrameRatio (width / height of the frame, 0 if unknown) for the texts: when the text
+	 * changes at the next key, the text of a0 keeps its proportions (its box is not stretched toward
+	 * the width of the next text), its height, position and orientation are interpolated
+	 */
+	public static Shape lerp(Shape a0,Shape a1,double aF,double aFrameRatio) {
+		Shape aS = lerpBase(a0, a1, aF);
+		if(aFrameRatio > 0 && aF > 0 && a1 != null && aS.isText() && a1.isText() && !a0.sameText(a1)) {
+			double aS0 = a0.textStretch(aFrameRatio);
+			double aS1 = a1.textStretch(aFrameRatio);
+			if(aS0 > 0 && aS1 > 0) {
+				aS.keepTextProportions(aFrameRatio, aS0*(1.0-aF)+aS1*aF);
+			}
+		}
+		return aS;
+	}
+
+	/**
+	 * TEXT: width of the box / width of the text at the height of the box (1: not stretched), 0 if flat
+	 */
+	double textStretch(double aFrameRatio) {
+		double aW = Math.hypot((xs[1]-xs[0])*aFrameRatio, ys[1]-ys[0]);
+		double aH = Math.hypot((xs[3]-xs[0])*aFrameRatio, ys[3]-ys[0]);
+		double aR = textRatio();
+		return aH < 1e-9 || aR <= 0 ? 0 : aW/(aH*aR);
+	}
+
+	/**
+	 * TEXT: width of the box from its height, the text and the stretch aStretch, around the
+	 * anchor of the alignment (left side, middle, right side)
+	 */
+	void keepTextProportions(double aFrameRatio,double aStretch) {
+		double aV1X = (xs[1]-xs[0])*aFrameRatio;
+		double aV1Y = ys[1]-ys[0];
+		double aV3X = (xs[3]-xs[0])*aFrameRatio;
+		double aV3Y = ys[3]-ys[0];
+		double aW = Math.hypot(aV1X, aV1Y);
+		double aH = Math.hypot(aV3X, aV3Y);
+		if(aW < 1e-9 || aH < 1e-9) {
+			return;
+		}
+		double aNewW = aH*textRatio()*aStretch;
+		double aUX = aV1X/aW;
+		double aUY = aV1Y/aW;
+		//Anchor on the top side, in pixels of a frame of height 1
+		double aA = align == ALIGN_LEFT ? 0 : (align == ALIGN_RIGHT ? 1 : 0.5);
+		double aX0 = xs[0]*aFrameRatio+aV1X*aA-aUX*aNewW*aA;
+		double aY0 = ys[0]+aV1Y*aA-aUY*aNewW*aA;
+		double aX1 = aX0+aUX*aNewW;
+		double aY1 = aY0+aUY*aNewW;
+		xs[0] = aX0/aFrameRatio;
+		ys[0] = aY0;
+		xs[1] = aX1/aFrameRatio;
+		ys[1] = aY1;
+		xs[2] = (aX1+aV3X)/aFrameRatio;
+		ys[2] = aY1+aV3Y;
+		xs[3] = (aX0+aV3X)/aFrameRatio;
+		ys[3] = aY0+aV3Y;
+	}
+
+	static Shape lerpBase(Shape a0,Shape a1,double aF) {
 		Shape aS = a0.copy();
 		if(a1 == null || aF <= 0) {
 			return aS;
@@ -276,6 +506,7 @@ public class Shape {
 		aS.strokeWidth = a0.strokeWidth*(1.0-aF)+a1.strokeWidth*aF;
 		aS.depth = a0.depth*(1.0-aF)+a1.depth*aF;
 		aS.opacity = a0.opacity*(1.0-aF)+a1.opacity*aF;
+		aS.cornerRadius = a0.cornerRadius*(1.0-aF)+a1.cornerRadius*aF;
 		return aS;
 	}
 
@@ -301,6 +532,21 @@ public class Shape {
 		return aCopy;
 	}
 
+	/**
+	 * Free text in the project: URL encoded (the XML parser cuts on < > [ ] and drops the
+	 * empty texts), after a '=' so that it is never empty
+	 */
+	static String encode(String aS) {
+		return "="+URLEncoder.encode(aS == null ? "" : aS, StandardCharsets.UTF_8);
+	}
+
+	static String decode(String aS) {
+		if(aS.startsWith("=")) {
+			aS = aS.substring(1);
+		}
+		return URLDecoder.decode(aS, StandardCharsets.UTF_8);
+	}
+
 	public void saveProject(StringBuffer aSB,String aIndent) {
 		StringBuffer aPts = new StringBuffer();
 		for(int p = 0;p < xs.length;p++) {
@@ -322,6 +568,16 @@ public class Shape {
 		aSB.append(aIndent+"	<depth>" + depth + "</depth>\n");
 		aSB.append(aIndent+"	<opacity>" + opacity + "</opacity>\n");
 		aSB.append(aIndent+"	<hidden>" + hidden + "</hidden>\n");
+		if(cornerRadius > 0) {
+			aSB.append(aIndent+"	<cornerRadius>" + cornerRadius + "</cornerRadius>\n");
+		}
+		if(type == TEXT) {
+			aSB.append(aIndent+"	<text>" + encode(text) + "</text>\n");
+			aSB.append(aIndent+"	<fontName>" + encode(fontName) + "</fontName>\n");
+			aSB.append(aIndent+"	<bold>" + bold + "</bold>\n");
+			aSB.append(aIndent+"	<italic>" + italic + "</italic>\n");
+			aSB.append(aIndent+"	<align>" + align + "</align>\n");
+		}
 		aSB.append(aIndent+"</Shape>\n");
 	}
 
@@ -380,6 +636,24 @@ public class Shape {
 			}
 			if("hidden".equalsIgnoreCase(aT.tagName)) {
 				hidden = "true".equalsIgnoreCase(aOs.elementAt(++o).text.trim());
+			}
+			if("cornerRadius".equalsIgnoreCase(aT.tagName)) {
+				cornerRadius = Double.parseDouble(aOs.elementAt(++o).text.trim());
+			}
+			if("text".equalsIgnoreCase(aT.tagName)) {
+				text = decode(aOs.elementAt(++o).text.trim());
+			}
+			if("fontName".equalsIgnoreCase(aT.tagName)) {
+				fontName = decode(aOs.elementAt(++o).text.trim());
+			}
+			if("bold".equalsIgnoreCase(aT.tagName)) {
+				bold = "true".equalsIgnoreCase(aOs.elementAt(++o).text.trim());
+			}
+			if("italic".equalsIgnoreCase(aT.tagName)) {
+				italic = "true".equalsIgnoreCase(aOs.elementAt(++o).text.trim());
+			}
+			if("align".equalsIgnoreCase(aT.tagName)) {
+				align = Integer.parseInt(aOs.elementAt(++o).text.trim());
 			}
 		}
 		return o;

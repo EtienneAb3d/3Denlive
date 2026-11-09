@@ -60,7 +60,7 @@ public class VideoThumbnailer extends Ffmpeg {
 			}
 			String aIn = path;
 			String aWork = StringUtils.path2workingcopy(path, workCacheDir);
-			if(new File(aWork).isFile()) {
+			if(new File(aWork).length() > 0) {
 				aIn = aWork;
 			}
 			StringBuffer aVF = new StringBuffer();

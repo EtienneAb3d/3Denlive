@@ -152,6 +152,39 @@ public class TimeLineStack extends Media {
 	public long snapTimeMS(long aTimeMS,Clip aIgnored,long aWindowMS) {
 		long aBest = aTimeMS;
 		long aBestDist = aWindowMS+1;
+		for(long aT : snapTargetsMS(aIgnored)) {
+			long aDist = Math.abs(aT-aTimeMS);
+			if(aDist < aBestDist) {
+				aBestDist = aDist;
+				aBest = aT;
+			}
+		}
+		return aBest;
+	}
+	
+	/**
+	 * Sticky move of a clip from aStartMS to aEndMS: the start to give it so that its start or its end
+	 * (the nearest) sticks to a target of snapTimeMS() at most aWindowMS away; aStartMS otherwise
+	 */
+	public long snapMoveMS(long aStartMS,long aEndMS,Clip aIgnored,long aWindowMS) {
+		long aBestDelta = 0;
+		long aBestDist = aWindowMS+1;
+		for(long aT : snapTargetsMS(aIgnored)) {
+			for(long aEdge : new long[] {aStartMS,aEndMS}) {
+				long aDist = Math.abs(aT-aEdge);
+				if(aDist < aBestDist) {
+					aBestDist = aDist;
+					aBestDelta = aT-aEdge;
+				}
+			}
+		}
+		return aStartMS+aBestDelta;
+	}
+	
+	/**
+	 * Targets of the sticky edges: the time cursor and the start / end of the clips, except aIgnored and its twins
+	 */
+	Vector<Long> snapTargetsMS(Clip aIgnored) {
 		Vector<VideoTimeLine> aTLs = new Vector<VideoTimeLine>(videoTimeLineStack);
 		aTLs.addAll(audioTimeLineStack);
 		Vector<Long> aTargets = new Vector<Long>();
@@ -165,14 +198,7 @@ public class TimeLineStack extends Media {
 				aTargets.add(aC.getMaxTimePosMS());
 			}
 		}
-		for(long aT : aTargets) {
-			long aDist = Math.abs(aT-aTimeMS);
-			if(aDist < aBestDist) {
-				aBestDist = aDist;
-				aBest = aT;
-			}
-		}
-		return aBest;
+		return aTargets;
 	}
 
 	/**
@@ -375,6 +401,25 @@ public class TimeLineStack extends Media {
 		aTL.addClip(aCopy);
 	}
 	
+	/**
+	 * Cut aClip at aTimeMS: its second part is added to the same time line (see Clip.cutAt()).
+	 * Returns the second part, null if nothing was cut.
+	 */
+	public Clip cutClip(Clip aClip,long aTimeMS) {
+		Vector<VideoTimeLine> aTLs = new Vector<VideoTimeLine>(videoTimeLineStack);
+		aTLs.addAll(audioTimeLineStack);
+		for(VideoTimeLine aTL : aTLs) {
+			if(aTL.containsClip(aClip)) {
+				Clip aSecond = aClip.cutAt(aTimeMS);
+				if(aSecond != null) {
+					aTL.addClip(aSecond);
+				}
+				return aSecond;
+			}
+		}
+		return null;
+	}
+
 	public Clip getClipByUID(long aUID) {
 		for(VideoTimeLine aTL : videoTimeLineStack) {
 			Clip aC = aTL.getClipByUID(aUID);

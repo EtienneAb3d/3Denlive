@@ -13,6 +13,7 @@ import org.eclipse.swt.graphics.Rectangle;
 
 import com.cubaix.TDenlive.TDConfig;
 import com.cubaix.TDenlive.TDenlive;
+import com.cubaix.TDenlive.depth.ComputedDepthmap;
 import com.cubaix.TDenlive.medias.Clip;
 import com.cubaix.TDenlive.medias.Media;
 import com.cubaix.TDenlive.processors.Chromakey.Key;
@@ -29,9 +30,15 @@ public class Depthmap extends Processor {
 		boolean blackIsFront = true;
 	}
 	Vector<Key> keys = new Vector<Key>();
+	//Depth maps computed for the clip (see depth.DepthConverter), null if none
+	public ComputedDepthmap computed = null;
+	//Show the depth map instead of the result on the monitor (not when rendering, not saved)
+	public boolean showDepth = false;
 	
 	public Depthmap(TDenlive aTDe,Media aTargetMedia) {
 		super(aTDe,aTargetMedia);
+		//Always the first processor after the TimeController (see Clip.placeDepthProcessor())
+		isUnmovable = true;
 		isExpended = true;
 		keys.add(new Key());
 	}
@@ -42,12 +49,19 @@ public class Depthmap extends Processor {
 	@Override
 	public int openProject(Vector<XmlObject> aOs, int o) throws Exception {
 		keys.clear();
+		boolean[] aHasComputed = {false};
 		for(;o < aOs.size();o++) {
 			XmlObject aO = aOs.elementAt(o);
 			if(aO instanceof XmlTag) {
 				XmlTag aT = (XmlTag)aO;
 				if("/Depthmap".equalsIgnoreCase(aT.tagName)) {
+					if(aHasComputed[0]) {
+						attachComputed();
+					}
 					return o;
+				}
+				if(ComputedDepthmap.read(aOs, o, aT.tagName, aHasComputed)) {
+					continue;
 				}
 				if("d".equalsIgnoreCase(aT.tagName)) {
 					o++;
@@ -88,7 +102,37 @@ public class Depthmap extends Processor {
 			aSB.append("							<time>" + aK.time + "</time>\n");
 			aSB.append("							<blackIsFront>" + aK.blackIsFront + "</blackIsFront>\n");
 		}
+		if(computed != null) {
+			computed.save(aSB, "							");
+		}
 		aSB.append("						</Depthmap>\n");
+	}
+
+	/**
+	 * Depth maps computed for the clip (replace the previous ones)
+	 */
+	public void setComputed(ComputedDepthmap aCD) {
+		if(computed != null) {
+			computed.detach();
+		}
+		computed = aCD;
+	}
+
+	@Override
+	public void removed() {
+		setComputed(null);
+	}
+
+	/**
+	 * The depth maps computed before for the media of the clip (files next to it), if still there
+	 */
+	public void attachComputed() {
+		try {
+			setComputed(ComputedDepthmap.attach(tde, (Clip)targetMedia));
+		}
+		catch(Throwable t) {
+			t.printStackTrace(System.err);
+		}
 	}
 
 	@Override
@@ -112,7 +156,7 @@ public class Depthmap extends Processor {
 	}
 	
 	public int addKeyGT(long aTime){
-		if(aTime <= ((Clip)targetMedia).getStartTimeMS() || aTime > ((Clip)targetMedia).getStartTimeMS() + ((Clip)targetMedia).getDurationMS()) {
+		if(aTime < ((Clip)targetMedia).getStartTimeMS() || aTime <= ((Clip)targetMedia).getKeysOriginMS() || aTime > ((Clip)targetMedia).getStartTimeMS() + ((Clip)targetMedia).getDurationMS()) {
 			//Can't insert outside
 			return -1;
 		}
@@ -138,7 +182,7 @@ public class Depthmap extends Processor {
 	}
 	
 	public int getPrevKeyGT(long aTime){
-		long aT = aTime - ((Clip)targetMedia).getStartTimeMS();
+		long aT = aTime-((Clip)targetMedia).getKeysOriginMS();
 		for(int k = keys.size() - 1;k >= 0;k--) {
 			Key aK = keys.elementAt(k);
 			if(aK.time <= aT) {
@@ -150,7 +194,7 @@ public class Depthmap extends Processor {
 	}
 	
 	public int getNextKeyGT(long aTime){
-		long aT = aTime - ((Clip)targetMedia).getStartTimeMS();
+		long aT = aTime-((Clip)targetMedia).getKeysOriginMS();
 		for(int k = 0;k < keys.size();k++) {
 			Key aK = keys.elementAt(k);
 			if(aK.time > aT) {
@@ -231,7 +275,7 @@ public class Depthmap extends Processor {
 	}
 
 	Key getInterKeyGT(long aTimePos){
-		long aTime = aTimePos-((Clip)targetMedia).getStartTimeMS();
+		long aTime = aTimePos-((Clip)targetMedia).getKeysOriginMS();
 		for(int k = keys.size()-1;k >= 0;k--) {
 			Key aKey = keys.elementAt(k);
 			if(aKey.time <= aTime) {
@@ -273,7 +317,16 @@ public class Depthmap extends Processor {
 		}
 		try {
 			BufferedImage aBIL = aMedia.getWorkLeft(aProcessingMode,aTime);
-			BufferedImage aBIR = aMedia.getWorkRight(aProcessingMode,aTime);
+			//Depth map: the computed one (of the left view), else the right view of the media (2D + depth map)
+			ComputedDepthmap aCD = computed;
+			BufferedImage aBIR = ImageUtils.fitTo(aCD != null && aCD.clip != null
+					? aCD.clip.getWorkLeft(aProcessingMode,aTime)
+					: aMedia.getWorkRight(aProcessingMode,aTime), aBIL);
+			if(showDepth && aProcessingMode != TDConfig.PROCESSING_MODE_RENDER) {
+				aMedia.setWorkLeft(aBIR);
+				aMedia.setWorkRight(aBIR);
+				return;
+			}
 			Thread aThL = new Thread(new Runnable() {
 				@Override
 				public void run() {

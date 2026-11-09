@@ -1,6 +1,5 @@
 package com.cubaix.TDenlive.GUI;
 
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.Vector;
 
@@ -16,11 +15,12 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 
+import com.cubaix.TDenlive.TDConfig;
 import com.cubaix.TDenlive.TDenlive;
+import com.cubaix.TDenlive.processors.Mixer;
 import com.cubaix.TDenlive.shapes.Shape;
 import com.cubaix.TDenlive.shapes.ShapeRenderer;
 import com.cubaix.TDenlive.shapes.ShapesEditor;
-import com.cubaix.TDenlive.utils.ImageUtils;
 
 /**
  * Popup to create a shapes clip: vector editor on a frame of the output ratio,
@@ -37,9 +37,12 @@ public class ShapesClipGUI implements ShapesEditor.Listener {
 	Vector<Shape> shapes = new Vector<Shape>();
 	Vector<Shape> result = null;
 	boolean isMouseDown = false;
+	//Same view mode as the monitor (anaglyph, side by side...), without its zoom
+	Mixer mixer = null;
 
 	public ShapesClipGUI(TDenlive aTDe) {
 		tde = aTDe;
+		mixer = tde.gui.monitorGUI.mixer.copyMode();
 		editor = new ShapesEditor(new ShapesEditor.Source() {
 			@Override
 			public Vector<Shape> getShapes() {
@@ -143,8 +146,9 @@ public class ShapesClipGUI implements ShapesEditor.Listener {
 
 		canvas = new Canvas(shell, SWT.BORDER | SWT.DOUBLE_BUFFERED);
 		GridData aCGD = new GridData(GridData.FILL_BOTH);
-		aCGD.widthHint = 720;
-		aCGD.heightHint = (int)(720/Math.max(0.2, tde.config.outRatio))+2*MARGIN/3;
+		int aNbViews = nbViews();
+		aCGD.widthHint = aNbViews > 1 ? 960 : 720;
+		aCGD.heightHint = (int)(aCGD.widthHint/(aNbViews*Math.max(0.2, tde.config.outRatio)))+2*MARGIN/3;
 		canvas.setLayoutData(aCGD);
 		canvas.addListener(SWT.Paint, e -> draw(e.gc));
 		canvas.addListener(SWT.MouseDown, e -> {
@@ -224,12 +228,16 @@ public class ShapesClipGUI implements ShapesEditor.Listener {
 		});
 	}
 
+	int nbViews() {
+		return Math.max(1, mixer.getNbViews());
+	}
+
 	/**
-	 * Frame of the output ratio, centered in the canvas
+	 * Image of the frame(s) of the output ratio (side by side: one per view), centered in the canvas
 	 */
 	Rectangle frameRect() {
 		Rectangle aCA = canvas.getClientArea();
-		double aRatio = Math.max(0.2, tde.config.outRatio);
+		double aRatio = Math.max(0.2, tde.config.outRatio)*nbViews();
 		double aW = Math.max(10, aCA.width-2*MARGIN);
 		double aH = Math.max(10, aCA.height-2*MARGIN);
 		if(aW/aH > aRatio) {
@@ -241,9 +249,25 @@ public class ShapesClipGUI implements ShapesEditor.Listener {
 		return new Rectangle((int)((aCA.width-aW)/2), (int)((aCA.height-aH)/2), (int)aW, (int)aH);
 	}
 
+	/**
+	 * Views of the frame as on the monitor: one per image side by side, and one per eye when
+	 * both eyes are on the same image (anaglyph...): a shape shifted in depth has its handles doubled
+	 */
 	void setView() {
 		Rectangle aF = frameRect();
-		editor.setView(aF.x, aF.y, aF.width, aF.height);
+		int aN = nbViews();
+		double aSW = aF.width/(double)aN;
+		Vector<ShapesEditor.View> aVs = new Vector<ShapesEditor.View>();
+		for(int v = 0;v < aN;v++) {
+			int aEye = mixer.getViewEye(v);
+			int[] aEyes = aEye == 0 ? new int[] {-1,1} : new int[] {aEye};
+			for(int aE : aEyes) {
+				ShapesEditor.View aV = new ShapesEditor.View(aF.x+v*aSW, aF.y, aSW, aF.height, aE);
+				aV.group = v;
+				aVs.add(aV);
+			}
+		}
+		editor.setViews(aVs);
 	}
 
 	void draw(org.eclipse.swt.graphics.GC aGC) {
@@ -252,17 +276,32 @@ public class ShapesClipGUI implements ShapesEditor.Listener {
 		aGC.fillRectangle(aCA);
 		setView();
 		Rectangle aF = frameRect();
-		BufferedImage aBI = ImageUtils.createImage(Math.max(1, aF.width), Math.max(1, aF.height));
-		ImageUtils.checkerBck(aBI, 8);
-		Graphics2D aG = (Graphics2D)aBI.getGraphics();
-		ShapeRenderer.draw(aG, shapes, 0, 0, aF.width, aF.height, 0);
-		aG.dispose();
-		Image aI = ImageUtils.imageToSwt(tde.gui.display, aBI);
-		aGC.drawImage(aI, aF.x, aF.y);
-		aI.dispose();
+		//Left and right images of the shapes (shifted by their depth), mixed as on the monitor
+		int aN = nbViews();
+		int aEW = Math.max(1, aF.width/aN);
+		int aEH = Math.max(1, aF.height);
+		BufferedImage aLI = ShapeRenderer.render(shapes, aEW, aEH, -1);
+		BufferedImage aRI = ShapeRenderer.render(shapes, aEW, aEH, 1);
+		Image aI = null;
+		try {
+			aI = mixer.mix2Swt(aLI, aRI, TDConfig.PROCESSING_MODE_WORK, new Rectangle(0, 0, aEW*aN, aEH));
+			aGC.drawImage(aI, aF.x, aF.y);
+		}
+		catch(Throwable t) {
+			t.printStackTrace(System.err);
+		}
+		finally {
+			if(aI != null) {
+				aI.dispose();
+			}
+		}
 		aGC.setForeground(tde.gui.colorsSwt.WHITE);
-		aGC.drawRectangle(aF.x-1, aF.y-1, aF.width+1, aF.height+1);
-		editor.drawOverlay(aGC);
+		for(int v = 0;v < aN;v++) {
+			int aX0 = aF.x+(int)Math.round(v*aF.width/(double)aN);
+			int aX1 = aF.x+(int)Math.round((v+1)*aF.width/(double)aN);
+			aGC.drawRectangle(aX0-1, aF.y-1, aX1-aX0+1, aF.height+1);
+		}
+		editor.drawOverlay(aGC, aF, aN, aCA.height);
 	}
 
 	@Override

@@ -11,11 +11,13 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Shell;
 
 import com.cubaix.TDenlive.TDConfig;
 import com.cubaix.TDenlive.TDenlive;
+import com.cubaix.TDenlive.res.Lngs;
 
 public class SettingsGUI {
 	TDenlive tde = null;
@@ -23,17 +25,18 @@ public class SettingsGUI {
 
 	public SettingsGUI(TDenlive aTDe) {
 		tde = aTDe;
-		createContents();
-		shell.open();
-	}
-	
-	void createContents() {
 		shell = new Shell(tde.gui.display);
 		shell.setText("3Denlive");
 		shell.setLayout(new GridLayout(1, false));
 		shell.setSize(600, 600);
 		tde.gui.applyColorFont(shell);
 		shell.setImage(tde.gui.imgsSwt.getIcon("3Denlive32.png"));
+		createContents();
+		shell.open();
+	}
+	
+	void createContents() {
+		addLanguageLine();
 		
 		Button aRB = new Button(shell, SWT.PUSH);
 		tde.gui.applyColorFont(aRB);
@@ -81,6 +84,74 @@ public class SettingsGUI {
 				shell.close();
 				shell.dispose();
 			}
+		});
+	}
+	
+	/**
+	 * Interface language: the main window and this one are built again in the chosen language
+	 */
+	void addLanguageLine() {
+		Composite aLngC = new Composite(shell,SWT.NONE); 
+		GridData aLCGD = new GridData(GridData.FILL_HORIZONTAL);
+		aLCGD.heightHint = tde.gui.h(25);
+		aLngC.setLayoutData(aLCGD);
+		tde.gui.applyColorFont(aLngC);
+		GridLayout aGL = new GridLayout(3, false);
+		tde.gui.applyNoMargin(aGL);
+		aLngC.setLayout(aGL);
+
+		CLabel aLabel = new CLabel(aLngC, SWT.NONE);
+		GridData aLGD = new GridData();
+		aLGD.heightHint = tde.gui.h(20);
+		aLabel.setLayoutData(aLGD);
+		aLabel.setText(tde.gui.lngs.get("Config.Language"));
+		tde.gui.applyColorFont(aLabel);
+
+		Composite aSpace = new Composite(aLngC, SWT.SEPARATOR|SWT.FILL);
+		tde.gui.applyColorFont(aSpace);
+		GridData aSpaceGD = new GridData(GridData.FILL_HORIZONTAL);
+		aSpaceGD.heightHint = tde.gui.h(25);
+		aSpace.setLayoutData(aSpaceGD);
+
+		Combo aLngs = new Combo(aLngC, SWT.DROP_DOWN|SWT.READ_ONLY);
+		GridData aLngsGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
+		aLngsGD.widthHint = 160;
+		aLngsGD.heightHint = tde.gui.h(20);
+		aLngs.setLayoutData(aLngsGD);
+		tde.gui.applyColorFont(aLngs);
+		tde.gui.tip(aLngs, "Language");
+		for(int l = 0;l < Lngs.LANGUAGES.length;l++) {
+			aLngs.add(Lngs.LANGUAGES[l][1]);
+			if(Lngs.LANGUAGES[l][0].equalsIgnoreCase(tde.config.lng)) {
+				aLngs.select(l);
+			}
+		}
+		aLngs.addListener(SWT.Selection, e -> {
+			int aSel = aLngs.getSelectionIndex();
+			if(aSel < 0 || Lngs.LANGUAGES[aSel][0].equalsIgnoreCase(tde.config.lng)) {
+				return;
+			}
+			String aLng = Lngs.LANGUAGES[aSel][0];
+			//After the end of this event: the combo is disposed by the rebuilding
+			tde.gui.display.asyncExec(() -> {
+				if(shell.isDisposed()) {
+					return;
+				}
+				tde.gui.setLanguage(aLng);
+				//This window too
+				shell.setRedraw(false);
+				try {
+					for(Control aC : shell.getChildren()) {
+						aC.dispose();
+					}
+					createContents();
+					shell.layout(true, true);
+				}
+				finally {
+					shell.setRedraw(true);
+				}
+				shell.forceActive();
+			});
 		});
 	}
 	

@@ -16,8 +16,16 @@ import com.cubaix.TDenlive.ffmpeg.VideoThumbnailer;
 import com.cubaix.TDenlive.medias.Media;
 import com.cubaix.TDenlive.medias.MediaList;
 import com.cubaix.TDenlive.medias.Selected;
+import com.cubaix.TDenlive.medias.StereoImage;
 import com.cubaix.TDenlive.medias.StereoMovie;
+import com.cubaix.TDenlive.medias.VideoTimeLine;
+import com.cubaix.TDenlive.medias.Clip;
+import com.cubaix.TDenlive.processors.Processor;
+import com.cubaix.TDenlive.processors.Depthmap;
+import com.cubaix.TDenlive.processors.DepthmapStereo;
+import com.cubaix.TDenlive.depth.ComputedDepthmap;
 import com.cubaix.TDenlive.medias.TimeLineStack;
+import com.cubaix.TDenlive.shapes.ProjectFonts;
 import com.cubaix.TDenlive.xml.XmlMinimalParser;
 import com.cubaix.TDenlive.xml.XmlObject;
 import com.cubaix.TDenlive.xml.XmlTag;
@@ -148,6 +156,17 @@ public class TDenlive {
 				((StereoMovie)aM).copyWorkCopies(aOldWorkCacheDir, aWorkCacheDir);
 			}
 		}
+		//Depth maps computed for the clips, in the work folder when they could not go next to their media
+		for(VideoTimeLine aTL : timeLineStack.videoTimeLineStack) {
+			for(Clip aC : aTL.clipList) {
+				Processor aDP = aC.getDepthProcessor();
+				ComputedDepthmap aCD = aDP instanceof Depthmap ? ((Depthmap)aDP).computed
+						: (aDP instanceof DepthmapStereo ? ((DepthmapStereo)aDP).computed : null);
+				if(aCD != null) {
+					aCD.copyFromWorkDir(aOldWorkCacheDir, aWorkCacheDir);
+				}
+			}
+		}
 	}
 	
 	/**
@@ -197,6 +216,8 @@ public class TDenlive {
 	public void openProject(String aPath) {
 		try {
 			resetViews();
+			//The fonts of its texts, even if not installed here
+			ProjectFonts.register(aPath);
 			
 			XmlMinimalParser aXMP = new XmlMinimalParser();
 			Vector<XmlObject> aOs = aXMP.parse(aPath);
@@ -246,7 +267,7 @@ public class TDenlive {
 	/**
 	 * The project file content (current state of the montage)
 	 */
-	String projectXml() throws Exception {
+	public String projectXml() throws Exception {
 		StringBuffer aSB = new StringBuffer();
 		aSB.append("<3De>\n");
 		aSB.append("	<outRatio>"+config.outRatio+"</outRatio>\n");
@@ -297,7 +318,35 @@ public class TDenlive {
 				aFiles.put(aP, aFileName);
 			}
 		}
+		//Depth maps computed for the clips: next to their media, named after its packed name
+		java.util.LinkedHashMap<String,String> aDepthFiles = new java.util.LinkedHashMap<String,String>();
+		for(VideoTimeLine aTL : timeLineStack.videoTimeLineStack) {
+			for(Clip aC : aTL.clipList) {
+				Processor aDP = aC.getDepthProcessor();
+				ComputedDepthmap aCD = aDP instanceof Depthmap ? ((Depthmap)aDP).computed
+						: (aDP instanceof DepthmapStereo ? ((DepthmapStereo)aDP).computed : null);
+				if(aCD == null || !(aC.getMedia() instanceof StereoImage)) {
+					continue;
+				}
+				String[] aSrcs = ComputedDepthmap.sources((StereoImage)aC.getMedia());
+				for(int i = 0;i < aSrcs.length;i++) {
+					String aDepth = aCD.files[Math.min(i, aCD.files.length-1)];
+					String aPacked = aFiles.get(aSrcs[i]);
+					if(aPacked != null && new File(aDepth).isFile() && !aDepthFiles.containsKey(aDepth)) {
+						aDepthFiles.put(aDepth, new File(ComputedDepthmap.depthPath(aPacked, "", aDepth.toLowerCase().endsWith(".mp4"))).getName());
+					}
+				}
+			}
+		}
 		String aXml = projectXml();
+		//Fonts of the texts, in the fonts folder of the packed project
+		java.util.LinkedHashMap<File,String> aFonts = new java.util.LinkedHashMap<File,String>();
+		java.util.HashSet<String> aFontNames = new java.util.HashSet<String>();
+		for(File aF : ProjectFonts.usedFiles(aXml)) {
+			if(aFontNames.add(aF.getName().toLowerCase())) {
+				aFonts.put(aF, aName+"/"+ProjectFonts.DIR+"/"+aName+"/"+aF.getName());
+			}
+		}
 		for(java.util.Map.Entry<String,String> aE : aFiles.entrySet()) {
 			aXml = aXml.replace(">"+aE.getKey()+"<", ">"+aE.getValue()+"<");
 		}
@@ -314,6 +363,20 @@ public class TDenlive {
 				aZE.setTime(new File(aE.getKey()).lastModified());
 				aZOS.putNextEntry(aZE);
 				java.nio.file.Files.copy(new File(aE.getKey()).toPath(), aZOS);
+				aZOS.closeEntry();
+			}
+			for(java.util.Map.Entry<String,String> aE : aDepthFiles.entrySet()) {
+				java.util.zip.ZipEntry aZE = new java.util.zip.ZipEntry(aName+"/"+aE.getValue());
+				aZE.setTime(new File(aE.getKey()).lastModified());
+				aZOS.putNextEntry(aZE);
+				java.nio.file.Files.copy(new File(aE.getKey()).toPath(), aZOS);
+				aZOS.closeEntry();
+			}
+			for(java.util.Map.Entry<File,String> aE : aFonts.entrySet()) {
+				java.util.zip.ZipEntry aZE = new java.util.zip.ZipEntry(aE.getValue());
+				aZE.setTime(aE.getKey().lastModified());
+				aZOS.putNextEntry(aZE);
+				java.nio.file.Files.copy(aE.getKey().toPath(), aZOS);
 				aZOS.closeEntry();
 			}
 		}
@@ -338,6 +401,8 @@ public class TDenlive {
 			aBW.close();
 			//The decoded sounds go with the project
 			AudioReader.copyCachesTo(getWorkCacheDir());
+			//And the fonts of its texts (only those used)
+			ProjectFonts.save(aPath, aXml);
 			return true;
 		}
 		catch(Throwable t) {
@@ -417,6 +482,8 @@ public class TDenlive {
 
 	    //An empty montage has nothing to save
 	    markSaved();
+	    //Undo / redo from the empty montage
+	    gui.history.reset();
 	    if(aProjectPath != null) {
 	    	gui.openProject(aProjectPath);
 	    }

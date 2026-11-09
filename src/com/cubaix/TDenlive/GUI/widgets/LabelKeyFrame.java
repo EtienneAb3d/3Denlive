@@ -33,7 +33,7 @@ public abstract class LabelKeyFrame extends Widget {
 		if(aSelected < 0) {
 			return;
 		}
-		long aSelectedTime = proc.getTime(aSelected)+((Clip)proc.targetMedia).getStartTimeMS();
+		long aSelectedTime = proc.getTime(aSelected)+((Clip)proc.targetMedia).getKeysOriginMS();
 		if(aTime != aSelectedTime) {
 			setAddMode(true);
 		}
@@ -68,9 +68,9 @@ public abstract class LabelKeyFrame extends Widget {
 	 */
 	public int editKey() {
 		long aTimePos = tde.timeLineStack.getTimePosMS();
-		long aStart = ((Clip)proc.targetMedia).getStartTimeMS();
+		long aOrigin = ((Clip)proc.targetMedia).getKeysOriginMS();
 		int aKey = proc.getPrevKeyGT(aTimePos);
-		if(aKey >= 0 && proc.getTime(aKey)+aStart == aTimePos) {
+		if(aKey >= 0 && proc.getTime(aKey)+aOrigin == aTimePos) {
 			if(kf.getSelection() != aKey) {
 				kf.setSelection(aKey);
 				kf.container.redraw();
@@ -146,8 +146,9 @@ public abstract class LabelKeyFrame extends Widget {
 			if(aKey < 0) {
 				aKey = 0;
 			}
-			long aTimeNew = proc.getTime(aKey)
-					+((Clip)proc.targetMedia).getStartTimeMS();
+			//Not before the clip (the first keys of the second part of a cut clip)
+			long aTimeNew = Math.max(((Clip)proc.targetMedia).getStartTimeMS()
+					, proc.getTime(aKey)+((Clip)proc.targetMedia).getKeysOriginMS());
 			tde.timeLineStack.setTimePosMS(aTimeNew);
 			tde.timeLineStack.setRequestedTimePosMS(aTimeNew);
 			
@@ -189,13 +190,17 @@ public abstract class LabelKeyFrame extends Widget {
 		aRight.setBackground(tde.gui.colorsSwt.WHITE);
 		tde.gui.tip(aRight, "KeyNext");
 		aRight.addListener(SWT.MouseDown,e -> {
+			Clip aClip = (Clip)proc.targetMedia;
+			long aEnd = aClip.getStartTimeMS()+aClip.getDurationMS();
 			int aKey = proc.getNextKeyGT(tde.timeLineStack.getTimePosMS());
+			if(aKey >= 0 && proc.getTime(aKey)+aClip.getKeysOriginMS() >= aEnd) {
+				//After the end of the clip (the last keys of the first part of a cut clip)
+				aKey = -1;
+			}
 			if(aKey < 0) {
-				aKey = proc.getNbKeys()-1;
-				long aTimeNew = proc.getTime(0)
-						+((Clip)proc.targetMedia).getStartTimeMS()
-						+((Clip)proc.targetMedia).getDurationMS()
-						;
+				aKey = Math.max(0, proc.getPrevKeyGT(aEnd-1));
+				long aTimeNew = ((Clip)proc.targetMedia).getStartTimeMS()
+						+((Clip)proc.targetMedia).getDurationMS();
 				tde.timeLineStack.setTimePosMS(aTimeNew-1);
 				tde.timeLineStack.setRequestedTimePosMS(aTimeNew-1);
 				addDelete.setImage(tde.gui.imgsSwt.getIcon("add.gif"));
@@ -204,7 +209,7 @@ public abstract class LabelKeyFrame extends Widget {
 			}
 			else {
 				long aTimeNew = proc.getTime(aKey)
-						+((Clip)proc.targetMedia).getStartTimeMS();
+						+((Clip)proc.targetMedia).getKeysOriginMS();
 				tde.timeLineStack.setTimePosMS(aTimeNew);
 				tde.timeLineStack.setRequestedTimePosMS(aTimeNew);
 				addDelete.setImage(tde.gui.imgsSwt.getIcon("delete.png"));

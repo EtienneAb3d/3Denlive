@@ -8,6 +8,8 @@
 /**/
 package com.cubaix.TDenlive.utils;
 
+import java.io.File;
+
 
 public class BrowserControl {
 	/**
@@ -50,6 +52,35 @@ public class BrowserControl {
 		}
 	}
 	
+	/**
+	 * Opens a local file (HTML page...) with the default application of the system, without waiting. The path
+	 * is one argument: spaces and accents are kept (AWT Desktop is not available, AWT runs headless).
+	 */
+	public static void openFile(File aFile) {
+		String osName = System.getProperty("os.name");
+		String aPath = aFile.getAbsolutePath();
+		try {
+			ProcessBuilder aPB;
+			if (osName.startsWith("Mac OS")) {
+				aPB = new ProcessBuilder("open", aPath);
+			} else if (osName.startsWith("Windows")) {
+				aPB = new ProcessBuilder("rundll32", "url.dll,FileProtocolHandler", aPath);
+			} else {
+				aPB = new ProcessBuilder("xdg-open", aPath);
+			}
+			aPB.redirectErrorStream(true);
+			aPB.redirectOutput(ProcessBuilder.Redirect.DISCARD);
+			aPB.start();
+		} catch (Throwable t) {
+			if (!osName.startsWith("Mac OS") && !osName.startsWith("Windows")) {
+				//No xdg-open: the old browser list
+				displayURLNoWait(aFile.toURI().toString());
+				return;
+			}
+			t.printStackTrace(System.err);
+		}
+	}
+
 	public static void displayURLNoWait(String url) {
 		String osName = System.getProperty("os.name");
 		try {

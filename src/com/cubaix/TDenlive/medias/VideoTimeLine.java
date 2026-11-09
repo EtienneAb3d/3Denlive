@@ -1,5 +1,11 @@
 package com.cubaix.TDenlive.medias;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+
+import com.cubaix.TDenlive.ffmpeg.AudioReader;
 import java.awt.BasicStroke;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
@@ -22,8 +28,13 @@ public class VideoTimeLine extends Media {
 	Rectangle isActiveCheckboxBounds = null;
 	Rectangle soundIconBounds = null;
 	public static final int SOUND_BAR_H = 16;
-	//Sound of the clips of this line not heard (play and rendering)
-	public boolean soundMuted = false;
+	//Sound of the clips of this line (play and rendering): the left video (the only one for a single file),
+	//the right one of two files (else the single one), or none
+	public static final int SOUND_LEFT = 0;
+	public static final int SOUND_RIGHT = 1;
+	public static final int SOUND_MUTE = 2;
+	static final String[] SOUND_NAMES = {"left", "right", "mute"};
+	public int soundSource = SOUND_LEFT;
 
 	public VideoTimeLine(TDenlive aTDe,String aName) {
 		super(aTDe);
@@ -46,8 +57,19 @@ public class VideoTimeLine extends Media {
 					isActive = !"false".equalsIgnoreCase(aOs.elementAt(o).text);
 				}
 				if("soundMuted".equalsIgnoreCase(aT.tagName)) {
+					//Projects before the sound source choice
 					o++;
-					soundMuted = "true".equalsIgnoreCase(aOs.elementAt(o).text);
+					soundSource = "true".equalsIgnoreCase(aOs.elementAt(o).text) ? SOUND_MUTE : SOUND_LEFT;
+				}
+				if("soundSource".equalsIgnoreCase(aT.tagName)) {
+					o++;
+					String aV = aOs.elementAt(o).text.trim();
+					soundSource = SOUND_LEFT;
+					for(int s = 0;s < SOUND_NAMES.length;s++) {
+						if(SOUND_NAMES[s].equalsIgnoreCase(aV)) {
+							soundSource = s;
+						}
+					}
 				}
 				if("Clip".equalsIgnoreCase(aT.tagName)) {
 					Clip aC = new Clip(tde, null);
@@ -63,7 +85,7 @@ public class VideoTimeLine extends Media {
 	public void saveProject(StringBuffer aSB) throws Exception {
 		aSB.append("			<VideoTimeLine>\n");
 		aSB.append("				<isActive>" + isActive + "</isActive>\n");
-		aSB.append("				<soundMuted>" + soundMuted + "</soundMuted>\n");
+		aSB.append("				<soundSource>" + SOUND_NAMES[soundSource] + "</soundSource>\n");
 		for(Clip aTL : clipList) {
 			aTL.saveProject(aSB);
 		}
@@ -78,7 +100,8 @@ public class VideoTimeLine extends Media {
 	}
 	
 	protected Rectangle drawClipAwt(Clip aC,Graphics2D aGC, int aX, int aY, Rectangle aClippingR) {
-		return aC.drawAwt(aGC, aX, aY, aClippingR, SOUND_BAR_H, soundMuted || !isActive);
+		aC.soundRight = soundSource == SOUND_RIGHT;
+		return aC.drawAwt(aGC, aX, aY, aClippingR, SOUND_BAR_H, isSoundMuted() || !isActive);
 	}
 	
 	/**
@@ -231,11 +254,11 @@ public class VideoTimeLine extends Media {
 		aGC.drawImage(tde.gui.imgsAwt.getIcon(isActive?"checkboxBlackChecked.gif":"checkboxBlackUnchecked.gif")
 				, isActiveCheckboxBounds.x, isActiveCheckboxBounds.y,null);
 		if(hasSoundIcon()) {
-			//Mute / unmute the sound of the clips of the line, left of the checkbox
+			//Sound source of the clips of the line (left / right video, mute), left of the checkbox
 			soundIconBounds = new Rectangle(isActiveCheckboxBounds.x-20, aY+8, 16, 16);
 			aGC.drawImage(tde.gui.imgsAwt.getIcon("sound.gif")
 					, soundIconBounds.x, soundIconBounds.y, 16, 16, null);
-			if(soundMuted) {
+			if(isSoundMuted()) {
 				aGC.setColor(tde.gui.colorsAwt.RED);
 				aGC.setStroke(new BasicStroke(2));
 				aGC.drawLine(soundIconBounds.x, soundIconBounds.y+soundIconBounds.height
@@ -282,13 +305,14 @@ public class VideoTimeLine extends Media {
 	 * Nothing if the line is off or muted.
 	 */
 	public void mixAudio(long aStartFrame,float[] aOut,int aNbFrames) {
-		if(!isActive || soundMuted) {
+		if(!isActive || isSoundMuted()) {
 			return;
 		}
 		for(Clip aC : new Vector<Clip>(clipList)) {
 			if(!aC.soundOn) {
 				continue;
 			}
+			aC.soundRight = soundSource == SOUND_RIGHT;
 			try {
 				aC.mixAudio(aStartFrame, aOut, aNbFrames);
 			}
@@ -298,14 +322,50 @@ public class VideoTimeLine extends Media {
 		}
 	}
 	
+	public boolean isSoundMuted() {
+		return soundSource == SOUND_MUTE;
+	}
+
+	/**
+	 * Sound read for a clip of this line (left or right video)
+	 */
+	public AudioReader soundReaderOf(Clip aC) {
+		aC.soundRight = soundSource == SOUND_RIGHT;
+		return aC.getSoundReader();
+	}
+
+	/**
+	 * Popup menu of the sound icon: Left (default) / Right / Mute
+	 */
+	void chooseSoundSource() {
+		Canvas aCanvas = tde.gui.timeLinesGUI.getCanvas();
+		Menu aMenu = new Menu(aCanvas);
+		String[] aKeys = {"TimeLine.SoundLeft", "TimeLine.SoundRight", "TimeLine.SoundMute"};
+		for(int s = 0;s < aKeys.length;s++) {
+			final int aSource = s;
+			MenuItem aMI = new MenuItem(aMenu, SWT.RADIO);
+			aMI.setText(tde.gui.lngs.get(aKeys[s]));
+			aMI.setSelection(soundSource == s);
+			aMI.addListener(SWT.Selection, e -> {
+				if(aMI.getSelection() && soundSource != aSource) {
+					soundSource = aSource;
+					tde.gui.timeLinesGUI.redraw();
+				}
+			});
+		}
+		aMenu.setLocation(tde.gui.display.getCursorLocation());
+		aMenu.setVisible(true);
+	}
+
 	/**
 	 * True if something can be heard from this line
 	 */
 	public boolean hasSound() {
-		if(!isActive || soundMuted) {
+		if(!isActive || isSoundMuted()) {
 			return false;
 		}
 		for(Clip aC : new Vector<Clip>(clipList)) {
+			aC.soundRight = soundSource == SOUND_RIGHT;
 			if(aC.soundOn && aC.hasSound()) {
 				return true;
 			}
@@ -333,7 +393,7 @@ public class VideoTimeLine extends Media {
 			return true;
 		}
 		if(hasSoundIcon() && soundIconBounds != null && soundIconBounds.contains(aX,aY)) {
-			soundMuted = !soundMuted;
+			chooseSoundSource();
 			return true;
 		}
 		return false;

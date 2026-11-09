@@ -12,8 +12,8 @@
 	<entry label="PackMissing">Files not found (not in the zip):</entry>
 	<entry label="PackError">Packing failed:</entry>
 
-	<entry label="Generic.1stMedia">1st media</entry>
-	<entry label="Generic.1stMediaShort">1st</entry>
+	<entry label="1stMedia">1st media</entry>
+	<entry label="1stMediaShort">1st</entry>
 
 	<entry label="LeftLetter">L</entry>
 	<entry label="RightLetter">R</entry>
@@ -30,7 +30,40 @@
 	<entry label="RotationLetter">R</entry>
 	<entry label="SizeLetter">S</entry>
 </EntrySet>
+<EntrySet label="History">
+	<entry label="UndoTip">Undo (%k): %s</entry>
+	<entry label="RedoTip">Redo (%k): %s</entry>
+	<entry label="NothingToUndo">nothing to undo</entry>
+	<entry label="NothingToRedo">nothing to redo</entry>
+	<entry label="AddMedia">add the media %s</entry>
+	<entry label="DeleteMedia">removal of the media %s</entry>
+	<entry label="EditMedia">properties of the media %s</entry>
+	<entry label="MoveMedia">order of the medias</entry>
+	<entry label="AddClip">add the clip %s on %l</entry>
+	<entry label="DeleteClip">removal of the clip %s from %l</entry>
+	<entry label="CutClip">cut of the clip %s on %l</entry>
+	<entry label="Clips">changes of the clips</entry>
+	<entry label="MoveClip">move of the clip %s on %l</entry>
+	<entry label="MoveClipLine">move of the clip %s to %l</entry>
+	<entry label="TrimClip">start / end of the clip %s on %l</entry>
+	<entry label="FadeClip">fades of the clip %s on %l</entry>
+	<entry label="ClipSound">sound of the clip %s on %l</entry>
+	<entry label="EditClip">clip %s on %l</entry>
+	<entry label="AddProc">add %p to the clip %s</entry>
+	<entry label="DeleteProc">removal of %p from the clip %s</entry>
+	<entry label="MoveProc">order of the processors of the clip %s</entry>
+	<entry label="EditProc">%p of the clip %s</entry>
+	<entry label="EditShapes">shapes of the clip %s</entry>
+	<entry label="ProcOn">%p on, clip %s</entry>
+	<entry label="ProcOff">%p off, clip %s</entry>
+	<entry label="AddLine">add a line</entry>
+	<entry label="DeleteLine">removal of a line</entry>
+	<entry label="EditLine">line %l on / off / sound</entry>
+	<entry label="Ratio">output ratio</entry>
+	<entry label="Change">change of the montage</entry>
+</EntrySet>
 <EntrySet label="Config">
+	<entry label="Language">Interface language</entry>
 	<entry label="RenderDir">Render folder</entry>
 	<entry label="WorkMode">Work configuration</entry>
 	<entry label="FullScreenMode">Presentation configuration</entry>
@@ -59,12 +92,19 @@
 	<entry label="Arrow">Arrow</entry>
 	<entry label="Line">Line</entry>
 	<entry label="LineArrow">Line with an arrow</entry>
+	<entry label="Text">Text</entry>
+	<entry label="Bold">Bold</entry>
+	<entry label="Italic">Italic</entry>
+	<entry label="AlignLeft">Left</entry>
+	<entry label="AlignCenter">Centered</entry>
+	<entry label="AlignRight">Right</entry>
 	<entry label="Solid">Solid</entry>
 	<entry label="Dashed">Dashed</entry>
 	<entry label="Dotted">Dotted</entry>
 	<entry label="DashDot">Dash dot</entry>
 	<entry label="Fill">Fill</entry>
 	<entry label="Border">Border</entry>
+	<entry label="Corners">Rounded corners</entry>
 	<entry label="Visible">Visible</entry>
 	<entry label="Hidden">hidden</entry>
 	<entry label="Opacity">Opacity</entry>
@@ -91,6 +131,10 @@
 	<entry label="Wobble">Wobble</entry>
 </EntrySet>
 <EntrySet label="MediaOpen">
+	<entry label="CopyTitle">File outside the project folder</entry>
+	<entry label="CopyAsk">This file is not in the project folder (%DIR%). Copy it into the project folder, or leave it where it is?</entry>
+	<entry label="CopyYes">Copy into the project folder</entry>
+	<entry label="CopyNo">Leave it where it is</entry>
 	<entry label="OpenX">Add a crossed view/video</entry>
 	<entry label="OpenP">Add a parallel view/video</entry>
 	<entry label="OpenLR">Add a left and right view/video</entry>
@@ -147,10 +191,12 @@
 	<entry label="Audio">Sound</entry>
 	<entry label="Volume">Volume / balance</entry>
 	<entry label="Shapes">Shapes</entry>
+	<entry label="OneDepthmap">This clip already has a depth map processor (only one per clip, always first).</entry>
 </EntrySet>
 <EntrySet label="TimeController">
 	<entry label="TrashClip">Delete clip</entry>
 	<entry label="TrashClipAndTwins">Delete clip (and its twins)</entry>
+	<entry label="CutAtPos">Cut at position</entry>
 	<entry label="UnlinkTwins">Unlink the twin clips (video / sound)</entry>
 	<entry label="SoundOn">Sound of the clip</entry>
 	<entry label="MoveClipUp">Move to above timeline</entry>
@@ -199,6 +245,109 @@
 <EntrySet label="DepthmapStereo">
 	<entry label="BlackIsFront">Black is front</entry>
 	<entry label="Depthmap">Depth map</entry>
+</EntrySet>
+<EntrySet label="SaveProject">
+	<entry label="Title">Save the project</entry>
+	<entry label="Name">Name:</entry>
+	<entry label="DefaultName">My project</entry>
+	<entry label="Folder">Folder:</entry>
+	<entry label="Browse">Browse...</entry>
+	<entry label="NewFolder">Create a new folder for the project (named after it, in this folder)</entry>
+	<entry label="File">Project file:</entry>
+	<entry label="Cancel">Cancel</entry>
+	<entry label="FolderError">The folder could not be created:</entry>
+	<entry label="Gather">%N% media file(s) of the project are outside its folder (%DIR%). Move them into the project folder, copy them there, or leave them where they are? Their work copies, sounds and depth maps go with them; the project is then opened again.</entry>
+	<entry label="Move">Move</entry>
+	<entry label="Copy">Copy</entry>
+	<entry label="Leave">Leave them</entry>
+	<entry label="GatherError">The media files could not be gathered into the project folder:</entry>
+	<entry label="GatherFailed">These files could not be moved or copied (they stay where they are):</entry>
+	<entry label="GatherCopied">These files are in use and could only be copied (the originals stay where they are):</entry>
+</EntrySet>
+<EntrySet label="AI">
+	<entry label="Button">AI</entry>
+	<entry label="Title">AI clip (Wan2.2-TI2V-5B)</entry>
+	<entry label="GpuNeeded">This feature requires a GPU with at least %GB% GB of memory: an NVIDIA graphics card (Windows / Linux, the PyTorch CUDA build is installed for its driver) or an Apple Silicon Mac. It does not work on the CPU nor with integrated Intel / AMD graphics.</entry>
+	<entry label="GpuFree">Free memory of the GPU that will be used: %GB% GB</entry>
+	<entry label="GpuTooSmall">Not enough free GPU memory now: the generation will probably fail.</entry>
+	<entry label="Unsupported">AI clips need a GPU with at least %GB% GB of memory: an NVIDIA graphics card on Windows / Linux x64, or an Apple Silicon Mac. None was found on this computer.</entry>
+	<entry label="Running">An AI clip is already being generated.</entry>
+	<entry label="Prompt">Describe the video to generate (subject, action, setting, light, camera movement...):</entry>
+	<entry label="Duration">Duration (s):</entry>
+	<entry label="DurationMax">at most %MAX% s (model limit), %FPS% images/s, %W%x%H%</entry>
+	<entry label="Download">First use: about %GB% GB are downloaded and installed into the Models folder of 3Denlive (the model, Python and PyTorch).</entry>
+	<entry label="Note2D">The video is in 2D, written into the AI folder of the project with its prompt, and added to the media list. Add the "2D+depthmap-&gt;stereo" processor to its clip to turn it into 3D. The generation takes from several minutes to more than an hour depending on the GPU.</entry>
+	<entry label="Licence">Wan2.2 model: Apache-2.0 licence (commercial use allowed). The generation runs on this computer: nothing is sent over the network.</entry>
+	<entry label="Image">Reference image (optional): the video starts from this image and animates it according to the prompt. It is cropped to the ratio of the video, whose orientation follows the image.</entry>
+	<entry label="ImageChoose">Choose...</entry>
+	<entry label="ImageRemove">Remove</entry>
+	<entry label="ImageNone">None: the video is generated from the text only</entry>
+	<entry label="ImageFilter">Images (JPEG, PNG, BMP, GIF)</entry>
+	<entry label="EncodingImage">Analysing the reference image...</entry>
+	<entry label="Generate">Generate</entry>
+	<entry label="Cancel">Cancel</entry>
+	<entry label="Starting">Starting...</entry>
+	<entry label="Canceling">Canceling...</entry>
+	<entry label="DownloadingUv">Downloading the Python installer (uv):</entry>
+	<entry label="InstallingPython">Installing Python...</entry>
+	<entry label="InstallingPackages">Installing PyTorch and diffusers (several GB, once)...</entry>
+	<entry label="DownloadingModel">Downloading the Wan2.2-TI2V-5B model:</entry>
+	<entry label="LoadingText">Loading the text encoder...</entry>
+	<entry label="EncodingText">Analysing the prompt...</entry>
+	<entry label="LoadingVideo">Loading the video model (quantized)...</entry>
+	<entry label="Generating">Generating, step</entry>
+	<entry label="Decoding">Decoding the images...</entry>
+	<entry label="Encoding">Writing the video...</entry>
+	<entry label="Loading">Opening the video...</entry>
+	<entry label="Remaining">Remaining about</entry>
+	<entry label="PreviewWait">The preview appears at the first generation step</entry>
+	<entry label="Error">The generation of the AI clip failed:</entry>
+	<entry label="ErrorOom">The GPU ran out of memory. This feature needs at least %GB% GB of free GPU memory: close the other applications that use the GPU and try again.</entry>
+	<entry label="ErrorNoGpu">PyTorch found no usable GPU (NVIDIA CUDA or Apple Silicon): the generation is not possible on the CPU.</entry>
+</EntrySet>
+<EntrySet label="DepthConvert">
+	<entry label="Title">Depth map computation</entry>
+	<entry label="Ask2D">This clip has no depth map.
+Compute it from the image or the video (artificial intelligence, Depth Anything V2)?</entry>
+	<entry label="AskStereo">This processor has no depth map yet.
+Compute the depth maps of both views from the clip (artificial intelligence, Depth Anything V2)?</entry>
+	<entry label="Running">A depth map computation is already running.</entry>
+	<entry label="Unsupported">The depth map computation is not available on this platform (ONNX Runtime: Windows x64, Linux x64 / arm64, macOS Apple Silicon only).</entry>
+	<entry label="NotConvertible">The depth map can only be computed for an image or a video file.</entry>
+	<entry label="Intro">Choose the model that computes the depth (Depth Anything V2). It is downloaded once, into the Models folder of 3Denlive.</entry>
+	<entry label="Download">Download: %MB% MB</entry>
+	<entry label="Downloaded">Already downloaded (%MB% MB)</entry>
+	<entry label="LicenceFree">Apache-2.0 licence: free, commercial use allowed</entry>
+	<entry label="LicenceNonCommercial">CC-BY-NC-4.0 licence: non commercial use only</entry>
+	<entry label="Runtime">The ONNX Runtime engine (%MB% MB) is also downloaded once.</entry>
+	<entry label="Cache">The depth map is written next to the image or video, with the same name followed by _3eDepthMap (in the WorkCache folder of the project if that folder is read-only). It is associated with the clip, reused, and packed with the project.</entry>
+	<entry label="VideoNote">Video: the depth of every frame is computed, this may take a long time.</entry>
+	<entry label="Convert">Compute</entry>
+	<entry label="Cancel">Cancel</entry>
+	<entry label="Starting">Starting...</entry>
+	<entry label="Canceling">Canceling...</entry>
+	<entry label="DownloadingRuntime">Downloading ONNX Runtime:</entry>
+	<entry label="DownloadingModel">Downloading the %MODEL% model:</entry>
+	<entry label="LoadingModel">Loading the %MODEL% model...</entry>
+	<entry label="Computing">Computing the depth (%MODEL%):</entry>
+	<entry label="Loading">Opening the result...</entry>
+	<entry label="Remaining">Remaining about</entry>
+	<entry label="Error">The depth map computation failed:</entry>
+	<entry label="Button">Compute the depth map...</entry>
+	<entry label="GpuSmall">Runs on the GPU if there is one with at least %GB% GB free, else on the CPU (fast enough on the CPU too)</entry>
+	<entry label="GpuLarge">Runs on the GPU if there is one with at least %GB% GB free, else on the CPU (very slow on the CPU)</entry>
+	<entry label="WillCpu">Not enough free GPU memory now: it would run on the CPU</entry>
+	<entry label="GpuFree">Free memory of the least loaded GPU: %GB% GB</entry>
+	<entry label="GpuFreeUnknown">No NVIDIA graphics card found: the computation runs on the CPU (the integrated Intel / AMD GPUs are not supported by the engine)</entry>
+	<entry label="OnGpu">Running on the GPU of this computer (graphics card)</entry>
+	<entry label="OnCpuMemory">Running on the CPU: no GPU with enough free memory (%FREE% GB free at most, %GB% GB needed)</entry>
+	<entry label="OnCpuNoGpu">Running on the CPU: no usable GPU</entry>
+	<entry label="OnCpuError">Running on the CPU: the GPU failed</entry>
+	<entry label="Show">Show the depth map</entry>
+	<entry label="Computed">(computed)</entry>
+	<entry label="Replace">A depth map already exists next to the media: it will be replaced.</entry>
+	<entry label="NvidiaNote">NVIDIA graphics card found: the GPU version of the engine is used. It needs CUDA 12 and cuDNN 9 installed, else the computation runs on the CPU.</entry>
+	<entry label="OnCpuCuda">Running on the CPU: the NVIDIA card needs CUDA 12 and cuDNN 9 installed</entry>
 </EntrySet>
 <EntrySet label="BrightnessContrast">
 	<entry label="ApplyTo">Apply to</entry>
@@ -277,6 +426,9 @@
 	<entry label="ZoomReset">Default time scale</entry>
 	<entry label="ZoomFit">Fit the time scale to the whole montage</entry>
 	<entry label="Zoom">Time scale</entry>
+	<entry label="SoundLeft">Sound of the left video</entry>
+	<entry label="SoundRight">Sound of the right video</entry>
+	<entry label="SoundMute">Mute</entry>
 </EntrySet>
 <EntrySet label="Renderer">
 	<entry label="ProcessingRes">Rendering quality</entry>
@@ -291,11 +443,18 @@
 	<entry label="Stop">Stop</entry>
 	<entry label="Done">Done</entry>
 </EntrySet>
+<EntrySet label="Html">
+	<entry label="Left">Left view</entry>
+	<entry label="Right">Right view</entry>
+	<entry label="Crossed">Crossed view</entry>
+	<entry label="Parallel">Parallel view</entry>
+</EntrySet>
 <EntrySet label="Tip">
 	<entry label="OpenProject">Open a 3Denlive project (.3De)</entry>
 	<entry label="SaveProject">Save the project (.3De file)</entry>
 	<entry label="PackProject">Pack the project and its medias into a zip (Packed folder)</entry>
-	<entry label="Settings">Settings: render folder, quality of the work, presentation and rendering modes</entry>
+	<entry label="Language">Language of the menus, buttons and messages</entry>
+	<entry label="Settings">Settings: interface language, render folder, quality of the work, presentation and rendering modes</entry>
 	<entry label="Render">Render the montage to a video file or an image sequence</entry>
 	<entry label="News">News of 3Denlive (web site)</entry>
 	<entry label="Guide">User guide (web site)</entry>
@@ -304,6 +463,7 @@
 	<entry label="AddMedia">Add photos, videos or sounds to the media list</entry>
 	<entry label="AddColor">Add a plain color background to the media list</entry>
 	<entry label="AddShapes">Add a shapes clip (rectangles, ellipses, arrows...) to the media list</entry>
+	<entry label="AddAI">Add a video generated by an artificial intelligence (Wan2.2-TI2V-5B) from a text to the media list</entry>
 	<entry label="ShapesHide">Delete the selected shape from this key on (it is only hidden)</entry>
 	<entry label="ShapesDelete">Delete the selected shape (DEL)</entry>
 	<entry label="ShapesDuplicate">Duplicate the selected shape</entry>
@@ -312,6 +472,10 @@
 	<entry label="ShapesVisible">Show / hide the selected shape from this key on</entry>
 	<entry label="ShapesColor">Choose the color</entry>
 	<entry label="ShapesWidth">Width of the border (thousandths of the image height)</entry>
+	<entry label="ShapesText">Text of the selected text shape (several lines possible). In a clip: changed from the key at the time cursor on, until a key where the text was already different</entry>
+	<entry label="ShapesFont">Font of the text</entry>
+	<entry label="ShapesAlign">Alignment of the lines of the text</entry>
+	<entry label="ShapesCorners">Radius of the rounded corners (thousandths of the image height, 0: sharp corners)</entry>
 	<entry label="ShapesStyle">Style of the border</entry>
 	<entry label="ShapesOpacity">Opacity of the shape</entry>
 	<entry label="ShapesDepth">Depth of the shape: shift between the left and right views (&gt; 0: behind the screen)</entry>
@@ -359,7 +523,7 @@
 	<entry label="AddAudioLine">Add a sound time line</entry>
 	<entry label="LineActive">Enable / disable this line (images and sound) in the preview and the rendering</entry>
 	<entry label="AudioLineActive">Enable / disable this sound line in the playing and the rendering</entry>
-	<entry label="LineSound">Mute / unmute the sound of the clips of this line</entry>
+	<entry label="LineSound">Sound of the clips of this line: left video (default), right video (two files) or mute</entry>
 	<entry label="Ruler">Click or drag to move the time cursor</entry>
 
 	<entry label="ProcTitle">Click to show / hide the settings of this processor</entry>
@@ -374,6 +538,8 @@
 	<entry label="ProcLib">Double-click a processor to add it to the selected clip</entry>
 	<entry label="ProcLib_StereoAligner">Align the left and right views (position, size, rotation)</entry>
 	<entry label="ProcLib_ColorAdapter">Adapt the reds and cyans to reduce the ghosting of anaglyphs</entry>
+	<entry label="DepthShow">Show the depth map on the monitor instead of the result (not in the rendering)</entry>
+	<entry label="DepthConvert">Compute the depth map(s) of the clip with an artificial intelligence (Depth Anything V2), into the WorkCache folder of the project</entry>
 	<entry label="ProcLib_Depthmap">Build a stereo pair from a 2D image and its depth map</entry>
 	<entry label="ProcLib_DepthmapStereo">Change the depth of a stereo pair with a depth map</entry>
 	<entry label="ProcLib_HueSaturation">Change the hue, saturation and brightness</entry>
@@ -433,6 +599,7 @@
 	<entry label="DuplicateClipUp">Copy this clip to the time line above (copy without sound)</entry>
 	<entry label="UnlinkTwins">Unlink the twin clips: they can then be moved separately</entry>
 	<entry label="TrashClip">Delete this clip from the time line</entry>
+	<entry label="CutAtPos">Cut this clip at the time cursor: its second part becomes a new clip</entry>
 	<entry label="PickColor">Pick the color to make transparent by clicking on the preview</entry>
 	<entry label="ChooseColor">Choose the color to make transparent</entry>
 	<entry label="ChooseScript">Choose the BeanShell script (.bsh) to run</entry>

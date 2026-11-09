@@ -13,6 +13,7 @@ import org.eclipse.swt.graphics.Rectangle;
 
 import com.cubaix.TDenlive.TDConfig;
 import com.cubaix.TDenlive.TDenlive;
+import com.cubaix.TDenlive.depth.ComputedDepthmap;
 import com.cubaix.TDenlive.medias.Clip;
 import com.cubaix.TDenlive.medias.Media;
 import com.cubaix.TDenlive.processors.Chromakey.Key;
@@ -30,9 +31,15 @@ public class DepthmapStereo extends Processor {
 		Clip depthmapClipMedia = null;
 	}
 	Vector<Key> keys = new Vector<Key>();
+	//Depth maps computed for the clip (see depth.DepthConverter), null if none
+	public ComputedDepthmap computed = null;
+	//Show the depth map instead of the result on the monitor (not when rendering, not saved)
+	public boolean showDepth = false;
 	
 	public DepthmapStereo(TDenlive aTDe,Media aTargetMedia) {
 		super(aTDe,aTargetMedia);
+		//Always the first processor after the TimeController (see Clip.placeDepthProcessor())
+		isUnmovable = true;
 		isExpended = true;
 		keys.add(new Key());
 	}
@@ -43,12 +50,19 @@ public class DepthmapStereo extends Processor {
 	@Override
 	public int openProject(Vector<XmlObject> aOs, int o) throws Exception {
 		keys.clear();
+		boolean[] aHasComputed = {false};
 		for(;o < aOs.size();o++) {
 			XmlObject aO = aOs.elementAt(o);
 			if(aO instanceof XmlTag) {
 				XmlTag aT = (XmlTag)aO;
 				if("/DepthmapStereo".equalsIgnoreCase(aT.tagName)) {
+					if(aHasComputed[0]) {
+						attachComputed();
+					}
 					return o;
+				}
+				if(ComputedDepthmap.read(aOs, o, aT.tagName, aHasComputed)) {
+					continue;
 				}
 				if("d".equalsIgnoreCase(aT.tagName)) {
 					o++;
@@ -97,7 +111,37 @@ public class DepthmapStereo extends Processor {
 			aSB.append("							<blackIsFront>" + aK.blackIsFront + "</blackIsFront>\n");
 			aSB.append("							<depthmapClipMedia>" + (aK.depthmapClipMedia == null ? -1 : aK.depthmapClipMedia.getMedia().UID) + "</depthmapClipMedia>\n");
 		}
+		if(computed != null) {
+			computed.save(aSB, "							");
+		}
 		aSB.append("						</DepthmapStereo>\n");
+	}
+
+	/**
+	 * Depth maps computed for the clip (replace the previous ones)
+	 */
+	public void setComputed(ComputedDepthmap aCD) {
+		if(computed != null) {
+			computed.detach();
+		}
+		computed = aCD;
+	}
+
+	@Override
+	public void removed() {
+		setComputed(null);
+	}
+
+	/**
+	 * The depth maps computed before for the media of the clip (files next to it), if still there
+	 */
+	public void attachComputed() {
+		try {
+			setComputed(ComputedDepthmap.attach(tde, (Clip)targetMedia));
+		}
+		catch(Throwable t) {
+			t.printStackTrace(System.err);
+		}
 	}
 
 	@Override
@@ -121,7 +165,7 @@ public class DepthmapStereo extends Processor {
 	}
 	
 	public int addKeyGT(long aTime){
-		if(aTime <= ((Clip)targetMedia).getStartTimeMS() || aTime > ((Clip)targetMedia).getStartTimeMS() + ((Clip)targetMedia).getDurationMS()) {
+		if(aTime < ((Clip)targetMedia).getStartTimeMS() || aTime <= ((Clip)targetMedia).getKeysOriginMS() || aTime > ((Clip)targetMedia).getStartTimeMS() + ((Clip)targetMedia).getDurationMS()) {
 			//Can't insert outside
 			return -1;
 		}
@@ -147,7 +191,7 @@ public class DepthmapStereo extends Processor {
 	}
 	
 	public int getPrevKeyGT(long aTime){
-		long aT = aTime - ((Clip)targetMedia).getStartTimeMS();
+		long aT = aTime-((Clip)targetMedia).getKeysOriginMS();
 		for(int k = keys.size() - 1;k >= 0;k--) {
 			Key aK = keys.elementAt(k);
 			if(aK.time <= aT) {
@@ -159,7 +203,7 @@ public class DepthmapStereo extends Processor {
 	}
 	
 	public int getNextKeyGT(long aTime){
-		long aT = aTime - ((Clip)targetMedia).getStartTimeMS();
+		long aT = aTime-((Clip)targetMedia).getKeysOriginMS();
 		for(int k = 0;k < keys.size();k++) {
 			Key aK = keys.elementAt(k);
 			if(aK.time > aT) {
@@ -212,23 +256,18 @@ public class DepthmapStereo extends Processor {
 
 	public void setDepthmapClipMedia(int aKey,String aUID) {
 		warnNextAlignments();
-		if(aUID.trim().isEmpty()) {
-			if(keys.elementAt(aKey).depthmapClipMedia != null) {
-				((Clip)targetMedia).removePairedClip(keys.elementAt(aKey).depthmapClipMedia,keys.elementAt(aKey).depthmapClipMedia.pairedType);
+		Clip aOld = keys.elementAt(aKey).depthmapClipMedia;
+		Media aMedia = aUID.trim().isEmpty() ? null : tde.mediaList.getMediaByUID(Long.parseLong(aUID));
+		keys.elementAt(aKey).depthmapClipMedia = aMedia == null ? null : ((Clip)targetMedia).addPairedClip(aMedia, 1);
+		//The paired clip of the previous media, unless another key (copied from this one) still uses it
+		if(aOld != null) {
+			for(Key aK : keys) {
+				if(aK.depthmapClipMedia == aOld) {
+					return;
+				}
 			}
-			keys.elementAt(aKey).depthmapClipMedia = null;
-			return;
+			((Clip)targetMedia).removePairedClip(aOld);
 		}
-		Media aMedia = tde.mediaList.getMediaByUID(Long.parseLong(aUID));
-		if(aMedia == null) {
-			//??
-			if(keys.elementAt(aKey).depthmapClipMedia != null) {
-				((Clip)targetMedia).removePairedClip(keys.elementAt(aKey).depthmapClipMedia,keys.elementAt(aKey).depthmapClipMedia.pairedType);
-			}
-			keys.elementAt(aKey).depthmapClipMedia = null;
-			return;
-		}
-		keys.elementAt(aKey).depthmapClipMedia = ((Clip)targetMedia).addPairedClip(aMedia, 1);
 	}
 	
 	public Clip getDepthmapClipMedia(int aKey) {
@@ -265,7 +304,7 @@ public class DepthmapStereo extends Processor {
 	}
 
 	Key getInterKeyGT(long aTimePos){
-		long aTime = aTimePos-((Clip)targetMedia).getStartTimeMS();
+		long aTime = aTimePos-((Clip)targetMedia).getKeysOriginMS();
 		for(int k = keys.size()-1;k >= 0;k--) {
 			Key aKey = keys.elementAt(k);
 			if(aKey.time <= aTime) {
@@ -310,13 +349,21 @@ public class DepthmapStereo extends Processor {
 		}
 		try {
 			Key aKey = getInterKeyGT(aTime);
-			if(aKey.depthmapClipMedia == null) {
+			//Depth maps of the key, else the computed ones: one per view
+			ComputedDepthmap aCD = computed;
+			Clip aDC = aKey.depthmapClipMedia != null ? aKey.depthmapClipMedia : (aCD != null ? aCD.clip : null);
+			if(aDC == null) {
 				return;
 			}
-			BufferedImage aBIDML = aKey.depthmapClipMedia.getWorkLeft(aProcessingMode,aTime);
-			BufferedImage aBIDMR = aKey.depthmapClipMedia.getWorkRight(aProcessingMode,aTime);
 			BufferedImage aBIL = aMedia.getWorkLeft(aProcessingMode,aTime);
 			BufferedImage aBIR = aMedia.getWorkRight(aProcessingMode,aTime);
+			BufferedImage aBIDML = ImageUtils.fitTo(aDC.getWorkLeft(aProcessingMode,aTime), aBIL);
+			BufferedImage aBIDMR = ImageUtils.fitTo(aDC.getWorkRight(aProcessingMode,aTime), aBIR);
+			if(showDepth && aProcessingMode != TDConfig.PROCESSING_MODE_RENDER) {
+				aMedia.setWorkLeft(aBIDML);
+				aMedia.setWorkRight(aBIDMR);
+				return;
+			}
 			Thread aThL = new Thread(new Runnable() {
 				@Override
 				public void run() {

@@ -47,6 +47,10 @@ public class VideoReader {
 			origHeight = aBI.getHeight();
 			
 			String aPathWork = StringUtils.path2workingcopy(path, tde == null ? null : tde.getWorkCacheDir());
+			//Empty work copy left by a failed encoding (before 1.2.26): made again
+			if(new File(aPathWork).isFile() && new File(aPathWork).length() == 0) {
+				new File(aPathWork).delete();
+			}
 			if(!new File(aPathWork).exists() && !new File(StringUtils.path2processing(aPathWork)).exists()) {
 				int aWorkWidth = origWidth;
 				int aWorkHeight = origHeight;
@@ -54,6 +58,9 @@ public class VideoReader {
 					aWorkHeight = TDConfig.RESVALUES[TDConfig.RES_DVD];
 					aWorkWidth = (int)(aWorkHeight*origWidth/(double)origHeight);
 				}
+				//libx264 refuses odd sizes (1280x704 -> 1047x576)
+				aWorkWidth = Math.max(2, aWorkWidth / 2 * 2);
+				aWorkHeight = Math.max(2, aWorkHeight / 2 * 2);
 				double aWorkFps = origFps;
 				if(aWorkFps > 15) {
 					aWorkFps = 15;
@@ -68,7 +75,7 @@ public class VideoReader {
 	public void read(int aProcessingMode,long aTimeOffset,int aNbFrames,String aResize,double aFps) {
 		long aTime = System.currentTimeMillis();
 		String aPath = StringUtils.path2workingcopy(path, tde == null ? null : tde.getWorkCacheDir());
-		if(aProcessingMode == TDConfig.PROCESSING_MODE_RENDER || !new File(aPath).exists()) {
+		if(aProcessingMode == TDConfig.PROCESSING_MODE_RENDER || new File(aPath).length() == 0) {
 			aPath = path;
 		}
 		if(decoder == null) {

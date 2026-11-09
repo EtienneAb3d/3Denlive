@@ -306,28 +306,8 @@ public class MonitorGUI {
 		ShapesEditor aE = aSh.getEditor();
 		aE.addListener(shapesListener);
 		shapesViews = computeShapesViews(aSh, aPI);
-		int aNbGroups = Math.max(1, mixer.getNbViews());
-		if(aNbGroups == 1) {
-			aE.setViews(shapesViews);
-			aE.drawOverlay(aGC);
-			return;
-		}
-		//Side by side: each half with its views
-		Rectangle aOldClip = aGC.getClipping();
-		int aSW = aPI.width/aNbGroups;
-		for(int g = 0;g < aNbGroups;g++) {
-			aGC.setClipping(new Rectangle(aPI.x+g*aSW, 0, aSW, canvas.getClientArea().height).intersection(aOldClip));
-			Vector<ShapesEditor.View> aGroup = new Vector<ShapesEditor.View>();
-			for(ShapesEditor.View aV : shapesViews) {
-				if(aV.group == g) {
-					aGroup.add(aV);
-				}
-			}
-			aE.setViews(aGroup);
-			aE.drawOverlay(aGC);
-		}
-		aGC.setClipping(aOldClip);
 		aE.setViews(shapesViews);
+		aE.drawOverlay(aGC, aPI, Math.max(1, mixer.getNbViews()), canvas.getClientArea().height);
 	}
 	
 	public void addMonitorListener(MonitorListener aML) {

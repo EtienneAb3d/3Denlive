@@ -227,7 +227,7 @@ public class StereoAligner extends Processor {
 	}
 	
 	public int addKeyGT(long aTime){
-		if(aTime <= ((Clip)targetMedia).getStartTimeMS() || aTime > ((Clip)targetMedia).getStartTimeMS() + ((Clip)targetMedia).getDurationMS()) {
+		if(aTime < ((Clip)targetMedia).getStartTimeMS() || aTime <= ((Clip)targetMedia).getKeysOriginMS() || aTime > ((Clip)targetMedia).getStartTimeMS() + ((Clip)targetMedia).getDurationMS()) {
 			//Can't insert outside
 			return -1;
 		}
@@ -253,7 +253,7 @@ public class StereoAligner extends Processor {
 	}
 	
 	public int getPrevKeyGT(long aTime){
-		long aT = aTime - ((Clip)targetMedia).getStartTimeMS();
+		long aT = aTime-((Clip)targetMedia).getKeysOriginMS();
 		for(int k = keys.size() - 1;k >= 0;k--) {
 			Key aK = keys.elementAt(k);
 			if(aK.time <= aT) {
@@ -265,7 +265,7 @@ public class StereoAligner extends Processor {
 	}
 	
 	public int getNextKeyGT(long aTime){
-		long aT = aTime - ((Clip)targetMedia).getStartTimeMS();
+		long aT = aTime-((Clip)targetMedia).getKeysOriginMS();
 		for(int k = 0;k < keys.size();k++) {
 			Key aK = keys.elementAt(k);
 			if(aK.time > aT) {
@@ -361,7 +361,7 @@ public class StereoAligner extends Processor {
 	}
 
 	Key getInterKeyGT(long aTimePos){
-		long aTime = aTimePos-((Clip)targetMedia).getStartTimeMS();
+		long aTime = aTimePos-((Clip)targetMedia).getKeysOriginMS();
 		for(int k = keys.size()-1;k >= 0;k--) {
 			Key aKey = keys.elementAt(k);
 			if(aKey.time <= aTime) {

@@ -1,10 +1,5 @@
 package com.cubaix.TDenlive.GUI;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.text.NumberFormat;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
@@ -12,7 +7,6 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -24,11 +18,9 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.swt.widgets.MessageBox;
 
 import com.cubaix.TDenlive.TDConfig;
 import com.cubaix.TDenlive.TDenlive;
-import com.cubaix.TDenlive.utils.ImageUtils;
 
 public class MonitorControlGUI extends CompositePanel {
 	Composite toolBar = null;
@@ -55,7 +47,7 @@ public class MonitorControlGUI extends CompositePanel {
 		aTB.heightHint = tde.gui.h(25);
 		toolBar.setLayoutData(aTB);
 		tde.gui.applyColorFont(toolBar);
-		GridLayout aGL = new GridLayout(11, false);
+		GridLayout aGL = new GridLayout(10, false);
 		tde.gui.applyNoMargin(aGL);
 		toolBar.setLayout(aGL);
 		
@@ -356,15 +348,7 @@ public class MonitorControlGUI extends CompositePanel {
 			
 			@Override
 			public void mouseDown(MouseEvent arg0) {
-				edgesViewOn = !edgesViewOn;
-				if(edgesViewOn) {
-					edgesView.setImage(tde.gui.imgsSwt.getIcon("edgesOn.png"));
-					tde.gui.tip(edgesView, "EdgesOn");
-				}
-				else {
-					edgesView.setImage(tde.gui.imgsSwt.getIcon("edgesOff.png"));
-					tde.gui.tip(edgesView, "EdgesOff");
-				}
+				setEdgesViewOn(!edgesViewOn);
 				tde.gui.monitorGUI.setEdgeDetector(edgesViewOn);
 			}
 			
@@ -379,72 +363,6 @@ public class MonitorControlGUI extends CompositePanel {
 		aSpaceGD.heightHint = tde.gui.h(25);
 		aSpace.setLayoutData(aSpaceGD);
 		
-		Label aSave = new Label(toolBar,SWT.NONE);
-		aSave.setImage(tde.gui.imgsSwt.getIcon("saveView.png"));
-		aSave.setAlignment(SWT.CENTER);
-		GridData aSaveGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
-		aSaveGD.widthHint = 32;
-		aSaveGD.heightHint = tde.gui.h(25);
-		aSave.setLayoutData(aSaveGD);
-		tde.gui.applyColorFont(aSave);
-		tde.gui.tip(aSave, "SaveView");
-		aSave.addMouseListener(new MouseListener() {
-			@Override
-			public void mouseUp(MouseEvent arg0) {
-			}
-			@Override
-			public void mouseDown(MouseEvent arg0) {
-				tde.gui.shell.setCursor(new Cursor(tde.gui.display, SWT.CURSOR_WAIT));
-				tde.timeLineStack.reBuild(TDConfig.PROCESSING_MODE_RENDER, tde.timeLineStack.getTimePosMS());
-				BufferedImage aBIL = tde.gui.monitorGUI.media.getFinalLeft(TDConfig.PROCESSING_MODE_RENDER, tde.timeLineStack.getTimePosMS());
-				BufferedImage aBIR = tde.gui.monitorGUI.media.getFinalRight(TDConfig.PROCESSING_MODE_RENDER, tde.timeLineStack.getTimePosMS());
-				String aPathL = null;
-				String aPathR = null;
-				String aPathX = null;
-				String aPathP = null;
-				NumberFormat aNF = NumberFormat.getInstance();
-				aNF.setMinimumIntegerDigits(4);
-				aNF.setGroupingUsed(false);
-				for(int i = 1;i < 10000;i++) {
-					aPathL = tde.renderDir+File.separatorChar+"3De_"+aNF.format(i) + "_Left"+".png";
-					aPathR = tde.renderDir+File.separatorChar+"3De_"+aNF.format(i) + "_Right"+".png";
-					aPathX = tde.renderDir+File.separatorChar+"3De_"+aNF.format(i) + "_X"+".png";
-					aPathP = tde.renderDir+File.separatorChar+"3De_"+aNF.format(i) + "_P"+".png";
-					if(new File(aPathL).exists() || new File(aPathR).exists()) {
-						continue;
-					}
-					break;
-				}
-				try {
-					ImageUtils.saveImage(aPathL, aBIL);
-					ImageUtils.saveImage(aPathR, aBIR);
-					BufferedImage aBI = ImageUtils.createImage(aBIL.getWidth()*2, aBIL.getHeight(), tde.config.processingHdr[TDConfig.PROCESSING_MODE_RENDER]);
-					Graphics aG = aBI.getGraphics();
-					aG.drawImage(aBIL, 0, 0, null);
-					aG.drawImage(aBIR, aBIL.getWidth(), 0, null);
-					ImageUtils.saveImage(aPathP, aBI);
-					aG.drawImage(aBIR, 0, 0, null);
-					aG.drawImage(aBIL, aBIL.getWidth(), 0, null);
-					ImageUtils.saveImage(aPathX, aBI);
-				}
-				catch(Throwable t) {
-					t.printStackTrace(System.err);
-					MessageBox messageBox = new MessageBox(tde.gui.shell,SWT.ICON_ERROR|SWT.OK);
-				    messageBox.setMessage("Error: "+t.toString());
-				    tde.gui.shell.setCursor(null);
-				    int rc = messageBox.open();
-				    return;
-				}
-				MessageBox messageBox = new MessageBox(tde.gui.shell,SWT.ICON_INFORMATION|SWT.OK);
-			    messageBox.setMessage(aPathL+"\n"+aPathR+"\n"+aPathX+"\n"+aPathP);
-			    tde.gui.shell.setCursor(null);
-			    int rc = messageBox.open();
-			}
-			@Override
-			public void mouseDoubleClick(MouseEvent arg0) {
-			}
-		});
-
 		Label aFullScreen = new Label(toolBar,SWT.NONE);
 		aFullScreen.setImage(tde.gui.imgsSwt.getIcon("screen.png"));
 		aFullScreen.setAlignment(SWT.CENTER);
@@ -486,6 +404,21 @@ public class MonitorControlGUI extends CompositePanel {
 		toolBar.pack();
 	}
 	
+	/**
+	 * State and icon of the edges view button (the monitor's edge detector is set apart)
+	 */
+	void setEdgesViewOn(boolean aOn) {
+		edgesViewOn = aOn;
+		if(edgesViewOn) {
+			edgesView.setImage(tde.gui.imgsSwt.getIcon("edgesOn.png"));
+			tde.gui.tip(edgesView, "EdgesOn");
+		}
+		else {
+			edgesView.setImage(tde.gui.imgsSwt.getIcon("edgesOff.png"));
+			tde.gui.tip(edgesView, "EdgesOff");
+		}
+	}
+
 	public void setRatio(String aRatioName) {
 		tde.gui.display.syncExec(new Runnable() {
 			@Override

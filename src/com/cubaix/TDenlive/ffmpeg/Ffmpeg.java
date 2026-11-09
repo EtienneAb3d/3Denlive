@@ -17,6 +17,20 @@ public class Ffmpeg {
 
 	public Ffmpeg() {
 	}
+
+	/**
+	 * Frame rate of the input read from the ffmpeg output, -1 if not (yet) known
+	 */
+	public double getFps() {
+		return fps;
+	}
+
+	/**
+	 * Duration of the input (ms) read from the ffmpeg output, -1 if not (yet) known
+	 */
+	public long getDuration() {
+		return duration;
+	}
 	
 	//Folder holding the bundled binaries, relative to the working directory (like lumas/ and frames/)
 	//Filled in dev by Install-Dev.sh, shipped next to the launch script in distributions
@@ -29,6 +43,18 @@ public class Ffmpeg {
 			System.err.println("ffmpeg: " + ffmpegPath);
 		}
 		return ffmpegPath;
+	}
+
+	static String sharedPath = null;
+
+	/**
+	 * Path of ffmpeg for the other programs (see findFfmpeg()), null if not found
+	 */
+	public static synchronized String ffmpegPath() {
+		if(sharedPath == null) {
+			sharedPath = findFfmpeg();
+		}
+		return sharedPath;
 	}
 
 	static String findFfmpeg() {

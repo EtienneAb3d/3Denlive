@@ -40,6 +40,10 @@ public class ShapesEditor {
 		void reorder(int aId,boolean aToFront);
 		/** True to show the hidden shapes as very light ghosts */
 		boolean showGhosts();
+		/** Shapes of the keys after the one edited now (none without keys) */
+		default Vector<Vector<Shape>> getFollowingShapes() {
+			return new Vector<Vector<Shape>>();
+		}
 	}
 
 	public interface Listener {
@@ -68,6 +72,8 @@ public class ShapesEditor {
 	int tool = -1;
 	//Style of the next created shapes (follows the last changes)
 	public Shape style = new Shape();
+	//Id of the shape just created with a tool (-1 once taken, see takeCreated())
+	int createdId = -1;
 
 	/**
 	 * A view of the frame on the screen: its rectangle (pixels of the control), the eye shown,
@@ -254,6 +260,51 @@ public class ShapesEditor {
 		fireShapesChanged();
 	}
 
+	/**
+	 * Change the text or the font of the selected text (and of the next ones): its box follows the text.
+	 * With keys, from the current key on, until a key where the text was already different
+	 */
+	public void editSelectedText(Consumer<Shape> aEdit) {
+		double aR = getFrameRatio();
+		Shape aBefore = null;
+		if(selectedId >= 0) {
+			Shape aCur = Shape.findById(source.getShapesForEdit(), selectedId);
+			aBefore = aCur == null ? null : aCur.copy();
+		}
+		editSelected(s -> {
+			aEdit.accept(s);
+			s.fitText(aR);
+		});
+		if(aBefore == null) {
+			return;
+		}
+		for(Vector<Shape> aShapes : source.getFollowingShapes()) {
+			Shape aS = Shape.findById(aShapes, selectedId);
+			if(aS == null || !aS.sameText(aBefore)) {
+				break;
+			}
+			aEdit.accept(aS);
+			aS.fitText(aR);
+		}
+		fireShapesChanged();
+	}
+
+	/**
+	 * Width / height of the frame (of the first view)
+	 */
+	public double getFrameRatio() {
+		return views.size() > 0 ? views.elementAt(0).ratio() : 16.0/9.0;
+	}
+
+	/**
+	 * True once if the selected shape has just been created with a tool
+	 */
+	public boolean takeCreated() {
+		boolean aNew = createdId >= 0 && createdId == selectedId;
+		createdId = -1;
+		return aNew;
+	}
+
 	public void deleteSelected() {
 		if(selectedId < 0) {
 			return;
@@ -337,6 +388,17 @@ public class ShapesEditor {
 		return aV.toScreen.createTransformedShape(aS.buildPath(0, 0, aR, 1, shiftOf(aS, aV)*aR));
 	}
 
+	/**
+	 * Outline used to select the shape: its path, the box of a text
+	 */
+	java.awt.Shape screenOutline(Shape aS,View aV) {
+		if(!aS.isText()) {
+			return screenPath(aS, aV);
+		}
+		double aR = aV.ratio();
+		return aV.toScreen.createTransformedShape(aS.buildPolygon(0, 0, aR, 1, shiftOf(aS, aV)*aR));
+	}
+
 	java.awt.Shape screenArrowHead(Shape aS,View aV) {
 		double aR = aV.ratio();
 		Path2D.Double aHead = aS.buildArrowHead(0, 0, aR, 1, shiftOf(aS, aV)*aR);
@@ -385,7 +447,7 @@ public class ShapesEditor {
 	}
 
 	boolean hit(Shape aS,View aV,int aX,int aY) {
-		java.awt.Shape aP = screenPath(aS, aV);
+		java.awt.Shape aP = screenOutline(aS, aV);
 		if(!aS.isLine() && aP.contains(aX, aY)) {
 			return true;
 		}
@@ -447,7 +509,8 @@ public class ShapesEditor {
 		Pick aBest = null;
 		if(aSel != null) {
 			for(View aV : aCands) {
-				for(int p = aSel.xs.length-1;p >= 0;p--) {
+				//The box of a text stays a box: no vertex handles
+				for(int p = aSel.isText() ? -1 : aSel.xs.length-1;p >= 0;p--) {
 					Point2D.Double aP = toScreen(aSel, aV, aSel.xs[p], aSel.ys[p]);
 					aBest = better(aBest, aV, DRAG_VERTEX, p, aSel, aP.x, aP.y, aX, aY, HANDLE+3);
 				}
@@ -468,7 +531,7 @@ public class ShapesEditor {
 			if(aS == null) {
 				continue;
 			}
-			java.awt.geom.Rectangle2D aB = screenPath(aS, aV).getBounds2D();
+			java.awt.geom.Rectangle2D aB = screenOutline(aS, aV).getBounds2D();
 			aBest = better(aBest, aV, DRAG_MOVE, -1, aS, aB.getCenterX(), aB.getCenterY(), aX, aY, Double.MAX_VALUE);
 		}
 		return aBest;
@@ -701,7 +764,10 @@ public class ShapesEditor {
 	Shape shapeFromDrag(int aX,int aY) {
 		View aV = dragView;
 		boolean aIsLine = tool == Shape.LINE || tool == Shape.LINE_ARROW;
+		boolean aIsText = tool == Shape.TEXT;
 		double aR = aV.ratio();
+		//Width / height of the text: its box has the proportions of the text
+		double aTR = aIsText ? Math.max(0.05, Shape.create(tool, 0, 0, 1, 1, style).textRatio()) : 1.0;
 		Point2D.Double aDown = fromScreen(aV, downX, downY);
 		Point2D.Double aCur = fromScreen(aV, aX, aY);
 		if(aDown == null || aCur == null) {
@@ -719,6 +785,11 @@ public class ShapesEditor {
 				aX1 = aX0+2*aHW;
 				aY1 = aY0;
 			}
+			else if(aIsText) {
+				//From the click, 0.1 of the frame height
+				aX1 = aX0+0.1*aTR/aR;
+				aY1 = aY0+0.1;
+			}
 			else {
 				aX1 = aX0+aHW;
 				aY1 = aY0+0.1;
@@ -730,7 +801,13 @@ public class ShapesEditor {
 			//In the pixels of the shapes (height 1)
 			double aDX = (aCur.x-aDown.x)*aR;
 			double aDY = aCur.y-aDown.y;
-			if(!aIsLine) {
+			if(aIsText) {
+				//The height of the drag, the width of the text
+				double aSize = Math.max(Math.abs(aDY), Math.abs(aDX)/aTR);
+				aDX = (aDX >= 0 ? 1 : -1)*aSize*aTR;
+				aDY = (aDY >= 0 ? 1 : -1)*aSize;
+			}
+			else if(!aIsLine) {
 				double aSize = Math.max(Math.abs(aDX), Math.abs(aDY));
 				aDX = (aDX >= 0 ? 1 : -1)*aSize;
 				aDY = (aDY >= 0 ? 1 : -1)*aSize;
@@ -746,6 +823,7 @@ public class ShapesEditor {
 			Shape aS = shapeFromDrag(aX, aY);
 			source.addShape(aS);
 			selectedId = aS.id;
+			createdId = aS.id;
 			tool = -1;
 			dragMode = DRAG_NONE;
 			fireShapesChanged();
@@ -832,6 +910,37 @@ public class ShapesEditor {
 	}
 
 	/**
+	 * Draw the overlay of all the views, aNbGroups images of the frame side by side in aImage
+	 * (pixels of the control): each one clipped to its part, with its views (group)
+	 */
+	public void drawOverlay(GC aGC,Rectangle aImage,int aNbGroups,int aClipH) {
+		Vector<View> aAll = views;
+		if(aAll == null || aNbGroups <= 1) {
+			drawOverlay(aGC);
+			return;
+		}
+		Rectangle aOldClip = aGC.getClipping();
+		int aSW = aImage.width/aNbGroups;
+		try {
+			for(int g = 0;g < aNbGroups;g++) {
+				aGC.setClipping(new Rectangle(aImage.x+g*aSW, 0, aSW, aClipH).intersection(aOldClip));
+				Vector<View> aGroup = new Vector<View>();
+				for(View aV : aAll) {
+					if(aV.group == g) {
+						aGroup.add(aV);
+					}
+				}
+				views = aGroup;
+				drawOverlay(aGC);
+			}
+		}
+		finally {
+			aGC.setClipping(aOldClip);
+			views = aAll;
+		}
+	}
+
+	/**
 	 * Draw the ghosts of the hidden shapes, the selection and its handles, the shape being created
 	 */
 	public void drawOverlay(GC aGC) {
@@ -881,7 +990,7 @@ public class ShapesEditor {
 					//Doubled by the depth: each eye has its handles, in its color
 					Color aEyeC = isDoubled(aSel, v) ? (aV.eye < 0 ? aLeftC : aRightC) : aSelC;
 					//Outline
-					Path aP = toSwtPath(aGC, screenPath(aSel, aV));
+					Path aP = toSwtPath(aGC, screenOutline(aSel, aV));
 					aGC.setLineWidth(1);
 					aGC.setLineStyle(SWT.LINE_SOLID);
 					aGC.setForeground(aWhite);
@@ -910,8 +1019,8 @@ public class ShapesEditor {
 						aGC.setForeground(aWhite);
 						aGC.drawOval((int)aH[8][0]-HANDLE-1, (int)aH[8][1]-HANDLE-1, 2*HANDLE+2, 2*HANDLE+2);
 					}
-					//Vertices
-					for(int p = 0;p < aSel.xs.length;p++) {
+					//Vertices (not for a text: its box)
+					for(int p = 0;p < (aSel.isText() ? 0 : aSel.xs.length);p++) {
 						Point2D.Double aPt = toScreen(aSel, aV, aSel.xs[p], aSel.ys[p]);
 						int aPX = (int)aPt.x;
 						int aPY = (int)aPt.y;

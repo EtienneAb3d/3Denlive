@@ -69,7 +69,14 @@ public class FfmpegTranscoder extends Ffmpeg {
 					aThOut.start();
 					Thread aThIn = new Thread(ffmpegErr);
 					aThIn.start();
-					p.waitFor();
+					int aExit = p.waitFor();
+					File aProcessing = new File(StringUtils.path2processing(aPW.replaceAll("\"", "")));
+					if(aExit != 0 || aProcessing.length() == 0) {
+						//Failed: no work copy, the original is read
+						System.err.println("Work copy failed (ffmpeg exit "+aExit+"): "+aPI);
+						aProcessing.delete();
+						return;
+					}
 					Files.move(Paths.get(StringUtils.path2processing(aPW.replaceAll("\"", "")))
 							,Paths.get(aPW.replaceAll("\"", "")),StandardCopyOption.REPLACE_EXISTING);
 					aThIn.interrupt();

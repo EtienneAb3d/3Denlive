@@ -195,6 +195,13 @@ public abstract class Media extends Drawable {
 	public AudioReader getAudioReader() {
 		return null;
 	}
+
+	/**
+	 * Sound track of the left (or single) file, or of the right one if aRight and the media has two files
+	 */
+	public AudioReader getAudioReader(boolean aRight) {
+		return getAudioReader();
+	}
 	
 	public float getAlpha(long aTime) {
 		return -1.0f;//not known by default

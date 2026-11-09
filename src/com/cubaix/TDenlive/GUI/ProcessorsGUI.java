@@ -56,7 +56,11 @@ public class ProcessorsGUI extends CompositePanel {
 	void createContents(Composite aParent) {
 	}
 
+	//Processors shown (of the selected clip)
+	Vector<Processor> processors = null;
+
 	public void setProcessors(Vector<Processor> aProcessors) {
+		processors = aProcessors;
 		clean();
 		
 		ScrolledComposite aSC = new ScrolledComposite(container, SWT.V_SCROLL);

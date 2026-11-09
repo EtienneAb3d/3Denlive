@@ -40,6 +40,22 @@ public class ImageUtils {
 		ImageIO.write(aBI, "png", new File(aPath));
 	}
 	
+	/**
+	 * aBI resized to the size of aRef if needed (e.g. a depth map of a video rounded to even sizes),
+	 * of the same kind (HDR or not) as aRef
+	 */
+	static public final BufferedImage fitTo(BufferedImage aBI,BufferedImage aRef) {
+		if(aBI == null || aRef == null || (aBI.getWidth() == aRef.getWidth() && aBI.getHeight() == aRef.getHeight())) {
+			return aBI;
+		}
+		BufferedImage aOut = createImage(aRef.getWidth(), aRef.getHeight(), aRef.getRaster().getDataBuffer() instanceof java.awt.image.DataBufferFloat);
+		java.awt.Graphics2D aG = aOut.createGraphics();
+		aG.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		aG.drawImage(aBI, 0, 0, aRef.getWidth(), aRef.getHeight(), null);
+		aG.dispose();
+		return aOut;
+	}
+
 	static public final BufferedImage createImage(int aWidth,int aHeight,boolean aHdr) {
 		if(aHdr) {
 			return createHdr(aWidth, aHeight);

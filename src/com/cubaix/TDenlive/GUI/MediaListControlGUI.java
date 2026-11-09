@@ -31,7 +31,7 @@ public class MediaListControlGUI extends CompositePanel {
 		aTB.heightHint = tde.gui.h(25);
 		toolBar.setLayoutData(aTB);
 		tde.gui.applyColorFont(toolBar);
-		GridLayout aGL = new GridLayout(4, false);
+		GridLayout aGL = new GridLayout(5, false);
 		tde.gui.applyNoMargin(aGL);
 		toolBar.setLayout(aGL);
 		
@@ -99,6 +99,28 @@ public class MediaListControlGUI extends CompositePanel {
 					tde.mediaList.createShapes(aShapes,TDConfig.PROCESSING_MODE_RENDER);
 					tde.gui.mediaListGUI.redraw();
 				}
+			}
+			@Override
+			public void mouseDoubleClick(MouseEvent arg0) {}
+		});
+		
+		//AI clip (Wan2.2-TI2V-5B): a text button, AI / IA
+		CLabel addAi = new CLabel(toolBar,SWT.NONE);
+		addAi.setText(tde.gui.lngs.get("AI.Button"));
+		addAi.setAlignment(SWT.CENTER);
+		GridData aAiGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
+		aAiGD.widthHint = 32;
+		aAiGD.heightHint = tde.gui.h(25);
+		addAi.setLayoutData(aAiGD);
+		tde.gui.applyColorFont(addAi);
+		addAi.setFont(tde.gui.fontsSwt.robotoBold);
+		tde.gui.tip(addAi, "AddAI");
+		addAi.addMouseListener(new MouseListener() {
+			@Override
+			public void mouseUp(MouseEvent arg0) {}
+			@Override
+			public void mouseDown(MouseEvent arg0) {
+				AiClipGUI.open(tde);
 			}
 			@Override
 			public void mouseDoubleClick(MouseEvent arg0) {}

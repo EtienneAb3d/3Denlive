@@ -24,6 +24,10 @@ public abstract class CanvasPanel {
 	Composite bottomRow = null;
 	Slider hSlider = null;
 
+	public Canvas getCanvas() {
+		return canvas;
+	}
+
 	public CanvasPanel(TDenlive aTDe,Composite aParent) {
 		this(aTDe, aParent, false);
 	}

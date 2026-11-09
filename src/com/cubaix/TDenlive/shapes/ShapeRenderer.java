@@ -29,6 +29,10 @@ public class ShapeRenderer {
 		case Shape.STYLE_DASHDOT:
 			return new BasicStroke(aW, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 10f, new float[] {4*aW, 2*aW, 0.01f, 2*aW}, 0f);
 		}
+		if(aS.isText()) {
+			//Glyphs: no miter spikes
+			return new BasicStroke(aW, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		}
 		return new BasicStroke(aW, aS.isLine() ? BasicStroke.CAP_ROUND : BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f);
 	}
 

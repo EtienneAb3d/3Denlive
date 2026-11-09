@@ -78,6 +78,8 @@ public class TimeLineStackGUI extends CanvasPanel {
 		zoomScale.setIncrement(1);
 		zoomScale.setPageIncrement(ZOOM_STEPS_PER_X2);
 		zoomScale.setSelection(ZOOM_MAX);
+		//Time scale kept by the montage (window built again)
+		showZoom();
 		zoomScale.setBackground(tde.gui.colorsSwt.WHITE);
 		zoomScale.setToolTipText(tde.gui.lngs.get("TimeLine.Zoom"));
 		zoomScale.addListener(SWT.Selection, e -> setZoom(zoomScale.getSelection()-ZOOM_MAX));
@@ -141,15 +143,26 @@ public class TimeLineStackGUI extends CanvasPanel {
 			return;
 		}
 		aTLS.pixPerMS = aVisibleW/(double)aDuration;
-		//The scale shows the nearest step, the time scale itself is exact
-		zoom = (int)Math.round(ZOOM_STEPS_PER_X2*Math.log(aTLS.pixPerMS/TimeLineStack.DEFAULT_PIX_PER_MS)/Math.log(2.0));
-		zoom = Math.max(-ZOOM_MAX, Math.min(ZOOM_MAX, zoom));
-		zoomScale.setSelection(zoom+ZOOM_MAX);
+		showZoom();
 		origin.x = 0;
 		adjustScrollBars();
 		redraw();
 	}
 	
+	/**
+	 * Zoom and scale from the time scale of the montage.
+	 * The scale shows the nearest step, the time scale itself is exact
+	 */
+	void showZoom() {
+		TimeLineStack aTLS = tde.timeLineStack;
+		if(aTLS == null || aTLS.pixPerMS <= 0) {
+			return;
+		}
+		zoom = (int)Math.round(ZOOM_STEPS_PER_X2*Math.log(aTLS.pixPerMS/TimeLineStack.DEFAULT_PIX_PER_MS)/Math.log(2.0));
+		zoom = Math.max(-ZOOM_MAX, Math.min(ZOOM_MAX, zoom));
+		zoomScale.setSelection(zoom+ZOOM_MAX);
+	}
+
 	/**
 	 * Change the time scale, keeping the time cursor at the same place on screen
 	 * (or the left side if the cursor is not visible)
@@ -305,7 +318,9 @@ public class TimeLineStackGUI extends CanvasPanel {
 							draggedClip.trimEnd(tde.timeLineStack.snapTimeMS(draggedClipEndMS+aDeltaMS, draggedClip, aSnapMS));
 						}
 						else {
-							draggedClip.setStartTimeMS(draggedClipStartMS+aDeltaMS);
+							//Its start or its end sticks, the nearest
+							draggedClip.setStartTimeMS(tde.timeLineStack.snapMoveMS(draggedClipStartMS+aDeltaMS
+									, draggedClipEndMS+aDeltaMS, draggedClip, aSnapMS));
 						}
 						lastMousePos = new Point(e.x,e.y);
 						redraw();
@@ -345,7 +360,8 @@ public class TimeLineStackGUI extends CanvasPanel {
 				drawTh = new Thread(new Runnable() {
 					@Override
 					public void run() {
-						while(!tde.gui.display.isDisposed()) {
+						//Ends with its canvas (window built again)
+						while(!tde.gui.display.isDisposed() && !canvas.isDisposed()) {
 							if(!drawRequested) {
 								try {
 									Thread.sleep(10);

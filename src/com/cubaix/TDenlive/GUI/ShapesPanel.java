@@ -17,16 +17,18 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolItem;
 
 import com.cubaix.TDenlive.TDenlive;
 import com.cubaix.TDenlive.GUI.widgets.LabelScale;
 import com.cubaix.TDenlive.shapes.Shape;
+import com.cubaix.TDenlive.shapes.ShapeText;
 import com.cubaix.TDenlive.shapes.ShapesEditor;
 
 /**
  * Tools (selection, shapes to create) and properties of the selected shape
- * (fill, border, opacity, depth, visibility, order) of a ShapesEditor.
+ * (text and font, fill, border, corners, opacity, depth, visibility, order) of a ShapesEditor.
  * Without a selection, the properties are those of the next created shape.
  */
 public class ShapesPanel implements ShapesEditor.Listener {
@@ -49,9 +51,15 @@ public class ShapesPanel implements ShapesEditor.Listener {
 	Button strokeColor = null;
 	Spinner strokeWidth = null;
 	Combo strokeStyle = null;
+	Spinner cornerRadius = null;
 	LabelScale opacityLS = null;
 	LabelScale depthLS = null;
 	Label selectionL = null;
+	Text text = null;
+	Combo font = null;
+	Button bold = null;
+	Button italic = null;
+	Combo align = null;
 	boolean updating = false;
 
 	public ShapesPanel(TDenlive aTDe,Composite aParent,ShapesEditor aEditor,boolean aIsClip) {
@@ -94,6 +102,17 @@ public class ShapesPanel implements ShapesEditor.Listener {
 			aP.closePath();
 			aAwt = aP;
 			aGC.setBackground(tde.gui.colorsSwt.WHITE);
+		}
+		else if(aType == Shape.TEXT) {
+			Shape aS = new Shape();
+			aS.text = "T";
+			aS.bold = true;
+			aS.type = Shape.TEXT;
+			aS.xs = new double[] {0,0,0,0};
+			aS.ys = new double[] {2.0/ICON_SIZE,2.0/ICON_SIZE,(ICON_SIZE-2.0)/ICON_SIZE,(ICON_SIZE-2.0)/ICON_SIZE};
+			double aW = (ICON_SIZE-4.0)/ICON_SIZE*aS.textRatio();
+			aS.xs = new double[] {0.5-aW/2,0.5+aW/2,0.5+aW/2,0.5-aW/2};
+			aAwt = aS.buildPath(0, 0, ICON_SIZE, ICON_SIZE, 0);
 		}
 		else {
 			Shape aS = Shape.create(aType, 2.5/ICON_SIZE, 3.5/ICON_SIZE, (ICON_SIZE-2.5)/ICON_SIZE, (ICON_SIZE-3.5)/ICON_SIZE, null);
@@ -268,6 +287,64 @@ public class ShapesPanel implements ShapesEditor.Listener {
 		tde.gui.applyColorFont(selectionL);
 		selectionL.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+		//Text and font (of a text)
+		text = new Text(container, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
+		tde.gui.applyColorFont(text);
+		GridData aTGD = new GridData(GridData.FILL_HORIZONTAL);
+		aTGD.heightHint = tde.gui.h(44);
+		aTGD.widthHint = 100;
+		text.setLayoutData(aTGD);
+		tde.gui.tip(text, "ShapesText");
+		text.addListener(SWT.Modify, e -> {
+			if(!updating) {
+				String aT = text.getText().replace("\r", "");
+				editor.editSelectedText(s -> s.text = aT);
+			}
+		});
+		font = new Combo(container, SWT.READ_ONLY);
+		tde.gui.applyColorFont(font);
+		font.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		font.setItems(ShapeText.getFamilies());
+		font.setVisibleItemCount(20);
+		tde.gui.tip(font, "ShapesFont");
+		font.addListener(SWT.Selection, e -> {
+			if(!updating && font.getSelectionIndex() >= 0) {
+				String aF = font.getItem(font.getSelectionIndex());
+				editor.editSelectedText(s -> s.fontName = aF);
+			}
+		});
+		Composite aFontR = row(container, 3);
+		bold = new Button(aFontR, SWT.CHECK);
+		tde.gui.applyColorFont(bold);
+		bold.setText(tde.gui.lngs.get("Shapes.Bold"));
+		bold.addListener(SWT.Selection, e -> {
+			if(!updating) {
+				boolean aOn = bold.getSelection();
+				editor.editSelectedText(s -> s.bold = aOn);
+			}
+		});
+		italic = new Button(aFontR, SWT.CHECK);
+		tde.gui.applyColorFont(italic);
+		italic.setText(tde.gui.lngs.get("Shapes.Italic"));
+		italic.addListener(SWT.Selection, e -> {
+			if(!updating) {
+				boolean aOn = italic.getSelection();
+				editor.editSelectedText(s -> s.italic = aOn);
+			}
+		});
+		align = new Combo(aFontR, SWT.READ_ONLY);
+		tde.gui.applyColorFont(align);
+		for(String aN : Shape.ALIGN_NAMES) {
+			align.add(tde.gui.lngs.get("Shapes."+aN));
+		}
+		tde.gui.tip(align, "ShapesAlign");
+		align.addListener(SWT.Selection, e -> {
+			if(!updating) {
+				int aA = align.getSelectionIndex();
+				editor.editSelectedText(s -> s.align = aA);
+			}
+		});
+
 		//Fill
 		Composite aFillR = row(container, 2);
 		fill = new Button(aFillR, SWT.CHECK);
@@ -329,6 +406,31 @@ public class ShapesPanel implements ShapesEditor.Listener {
 			if(!updating) {
 				int aSt = strokeStyle.getSelectionIndex();
 				editor.editSelected(s -> s.strokeStyle = aSt);
+			}
+		});
+
+		//Rounded corners
+		Composite aCornersR = row(container, 2);
+		label(aCornersR, "Shapes.Corners");
+		cornerRadius = new Spinner(aCornersR, SWT.BORDER);
+		tde.gui.applyColorFont(cornerRadius);
+		cornerRadius.setValues(0, 0, 500, 0, 1, 10);
+		//Room for at least 4 digits (the default size fits the 3 digits of the maximum, at best)
+		GC aDigitsGC = new GC(cornerRadius);
+		int aDigitsW = aDigitsGC.textExtent("00").x;
+		aDigitsGC.dispose();
+		GridData aCornersGD = new GridData();
+		aCornersGD.widthHint = cornerRadius.computeSize(SWT.DEFAULT, SWT.DEFAULT).x+aDigitsW;
+		cornerRadius.setLayoutData(aCornersGD);
+		tde.gui.tip(cornerRadius, "ShapesCorners");
+		cornerRadius.addListener(SWT.Modify, e -> {
+			if(!updating) {
+				double aR = cornerRadius.getSelection()/1000.0;
+				editor.editSelected(s -> {
+					if(s == editor.style || s.canRound()) {
+						s.cornerRadius = aR;
+					}
+				});
 			}
 		});
 
@@ -395,6 +497,44 @@ public class ShapesPanel implements ShapesEditor.Listener {
 				strokeWidth.setSelection(aW);
 			}
 			strokeStyle.select(aS.strokeStyle);
+			//Corners: the style of the next shapes keeps its radius for any tool
+			cornerRadius.setEnabled(aSel == null || aSel.canRound());
+			int aR = (int)Math.round(aS.cornerRadius*1000);
+			if(cornerRadius.getSelection() != aR) {
+				cornerRadius.setSelection(aR);
+			}
+			//Text: of the selected text, or of the next one (text tool)
+			boolean aIsText = aSel != null ? aSel.type == Shape.TEXT : aTool == Shape.TEXT;
+			text.setEnabled(aIsText);
+			font.setEnabled(aIsText);
+			bold.setEnabled(aIsText);
+			italic.setEnabled(aIsText);
+			align.setEnabled(aIsText);
+			String aTxt = aS.text == null ? "" : aS.text;
+			if(!text.getText().replace("\r", "").equals(aTxt)) {
+				text.setText(aTxt.replace("\n", Text.DELIMITER));
+			}
+			int aFI = font.indexOf(aS.fontName);
+			if(aFI < 0 && aS.fontName != null) {
+				//Not installed here (project from another computer): kept, drawn with a default font
+				font.add(aS.fontName, 0);
+				aFI = 0;
+			}
+			if(font.getSelectionIndex() != aFI) {
+				font.select(aFI);
+			}
+			bold.setSelection(aS.bold);
+			italic.setSelection(aS.italic);
+			align.select(Math.max(0, Math.min(Shape.ALIGN_NAMES.length-1, aS.align)));
+			if(editor.takeCreated() && aSel != null && aSel.type == Shape.TEXT) {
+				//A new text: type it
+				tde.gui.display.asyncExec(() -> {
+					if(!text.isDisposed()) {
+						text.setFocus();
+						text.selectAll();
+					}
+				});
+			}
 			opacityLS.setSelection((int)Math.round(aS.opacity*100));
 			depthLS.setSelection((int)Math.round(aS.depth*10000));
 		}

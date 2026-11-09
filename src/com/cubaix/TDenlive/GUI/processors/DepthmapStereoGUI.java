@@ -11,7 +11,9 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 
 import com.cubaix.TDenlive.TDenlive;
+import com.cubaix.TDenlive.GUI.DepthmapConvertGUI;
 import com.cubaix.TDenlive.GUI.widgets.LabelCombo;
+import com.cubaix.TDenlive.GUI.widgets.LabelImageButton;
 import com.cubaix.TDenlive.GUI.widgets.LabelKeyFrame;
 import com.cubaix.TDenlive.GUI.widgets.LabelScale;
 import com.cubaix.TDenlive.medias.Clip;
@@ -51,6 +53,37 @@ public class DepthmapStereoGUI extends ProcessorGUI {
 			aSelectedKey = 0;
 		}
 
+		//Depth map(s) computed from the clip (Depth Anything V2), and on its right the depth map shown instead of the result
+		Composite aDepthRow = new Composite(wgt, SWT.NONE);
+		aDepthRow.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		GridLayout aDRGL = new GridLayout(2, false);
+		tde.gui.applyNoMargin(aDRGL);
+		aDepthRow.setLayout(aDRGL);
+		tde.gui.applyColorFont(aDepthRow);
+		new LabelImageButton(tde,aDepthRow,tde.gui.lngs.get("DepthConvert.Button"),"rhino.gif") {
+			@Override
+			public void clicked() {
+				DepthmapConvertGUI.convert(tde, (Clip)pl.targetMedia, pl, true);
+			}
+		}.tip("DepthConvert");
+		final Button aShowB = new Button(aDepthRow, SWT.CHECK);
+		tde.gui.applyColorFont(aShowB);
+		tde.gui.tip(aShowB, "DepthShow");
+		aShowB.setText(tde.gui.lngs.get("DepthConvert.Show"));
+		aShowB.setSelection(pl.showDepth);
+		aShowB.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_CENTER));
+		aShowB.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent arg0) {
+				pl.showDepth = aShowB.getSelection();
+				tde.gui.monitorGUI.redraw();
+			}
+			@Override
+			public void widgetDefaultSelected(SelectionEvent arg0) {
+				widgetSelected(arg0);
+			}
+		});
+
 		lkf = new LabelKeyFrame(tde,wgt,pl,"K") {
 			@Override
 			public void change(int aValue) {
@@ -74,7 +107,8 @@ public class DepthmapStereoGUI extends ProcessorGUI {
 		lkf.setSelection(aSelectedKey);
 
 		Vector<String[]> aValTextsR = new Vector<String[]>();
-		aValTextsR.add(new String[] {"",""});
+		//No depth map of the key: the computed ones if any
+		aValTextsR.add(new String[] {"",pl.computed != null ? tde.gui.lngs.get("DepthConvert.Computed") : ""});
 		for(Media aMedia : tde.mediaList.mediaList) {
 			String aFileName = aMedia.fileName;
 			if(aFileName.indexOf(" / ") > 0) {

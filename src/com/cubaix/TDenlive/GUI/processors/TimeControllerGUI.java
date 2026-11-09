@@ -123,7 +123,18 @@ public class TimeControllerGUI extends ProcessorGUI {
 			}.tip("UnlinkTwins");
 		}
 		
-		new LabelImageButton(tde,aWGT,tde.gui.lngs.get(aClip.getTwinClips().size() > 0 ? "TimeController.TrashClipAndTwins" : "TimeController.TrashClip"),"trash.png") {
+		//Delete and cut buttons on the same row
+		Composite aClipRow = new Composite(aWGT, SWT.NONE);
+		aClipRow.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		GridLayout aCRL = new GridLayout(2, true);
+		aCRL.marginLeft = aCRL.marginTop = aCRL.marginRight = aCRL.marginBottom = 0;
+		aCRL.verticalSpacing = aCRL.horizontalSpacing = 0;
+		aCRL.marginWidth = aCRL.marginHeight = 0;
+		aClipRow.setLayout(aCRL);
+		aClipRow.setBackground(tde.gui.colorsSwt.WHITE);
+		aClipRow.setForeground(tde.gui.colorsSwt.CUBAIX_BLUE);
+
+		new LabelImageButton(tde,aClipRow,tde.gui.lngs.get(aClip.getTwinClips().size() > 0 ? "TimeController.TrashClipAndTwins" : "TimeController.TrashClip"),"trash.png") {
 			@Override
 			public void clicked() {
 				tde.timeLineStack.trashClip(aClip);
@@ -133,6 +144,20 @@ public class TimeControllerGUI extends ProcessorGUI {
 				tde.gui.monitorGUI.redraw();
 			}
 		}.tip("TrashClip");
+
+		new LabelImageButton(tde,aClipRow,tde.gui.lngs.get("TimeController.CutAtPos"),"cut.gif") {
+			@Override
+			public void clicked() {
+				//Cut at the time cursor (nothing at the start or end of the clip): the second part is a new clip of the same time line
+				if(tde.timeLineStack.cutClip(aClip, tde.timeLineStack.getTimePosMS()) == null) {
+					return;
+				}
+				//Rebuild this panel after the end of the click event (new end time)
+				tde.gui.display.asyncExec(() -> tde.gui.processorGUI.setProcessors(aClip.getProcessors()));
+				tde.gui.timeLinesGUI.redraw();
+				tde.gui.monitorGUI.redraw();
+			}
+		}.tip("CutAtPos");
 		
 		startTime = new LabelText(tde,aWGT,tde.gui.lngs.get("TimeController.StartTime"),tc.getStartClock()) {
 			@Override

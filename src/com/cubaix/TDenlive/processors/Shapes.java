@@ -120,12 +120,12 @@ public class Shapes extends Processor {
 
 	@Override
 	public int addKeyGT(long aTime) {
-		if(aTime <= getClip().getStartTimeMS() || aTime > getClip().getStartTimeMS() + getClip().getDurationMS()) {
+		if(aTime < getClip().getStartTimeMS() || aTime <= getClip().getKeysOriginMS() || aTime > getClip().getStartTimeMS() + getClip().getDurationMS()) {
 			//Can't insert outside
 			return -1;
 		}
 		synchronized (keys) {
-			long aT = aTime-getClip().getStartTimeMS();
+			long aT = aTime-getClip().getKeysOriginMS();
 			int aExact = keyAt(aT);
 			if(aExact >= 0) {
 				return aExact;
@@ -157,7 +157,7 @@ public class Shapes extends Processor {
 
 	@Override
 	public int getPrevKeyGT(long aTime) {
-		long aT = aTime - getClip().getStartTimeMS();
+		long aT = aTime - getClip().getKeysOriginMS();
 		for(int k = keys.size() - 1;k >= 0;k--) {
 			if(keys.elementAt(k).time <= aT) {
 				return k;
@@ -168,7 +168,7 @@ public class Shapes extends Processor {
 
 	@Override
 	public int getNextKeyGT(long aTime) {
-		long aT = aTime - getClip().getStartTimeMS();
+		long aT = aTime - getClip().getKeysOriginMS();
 		for(int k = 0;k < keys.size();k++) {
 			if(keys.elementAt(k).time > aT) {
 				return k;
@@ -204,7 +204,7 @@ public class Shapes extends Processor {
 					double aF = (aT-aKey.time)/(double)(aNext.time-aKey.time);
 					Vector<Shape> aShapes = new Vector<Shape>();
 					for(Shape aS : aKey.shapes) {
-						aShapes.add(Shape.lerp(aS, Shape.findById(aNext.shapes, aS.id), aF));
+						aShapes.add(Shape.lerp(aS, Shape.findById(aNext.shapes, aS.id), aF, tde.config.outRatio));
 					}
 					return aShapes;
 				}
@@ -214,7 +214,7 @@ public class Shapes extends Processor {
 	}
 
 	public Vector<Shape> getShapesAt(long aTimePos) {
-		return interpolate(aTimePos-getClip().getStartTimeMS());
+		return interpolate(aTimePos-getClip().getKeysOriginMS());
 	}
 
 	@Override
@@ -295,7 +295,7 @@ public class Shapes extends Processor {
 	}
 
 	/**
-	 * Current time of the montage in the clip, -1 if out of the clip
+	 * Current time of the montage in the time of the keys, -1 if out of the clip
 	 */
 	long currentClipTime() {
 		long aTimePos = tde.timeLineStack.getTimePosMS();
@@ -303,7 +303,7 @@ public class Shapes extends Processor {
 		if(aT < 0 || aT >= getClip().getDurationMS()) {
 			return -1;
 		}
-		return aT;
+		return aTimePos-getClip().getKeysOriginMS();
 	}
 
 	/**
@@ -319,7 +319,7 @@ public class Shapes extends Processor {
 			if(aK >= 0) {
 				return aK;
 			}
-			return addKeyGT(aT+getClip().getStartTimeMS());
+			return addKeyGT(aT+getClip().getKeysOriginMS());
 		}
 	}
 
@@ -411,6 +411,22 @@ public class Shapes extends Processor {
 			@Override
 			public boolean showGhosts() {
 				return true;
+			}
+			@Override
+			public Vector<Vector<Shape>> getFollowingShapes() {
+				Vector<Vector<Shape>> aFollowing = new Vector<Vector<Shape>>();
+				long aT = currentClipTime();
+				if(aT < 0) {
+					return aFollowing;
+				}
+				synchronized (keys) {
+					for(Key aKey : keys) {
+						if(aKey.time > aT) {
+							aFollowing.add(aKey.shapes);
+						}
+					}
+				}
+				return aFollowing;
 			}
 		});
 		return editor;

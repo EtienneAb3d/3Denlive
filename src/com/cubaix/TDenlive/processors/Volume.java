@@ -89,7 +89,7 @@ public class Volume extends Processor {
 	}
 
 	public int addKeyGT(long aTime){
-		if(aTime <= ((Clip)targetMedia).getStartTimeMS() || aTime > ((Clip)targetMedia).getStartTimeMS() + ((Clip)targetMedia).getDurationMS()) {
+		if(aTime < ((Clip)targetMedia).getStartTimeMS() || aTime <= ((Clip)targetMedia).getKeysOriginMS() || aTime > ((Clip)targetMedia).getStartTimeMS() + ((Clip)targetMedia).getDurationMS()) {
 			//Can't insert outside
 			return -1;
 		}
@@ -115,7 +115,7 @@ public class Volume extends Processor {
 	}
 
 	public int getPrevKeyGT(long aTime){
-		long aT = aTime - ((Clip)targetMedia).getStartTimeMS();
+		long aT = aTime-((Clip)targetMedia).getKeysOriginMS();
 		for(int k = keys.size() - 1;k >= 0;k--) {
 			if(keys.elementAt(k).time <= aT) {
 				return k;
@@ -126,7 +126,7 @@ public class Volume extends Processor {
 	}
 
 	public int getNextKeyGT(long aTime){
-		long aT = aTime - ((Clip)targetMedia).getStartTimeMS();
+		long aT = aTime-((Clip)targetMedia).getKeysOriginMS();
 		for(int k = 0;k < keys.size();k++) {
 			if(keys.elementAt(k).time > aT) {
 				return k;
@@ -157,7 +157,7 @@ public class Volume extends Processor {
 	}
 
 	Key getInterKeyGT(long aTimePos){
-		long aTime = aTimePos-((Clip)targetMedia).getStartTimeMS();
+		long aTime = aTimePos-((Clip)targetMedia).getKeysOriginMS();
 		Key aInter = new Key();
 		aInter.time = aTime;
 		synchronized (keys) {

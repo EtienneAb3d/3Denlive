@@ -83,6 +83,16 @@ public abstract class Mixer extends Processor {
 		return 0;
 	}
 
+	/**
+	 * New mixer of the same kind and mode (default zoom and position)
+	 */
+	public abstract Mixer copyMode();
+
+	/**
+	 * Mixed image of the left and right images (not HDR), fitted in aTargetSize
+	 */
+	public abstract Image mix2Swt(BufferedImage aLI,BufferedImage aRI,int aProcessingMode,Rectangle aTargetSize);
+
 	public void resize(BufferedImage aBI,BufferedImage aSizedBI,int aProcessingMode
 			,int aW,int aH,int aSizedW,int aSizedH) {
 		lastW = aW;

@@ -79,13 +79,20 @@ public class AudioReader extends Ffmpeg {
 		}
 	}
 
-	AudioReader(String aPath,String aCacheDir) {
-		path = aPath;
-		cacheDir = aCacheDir;
+	/**
+	 * Cache file of a sound file: named from its path, size and date (a moved file keeps its cache if renamed with it)
+	 */
+	public static File cacheFileFor(String aPath,String aCacheDir) {
 		File aIn = new File(aPath);
 		String aName = aIn.getName().replaceAll("[^A-Za-z0-9._-]", "_");
 		String aKey = Integer.toHexString((aIn.getAbsolutePath()+"|"+aIn.length()+"|"+aIn.lastModified()).hashCode());
-		cacheFile = new File(aCacheDir, aName+"_"+aKey+".pcm");
+		return new File(aCacheDir, aName+"_"+aKey+".pcm");
+	}
+
+	AudioReader(String aPath,String aCacheDir) {
+		path = aPath;
+		cacheDir = aCacheDir;
+		cacheFile = cacheFileFor(aPath, aCacheDir);
 		Thread aTh = new Thread(new Runnable() {
 			@Override
 			public void run() {

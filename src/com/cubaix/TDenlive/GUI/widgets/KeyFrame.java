@@ -141,21 +141,27 @@ public abstract class KeyFrame extends Widget {
 //				&& tde.timeLineStack.getTimePosMS() <= ((Clip)proc.targetMedia).getStartTimeMS()+((Clip)proc.targetMedia).getDurationMS()
 				) {
 			int aNbKey = proc.getNbKeys();
+			//Keys out of the clip (cut clip): not shown, but their interval is if selected
+			long aKeysShift = ((Clip)proc.targetMedia).getStartTimeMS()-((Clip)proc.targetMedia).getKeysOriginMS();
 			for(int k = 0;k < aNbKey;k++) {
-				double aPos = proc.getTime(k)/
+				double aPos = (proc.getTime(k)-aKeysShift)/
 						(double)((Clip)proc.targetMedia).getDurationMS();
-				int aBulletX = lineX+(int)(aPos*lineW);
+				boolean aOut = aPos < 0 || aPos > 1;
+				int aBulletX = lineX+(int)(Math.max(0, Math.min(1, aPos))*lineW);
 				if(k == selection) {
 					aGC.setBackground(tde.gui.colorsSwt.CUBAIX_PINK);
 					aGC.setForeground(tde.gui.colorsSwt.CUBAIX_PINK);
 					aGC.drawOval(aBulletX-5, aLineY-5, 10, 10);
 					int aBulletXN = lineX+lineW;
 					if(k < aNbKey-1) {
-						double aPosN = proc.getTime(k+1)/
+						double aPosN = (proc.getTime(k+1)-aKeysShift)/
 								(double)((Clip)proc.targetMedia).getDurationMS();
-						aBulletXN = lineX+(int)(aPosN*lineW);
+						aBulletXN = lineX+(int)(Math.max(0, Math.min(1, aPosN))*lineW);
 					}
 					aGC.fillRectangle(aBulletX, aLineY, aBulletXN-aBulletX, 2);
+				}
+				if(aOut) {
+					continue;
 				}
 				//				else {
 				aGC.setBackground(tde.gui.colorsSwt.CUBAIX_BLUE);

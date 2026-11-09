@@ -1,5 +1,9 @@
 package com.cubaix.TDenlive.GUI;
 
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.text.NumberFormat;
 
@@ -11,9 +15,16 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.PaletteData;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.MessageBox;
@@ -25,6 +36,8 @@ import com.cubaix.TDenlive.TDenlive;
 import com.cubaix.TDenlive.audio.AudioMixer;
 import com.cubaix.TDenlive.ffmpeg.FfmpegEncoder;
 import com.cubaix.TDenlive.processors.Renderer;
+import com.cubaix.TDenlive.utils.BrowserControl;
+import com.cubaix.TDenlive.utils.HtmlViewer;
 import com.cubaix.TDenlive.utils.StringUtils;
 
 public class RendererGUI {
@@ -47,6 +60,15 @@ public class RendererGUI {
 
 	Renderer renderer = null;
 	File audioWav = null;
+
+	//Anaglyph thumbnail of the last produced pair, refreshed with the counters, the progress over it
+	static final int THUMB_H = 200;
+	Canvas thumbCanvas = null;
+	Image thumbSwt = null;
+	volatile BufferedImage lastL = null;
+	volatile BufferedImage lastR = null;
+	BufferedImage thumbL = null;//Pair of the current thumbnail
+	String progress = null;
 	
 	public RendererGUI(TDenlive aTDe) {
 		tde = aTDe;
@@ -72,7 +94,7 @@ public class RendererGUI {
 		shell = new Shell(tde.gui.display);
 		shell.setText("3Denlive");
 		shell.setLayout(new GridLayout(1, false));
-		shell.setSize(600, 600);
+		shell.setSize(600, 600+THUMB_H);
 		tde.gui.applyColorFont(shell);
 		shell.setImage(tde.gui.imgsSwt.getIcon("3Denlive32.png"));
 		
@@ -357,6 +379,95 @@ public class RendererGUI {
 		status = new CLabel(shell, SWT.NONE);
 		tde.gui.applyColorFont(status);
 		status.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+		thumbCanvas = new Canvas(shell, SWT.DOUBLE_BUFFERED);
+		tde.gui.applyColorFont(thumbCanvas);
+		GridData aThGD = new GridData(GridData.FILL_HORIZONTAL);
+		aThGD.heightHint = THUMB_H;
+		thumbCanvas.setLayoutData(aThGD);
+		thumbCanvas.addListener(SWT.Paint, e -> paintThumb(e.gc));
+		shell.addListener(SWT.Dispose, e -> {
+			if(thumbSwt != null && !thumbSwt.isDisposed()) {
+				thumbSwt.dispose();
+			}
+			thumbSwt = null;
+		});
+	}
+
+	void paintThumb(GC aGC) {
+		Rectangle aCA = thumbCanvas.getClientArea();
+		if(thumbSwt == null || thumbSwt.isDisposed()) {
+			return;
+		}
+		Rectangle aIB = thumbSwt.getBounds();
+		int aX = (aCA.width-aIB.width)/2;
+		int aY = (aCA.height-aIB.height)/2;
+		aGC.drawImage(thumbSwt, aX, aY);
+		if(progress == null) {
+			return;
+		}
+		//Progress in the bottom right corner of the image, white on a dark box
+		aGC.setFont(tde.gui.fontsSwt.robotoBold);
+		Point aTE = aGC.textExtent(progress);
+		int aM = 4;
+		int aBX = aX+aIB.width-aTE.x-3*aM;
+		int aBY = aY+aIB.height-aTE.y-3*aM;
+		aGC.setAlpha(170);
+		aGC.setBackground(tde.gui.colorsSwt.BLACK);
+		aGC.fillRoundRectangle(aBX, aBY, aTE.x+2*aM, aTE.y+2*aM, 6, 6);
+		aGC.setAlpha(255);
+		aGC.setForeground(tde.gui.colorsSwt.WHITE);
+		aGC.drawText(progress, aBX+aM, aBY+aM, true);
+	}
+
+	//Simple red/cyan anaglyph of the last pair, fitted in the thumbnail area
+	void updateThumb() {
+		BufferedImage aL = lastL;
+		BufferedImage aR = lastR;
+		if(aL == null || aR == null || aL == thumbL || thumbCanvas == null || thumbCanvas.isDisposed()) {
+			return;
+		}
+		Rectangle aCA = thumbCanvas.getClientArea();
+		if(aCA.width <= 0 || aCA.height <= 0 || aL.getWidth() <= 0 || aL.getHeight() <= 0) {
+			return;
+		}
+		thumbL = aL;
+		int aH = aCA.height;
+		int aW = (int)Math.round(aH*aL.getWidth()/(double)aL.getHeight());
+		if(aW > aCA.width) {
+			aW = aCA.width;
+			aH = Math.max(1, (int)Math.round(aW*aL.getHeight()/(double)aL.getWidth()));
+		}
+		try {
+			int[] aPL = scaled(aL, aW, aH);
+			int[] aPR = scaled(aR, aW, aH);
+			ImageData aID = new ImageData(aW, aH, 32, new PaletteData(0xFF0000, 0xFF00, 0xFF));
+			int[] aRow = new int[aW];
+			for(int y = 0;y < aH;y++) {
+				for(int x = 0;x < aW;x++) {
+					int p = y*aW+x;
+					aRow[x] = (aPL[p] & 0xFF0000) | (aPR[p] & 0x00FFFF);
+				}
+				aID.setPixels(0, y, aW, aRow, 0);
+			}
+			Image aOld = thumbSwt;
+			thumbSwt = new Image(tde.gui.display, aID);
+			if(aOld != null && !aOld.isDisposed()) {
+				aOld.dispose();
+			}
+		}
+		catch(Throwable t) {
+			t.printStackTrace(System.err);
+		}
+	}
+
+	static int[] scaled(BufferedImage aBI, int aW, int aH) {
+		BufferedImage aS = new BufferedImage(aW, aH, BufferedImage.TYPE_INT_RGB);
+		Graphics2D aG = aS.createGraphics();
+		aG.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		aG.drawImage(aBI, 0, 0, aW, aH, null);
+		aG.dispose();
+		return ((DataBufferInt)aS.getRaster().getDataBuffer()).getData();
 	}
 	
 	void start() {
@@ -368,6 +479,8 @@ public class RendererGUI {
 		playing = true;
 		doneButton.setEnabled(false);
 		renderer = null;//Not the one of a previous rendering
+		lastL = lastR = thumbL = null;
+		progress = null;
 		if(tde.gui.monitorGUI != null) {
 			tde.gui.monitorGUI.setMedia(null);
 		}
@@ -415,8 +528,11 @@ public class RendererGUI {
 				tde.timeLineStack.setRequestedTimePosMS(startTimePos);
 				while(playing) {
 					tde.timeLineStack.reBuild(TDConfig.PROCESSING_MODE_RENDER, tde.timeLineStack.getTimePosMS());
-					renderer.addPair(tde.timeLineStack.getFinalLeft(TDConfig.PROCESSING_MODE_RENDER, tde.timeLineStack.getTimePosMS())
-							, tde.timeLineStack.getFinalRight(TDConfig.PROCESSING_MODE_RENDER, tde.timeLineStack.getTimePosMS()));
+					BufferedImage aL = tde.timeLineStack.getFinalLeft(TDConfig.PROCESSING_MODE_RENDER, tde.timeLineStack.getTimePosMS());
+					BufferedImage aR = tde.timeLineStack.getFinalRight(TDConfig.PROCESSING_MODE_RENDER, tde.timeLineStack.getTimePosMS());
+					renderer.addPair(aL, aR);
+					lastL = aL;
+					lastR = aR;
 					tde.gui.display.asyncExec(new Runnable() {
 						@Override
 						public void run() {
@@ -455,6 +571,13 @@ public class RendererGUI {
 				+ (renderer == null ? 0 : renderer.encoded)+ " f encoded "
 				+ "=> "+StringUtils.time2Clock(aTimeLeft)
 				);
+		long aDuration = endTimePos-startTimePos;
+		int aPercent = aDuration <= 0 ? 100 : (int)Math.max(0, Math.min(100, 100*(aTimePos-startTimePos)/aDuration));
+		progress = aPercent+"%";
+		updateThumb();
+		if(thumbCanvas != null && !thumbCanvas.isDisposed()) {
+			thumbCanvas.redraw();
+		}
 	}
 	
 	void stop() {
@@ -470,6 +593,12 @@ public class RendererGUI {
 			audioWav.delete();
 			audioWav = null;
 		}
+		//Page to view the video with the stereo player (not for image sequences)
+		File aHtml = null;
+		if(renderer != null && FfmpegEncoder.canHaveAudio(pathOut) && new File(pathOut).exists()) {
+			aHtml = HtmlViewer.writeVideoPage(tde, pathOut);
+		}
+		final File aHtmlF = aHtml;
 		NumberFormat aNF = NumberFormat.getInstance();
 		aNF.setMinimumFractionDigits(3);
 		aNF.setMaximumFractionDigits(3);
@@ -488,8 +617,11 @@ public class RendererGUI {
 				}
 				tde.gui.setWaitCursor(false,shell);
 				MessageBox messageBox = new MessageBox(shell,SWT.ICON_INFORMATION|SWT.OK);
-			    messageBox.setMessage(pathOut);
-			    int rc = messageBox.open();
+			    messageBox.setMessage(aHtmlF == null ? pathOut : pathOut+"\n"+aHtmlF.getAbsolutePath());
+			    messageBox.open();
+			    if(aHtmlF != null) {
+			    	BrowserControl.openFile(aHtmlF);
+			    }
 			}
 		});
 	}

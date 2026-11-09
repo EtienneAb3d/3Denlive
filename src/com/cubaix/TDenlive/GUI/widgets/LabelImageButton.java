@@ -17,6 +17,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 
 import com.cubaix.TDenlive.TDenlive;
+import com.cubaix.TDenlive.GUI.TDeGUI;
 
 public abstract class LabelImageButton extends Widget {
 	String label = "";
@@ -36,7 +37,8 @@ public abstract class LabelImageButton extends Widget {
 		GridLayout aGL = new GridLayout(4,false);
 		aGL.marginLeft = aGL.marginTop = aGL.marginRight = aGL.marginBottom = 0;
 		aGL.verticalSpacing = aGL.horizontalSpacing = 0;
-		aGL.marginWidth = aGL.marginHeight = 0;
+		//Room for the hover frame (see TDeGUI.installHoverFrames())
+		aGL.marginWidth = aGL.marginHeight = 1;
 		container.setLayout(aGL);
 		container.setBackground(tde.gui.colorsSwt.WHITE);
 		container.setForeground(tde.gui.colorsSwt.CUBAIX_BLUE);
@@ -60,6 +62,7 @@ public abstract class LabelImageButton extends Widget {
 		aB.addListener(SWT.MouseDown,e -> {
 			clicked();
 		});
+		aB.setData(TDeGUI.HOVER_TARGET, container);
 
 		Composite aSpace2 = new Composite(container, SWT.SEPARATOR);
 		aSpace2.setBackground(tde.gui.colorsSwt.WHITE);
@@ -81,6 +84,7 @@ public abstract class LabelImageButton extends Widget {
 		aL.addListener(SWT.MouseDown,e -> {
 			clicked();
 		});
+		aL.setData(TDeGUI.HOVER_TARGET, container);
 	}
 
 	/**

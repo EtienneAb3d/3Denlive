@@ -57,9 +57,17 @@ public class AnaMixer extends Mixer {
 		return process2SwtImage(aMedia,aProcessingMode,aTargetSize,aTime);
 	}
 
+	@Override
+	public Mixer copyMode() {
+		return new AnaMixer(tde,null,mode);
+	}
+
 	public Image process2SwtImage(Media aMedia,int aProcessingMode,Rectangle aTargetSize,long aTime) {
-		final BufferedImage aLI = aMedia.getFinalLeft(aProcessingMode,aTime);
-		final BufferedImage aRI = aMedia.getFinalRight(aProcessingMode,aTime);
+		return mix2Swt(aMedia.getFinalLeft(aProcessingMode,aTime), aMedia.getFinalRight(aProcessingMode,aTime), aProcessingMode, aTargetSize);
+	}
+
+	@Override
+	public Image mix2Swt(final BufferedImage aLI,final BufferedImage aRI,int aProcessingMode,Rectangle aTargetSize) {
 		final int aW = aLI.getWidth();
 		final int aH = aLI.getHeight();
 		double aFact = Math.min(aTargetSize.width/(double)aW, aTargetSize.height / (double) aH);

@@ -29,6 +29,11 @@ public abstract class Processor {
 		targetMedia = aTargetMedia;
 		setDescr();
 	}
+
+	/**
+	 * Called when the processor is removed from its clip (to release what it gave the clip)
+	 */
+	public void removed() {}
 	
 	public abstract String getClassName();
 	public abstract int openProject(Vector<XmlObject> aOs,int o) throws Exception;

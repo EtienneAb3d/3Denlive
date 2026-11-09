@@ -1,6 +1,10 @@
 package com.cubaix.TDenlive.GUI;
 
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.text.NumberFormat;
+import java.util.Vector;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
@@ -8,7 +12,9 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Cursor;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -16,6 +22,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
@@ -23,6 +30,11 @@ import org.eclipse.swt.widgets.Text;
 
 import com.cubaix.TDenlive.TDConfig;
 import com.cubaix.TDenlive.TDenlive;
+import com.cubaix.TDenlive.utils.ProjectFiles;
+import com.cubaix.TDenlive.medias.Clip;
+import com.cubaix.TDenlive.medias.Media;
+import com.cubaix.TDenlive.medias.VideoTimeLine;
+import com.cubaix.TDenlive.processors.Processor;
 import com.cubaix.TDenlive.res.FontsAwt;
 import com.cubaix.TDenlive.res.FontsSwt;
 import com.cubaix.TDenlive.res.ImgsAwt;
@@ -30,6 +42,8 @@ import com.cubaix.TDenlive.res.ImgsSwt;
 import com.cubaix.TDenlive.res.Lngs;
 import com.cubaix.TDenlive.utils.BrowserControl;
 import com.cubaix.TDenlive.utils.Frames;
+import com.cubaix.TDenlive.utils.HtmlViewer;
+import com.cubaix.TDenlive.utils.ImageUtils;
 import com.cubaix.TDenlive.utils.Lumas;
 
 public class TDeGUI {
@@ -73,7 +87,14 @@ public class TDeGUI {
 	
 	public TimeLineStackGUI timeLinesGUI = null;
 	
+	//Main panels, horizontal (lists, monitor, properties) and vertical (top, timelines)
+	SashForm sashFormH = null;
+	SashForm sashFormV = null;
+	
 	Cursor waitCursor = null;
+
+	//Undo / redo of the changes of the montage
+	public History history = null;
 	
 	public TDeGUI(TDenlive aTDe) {
 		tde = aTDe;
@@ -103,10 +124,13 @@ public class TDeGUI {
 		tde.projectName = new File(aPath).getName();
 
 		setWaitCursor(true);
+		//Nothing recorded while opening: the project opened is the first state of the history
+		history.loading = true;
 		Thread aTh = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				tde.openProject(aPath);
+				display.syncExec(() -> history.reset());
 				setWaitCursor(false);
 			}
 		});
@@ -165,41 +189,28 @@ public class TDeGUI {
 	}
 
 	/**
-	 * Ask to save the project file and save it.
+	 * Ask to save the project file and save it (with the proposal to gather the medias in the project folder).
 	 * Returns false if canceled, or if the saving failed
 	 */
 	boolean saveProject() {
-		FileDialog aFD = new FileDialog (shell, SWT.SAVE);
-		String [] filterNames = new String [] {"3De projects"};
-		String [] filterExtensions = new String [] {"*.3De"};
-		//Current project file (opened or last saved): proposed by default, replaced without confirmation
+		return saveProject(true);
+	}
+
+	/**
+	 * Save panel (SaveProjectGUI: name, folder, new folder for the project), then save.
+	 * aOfferGather: when the project folder changes and medias are outside it, propose to move or copy them
+	 * into it (not when quitting: done in background, then the project is opened again).
+	 * Returns false if canceled, or if the saving failed
+	 */
+	boolean saveProject(boolean aOfferGather) {
+		//Current project file (opened or last saved): replaced without confirmation
 		File aCurrentFile = tde.projectDir != null && tde.projectName != null ? new File(tde.projectDir, tde.projectName) : null;
-		String filterPath = aCurrentFile != null ? tde.projectDir : (tde.lastDir == null ? tde.tdeDir:tde.lastDir);
-		//macOS: the save panel confirms the replacement of an existing file itself, and SWT can no longer
-		//disable it (setOverwrite(false) relies on a private method gone from recent macOS). So no extension
-		//is given to it: it returns the name without .3De, which does not exist, and asks nothing.
-		boolean aCocoa = "cocoa".equals(SWT.getPlatform());
-		if(!aCocoa) {
-			aFD.setFilterNames (filterNames);
-			aFD.setFilterExtensions (filterExtensions);
-		}
-		aFD.setFilterPath (filterPath);
-		if(tde.projectName != null) {
-			//Without extension (macOS: else the panel adds the filter's one itself, and checks it)
-			aFD.setFileName(tde.projectName.replaceAll("(?i)([.]3de)+$", ""));
-		}
-		//No confirmation from the dialog itself: asked below, only for another file
-		aFD.setOverwrite(false);
-		String aPath = aFD.open ();
+		String aPath = new SaveProjectGUI(tde).open();
 		System.out.println ("Path: " + aPath);
 		if(aPath == null) {
 			return false;
 		}
-		//macOS: an existing file chosen with its extension (typed, or clicked in the list) was already confirmed by the panel
-		boolean aConfirmedByDialog = aCocoa && new File(aPath).exists();
-		//Exactly one .3De extension, even if the dialog or the user already added one (or more)
-		aPath = aPath.replaceAll("(?i)([.]3de)+$", "") + ".3De";
-		if(new File(aPath).exists() && !aConfirmedByDialog && !isSameFile(new File(aPath), aCurrentFile)) {
+		if(new File(aPath).exists() && !isSameFile(new File(aPath), aCurrentFile)) {
 			MessageBox aMB = new MessageBox(shell, SWT.ICON_WARNING|SWT.YES|SWT.NO);
 			aMB.setText(lngs.get("Generic.SaveAs"));
 			aMB.setMessage(new File(aPath).getName()+"\n"+lngs.get("Generic.OverwriteFile"));
@@ -207,6 +218,7 @@ public class TDeGUI {
 				return false;
 			}
 		}
+		String aOldDir = aCurrentFile == null ? null : aCurrentFile.getAbsoluteFile().getParent();
 		String aOldWorkCacheDir = tde.getWorkCacheDir();
 		tde.projectDir = tde.lastDir = new File(aPath).getParent();
 		tde.projectName = new File(aPath).getName();
@@ -221,7 +233,78 @@ public class TDeGUI {
 		tde.markSaved();
 		//The video work copies go with the project
 		tde.copyWorkCacheFrom(aOldWorkCacheDir);
+		if(aOfferGather && (aOldDir == null || !isSameFile(new File(aOldDir), new File(tde.projectDir)))) {
+			offerGather(aPath);
+		}
 		return true;
+	}
+
+	/**
+	 * Medias outside the project folder (just saved into a new folder): move them into it, copy them, or leave them.
+	 * Done in background, then the project is saved with the new paths and opened again.
+	 */
+	void offerGather(String aPath) {
+		java.util.Vector<String> aOutside = ProjectFiles.outsideMedias(tde);
+		if(aOutside.isEmpty()) {
+			return;
+		}
+		MessageBox aMB = new MessageBox(shell, SWT.ICON_QUESTION|SWT.YES|SWT.NO|SWT.CANCEL);
+		aMB.setText(lngs.get("SaveProject.Title"));
+		String aList = aOutside.size() <= 10 ? String.join("\n", aOutside)
+				: String.join("\n", aOutside.subList(0, 10))+"\n...";
+		aMB.setMessage(lngs.get("SaveProject.Gather").replace("%N%", ""+aOutside.size()).replace("%DIR%", tde.projectDir)+"\n\n"+aList);
+		java.util.HashMap<Integer,String> aLabels = new java.util.HashMap<Integer,String>();
+		aLabels.put(SWT.YES, lngs.get("SaveProject.Move"));
+		aLabels.put(SWT.NO, lngs.get("SaveProject.Copy"));
+		aLabels.put(SWT.CANCEL, lngs.get("SaveProject.Leave"));
+		aMB.setButtonLabels(aLabels);
+		int aAnswer = aMB.open();
+		if(aAnswer != SWT.YES && aAnswer != SWT.NO) {
+			return;
+		}
+		boolean aMove = aAnswer == SWT.YES;
+		setWaitCursor(true);
+		Thread aTh = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				java.util.Vector<String> aFailed = new java.util.Vector<String>();
+				java.util.Vector<String> aCopied = new java.util.Vector<String>();
+				String aError = null;
+				try {
+					String aXml = ProjectFiles.relocate(tde, aMove, aFailed, aCopied);
+					java.nio.file.Files.write(new File(aPath).toPath(), aXml.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+				}
+				catch(Throwable t) {
+					t.printStackTrace(System.err);
+					aError = t.getMessage() == null ? t.toString() : t.getMessage();
+				}
+				final String aErr = aError;
+				display.asyncExec(() -> {
+					setWaitCursor(false);
+					if(shell.isDisposed()) {
+						return;
+					}
+					if(aErr == null) {
+						//Opened again with the new paths (medias, work copies and sounds renamed with them)
+						openProject(aPath);
+					}
+					String aMsg = aErr != null ? lngs.get("SaveProject.GatherError")+"\n"+aErr : null;
+					if(aErr == null && !aFailed.isEmpty()) {
+						aMsg = lngs.get("SaveProject.GatherFailed")+"\n"+String.join("\n", aFailed);
+					}
+					if(aErr == null && !aCopied.isEmpty()) {
+						aMsg = (aMsg == null ? "" : aMsg+"\n\n")+lngs.get("SaveProject.GatherCopied")+"\n"+String.join("\n", aCopied);
+					}
+					if(aMsg != null) {
+						MessageBox aR = new MessageBox(shell, SWT.ICON_WARNING|SWT.OK);
+						aR.setText(lngs.get("SaveProject.Title"));
+						aR.setMessage(aMsg);
+						aR.open();
+					}
+				});
+			}
+		});
+		aTh.start();
 	}
 
 	//Set once the quitting is accepted: not asked again by the following close events
@@ -244,7 +327,7 @@ public class TDeGUI {
 			if(aAnswer == SWT.CANCEL) {
 				return false;
 			}
-			if(aAnswer == SWT.YES && !saveProject()) {
+			if(aAnswer == SWT.YES && !saveProject(false)) {
 				return false;
 			}
 		}
@@ -264,12 +347,9 @@ public class TDeGUI {
 		lngs = new Lngs(tde);
 		lumas = new Lumas(tde);
 		frames = new Frames(tde);
+		history = new History(tde);
+		installHoverFrames();
 				
-	    TDConfig.RATIONAMES[0] = lngs.get("Generic.1stMedia");
-	    TDConfig.RATIOSHORTNAMES[0] = lngs.get("Generic.1stMediaShort");
-	    TDConfig.RESNAMES[0] = lngs.get("Generic.1stMedia");
-	    TDConfig.RESSHORTNAMES[0] = lngs.get("Generic.1stMediaShort");
-		
 		shell = new Shell(display,SWT.SHELL_TRIM);
 		shell.setText("3Denlive "+tde.TDeVersion);
 		shell.setSize (800, 600);
@@ -287,6 +367,8 @@ public class TDeGUI {
 		else {
 			tde.config.loadGeneral(tde.configPath);
 		}
+		//After the loading of the config: in its language
+		applyLngNames();
 
 		if(tde.config.renderDir != null && !tde.config.renderDir.trim().isEmpty()) {
 			tde.renderDir = tde.config.renderDir;
@@ -300,6 +382,137 @@ public class TDeGUI {
 		waitCursor = new Cursor( shell.getDisplay(), SWT.CURSOR_WAIT );
 		
 		shell.open();
+	}
+	
+	/**
+	 * Names of the config lists given by the language
+	 */
+	void applyLngNames() {
+	    TDConfig.RATIONAMES[0] = lngs.get("Generic.1stMedia");
+	    TDConfig.RATIOSHORTNAMES[0] = lngs.get("Generic.1stMediaShort");
+	    TDConfig.RESNAMES[0] = lngs.get("Generic.1stMedia");
+	    TDConfig.RESSHORTNAMES[0] = lngs.get("Generic.1stMediaShort");
+	}
+
+	/**
+	 * Change the interface language (saved in the config), and build the main window contents again in it
+	 */
+	public void setLanguage(String aLng) {
+		String aOldLng = tde.config.lng;
+		if(aLng == null || aLng.equalsIgnoreCase(aOldLng)) {
+			return;
+		}
+		String aOldRatioShort = TDConfig.RATIOSHORTNAMES[0];
+		String aOldResShort = TDConfig.RESSHORTNAMES[0];
+		tde.config.lng = aLng;
+		applyLngNames();
+		//"1st media" names already chosen, in the old language
+		if(aOldRatioShort.equals(tde.config.outRatioName)) {
+			tde.config.outRatioName = TDConfig.RATIOSHORTNAMES[0];
+		}
+		for(int m = 0;m < tde.config.processingResNames.length;m++) {
+			if(aOldResShort.equals(tde.config.processingResNames[m])) {
+				tde.config.processingResNames[m] = TDConfig.RESSHORTNAMES[0];
+			}
+		}
+		//Names of the processors of the clips, got at their creation
+		Vector<VideoTimeLine> aTLs = new Vector<VideoTimeLine>(tde.timeLineStack.videoTimeLineStack);
+		aTLs.addAll(tde.timeLineStack.audioTimeLineStack);
+		for(VideoTimeLine aTL : aTLs) {
+			for(Clip aClip : new Vector<Clip>(aTL.clipList)) {
+				for(Processor aP : new Vector<Processor>(aClip.getProcessors())) {
+					aP.name = lngs.translate(aP.name, aOldLng);
+				}
+			}
+		}
+		tde.config.saveGeneral(tde.configPath);
+		rebuildContents();
+	}
+
+	/**
+	 * Build the main window contents again (after a language change), keeping the views:
+	 * monitor (shown media, glasses, grid, edges, zoom), properties or processors panel, scrolling and
+	 * time zoom of the lists, sizes of the panels
+	 */
+	void rebuildContents() {
+		//Stop what works on the old widgets
+		if(playerControlGUI != null) {
+			playerControlGUI.playing = false;
+			playerControlGUI.playGen++;
+		}
+		if(monitorControlGUI != null && monitorControlGUI.wobble > 0) {
+			monitorControlGUI.wobble = -10;
+		}
+		int[] aWeightsH = sashFormH.getWeights();
+		int[] aWeightsV = sashFormV.getWeights();
+		MonitorGUI aOldMonitor = monitorGUI;
+		MonitorControlGUI aOldMonitorControl = monitorControlGUI;
+		//Left or right eye only: colored glasses button
+		Color aGlassesBck = monitorControlGUI != null && monitorControlGUI.wobble <= 0 ? monitorControlGUI.glasses.getBackground() : null;
+		Vector<Processor> aOldProcessors = processorGUI != null && !processorGUI.container.isDisposed() ? processorGUI.processors : null;
+		Media aOldPropsMedia = processorGUI == null && propsGUI != null ? propsGUI.media : null;
+		Point aTimeLinesOrigin = new Point(timeLinesGUI.origin.x, timeLinesGUI.origin.y);
+		Point aMediaListOrigin = new Point(mediaListGUI.origin.x, mediaListGUI.origin.y);
+
+		shell.setRedraw(false);
+		try {
+			for(Control aC : shell.getChildren()) {
+				aC.dispose();
+			}
+			toolBar = null;
+			mediaListControlGUI = null;
+			mediaListGUI = null;
+			multiMonitorPanel = null;
+			browserGUI = null;
+			monitorControlGUI = null;
+			monitorGUI = null;
+			playerControlGUI = null;
+			multiPropsPanel = null;
+			propsGUI = null;
+			processorGUI = null;
+			processorLibGUI = null;
+			timeLinesGUI = null;
+			createContents();
+			sashFormH.setWeights(aWeightsH);
+			sashFormV.setWeights(aWeightsV);
+
+			if(aOldMonitor != null) {
+				setMultiMonitorPanel(MULTIMONITORPANEL_MONITOR);
+				monitorGUI.mixer = aOldMonitor.mixer;
+				monitorGUI.grid = aOldMonitor.grid;
+				monitorGUI.edgeDetector = aOldMonitor.edgeDetector;
+				monitorGUI.processingMode = aOldMonitor.processingMode;
+				monitorControlGUI.setEdgesViewOn(aOldMonitorControl.edgesViewOn);
+				if(aGlassesBck != null) {
+					monitorControlGUI.glasses.setBackground(aGlassesBck);
+				}
+				Media aShown = aOldMonitor.getMedia();
+				if(aShown != null) {
+					playerControlGUI.showClock(aShown == tde.timeLineStack ? aShown.getTimePosMS() : aShown.getRequestedTimePosMS());
+				}
+				monitorGUI.setMedia(aShown);
+			}
+			if(aOldProcessors != null) {
+				setMultiPropsPanel(MULTIPROPSPANEL_PROCESSORS);
+				processorGUI.setProcessors(aOldProcessors);
+			}
+			else if(aOldPropsMedia != null) {
+				propsGUI.setMedia(aOldPropsMedia);
+			}
+			timeLinesGUI.origin.x = aTimeLinesOrigin.x;
+			timeLinesGUI.origin.y = aTimeLinesOrigin.y;
+			mediaListGUI.origin.x = aMediaListOrigin.x;
+			mediaListGUI.origin.y = aMediaListOrigin.y;
+			shell.layout(true, true);
+		}
+		finally {
+			shell.setRedraw(true);
+		}
+		mediaListGUI.redraw();
+		timeLinesGUI.redraw();
+		if(monitorGUI != null) {
+			monitorGUI.redraw();
+		}
 	}
 	
 	public void setWaitCursor(boolean aWaitOn) {
@@ -353,7 +566,7 @@ public class TDeGUI {
 		aTB.heightHint = h(25);
 		toolBar.setLayoutData(aTB);
 		applyColorFont(toolBar);
-		GridLayout aGL = new GridLayout(9, false);
+		GridLayout aGL = new GridLayout(13, false);
 		applyNoMargin(aGL);
 		toolBar.setLayout(aGL);
 		
@@ -434,6 +647,18 @@ public class TDeGUI {
 			}
 		});
 
+		//Current image of the monitor, saved in the render folder
+		CLabel aSaveView = new CLabel(toolBar,SWT.NONE);
+		aSaveView.setImage(tde.gui.imgsSwt.getIcon("saveView.png"));
+		aSaveView.setAlignment(SWT.CENTER);
+		GridData aSaveViewGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
+		aSaveViewGD.widthHint = 32;
+		aSaveViewGD.heightHint = h(25);
+		aSaveView.setLayoutData(aSaveViewGD);
+		applyColorFont(aSaveView);
+		tip(aSaveView, "SaveView");
+		aSaveView.addListener(SWT.MouseDown, e -> saveCurrentImage());
+
 		CLabel aRender = new CLabel(toolBar,SWT.NONE);
 		aRender.setImage(tde.gui.imgsSwt.getIcon("record.gif"));
 		aRender.setAlignment(SWT.CENTER);
@@ -455,6 +680,25 @@ public class TDeGUI {
 			public void mouseDoubleClick(MouseEvent arg0) {
 			}
 		});
+
+		//Empty space of a button, then undo / redo
+		Composite aUndoSpace = new Composite(toolBar, SWT.NONE);
+		applyColorFont(aUndoSpace);
+		GridData aUndoSpaceGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
+		aUndoSpaceGD.widthHint = 32;
+		aUndoSpaceGD.heightHint = h(25);
+		aUndoSpace.setLayoutData(aUndoSpaceGD);
+		CLabel aUndo = new CLabel(toolBar,SWT.NONE);
+		CLabel aRedo = new CLabel(toolBar,SWT.NONE);
+		for(CLabel aL : new CLabel[] {aUndo, aRedo}) {
+			aL.setAlignment(SWT.CENTER);
+			GridData aGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
+			aGD.widthHint = 32;
+			aGD.heightHint = h(25);
+			aL.setLayoutData(aGD);
+			applyColorFont(aL);
+		}
+		history.setButtons(aUndo, aRedo);
 
 		Composite aSpace = new Composite(toolBar, SWT.SEPARATOR|SWT.FILL);
 		applyColorFont(aSpace);
@@ -538,7 +782,7 @@ public class TDeGUI {
 		Composite aSashV = new Composite(shell, SWT.NONE);
 		aSashV.setLayout(new FillLayout());
 		aSashV.setLayoutData(new GridData(GridData.FILL_BOTH));
-		final SashForm aSashFormV = new SashForm(aSashV, SWT.VERTICAL);
+		final SashForm aSashFormV = sashFormV = new SashForm(aSashV, SWT.VERTICAL);
 
 		// Change the width of the sashes
 		aSashFormV.SASH_WIDTH = tde.config.sashWith;
@@ -549,7 +793,7 @@ public class TDeGUI {
 		Composite aSashH = new Composite(aSashFormV, SWT.NONE);
 		aSashH.setLayout(new FillLayout());
 		aSashH.setLayoutData(new GridData(GridData.FILL_BOTH));
-		final SashForm aSashFormH = new SashForm(aSashH, SWT.HORIZONTAL);
+		final SashForm aSashFormH = sashFormH = new SashForm(aSashH, SWT.HORIZONTAL);
 
 		// Change the width of the sashes
 		aSashFormH.SASH_WIDTH = tde.config.sashWith;
@@ -615,6 +859,124 @@ public class TDeGUI {
 		}
 	}
 	
+	//A control whose hover frame is drawn on another one (e.g. the whole icon + text button)
+	public static final String HOVER_TARGET = "3De.hoverTarget";
+	//Clickable control under the mouse, framed in light gray
+	Control hovered = null;
+
+	/**
+	 * Light gray frame on the controls acting as buttons (labels with an action on click) while the
+	 * mouse is over them: else nothing shows that they can be clicked
+	 */
+	void installHoverFrames() {
+		display.addFilter(SWT.MouseEnter, e -> {
+			if(!(e.widget instanceof Control)) {
+				return;
+			}
+			Control aC = (Control)e.widget;
+			Object aTarget = aC.getData(HOVER_TARGET);
+			if(aTarget instanceof Control) {
+				setHovered((Control)aTarget);
+			}
+			else if((aC instanceof Label || aC instanceof CLabel) && aC.isListening(SWT.MouseDown)) {
+				setHovered(aC);
+			}
+		});
+		display.addFilter(SWT.MouseExit, e -> {
+			if(hovered == null || !(e.widget instanceof Control)) {
+				return;
+			}
+			Control aC = (Control)e.widget;
+			if(aC == hovered || aC.getData(HOVER_TARGET) == hovered) {
+				setHovered(null);
+			}
+		});
+	}
+
+	void setHovered(Control aC) {
+		Control aOld = hovered;
+		hovered = aC;
+		if(aOld == aC) {
+			return;
+		}
+		if(aOld != null && !aOld.isDisposed()) {
+			aOld.redraw();
+		}
+		if(aC == null || aC.isDisposed()) {
+			return;
+		}
+		if(aC.getData("3De.hoverPaint") == null) {
+			aC.setData("3De.hoverPaint", Boolean.TRUE);
+			aC.addListener(SWT.Paint, e -> {
+				if(hovered != aC) {
+					return;
+				}
+				Point aS = aC.getSize();
+				e.gc.setForeground(colorsSwt.LIGHTGRAY);
+				e.gc.setLineWidth(1);
+				e.gc.drawRectangle(0, 0, aS.x-1, aS.y-1);
+			});
+		}
+		aC.redraw();
+	}
+
+	/**
+	 * Save the current image of the monitor (left, right, parallel and cross views) in the render folder
+	 */
+	void saveCurrentImage() {
+		if(monitorGUI == null || monitorGUI.media == null) {
+			return;
+		}
+		Media aMedia = monitorGUI.media;
+		shell.setCursor(waitCursor);
+		String[] aPaths = null;
+		try {
+			tde.timeLineStack.reBuild(TDConfig.PROCESSING_MODE_RENDER, tde.timeLineStack.getTimePosMS());
+			BufferedImage aBIL = aMedia.getFinalLeft(TDConfig.PROCESSING_MODE_RENDER, tde.timeLineStack.getTimePosMS());
+			BufferedImage aBIR = aMedia.getFinalRight(TDConfig.PROCESSING_MODE_RENDER, tde.timeLineStack.getTimePosMS());
+			NumberFormat aNF = NumberFormat.getInstance();
+			aNF.setMinimumIntegerDigits(4);
+			aNF.setGroupingUsed(false);
+			//Named after the project once saved, 3De_ before (as the rendering)
+			String aPrefix = tde.projectName == null ? "3De_" : tde.projectName.replaceAll("(?i)([.]3de)+$", "")+"_";
+			for(int i = 1;i < 10000;i++) {
+				String aBase = tde.renderDir+File.separatorChar+aPrefix+aNF.format(i);
+				aPaths = new String[] {aBase+"_Left.png", aBase+"_Right.png", aBase+"_X.png", aBase+"_P.png"};
+				if(!new File(aPaths[0]).exists() && !new File(aPaths[1]).exists()) {
+					break;
+				}
+			}
+			ImageUtils.saveImage(aPaths[0], aBIL);
+			ImageUtils.saveImage(aPaths[1], aBIR);
+			BufferedImage aBI = ImageUtils.createImage(aBIL.getWidth()*2, aBIL.getHeight(), tde.config.processingHdr[TDConfig.PROCESSING_MODE_RENDER]);
+			Graphics aG = aBI.getGraphics();
+			aG.drawImage(aBIL, 0, 0, null);
+			aG.drawImage(aBIR, aBIL.getWidth(), 0, null);
+			ImageUtils.saveImage(aPaths[3], aBI);
+			aG.drawImage(aBIR, 0, 0, null);
+			aG.drawImage(aBIL, aBIL.getWidth(), 0, null);
+			ImageUtils.saveImage(aPaths[2], aBI);
+		}
+		catch(Throwable t) {
+			t.printStackTrace(System.err);
+			shell.setCursor(null);
+			MessageBox aMB = new MessageBox(shell,SWT.ICON_ERROR|SWT.OK);
+			aMB.setMessage("Error: "+t.toString());
+			aMB.open();
+			return;
+		}
+		//Page with the stereo player on the parallel image, then the four images
+		File aHtml = HtmlViewer.writeImagesPage(tde, aPaths);
+		shell.setCursor(null);
+		MessageBox aMB = new MessageBox(shell,SWT.ICON_INFORMATION|SWT.OK);
+		aMB.setMessage(aPaths[0]+"\n"+aPaths[1]+"\n"+aPaths[2]+"\n"+aPaths[3]
+				+(aHtml == null ? "" : "\n"+aHtml.getAbsolutePath()));
+		aMB.open();
+		if(aHtml != null) {
+			BrowserControl.openFile(aHtml);
+		}
+	}
+
 	public void applyColorFont(Control aC) {
 		aC.setBackground(colorsSwt.WHITE);
 		aC.setForeground(colorsSwt.CUBAIX_BLUE);

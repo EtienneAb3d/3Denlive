@@ -45,11 +45,18 @@ public class Clip extends Media {
 	long shiftTimeMS = 0;
 	long fadeInMS = 0;
 	long fadeOutMS = 0;
+	//Time of the keys of the processors at the start of the clip (> 0 for the second part of a cut clip):
+	//a key at time t is at startTimeMS-keysShiftMS+t on the time line
+	long keysShiftMS = 0;
 	Vector<Clip> pairedClips = new Vector<Clip>();
 	public int pairedType = -1;//-1 = not a paired, 0 = unknown, 1 = depthmap
+	//Paired clip whose media takes the rotation / anamorphosis of the media of its clip (computed depth maps)
+	public boolean followsOrientation = false;
 	Vector<Clip> twinClips = new Vector<Clip>();
 	//Sound of the clip heard (e.g. off for a copy of a clip used as an upper layer)
 	public boolean soundOn = true;
+	//Sound of the right video of a media of two files, set by the line of the clip (see VideoTimeLine.soundSource)
+	public boolean soundRight = false;
 	//Shortest clip left by a trim of its start / end on the time line
 	public static final long MIN_DURATION_MS = 40;
 
@@ -108,6 +115,10 @@ public class Clip extends Media {
 					o++;
 					durationMS = Long.parseLong(aOs.elementAt(o).text);
 				}
+				if("keysShiftMS".equalsIgnoreCase(aT.tagName)) {
+					o++;
+					keysShiftMS = Long.parseLong(aOs.elementAt(o).text);
+				}
 				if("fadeInMS".equalsIgnoreCase(aT.tagName)) {
 					o++;
 					fadeInMS = Long.parseLong(aOs.elementAt(o).text);
@@ -145,6 +156,11 @@ public class Clip extends Media {
 			if(aO instanceof XmlTag) {
 				XmlTag aT = (XmlTag)aO;
 				if("/Processors".equalsIgnoreCase(aT.tagName)) {
+					//Projects made before the rule: the depth map processor goes first
+					Processor aDP = getDepthProcessor();
+					if(aDP != null) {
+						placeDepthProcessor(aDP);
+					}
 					return o;
 				}
 				if("StereoAligner".equalsIgnoreCase(aT.tagName)) {
@@ -235,6 +251,7 @@ public class Clip extends Media {
 		aSB.append("						<startTimeMS>" + startTimeMS + "</startTimeMS>\n");
 		aSB.append("						<shiftTimeMS>" + shiftTimeMS + "</shiftTimeMS>\n");
 		aSB.append("						<durationMS>" + durationMS + "</durationMS>\n");
+		aSB.append("						<keysShiftMS>" + keysShiftMS + "</keysShiftMS>\n");
 		aSB.append("						<fadeInMS>" + fadeInMS + "</fadeInMS>\n");
 		aSB.append("						<fadeOutMS>" + fadeOutMS + "</fadeOutMS>\n");
 		aSB.append("					</Media>\n");
@@ -269,6 +286,46 @@ public class Clip extends Media {
 			t.printStackTrace(System.err);
 		}
 		return aClip;
+	}
+	
+	/**
+	 * Cut the clip at aTimeMS (time line): this clip ends there, and a copy of it (returned, not
+	 * added to any time line) starts there. Same images and sound: the copy plays the media from
+	 * the cut, and its keys are kept as they are, shifted by keysShiftMS.
+	 * null if aTimeMS is not strictly inside the clip.
+	 */
+	public Clip cutAt(long aTimeMS) {
+		long aCut = aTimeMS-startTimeMS;
+		if(aCut <= 0 || aCut >= durationMS) {
+			return null;
+		}
+		Clip aSecond = duplicate();
+		if(aSecond == null) {
+			return null;
+		}
+		aSecond.startTimeMS = aTimeMS;
+		aSecond.durationMS = durationMS-aCut;
+		if(getMediaLimitMS() >= 0) {
+			//Like trimStart(): the media position only moves for the videos and sounds
+			aSecond.shiftTimeMS = shiftTimeMS+aCut;
+		}
+		aSecond.keysShiftMS = keysShiftMS+aCut;
+		//The fade in stays on the first part, the fade out goes to the second one
+		aSecond.fadeInMS = 0;
+		fadeOutMS = 0;
+		durationMS = aCut;
+		for(Clip aC : twinClips) {
+			aC.durationMS = durationMS;
+			aC.fadeOutMS = 0;
+		}
+		return aSecond;
+	}
+	
+	/**
+	 * Time line position of the time 0 of the keys of the processors
+	 */
+	public long getKeysOriginMS() {
+		return startTimeMS-keysShiftMS;
 	}
 	
 	public Media getMedia() {
@@ -474,6 +531,25 @@ public class Clip extends Media {
 		return aC;
 	}
 	
+	public void removePairedClip(Clip aClip) {
+		pairedClips.remove(aClip);
+	}
+
+	/**
+	 * Same rotation and anamorphosis as aSource for the media of this (paired) clip
+	 */
+	void followOrientation(Media aSource) {
+		if(media == null || aSource == null) {
+			return;
+		}
+		if(!media.rotateL.equals(aSource.rotateL) || !media.rotateR.equals(aSource.rotateR) || !media.anamorphW.equals(aSource.anamorphW)) {
+			media.rotateL = aSource.rotateL;
+			media.rotateR = aSource.rotateR;
+			media.anamorphW = aSource.anamorphW;
+			media.rotate();
+		}
+	}
+
 	public void removePairedClip(Media aMedia,int aPairedType) {
 		for(Clip aC : pairedClips) {
 			if(aC.media == aMedia && aC.pairedType == aPairedType) {
@@ -514,6 +590,9 @@ public class Clip extends Media {
 		media.reBuild(aProcessingMode, aTime-startTimeMS+shiftTimeMS);
 		for(Clip aC : pairedClips) {
 			if(aC.pairedType == 1) {
+				if(aC.followsOrientation) {
+					aC.followOrientation(media);
+				}
 				aC.workLeft = aC.workRight = aC.finalLeft = aC.finalRight = null;
 				aC.media.reBuild(aProcessingMode, aTime-startTimeMS+shiftTimeMS);
 			}
@@ -772,7 +851,7 @@ public class Clip extends Media {
 		if(media == null) {
 			return;
 		}
-		AudioReader aAR = media.getAudioReader();
+		AudioReader aAR = getSoundReader();
 		if(aAR == null) {
 			return;
 		}
@@ -806,7 +885,7 @@ public class Clip extends Media {
 	 * Waveform of the sound of the clip in aArea (current color), with the fades
 	 */
 	void drawWave(Graphics2D aGC,int aStartPos,Rectangle aArea,Rectangle aClippingR) {
-		AudioReader aAR = media == null ? null : media.getAudioReader();
+		AudioReader aAR = getSoundReader();
 		int aMid = aArea.y+aArea.height/2;
 		if(aAR != null) {
 			int aXFrom = Math.max(aArea.x, aClippingR.x);
@@ -831,7 +910,15 @@ public class Clip extends Media {
 	 * True if the media of the clip has a sound track (as far as known now)
 	 */
 	public boolean hasSound() {
-		return media != null && media.getAudioReader() != null && media.getAudioReader().hasAudio(0);
+		AudioReader aAR = getSoundReader();
+		return aAR != null && aAR.hasAudio(0);
+	}
+
+	/**
+	 * Sound of the clip: its media's, from the right video if soundRight (see Media.getAudioReader(boolean))
+	 */
+	public AudioReader getSoundReader() {
+		return media == null ? null : media.getAudioReader(soundRight);
 	}
 	
 	/**
@@ -882,7 +969,50 @@ public class Clip extends Media {
 		return bounds;
 	}
 	
-	public void addProcessor(String aProcessorName) {
+	public static boolean isDepthProcessorName(String aName) {
+		return "Depthmap".equalsIgnoreCase(aName) || "DepthmapStereo".equalsIgnoreCase(aName);
+	}
+
+	public static boolean isDepthProcessor(Processor aP) {
+		return aP instanceof Depthmap || aP instanceof DepthmapStereo;
+	}
+
+	/**
+	 * The depth map processor of the clip (Depthmap or DepthmapStereo), null if none
+	 */
+	public Processor getDepthProcessor() {
+		for(Processor aP : processors) {
+			if(isDepthProcessor(aP)) {
+				return aP;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * The depth map processor builds the views from the media: always the first one after the
+	 * mandatory TimeController (and Shapes), and unmovable (see Processor.isUnmovable)
+	 */
+	void placeDepthProcessor(Processor aP) {
+		processors.remove(aP);
+		int aPos = 0;
+		while(aPos < processors.size()
+				&& (processors.elementAt(aPos) instanceof TimeController || processors.elementAt(aPos) instanceof Shapes)) {
+			aPos++;
+		}
+		processors.add(aPos, aP);
+	}
+
+	/**
+	 * @return the processor added, null if none (unknown name, or a second depth map processor)
+	 */
+	public Processor addProcessor(String aProcessorName) {
+		boolean aIsDepth = isDepthProcessorName(aProcessorName);
+		if(aIsDepth && getDepthProcessor() != null) {
+			//Only one, it can't be replaced
+			return null;
+		}
+		int aNb = processors.size();
 		if("StereoAligner".equals(aProcessorName)) {
 			processors.add(new StereoAligner(tde, this));
 		}
@@ -928,7 +1058,12 @@ public class Clip extends Media {
 		if("Volume".equals(aProcessorName)) {
 			processors.add(new Volume(tde, this));
 		}
+		Processor aAdded = processors.size() > aNb ? processors.lastElement() : null;
+		if(aAdded != null && aIsDepth) {
+			placeDepthProcessor(aAdded);
+		}
 		tde.gui.processorGUI.setProcessors(processors);
+		return aAdded;
 	}
 
 	public void upProcessor(Processor aP) {
@@ -961,6 +1096,7 @@ public class Clip extends Media {
 		for(int p = 0;p < processors.size();p++) {
 			if(processors.elementAt(p) == aP) {
 				processors.remove(p);
+				aP.removed();
 				return;
 			}
 		}

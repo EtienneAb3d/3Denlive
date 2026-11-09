@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.TreeItem;
 
 import com.cubaix.TDenlive.TDenlive;
 import com.cubaix.TDenlive.medias.Clip;
+import com.cubaix.TDenlive.processors.Processor;
 
 public class ProcessorLibGUI extends TreeView {
 	//Processors working on the sound (see Processor.isAudio())
@@ -86,8 +87,18 @@ public class ProcessorLibGUI extends TreeView {
 			    messageBox.open();
 				return;
 			}
-			aClip.addProcessor((String)aTI.getData());
+			if(Clip.isDepthProcessorName((String)aTI.getData()) && aClip.getDepthProcessor() != null) {
+				MessageBox messageBox = new MessageBox(tde.gui.shell,SWT.ICON_INFORMATION|SWT.OK);
+			    messageBox.setMessage(tde.gui.lngs.get("Processor.OneDepthmap"));
+			    messageBox.open();
+				return;
+			}
+			Processor aNewP = aClip.addProcessor((String)aTI.getData());
 			tde.gui.monitorGUI.redraw();
+			//A depth map processor on a clip without depth map: propose to compute it
+			if(aNewP != null) {
+				tde.gui.display.asyncExec(() -> DepthmapConvertGUI.checkNewProcessor(tde, aClip, aNewP));
+			}
 		});
 	}
 	

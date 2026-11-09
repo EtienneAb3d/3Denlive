@@ -26,6 +26,7 @@ import com.cubaix.TDenlive.GUI.widgets.LabelImageButton;
 import com.cubaix.TDenlive.medias.Media;
 import com.cubaix.TDenlive.medias.StereoImage;
 import com.cubaix.TDenlive.utils.ImageUtils;
+import com.cubaix.TDenlive.utils.ProjectFiles;
 import com.cubaix.TDenlive.utils.StringUtils;
 
 public class OpenMediaGUI {
@@ -57,10 +58,14 @@ public class OpenMediaGUI {
 				if(aPath != null){
 					currentMediaDir = new File(aPath).getParent();
 					savePath();
+					final String aChosen = aPath;
+					final boolean aCopy = askCopy(aPath);
 					tde.gui.setWaitCursor(true,shell);
 					Thread aTh = new Thread(new Runnable() {
 						@Override
 						public void run() {
+							//Copied into the project folder first if asked (may be long: videos)
+							String aPath = aCopy ? ProjectFiles.importFile(tde, aChosen, false, null) : aChosen;
 							try {
 								tde.gui.setWaitCursor(true,shell);
 								if(aPath.toLowerCase().endsWith(".mpo")) {
@@ -100,10 +105,14 @@ public class OpenMediaGUI {
 				if(aPath != null){
 					currentMediaDir = new File(aPath).getParent();
 					savePath();
+					final String aChosen = aPath;
+					final boolean aCopy = askCopy(aPath);
 					tde.gui.setWaitCursor(true,shell);
 					Thread aTh = new Thread(new Runnable() {
 						@Override
 						public void run() {
+							//Copied into the project folder first if asked (may be long: videos)
+							String aPath = aCopy ? ProjectFiles.importFile(tde, aChosen, false, null) : aChosen;
 							try {
 								if(aPath.toLowerCase().endsWith(".mpo")) {
 									tde.mediaList.loadImageMPO(aPath);
@@ -151,10 +160,17 @@ public class OpenMediaGUI {
 					}
 					if(aPaths[1] != null){
 						currentMediaDir2 = new File(aPaths[1]).getParent();
+						final boolean aCopy = askCopy(aPaths);
 						tde.gui.setWaitCursor(true,shell);
 						Thread aTh = new Thread(new Runnable() {
 							@Override
 							public void run() {
+								//Copied into the project folder first if asked (may be long: videos)
+								if(aCopy) {
+									boolean aSame = aPaths[0].equals(aPaths[1]);
+									aPaths[0] = ProjectFiles.importFile(tde, aPaths[0], false, null);
+									aPaths[1] = aSame ? aPaths[0] : ProjectFiles.importFile(tde, aPaths[1], false, null);
+								}
 								try {
 									if(aPaths[0].toLowerCase().endsWith(".mpo")) {
 										tde.mediaList.loadImageMPO(aPaths[0]);
@@ -195,10 +211,14 @@ public class OpenMediaGUI {
 				if(aPath != null){
 					currentMediaDir = new File(aPath).getParent();
 					savePath();
+					final String aChosen = aPath;
+					final boolean aCopy = askCopy(aPath);
 					tde.gui.setWaitCursor(true,shell);
 					Thread aTh = new Thread(new Runnable() {
 						@Override
 						public void run() {
+							//Copied into the project folder first if asked (may be long: videos)
+							String aPath = aCopy ? ProjectFiles.importFile(tde, aChosen, false, null) : aChosen;
 							try {
 								if(aPath.toLowerCase().endsWith(".mpo")) {
 									tde.mediaList.loadImageMPO(aPath);
@@ -238,10 +258,14 @@ public class OpenMediaGUI {
 				if(aPath != null){
 					currentMediaDir = new File(aPath).getParent();
 					savePath();
+					final String aChosen = aPath;
+					final boolean aCopy = askCopy(aPath);
 					tde.gui.setWaitCursor(true,shell);
 					Thread aTh = new Thread(new Runnable() {
 						@Override
 						public void run() {
+							//Copied into the project folder first if asked (may be long: videos)
+							String aPath = aCopy ? ProjectFiles.importFile(tde, aChosen, false, null) : aChosen;
 							try {
 								tde.mediaList.loadAudio(aPath);
 							}
@@ -292,6 +316,27 @@ public class OpenMediaGUI {
 		preview.setFont(tde.gui.fontsSwt.roboto);
 		preview.setLayoutData(new GridData(GridData.FILL_BOTH));
 		preview.setAlignment(SWT.CENTER);
+	}
+
+	/**
+	 * Files chosen outside the folder of the saved project: propose to copy them into it,
+	 * or to leave them where they are (GUI thread; the copy is done by the loading thread)
+	 * @return true to copy
+	 */
+	boolean askCopy(String... aPaths) {
+		java.util.Vector<String> aOutside = ProjectFiles.outside(tde, aPaths);
+		if(aOutside.isEmpty()) {
+			return false;
+		}
+		MessageBox aMB = new MessageBox(shell, SWT.ICON_QUESTION|SWT.YES|SWT.NO);
+		aMB.setText(tde.gui.lngs.get("MediaOpen.CopyTitle"));
+		aMB.setMessage(tde.gui.lngs.get("MediaOpen.CopyAsk").replace("%DIR%", ProjectFiles.projectDir(tde))
+				+"\n\n"+String.join("\n", aOutside));
+		java.util.HashMap<Integer,String> aLabels = new java.util.HashMap<Integer,String>();
+		aLabels.put(SWT.YES, tde.gui.lngs.get("MediaOpen.CopyYes"));
+		aLabels.put(SWT.NO, tde.gui.lngs.get("MediaOpen.CopyNo"));
+		aMB.setButtonLabels(aLabels);
+		return aMB.open() == SWT.YES;
 	}
 
 	void showPreview() {

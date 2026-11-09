@@ -27,6 +27,8 @@ public class StereoMovie extends StereoImage {
 	VideoThumbnailer thumbnailer = null;
 	HashMap<Integer,BufferedImage> stripCache = new HashMap<Integer,BufferedImage>();
 	String stripKey = null;
+	//No sound track used (e.g. a depth map video: the sound is the one of the clip)
+	public boolean noSound = false;
 	
 	public StereoMovie(TDenlive aTDe) {
 		super(aTDe);
@@ -44,8 +46,19 @@ public class StereoMovie extends StereoImage {
 
 	@Override
 	public AudioReader getAudioReader() {
-		//The sound comes from the left (or single) file
+		if(noSound) {
+			return null;
+		}
+		//The sound comes from the left (or single) file, never from the right one of two files
 		return AudioReader.get(pathL, tde.getWorkCacheDir());
+	}
+
+	@Override
+	public AudioReader getAudioReader(boolean aRight) {
+		if(aRight && !noSound && origStereo == 0 && pathR != null && !pathR.equals(pathL)) {
+			return AudioReader.get(pathR, tde.getWorkCacheDir());
+		}
+		return getAudioReader();
 	}
 
 	@Override

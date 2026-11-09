@@ -85,8 +85,9 @@ public class AudioMixer {
 		HashSet<AudioReader> aReaders = new HashSet<AudioReader>();
 		for(VideoTimeLine aTL : allLines()) {
 			for(Clip aC : new Vector<Clip>(aTL.clipList)) {
-				if(aC.getMedia() != null && aC.getMedia().getAudioReader() != null) {
-					aReaders.add(aC.getMedia().getAudioReader());
+				AudioReader aAR = aTL.soundReaderOf(aC);
+				if(aAR != null) {
+					aReaders.add(aAR);
 				}
 			}
 		}

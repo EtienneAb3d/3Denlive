@@ -10,15 +10,21 @@ import com.cubaix.TDenlive.xml.XmlObject;
 import com.cubaix.TDenlive.xml.XmlTag;
 
 public class Lngs {
+	//Interface languages: code (name of the XML file), name shown in its own language
+	public static final String[][] LANGUAGES = new String[][] {
+		new String[] {"EN", "English"}
+		,new String[] {"FR", "Français"}
+	};
 	static final HashMap<String,String> LNGS = new HashMap<String,String>();
 	static {
-		try {
-			//Load all to be sure all is parsable
-			load("EN");
-			load("FR");
-		}
-		catch(Throwable t) {
-			t.printStackTrace(System.err);
+		//Load all to be sure all is parsable
+		for(String[] aL : LANGUAGES) {
+			try {
+				load(aL[0]);
+			}
+			catch(Throwable t) {
+				t.printStackTrace(System.err);
+			}
 		}
 	}
 	
@@ -45,6 +51,23 @@ public class Lngs {
 		return "(??)"+aLabel;
 	}
 	
+	/**
+	 * A text got in the language aFromLng (e.g. a processor name), in the current language.
+	 * Returned unchanged if it is not a text of aFromLng.
+	 */
+	public String translate(String aText,String aFromLng) {
+		if(aText == null || aFromLng == null) {
+			return aText;
+		}
+		String aPrefix = aFromLng.toUpperCase()+".";
+		for(java.util.Map.Entry<String,String> aE : LNGS.entrySet()) {
+			if(aE.getKey().startsWith(aPrefix) && aText.equals(aE.getValue())) {
+				return get(aE.getKey().substring(aPrefix.length()));
+			}
+		}
+		return aText;
+	}
+
 	static final void load(String aLng) throws Exception {
 		XmlMinimalParser aP = new XmlMinimalParser();
 		InputStream aIS = Lngs.class.getResourceAsStream("lngs/"+aLng.toUpperCase()+".xml");
