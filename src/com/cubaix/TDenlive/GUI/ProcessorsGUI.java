@@ -37,6 +37,7 @@ import com.cubaix.TDenlive.GUI.processors.PlacerGUI;
 import com.cubaix.TDenlive.GUI.processors.ProcessorGUI;
 import com.cubaix.TDenlive.GUI.processors.ScripterGUI;
 import com.cubaix.TDenlive.GUI.processors.ShapesGUI;
+import com.cubaix.TDenlive.GUI.processors.SubtitlesGUI;
 import com.cubaix.TDenlive.GUI.processors.StereoAlignerGUI;
 import com.cubaix.TDenlive.GUI.processors.TimeControllerGUI;
 import com.cubaix.TDenlive.GUI.processors.TransparencyGUI;
@@ -283,6 +284,10 @@ public class ProcessorsGUI extends CompositePanel {
 		}
 		if("Shapes".equals(aClassP)) {
 			aBox.setData(new ShapesGUI(tde, aBox,aP));
+			return;
+		}
+		if("Subtitles".equals(aClassP)) {
+			aBox.setData(new SubtitlesGUI(tde, aBox,aP));
 			return;
 		}
 		if("StereoAligner".equals(aClassP)) {

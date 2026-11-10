@@ -40,6 +40,13 @@ public class ShapesEditor {
 		void reorder(int aId,boolean aToFront);
 		/** True to show the hidden shapes as very light ghosts */
 		boolean showGhosts();
+		/**
+		 * Shapes as they are drawn in the image now (interpolated), when the shapes edited are those
+		 * of another key (manual key mode): a click on a shape there selects it
+		 */
+		default Vector<Shape> getDisplayedShapes() {
+			return getShapes();
+		}
 		/** Shapes of the keys after the one edited now (none without keys) */
 		default Vector<Vector<Shape>> getFollowingShapes() {
 			return new Vector<Vector<Shape>>();
@@ -185,13 +192,13 @@ public class ShapesEditor {
 		listeners.remove(aL);
 	}
 
-	void fireShapesChanged() {
+	public void fireShapesChanged() {
 		for(Listener aL : new Vector<Listener>(listeners)) {
 			aL.shapesChanged();
 		}
 	}
 
-	void fireSelectionChanged() {
+	public void fireSelectionChanged() {
 		for(Listener aL : new Vector<Listener>(listeners)) {
 			aL.selectionChanged();
 		}
@@ -227,6 +234,10 @@ public class ShapesEditor {
 			selectedId = -1;
 		}
 		fireSelectionChanged();
+	}
+
+	public int getSelectedId() {
+		return selectedId;
 	}
 
 	public Shape getSelected() {
@@ -501,7 +512,9 @@ public class ShapesEditor {
 
 	/**
 	 * The nearest handle of the selected shape in the views under the click (left or right eye),
-	 * else the shape hit whose image (left or right) is the nearest to the click, else null
+	 * else the shape hit whose image (left or right) is the nearest to the click, else null.
+	 * The shapes are hit where they are drawn (getDisplayedShapes()); the handles and the outline of the
+	 * selected shape are those of the edited key. The handles of a shape not selected are not hit
 	 */
 	Pick pick(Vector<Shape> aShapes,int aX,int aY) {
 		Vector<View> aCands = candidates(aX, aY);
@@ -526,13 +539,26 @@ public class ShapesEditor {
 		if(aBest != null) {
 			return aBest;
 		}
+		//The shapes where they are drawn in the image (the edited ones may be those of another key:
+		//only the selected one is also hit at its edited place, where its outline is drawn)
+		Vector<Shape> aShown = source.getDisplayedShapes();
+		if(aShown == null) {
+			aShown = aShapes;
+		}
 		for(View aV : aCands) {
-			Shape aS = shapeAt(aShapes, aV, aX, aY);
-			if(aS == null) {
-				continue;
+			Shape aS = shapeAt(aShown, aV, aX, aY);
+			if(aS != null) {
+				//The edited shape (same id), moved by the drag
+				Shape aEd = aShown == aShapes ? aS : Shape.findById(aShapes, aS.id);
+				if(aEd != null) {
+					java.awt.geom.Rectangle2D aB = screenOutline(aS, aV).getBounds2D();
+					aBest = better(aBest, aV, DRAG_MOVE, -1, aEd, aB.getCenterX(), aB.getCenterY(), aX, aY, Double.MAX_VALUE);
+				}
 			}
-			java.awt.geom.Rectangle2D aB = screenOutline(aS, aV).getBounds2D();
-			aBest = better(aBest, aV, DRAG_MOVE, -1, aS, aB.getCenterX(), aB.getCenterY(), aX, aY, Double.MAX_VALUE);
+			if(aSel != null && aShown != aShapes && hit(aSel, aV, aX, aY)) {
+				java.awt.geom.Rectangle2D aB = screenOutline(aSel, aV).getBounds2D();
+				aBest = better(aBest, aV, DRAG_MOVE, -1, aSel, aB.getCenterX(), aB.getCenterY(), aX, aY, Double.MAX_VALUE);
+			}
 		}
 		return aBest;
 	}

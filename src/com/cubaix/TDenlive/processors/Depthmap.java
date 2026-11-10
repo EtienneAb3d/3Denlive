@@ -26,6 +26,8 @@ public class Depthmap extends Processor {
 		double d = 0;
 		double x = 0;
 		double p = 0;
+		//Mix of the depth map on the source before the conversion (0: source, 1: depth map)
+		double m = 0;
 		long time = 0;
 		boolean blackIsFront = true;
 	}
@@ -76,6 +78,10 @@ public class Depthmap extends Processor {
 					o++;
 					keys.lastElement().p = Double.parseDouble(aOs.elementAt(o).text);
 				}
+				if("m".equalsIgnoreCase(aT.tagName)) {
+					o++;
+					keys.lastElement().m = Double.parseDouble(aOs.elementAt(o).text);
+				}
 				if("time".equalsIgnoreCase(aT.tagName)) {
 					o++;
 					keys.lastElement().time = Long.parseLong(aOs.elementAt(o).text);
@@ -99,6 +105,7 @@ public class Depthmap extends Processor {
 			aSB.append("							<d>" + aK.d + "</d>\n");
 			aSB.append("							<x>" + aK.x + "</x>\n");
 			aSB.append("							<p>" + aK.p + "</p>\n");
+			aSB.append("							<m>" + aK.m + "</m>\n");
 			aSB.append("							<time>" + aK.time + "</time>\n");
 			aSB.append("							<blackIsFront>" + aK.blackIsFront + "</blackIsFront>\n");
 		}
@@ -206,43 +213,51 @@ public class Depthmap extends Processor {
 	}
 	
 	public double getX(int aKey) {
-		return keys.elementAt(aKey).x;
+		return key(aKey).x;
 	}
 
 	public void setX(int aKey,double x) {
 		warnNextAlignments();
-		keys.elementAt(aKey).x = x;
+		key(aKey).x = x;
 	}
 
 	public double getP(int aKey) {
-		return keys.elementAt(aKey).p;
+		return key(aKey).p;
 	}
 
 	public void setP(int aKey,double p) {
 		warnNextAlignments();
-		keys.elementAt(aKey).p = p;
+		key(aKey).p = p;
 	}
 
 	public double getD(int aKey) {
-		return keys.elementAt(aKey).d;
+		return key(aKey).d;
 	}
 
 	public void setD(int aKey,double y) {
 		warnNextAlignments();
-		keys.elementAt(aKey).d = y;
+		key(aKey).d = y;
+	}
+
+	public double getM(int aKey) {
+		return key(aKey).m;
+	}
+
+	public void setM(int aKey,double m) {
+		key(aKey).m = m;
 	}
 
 	public boolean getBlackIsFront(int aKey) {
-		return keys.elementAt(aKey).blackIsFront;
+		return key(aKey).blackIsFront;
 	}
 
 	public void setBlackIsFront(int aKey,boolean aBlackIsFront) {
 		warnNextAlignments();
-		keys.elementAt(aKey).blackIsFront = aBlackIsFront;
+		key(aKey).blackIsFront = aBlackIsFront;
 	}
 	
 	public long getTime(int aKey) {
-		return keys.elementAt(aKey).time;
+		return key(aKey).time;
 	}
 
 	public void warnNextAlignments() {
@@ -274,6 +289,25 @@ public class Depthmap extends Processor {
 		return null;
 	}
 
+	/** Values interpolated at the time cursor, for the display (index DISPLAY_KEY, UI thread only) */
+	Key displayKey = null;
+
+	@Override
+	public boolean setDisplayKeyGT(long aTime) {
+		try {
+			displayKey = getInterKeyGT(aTime);
+		}
+		catch(Throwable t) {
+			displayKey = null;
+		}
+		return displayKey != null;
+	}
+
+	/** The key aKey, or the display key */
+	Key key(int aKey) {
+		return aKey == DISPLAY_KEY && displayKey != null ? displayKey : keys.elementAt(aKey);
+	}
+
 	Key getInterKeyGT(long aTimePos){
 		long aTime = aTimePos-((Clip)targetMedia).getKeysOriginMS();
 		for(int k = keys.size()-1;k >= 0;k--) {
@@ -284,6 +318,7 @@ public class Depthmap extends Processor {
 					aInter.d = aKey.d;
 					aInter.x = aKey.x;
 					aInter.p = aKey.p;
+					aInter.m = aKey.m;
 					aInter.time = aTime;
 					aInter.blackIsFront = aKey.blackIsFront;
 					return aInter;
@@ -294,6 +329,7 @@ public class Depthmap extends Processor {
 				aInter.d = aKey.d*(1.0-aFact)+aNext.d*aFact;
 				aInter.x = aKey.x*(1.0-aFact)+aNext.x*aFact;
 				aInter.p = aKey.p*(1.0-aFact)+aNext.p*aFact;
+				aInter.m = aKey.m*(1.0-aFact)+aNext.m*aFact;
 				aInter.time = aTime;
 				aInter.blackIsFront = aKey.blackIsFront;
 				return aInter;
@@ -305,6 +341,7 @@ public class Depthmap extends Processor {
 		aInter.d = aKey.d;
 		aInter.x = aKey.x;
 		aInter.p = aKey.p;
+		aInter.m = aKey.m;
 		aInter.time = aTime;
 		aInter.blackIsFront = aKey.blackIsFront;
 		return aInter;
@@ -316,17 +353,19 @@ public class Depthmap extends Processor {
 			return;
 		}
 		try {
-			BufferedImage aBIL = aMedia.getWorkLeft(aProcessingMode,aTime);
+			BufferedImage aBISrc = aMedia.getWorkLeft(aProcessingMode,aTime);
 			//Depth map: the computed one (of the left view), else the right view of the media (2D + depth map)
 			ComputedDepthmap aCD = computed;
 			BufferedImage aBIR = ImageUtils.fitTo(aCD != null && aCD.clip != null
 					? aCD.clip.getWorkLeft(aProcessingMode,aTime)
-					: aMedia.getWorkRight(aProcessingMode,aTime), aBIL);
+					: aMedia.getWorkRight(aProcessingMode,aTime), aBISrc);
 			if(showDepth && aProcessingMode != TDConfig.PROCESSING_MODE_RENDER) {
 				aMedia.setWorkLeft(aBIR);
 				aMedia.setWorkRight(aBIR);
 				return;
 			}
+			//Depth map mixed on the source, then converted
+			BufferedImage aBIL = mixDepth(aBISrc, aBIR, getInterKeyGT(aTime).m);
 			Thread aThL = new Thread(new Runnable() {
 				@Override
 				public void run() {
@@ -357,6 +396,57 @@ public class Depthmap extends Processor {
 		}
 	}
 	
+	/**
+	 * The source image mixed with its depth map before the stereo conversion: aSrc*(1-aM) + aDM*aM
+	 * on the colors (the alpha of the source is kept). aM <= 0: aSrc itself
+	 */
+	static BufferedImage mixDepth(BufferedImage aSrc,BufferedImage aDM,double aM) {
+		if(aSrc == null || aDM == null || aM <= 0) {
+			return aSrc;
+		}
+		aM = Math.min(1.0, aM);
+		int aW = aSrc.getWidth();
+		int aH = aSrc.getHeight();
+		boolean aHdr = aSrc.getRaster().getDataBuffer() instanceof DataBufferFloat;
+		if((aDM.getRaster().getDataBuffer() instanceof DataBufferFloat) != aHdr
+				|| aDM.getWidth() != aW || aDM.getHeight() != aH) {
+			//Same size and type as the source
+			BufferedImage aConv = ImageUtils.createImage(aW, aH, aHdr);
+			Graphics2D aG = aConv.createGraphics();
+			aG.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+			aG.drawImage(aDM, 0, 0, aW, aH, null);
+			aG.dispose();
+			aDM = aConv;
+		}
+		BufferedImage aOut = ImageUtils.createImage(aW, aH, aHdr);
+		double aS = 1.0-aM;
+		if(aHdr) {
+			float[] aSB = ((DataBufferFloat)aSrc.getRaster().getDataBuffer()).getData();
+			float[] aDB = ((DataBufferFloat)aDM.getRaster().getDataBuffer()).getData();
+			float[] aOB = ((DataBufferFloat)aOut.getRaster().getDataBuffer()).getData();
+			for(int p = 0;p+3 < aOB.length;p += 4) {
+				aOB[p] = (float)(aSB[p]*aS+aDB[p]*aM);
+				aOB[p+1] = (float)(aSB[p+1]*aS+aDB[p+1]*aM);
+				aOB[p+2] = (float)(aSB[p+2]*aS+aDB[p+2]*aM);
+				aOB[p+3] = aSB[p+3];
+			}
+		}
+		else {
+			int[] aSB = ((DataBufferInt)aSrc.getRaster().getDataBuffer()).getData();
+			int[] aDB = ((DataBufferInt)aDM.getRaster().getDataBuffer()).getData();
+			int[] aOB = ((DataBufferInt)aOut.getRaster().getDataBuffer()).getData();
+			for(int p = 0;p < aOB.length;p++) {
+				int aSP = aSB[p];
+				int aDP = aDB[p];
+				int aR = (int)(((aSP>>16)&0xFF)*aS+((aDP>>16)&0xFF)*aM);
+				int aG = (int)(((aSP>>8)&0xFF)*aS+((aDP>>8)&0xFF)*aM);
+				int aB = (int)((aSP&0xFF)*aS+(aDP&0xFF)*aM);
+				aOB[p] = (aSP&0xFF000000)|(aR<<16)|(aG<<8)|aB;
+			}
+		}
+		return aOut;
+	}
+
 	BufferedImage processAwtImage(BufferedImage aBI,BufferedImage aDM,int aProcessingMode,long aTime,boolean aIsL) {
 		int aWidth = aBI.getWidth();
 		int aHeight = aBI.getHeight();

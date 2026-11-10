@@ -9,7 +9,9 @@ import org.eclipse.swt.widgets.TreeItem;
 
 import com.cubaix.TDenlive.TDenlive;
 import com.cubaix.TDenlive.medias.Clip;
+import com.cubaix.TDenlive.GUI.processors.SubtitlesGUI;
 import com.cubaix.TDenlive.processors.Processor;
+import com.cubaix.TDenlive.processors.Subtitles;
 
 public class ProcessorLibGUI extends TreeView {
 	//Processors working on the sound (see Processor.isAudio())
@@ -39,6 +41,8 @@ public class ProcessorLibGUI extends TreeView {
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.Chromakey"), "Chromakey",true);
 		aFolder = createFolder(tree, tde.gui.lngs.get("Processor.Design"));
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.Framing"), "Framing",true);
+		aFolder = createFolder(tree, tde.gui.lngs.get("Processor.Video"));
+		createProcessor(aFolder,tde.gui.lngs.get("Processor.Subtitles"), "Subtitles",true);
 		aFolder = createFolder(tree, tde.gui.lngs.get("Processor.Audio"));
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.Volume"), "Volume",true);
 		aFolder = createFolder(tree, tde.gui.lngs.get("Processor.Expert"));
@@ -98,6 +102,10 @@ public class ProcessorLibGUI extends TreeView {
 			//A depth map processor on a clip without depth map: propose to compute it
 			if(aNewP != null) {
 				tde.gui.display.asyncExec(() -> DepthmapConvertGUI.checkNewProcessor(tde, aClip, aNewP));
+			}
+			//Subtitles: choose their file at once
+			if(aNewP instanceof Subtitles) {
+				tde.gui.display.asyncExec(() -> SubtitlesGUI.chooseFile(tde, (Subtitles)aNewP));
 			}
 		});
 	}

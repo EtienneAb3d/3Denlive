@@ -18,6 +18,12 @@ public class MediaList extends Drawable {
 	static final String SVG_FILE_RE = ".*[.]svg";
 	public static final String AUDIO_FILE_RE = ".*[.](mp3|wav|wave|ogg|oga|opus|flac|aac|m4a|wma|aif|aiff|ac3|mka)";
 	public Vector<Media> mediaList = new Vector<Media>();
+	//Trash buttons of the medias, where they were drawn last (control coordinates)
+	java.util.Map<Media,Rectangle> trashRects = new java.util.IdentityHashMap<Media,Rectangle>();
+	static final int TRASH_MARGIN = 4;
+	//Mouse position over the list (hover frame of the trash buttons), -1 outside
+	public int hoverX = -1;
+	public int hoverY = -1;
 	
 	public MediaList(TDenlive aTDe) {
 		super(aTDe);
@@ -217,13 +223,64 @@ public class MediaList extends Drawable {
 		tde.updateFirstMediaRatio();
 	}
 
+	/**
+	 * Remove a media from the list (its clips must be removed from the time lines before, see
+	 * TimeLineStack.releaseMedia())
+	 */
+	public void removeMedia(Media aMedia) {
+		synchronized (mediaList) {
+			int aIdx = mediaList.indexOf(aMedia);
+			if(aIdx >= 0) {
+				mediaList.remove(aIdx);
+			}
+		}
+		synchronized (trashRects) {
+			trashRects.clear();
+		}
+		tde.selected.medias.remove(aMedia);
+		tde.updateFirstMediaRatio();
+	}
+
+	/**
+	 * Media whose trash button is at (aX,aY) (control coordinates), null if none
+	 */
+	public Media trashAt(int aX,int aY) {
+		synchronized (trashRects) {
+			for(java.util.Map.Entry<Media,Rectangle> aE : trashRects.entrySet()) {
+				if(aE.getValue().contains(aX, aY) && mediaList.contains(aE.getKey())) {
+					return aE.getKey();
+				}
+			}
+		}
+		return null;
+	}
+
 	public Rectangle drawSwt(GC aGC,int aX, int aY,Rectangle aClippingR) {
 		int aW = 0;
 		int aH = 0;
+		org.eclipse.swt.graphics.Image aTrash = tde.gui.imgsSwt.getIcon("trash.png");
+		Rectangle aTB = aTrash.getBounds();
 		
+		synchronized (trashRects) {
+			trashRects.clear();
+		}
 		synchronized (mediaList) {
 			for(Media aM : mediaList) {
+				int aRowY = aY+aH;
 				Rectangle aR = aM.drawSwt(aGC, aX, aY+aH,aClippingR);
+				//Trash button at the right of the visible part of the row
+				Rectangle aTR = new Rectangle(aClippingR.x+aClippingR.width-aTB.width-TRASH_MARGIN, aRowY+TRASH_MARGIN, aTB.width, aTB.height);
+				aGC.drawImage(aTrash, aTR.x, aTR.y);
+				aTR = new Rectangle(aTR.x-TRASH_MARGIN/2, aTR.y-TRASH_MARGIN/2, aTR.width+TRASH_MARGIN, aTR.height+TRASH_MARGIN);
+				if(aTR.contains(hoverX, hoverY)) {
+					//Hover frame of the button
+					aGC.setForeground(tde.gui.colorsSwt.LIGHTGRAY);
+					aGC.setLineWidth(1);
+					aGC.drawRectangle(aTR.x, aTR.y, aTR.width-1, aTR.height-1);
+				}
+				synchronized (trashRects) {
+					trashRects.put(aM, aTR);
+				}
 				aH += aR.height;
 				if(aW < aR.width) {
 					aW = aR.width;

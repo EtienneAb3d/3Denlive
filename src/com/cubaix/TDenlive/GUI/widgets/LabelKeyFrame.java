@@ -2,6 +2,7 @@ package com.cubaix.TDenlive.GUI.widgets;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
@@ -61,12 +62,36 @@ public abstract class LabelKeyFrame extends Widget {
 	}
 
 	/**
+	 * Key whose values the widgets show at the time cursor, aKey being the selected key (left of the cursor).
+	 * Automatic mode: the values interpolated at the cursor (Processor.DISPLAY_KEY), unless a key is
+	 * exactly there or the cursor is outside the clip. Manual mode: aKey.
+	 */
+	public int displayKey(int aKey) {
+		if(!proc.autoKey || aKey < 0) {
+			return aKey;
+		}
+		long aTimePos = tde.timeLineStack.getTimePosMS();
+		Clip aClip = (Clip)proc.targetMedia;
+		if(aKey < proc.getNbKeys() && proc.getTime(aKey)+aClip.getKeysOriginMS() == aTimePos) {
+			return aKey;
+		}
+		if(aTimePos < aClip.getStartTimeMS() || aTimePos > aClip.getStartTimeMS()+aClip.getDurationMS()) {
+			return aKey;
+		}
+		return proc.setDisplayKeyGT(aTimePos) ? Processor.DISPLAY_KEY : aKey;
+	}
+
+	/**
 	 * Key to modify for a parameter change at the time cursor: the key exactly at the cursor,
 	 * otherwise a new key inserted there (interpolated values) and selected.
 	 * Outside the clip, the selected key.
 	 * The widgets are refreshed from the key after the current event, once the change is stored.
 	 */
 	public int editKey() {
+		if(!proc.autoKey) {
+			//Manual mode: the selected key (left of the time cursor)
+			return kf.getSelection();
+		}
 		long aTimePos = tde.timeLineStack.getTimePosMS();
 		long aOrigin = ((Clip)proc.targetMedia).getKeysOriginMS();
 		int aKey = proc.getPrevKeyGT(aTimePos);
@@ -104,6 +129,28 @@ public abstract class LabelKeyFrame extends Widget {
 		container.setLayout(aGL);
 		container.setBackground(tde.gui.colorsSwt.WHITE);
 		container.setForeground(tde.gui.colorsSwt.CUBAIX_BLUE);
+
+		//Key frames mode of this processor, above its K row
+		Button aAutoKeyCB = new Button(container, SWT.CHECK);
+		tde.gui.applyColorFont(aAutoKeyCB);
+		aAutoKeyCB.setBackground(tde.gui.colorsSwt.WHITE);
+		GridData aACGD = new GridData(GridData.FILL_HORIZONTAL);
+		aACGD.horizontalSpan = 6;
+		aACGD.heightHint = tde.gui.h(20);
+		aAutoKeyCB.setLayoutData(aACGD);
+		aAutoKeyCB.setText(tde.gui.lngs.get("Processor.AutoKey"));
+		tde.gui.tip(aAutoKeyCB, "AutoKey");
+		aAutoKeyCB.setSelection(proc.autoKey);
+		aAutoKeyCB.addListener(SWT.Selection, e -> {
+			proc.autoKey = aAutoKeyCB.getSelection();
+			//Selected key mark, and the values shown: interpolated or of the selected key
+			kf.container.redraw();
+			int aKey = kf.getSelection();
+			if(aKey >= 0) {
+				change(displayKey(aKey));
+			}
+			tde.gui.monitorGUI.redraw();
+		});
 
 		Composite aSpace = new Composite(container, SWT.SEPARATOR);
 		tde.gui.applyColorFont(aSpace);

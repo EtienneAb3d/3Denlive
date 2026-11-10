@@ -28,6 +28,7 @@ public class DepthmapGUI extends ProcessorGUI {
 	LabelScale xLS = null;
 	LabelScale dLS = null;
 	LabelScale pLS = null;
+	LabelScale mLS = null;
 
 	public DepthmapGUI(TDenlive aTDe, Composite aParent,Processor aP) {
 		super(aTDe, aParent,aP);
@@ -89,6 +90,7 @@ public class DepthmapGUI extends ProcessorGUI {
 					dLS.setSelection((int)(-pl.getD(aValue)*30000));
 					xLS.setSelection((int)(pl.getX(aValue)*1000));
 					pLS.setSelection((int)(pl.getP(aValue)*10000));
+					mLS.setSelection((int)Math.round(pl.getM(aValue)*100));
 
 				}
 			}
@@ -150,7 +152,17 @@ public class DepthmapGUI extends ProcessorGUI {
 				}
 			}
 		}.tip("DepthP");
+		mLS = new LabelScale(tde,wgt,"M",0,0,100,(int)Math.round(pl.getM(aSelectedKey)*100)) {
+			@Override
+			public void change(int aValue) {
+				if(lkf.getSelection() >= 0) {
+					pl.setM(lkf.editKey(),aValue/100.0);
+					tde.gui.monitorGUI.redraw();
+				}
+			}
+		}.tip("DepthM");
 		
+		lkf.change(lkf.displayKey(lkf.getSelection()));
 		tde.timeLineStack.addTimeListener(this);
 	}
 	
@@ -170,10 +182,12 @@ public class DepthmapGUI extends ProcessorGUI {
 			@Override
 			public void run() {
 				lkf.setSelection(aKey);
+				int aShow = lkf.displayKey(aKey);
 				lkf.checkAddMode(tde.timeLineStack.getTimePosMS());
-				dLS.setSelection((int)(-pl.getD(aKey)*30000));
-				xLS.setSelection((int)(pl.getX(aKey)*1000));
-				pLS.setSelection((int)(pl.getP(aKey)*10000));
+				dLS.setSelection((int)(-pl.getD(aShow)*30000));
+				xLS.setSelection((int)(pl.getX(aShow)*1000));
+				pLS.setSelection((int)(pl.getP(aShow)*10000));
+				mLS.setSelection((int)Math.round(pl.getM(aShow)*100));
 			}
 		});
 	}

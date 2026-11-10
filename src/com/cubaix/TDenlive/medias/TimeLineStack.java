@@ -17,6 +17,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import com.cubaix.TDenlive.TDConfig;
 import com.cubaix.TDenlive.TDenlive;
 import com.cubaix.TDenlive.GUI.Drawable;
+import com.cubaix.TDenlive.processors.DepthmapStereo;
 import com.cubaix.TDenlive.processors.Processor;
 import com.cubaix.TDenlive.utils.ImageUtils;
 import com.cubaix.TDenlive.utils.StringUtils;
@@ -35,6 +36,13 @@ public class TimeLineStack extends Media {
 	public Rectangle addBounds = null;
 	public Rectangle soundBounds = null;
 	public Rectangle rulerBounds = null;
+	//Drop of a media dragged from the media list (see setDropPreview()): where its clip would go, drawn
+	volatile VideoTimeLine dropLine = null;
+	volatile long dropStartMS = 0;
+	volatile long dropDurationMS = 0;
+
+	//TEMPORARY: trace of the composition of the lines (left view), to be removed
+	static final boolean _TRACE_COMPOSE = true;
 
 	public TimeLineStack(TDenlive aTDe) {
 		super(aTDe);
@@ -103,6 +111,26 @@ public class TimeLineStack extends Media {
 		}
 	}
 	
+	/**
+	 * Moves a whole line (with its clips and settings) up (drawn higher: index + 1) or down in the stack
+	 * of its kind (video / audio); the lines are named again by their place (V1.., A1..)
+	 */
+	public void moveLine(VideoTimeLine aTL,boolean aUp) {
+		boolean aAudio = aTL instanceof AudioTimeLine;
+		@SuppressWarnings("unchecked")
+		Vector<VideoTimeLine> aStack = aAudio ? (Vector<VideoTimeLine>)(Vector<?>)audioTimeLineStack : videoTimeLineStack;
+		int aIdx = aStack.indexOf(aTL);
+		int aNew = aIdx+(aUp ? 1 : -1);
+		if(aIdx < 0 || aNew < 0 || aNew >= aStack.size()) {
+			return;
+		}
+		aStack.set(aIdx, aStack.elementAt(aNew));
+		aStack.set(aNew, aTL);
+		for(int t = 0;t < aStack.size();t++) {
+			aStack.elementAt(t).setName((aAudio ? "A" : "V")+(t+1));
+		}
+	}
+
 	public AudioTimeLine addAudioTimeLine() {
 		AudioTimeLine aTL = new AudioTimeLine(tde, "A"+(audioTimeLineStack.size()+1));
 		audioTimeLineStack.add(aTL);
@@ -215,6 +243,128 @@ public class TimeLineStack extends Media {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Time line (video or audio) drawn at this height of the time line panel, null if none
+	 */
+	public VideoTimeLine getLineAtY(int aY) {
+		Vector<VideoTimeLine> aTLs = new Vector<VideoTimeLine>(videoTimeLineStack);
+		aTLs.addAll(audioTimeLineStack);
+		for(VideoTimeLine aTL : aTLs) {
+			Rectangle aB = aTL.bounds;
+			if(aB != null && aY >= aB.y && aY < aB.y+aB.height) {
+				return aTL;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Time of the montage at this abscissa of the time line panel (0 at least)
+	 */
+	public long getTimeAtX(int aX) {
+		if(rulerBounds == null) {
+			return 0;
+		}
+		return Math.max(0, Math.round((aX-rulerBounds.x)/pixPerMS));
+	}
+
+	/**
+	 * Line which receives aMedia dropped on aLine, null if refused: a sound goes to an audio line only;
+	 * on an audio line, a video gives its sound only (if it has one)
+	 */
+	VideoTimeLine dropLineFor(Media aMedia,VideoTimeLine aLine) {
+		if(aMedia == null || aLine == null) {
+			return null;
+		}
+		boolean aAudioLine = aLine instanceof AudioTimeLine;
+		if(aMedia instanceof AudioMedia) {
+			return aAudioLine ? aLine : null;
+		}
+		if(aAudioLine && aMedia.getAudioReader() == null) {
+			return null;
+		}
+		return aLine;
+	}
+
+	/**
+	 * Start of a clip of aMedia dropped at this abscissa: sticky edges, like a clip move
+	 */
+	long dropStartMS(Media aMedia,int aX) {
+		long aStart = getTimeAtX(aX);
+		long aSnapMS = Math.round(8/pixPerMS);
+		return Math.max(0, snapMoveMS(aStart, aStart+aMedia.durationMS, null, aSnapMS));
+	}
+
+	/**
+	 * Shows where aMedia dragged at (aX, aY) would be dropped. False (and nothing shown) if it can't be
+	 */
+	public boolean setDropPreview(Media aMedia,int aX,int aY) {
+		VideoTimeLine aLine = dropLineFor(aMedia, getLineAtY(aY));
+		if(aLine == null) {
+			dropLine = null;
+			return false;
+		}
+		dropStartMS = dropStartMS(aMedia, aX);
+		dropDurationMS = aMedia.durationMS;
+		dropLine = aLine;
+		return true;
+	}
+
+	public void clearDropPreview() {
+		dropLine = null;
+	}
+
+	/**
+	 * Adds a clip of aMedia on the line at (aX, aY), starting at the time of aX (sticky edges), and
+	 * selects it. Returns the clip, null if the media can't go there
+	 */
+	public Clip dropMedia(Media aMedia,int aX,int aY) {
+		dropLine = null;
+		VideoTimeLine aLine = dropLineFor(aMedia, getLineAtY(aY));
+		if(aLine == null) {
+			return null;
+		}
+		Clip aClip = aLine.newClip(aMedia);
+		aClip.setStartTimeMS(dropStartMS(aMedia, aX));
+		aLine.addClip(aClip);
+		//The new clip is the only selection
+		select(-1, -1, true);
+		tde.selected.clips.clear();
+		tde.selected.timeLines.clear();
+		aClip.selState = Drawable.THUMBSELSTATE_SELECTED;
+		tde.selected.clips.add(aClip);
+		return aClip;
+	}
+
+	/**
+	 * Time line which holds aClip, null if none
+	 */
+	public VideoTimeLine getLineOf(Clip aClip) {
+		Vector<VideoTimeLine> aTLs = new Vector<VideoTimeLine>(videoTimeLineStack);
+		aTLs.addAll(audioTimeLineStack);
+		for(VideoTimeLine aTL : aTLs) {
+			if(aTL.containsClip(aClip)) {
+				return aTL;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Moves aClip to aLine, of the same kind (video / audio: their clips have different processors).
+	 * Returns true if moved
+	 */
+	public boolean moveClipToLine(Clip aClip,VideoTimeLine aLine) {
+		VideoTimeLine aFrom = getLineOf(aClip);
+		if(aFrom == null || aLine == null || aFrom == aLine
+				|| (aFrom instanceof AudioTimeLine) != (aLine instanceof AudioTimeLine)) {
+			return false;
+		}
+		aFrom.trashClip(aClip);
+		aLine.addClip(aClip);
+		return true;
 	}
 
 	public boolean isAudioClip(Clip aClip) {
@@ -437,6 +587,59 @@ public class TimeLineStack extends Media {
 	}
 	
 	/**
+	 * Clips of the time lines (video and audio) that show or play aMedia
+	 */
+	public Vector<Clip> clipsOf(Media aMedia) {
+		Vector<Clip> aClips = new Vector<Clip>();
+		Vector<VideoTimeLine> aTLs = new Vector<VideoTimeLine>(videoTimeLineStack);
+		aTLs.addAll(audioTimeLineStack);
+		for(VideoTimeLine aTL : aTLs) {
+			for(Clip aC : new Vector<Clip>(aTL.clipList)) {
+				if(aC.getMedia() == aMedia && !aClips.contains(aC)) {
+					aClips.add(aC);
+				}
+			}
+		}
+		return aClips;
+	}
+
+	/**
+	 * Clips whose DepthmapStereo uses aMedia as depth map (in one of its keys)
+	 */
+	public Vector<Clip> depthUsesOf(Media aMedia) {
+		Vector<Clip> aClips = new Vector<Clip>();
+		Vector<VideoTimeLine> aTLs = new Vector<VideoTimeLine>(videoTimeLineStack);
+		aTLs.addAll(audioTimeLineStack);
+		for(VideoTimeLine aTL : aTLs) {
+			for(Clip aC : new Vector<Clip>(aTL.clipList)) {
+				for(Processor aP : new Vector<Processor>(aC.getProcessors())) {
+					if(aP instanceof DepthmapStereo && ((DepthmapStereo)aP).usesDepthMedia(aMedia) && !aClips.contains(aC)) {
+						aClips.add(aC);
+					}
+				}
+			}
+		}
+		return aClips;
+	}
+
+	/**
+	 * aMedia leaves the media list: its clips are removed from the time lines (with their twins),
+	 * and the DepthmapStereo keys that use it as depth map no longer use it
+	 */
+	public void releaseMedia(Media aMedia) {
+		for(Clip aC : depthUsesOf(aMedia)) {
+			for(Processor aP : new Vector<Processor>(aC.getProcessors())) {
+				if(aP instanceof DepthmapStereo) {
+					((DepthmapStereo)aP).releaseDepthMedia(aMedia);
+				}
+			}
+		}
+		for(Clip aC : clipsOf(aMedia)) {
+			trashClip(aC);
+		}
+	}
+
+	/**
 	 * Remove a clip from all the time lines, with its twins (sound of a video, or video of a sound)
 	 */
 	public void trashClip(Clip aClip) {
@@ -600,6 +803,8 @@ public class TimeLineStack extends Media {
 		
 		aClippingR.y = rulerBounds.height;
 		for(int t = videoTimeLineStack.size()-1;t >= 0;t--) {
+			videoTimeLineStack.elementAt(t).canMoveUp = t < videoTimeLineStack.size()-1;
+			videoTimeLineStack.elementAt(t).canMoveDown = t > 0;
 			Rectangle aR = videoTimeLineStack.elementAt(t).drawAwt(aGC, aX, aY+aH,aClippingR);
 			aGC.setClip(aClippingR.x,aClippingR.y,aClippingR.width,aClippingR.height);
 			aH += aR.height;
@@ -614,6 +819,8 @@ public class TimeLineStack extends Media {
 		}
 		//Like the video lines: the last added on top, A1 at the bottom
 		for(int t = audioTimeLineStack.size()-1;t >= 0;t--) {
+			audioTimeLineStack.elementAt(t).canMoveUp = t < audioTimeLineStack.size()-1;
+			audioTimeLineStack.elementAt(t).canMoveDown = t > 0;
 			Rectangle aR = audioTimeLineStack.elementAt(t).drawAwt(aGC, aX, aY+aH,aClippingR);
 			aGC.setClip(aClippingR.x,aClippingR.y,aClippingR.width,aClippingR.height);
 			aH += aR.height;
@@ -630,6 +837,18 @@ public class TimeLineStack extends Media {
 		//Cursor
 		aGC.setClip(tde.config.thumbW+1,0
 				,aClippingR.width-aClippingR.x-tde.config.thumbW-1,aClippingR.height);
+		//Place of a media dragged from the media list
+		VideoTimeLine aDropLine = dropLine;
+		if(aDropLine != null && aDropLine.bounds != null) {
+			int aDropX = aX+tde.config.thumbW+(int)(dropStartMS*pixPerMS);
+			int aDropW = Math.max(4, (int)(dropDurationMS*pixPerMS));
+			aGC.setColor(new Color(121,44,125,60));
+			aGC.fillRect(aDropX, aDropLine.bounds.y, aDropW, aDropLine.bounds.height);
+			aGC.setColor(tde.gui.colorsAwt.CUBAIX_PINK);
+			aGC.setStroke(new java.awt.BasicStroke(2));
+			aGC.drawRect(aDropX+1, aDropLine.bounds.y+1, aDropW-2, aDropLine.bounds.height-2);
+			aGC.setStroke(new java.awt.BasicStroke(1));
+		}
 		aGC.setColor(tde.gui.colorsAwt.CUBAIX_PINK);
 		int aTimePosX = aX + tde.config.thumbW+(int)(requestedTimePosMS*(double)pixPerMS);
 		aGC.drawLine(aTimePosX, aHC*2, aTimePosX, aY+aH);
@@ -653,6 +872,18 @@ public class TimeLineStack extends Media {
 		if(rulerBounds != null && rulerBounds.contains(aX,aY)) {
 			requestedTimePosMS = (long)((aX - rulerBounds.x)/(double)pixPerMS);
 			return true;
+		}
+		Vector<VideoTimeLine> aAllTLs = new Vector<VideoTimeLine>(videoTimeLineStack);
+		aAllTLs.addAll(audioTimeLineStack);
+		for(VideoTimeLine aTL : aAllTLs) {
+			if(aTL.lineUpBounds != null && aTL.lineUpBounds.contains(aX,aY)) {
+				moveLine(aTL, true);
+				return true;
+			}
+			if(aTL.lineDownBounds != null && aTL.lineDownBounds.contains(aX,aY)) {
+				moveLine(aTL, false);
+				return true;
+			}
 		}
 		for(VideoTimeLine aTL : videoTimeLineStack) {
 			if(aTL.selectWidget(aX, aY)) {
@@ -772,6 +1003,24 @@ public class TimeLineStack extends Media {
 							continue;
 						}
 						BufferedImage aBI = aTL.getFinalLeft(aProcessingMode, aTime);
+						if(_TRACE_COMPOSE) {
+							//TEMPORARY trace (gray clip not shown after a drop)
+							StringBuilder aTr = new StringBuilder("COMPOSE t="+aTime+" mode="+aProcessingMode+" line="+aTL.getName()+" clips=");
+							for(Clip aC : aTL.clipList) {
+								aTr.append("[uid="+aC.UID+" "+aC.media.getClass().getSimpleName()+" start="+aC.getStartTimeMS()+" dur="+aC.getDurationMS()
+									+" alpha="+aC.getAlpha(aTime)+" procs="+aC.getProcessors().size()+"]");
+							}
+							if(aBI == null) {
+								aTr.append(" img=null");
+							}
+							else {
+								aTr.append(" img="+aBI.getWidth()+"x"+aBI.getHeight()+" type="+aBI.getType()
+									+" center=#"+Integer.toHexString(aBI.getRGB(aBI.getWidth()/2, aBI.getHeight()/2))
+									+" corner=#"+Integer.toHexString(aBI.getRGB(0, 0)));
+							}
+							aTr.append(" lineAlpha="+aTL.getAlpha(aTime));
+							System.out.println(aTr);
+						}
 						if(aBI == null) {
 							continue;
 						}

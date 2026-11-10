@@ -88,6 +88,7 @@ public class PlacerGUI extends ProcessorGUI {
 			}
 		}.tip("PlaceS");
 		
+		lkf.change(lkf.displayKey(lkf.getSelection()));
 		tde.timeLineStack.addTimeListener(this);
 	}
 	
@@ -107,10 +108,11 @@ public class PlacerGUI extends ProcessorGUI {
 			@Override
 			public void run() {
 				lkf.setSelection(aKey);
+				int aShow = lkf.displayKey(aKey);
 				lkf.checkAddMode(tde.timeLineStack.getTimePosMS());
-				xLS.setSelection((int)(pl.getX(aKey)*10000));
-				yLS.setSelection((int)(-pl.getY(aKey)*10000));
-				sLS.setSelection(scale2bar(pl.getScale(aKey)));
+				xLS.setSelection((int)(pl.getX(aShow)*10000));
+				yLS.setSelection((int)(-pl.getY(aShow)*10000));
+				sLS.setSelection(scale2bar(pl.getScale(aShow)));
 			}
 		});
 	}

@@ -277,87 +277,106 @@ public class StereoAligner extends Processor {
 	}
 	
 	public double getXL(int aKey) {
-		return keys.elementAt(aKey).xL;
+		return key(aKey).xL;
 	}
 
 	public double getYL(int aKey) {
-		return keys.elementAt(aKey).yL;
+		return key(aKey).yL;
 	}
 
 	public double getXR(int aKey) {
-		return keys.elementAt(aKey).xR;
+		return key(aKey).xR;
 	}
 
 	public double getYR(int aKey) {
-		return keys.elementAt(aKey).yR;
+		return key(aKey).yR;
 	}
 
 	public double getWL(int aKey) {
-		return keys.elementAt(aKey).wL;
+		return key(aKey).wL;
 	}
 
 	public double getHL(int aKey) {
-		return keys.elementAt(aKey).hL;
+		return key(aKey).hL;
 	}
 
 	public double getWR(int aKey) {
-		return keys.elementAt(aKey).wR;
+		return key(aKey).wR;
 	}
 
 	public double getHR(int aKey) {
-		return keys.elementAt(aKey).hR;
+		return key(aKey).hR;
 	}
 
 	public double getRL(int aKey) {
-		return keys.elementAt(aKey).rL;
+		return key(aKey).rL;
 	}
 
 	public double getRR(int aKey) {
-		return keys.elementAt(aKey).rR;
+		return key(aKey).rR;
 	}
 
 	public void setXL(int aKey,double aV) {
-		keys.elementAt(aKey).xL = aV;
+		key(aKey).xL = aV;
 	}
 
 	public void setYL(int aKey,double aV) {
-		keys.elementAt(aKey).yL = aV;
+		key(aKey).yL = aV;
 	}
 
 	public void setXR(int aKey,double aV) {
-		keys.elementAt(aKey).xR = aV;
+		key(aKey).xR = aV;
 	}
 
 	public void setYR(int aKey,double aV) {
-		keys.elementAt(aKey).yR = aV;
+		key(aKey).yR = aV;
 	}
 
 	public void setWL(int aKey,double aV) {
-		keys.elementAt(aKey).wL = aV;
+		key(aKey).wL = aV;
 	}
 
 	public void setHL(int aKey,double aV) {
-		keys.elementAt(aKey).hL = aV;
+		key(aKey).hL = aV;
 	}
 
 	public void setWR(int aKey,double aV) {
-		keys.elementAt(aKey).wR = aV;
+		key(aKey).wR = aV;
 	}
 
 	public void setHR(int aKey,double aV) {
-		keys.elementAt(aKey).hR = aV;
+		key(aKey).hR = aV;
 	}
 
 	public void setRL(int aKey,double aV) {
-		keys.elementAt(aKey).rL = aV;
+		key(aKey).rL = aV;
 	}
 
 	public void setRR(int aKey,double aV) {
-		keys.elementAt(aKey).rR = aV;
+		key(aKey).rR = aV;
 	}
 
 	public long getTime(int aKey) {
-		return keys.elementAt(aKey).time;
+		return key(aKey).time;
+	}
+
+	/** Values interpolated at the time cursor, for the display (index DISPLAY_KEY, UI thread only) */
+	Key displayKey = null;
+
+	@Override
+	public boolean setDisplayKeyGT(long aTime) {
+		try {
+			displayKey = getInterKeyGT(aTime);
+		}
+		catch(Throwable t) {
+			displayKey = null;
+		}
+		return displayKey != null;
+	}
+
+	/** The key aKey, or the display key */
+	Key key(int aKey) {
+		return aKey == DISPLAY_KEY && displayKey != null ? displayKey : keys.elementAt(aKey);
 	}
 
 	Key getInterKeyGT(long aTimePos){

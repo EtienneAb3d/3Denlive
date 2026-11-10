@@ -45,6 +45,20 @@ public abstract class Processor {
 	public int getPrevKeyGT(long aTime){return -1;}
 	public int getNextKeyGT(long aTime){return -1;}
 	public long getTime(int aKey) {return -1;}
+	/** Key index of the values interpolated at the time cursor, for the display only (see setDisplayKeyGT()) */
+	public static final int DISPLAY_KEY = Integer.MAX_VALUE;
+	/**
+	 * Key frames of this processor: a parameter change adds a key at the time cursor, the widgets show the
+	 * interpolated values (true, default); else a change modifies the key left of the cursor, whose values
+	 * the widgets show. Saved by the clip (<ProcAutoKey> after the processor, only when false)
+	 */
+	public boolean autoKey = true;
+	/**
+	 * Computes the display key: the values interpolated at aTime, read with the index DISPLAY_KEY
+	 * by the getters (never by the setters). The keys of the processor are not changed.
+	 * @return false if the processor has no display key
+	 */
+	public boolean setDisplayKeyGT(long aTime) {return false;}
 	public abstract Image process2Swt(Media aMedia,int aProcessingMode,Rectangle aTargetSize,long aTime);
 	public abstract void process2Awt(Media aMedia,int aProcessingMode,long aTime);
 	/**

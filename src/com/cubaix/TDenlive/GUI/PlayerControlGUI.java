@@ -7,6 +7,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 
 import com.cubaix.TDenlive.TDenlive;
 import com.cubaix.TDenlive.audio.AudioPlayer;
@@ -20,8 +21,21 @@ public class PlayerControlGUI extends CompositePanel {
 	volatile boolean playing = false;
 	//Incremented at each start: a previous playing thread not yet ended stops by itself
 	volatile int playGen = 0;
+	//Paused: no playing thread, the cursor stays where it is, the buttons are those of the play
+	volatile boolean paused = false;
+	//Generation of the last playing thread that has ended (its end has been handled)
+	volatile int endedGen = 0;
+	//Media played or paused, and cursor position restored at the stop
+	Media playedMedia = null;
+	boolean playedIsLib = false;
+	long returnPosMS = 0;
 	Label playStop = null;
-	Label clock = null;
+	Label pause = null;
+	Text clock = null;
+	//True while the program sets the clock text (not a user input)
+	boolean settingClock = false;
+	//Step in seconds of the back / forward arrows
+	Text step = null;
 
 	public PlayerControlGUI(TDenlive aTDe, Composite aParent) {
 		super(aTDe, aParent);
@@ -36,11 +50,11 @@ public class PlayerControlGUI extends CompositePanel {
 		aTB.heightHint = tde.gui.h(25);
 		toolBar.setLayoutData(aTB);
 		tde.gui.applyColorFont(toolBar);
-		GridLayout aGL = new GridLayout(10, false);
+		GridLayout aGL = new GridLayout(16, false);
 		tde.gui.applyNoMargin(aGL);
 		toolBar.setLayout(aGL);
 
-		//Single button: play, and stop while playing
+		//Play button, which becomes the stop button while playing or paused
 		playStop = new Label(toolBar,SWT.NONE);
 		playStop.setAlignment(SWT.CENTER);
 		GridData aPlayGD = new GridData();
@@ -48,141 +62,76 @@ public class PlayerControlGUI extends CompositePanel {
 		aPlayGD.heightHint = tde.gui.h(25);
 		playStop.setLayoutData(aPlayGD);
 		tde.gui.applyColorFont(playStop);
-		setPlaying(false);
-		playStop.addMouseListener(new MouseListener() {
-			@Override
-			public void mouseUp(MouseEvent arg0) {
+		playStop.addListener(SWT.MouseDown, e -> {
+			if(playing || paused) {
+				stop();
+				return;
 			}
-			@Override
-			public void mouseDown(MouseEvent arg0) {
-				if(playing) {
-					setPlaying(false);
-					return;
-				}
-				setPlaying(true);
-				final int aGen = ++playGen;
-				//A library media shown in the monitor is played alone, otherwise the montage
-				Media aShown = tde.gui.monitorGUI.getMedia();
-				final boolean aIsLibMedia = aShown != null && tde.mediaList.mediaList.contains(aShown);
-				final Media aPlayed = aIsLibMedia ? aShown : tde.timeLineStack;
-				//Cursor position at the click, restored at the stop
-				final long aTimePosStart = aIsLibMedia ? aPlayed.getRequestedTimePosMS() : aPlayed.getTimePosMS();
-				tde.gui.monitorGUI.setMedia(aPlayed);
-				Thread aTh = new Thread(new Runnable() {
-					@Override
-					public void run() {
-						long aTimeStart = System.currentTimeMillis();
-						aPlayed.setRequestedTimePosMS(aTimePosStart);
-						//The sound card gives the time while playing, otherwise the system clock
-						AudioPlayer aAudio = aIsLibMedia ? new AudioPlayer(tde, aPlayed) : new AudioPlayer(tde);
-						boolean aAudioClock = aAudio.start(aTimePosStart);
-						final boolean[] aShownChanged = new boolean[] {false};
-						while(playing && aGen == playGen) {
-							long aTimeStartRedraw = System.currentTimeMillis();
-							tde.gui.display.syncExec(new Runnable() {
-								@Override
-								public void run() {
-									if(tde.gui.monitorGUI.getMedia() != aPlayed) {
-										//Another media or the montage clicked: stop playing this one
-										aShownChanged[0] = true;
-										return;
-									}
-									tde.gui.monitorGUI.redraw();
-									if(aIsLibMedia) {
-										showClock(aPlayed.getRequestedTimePosMS());
-									}
-									else {
-										tde.gui.timeLinesGUI.redraw();
-									}
-								}
-							});
-							if(aShownChanged[0]) {
-								tde.gui.display.syncExec(new Runnable() {
-									@Override
-									public void run() {
-										if(aGen == playGen && !playStop.isDisposed()) {
-											setPlaying(false);
-										}
-									}
-								});
-								break;
-							}
-							if(System.currentTimeMillis()-aTimeStartRedraw < 5) {
-								//No more than 200 fps at screen, CPU respect (certainly waiting for an image calculation)
-								try{
-									Thread.sleep(5);
-								}
-								catch(Throwable t) {
-									t.printStackTrace(System.err);
-								}
-							}
-							long aTimePosNew;
-							if(aAudioClock) {
-								//Images follow the sound (frames are skipped if the processing is too slow)
-								aTimePosNew = aAudio.getPositionMS();
-							}
-							else {
-								aTimePosNew = aTimePosStart+System.currentTimeMillis()-aTimeStart;
-								long aTimePosCur = aIsLibMedia ? aPlayed.getRequestedTimePosMS() : aPlayed.getTimePosMS();
-								if(aTimePosNew-aTimePosCur > 200) {
-									//Dilate time
-									aTimePosNew = aTimePosCur+200;
-								}
-							}
-							//Stop at the end of the media, or of the last clip of the montage
-							if(aTimePosNew >= aPlayed.getMaxTimePosMS()) {
-								tde.gui.display.syncExec(new Runnable() {
-									@Override
-									public void run() {
-										if(aGen == playGen && !playStop.isDisposed()) {
-											setPlaying(false);
-										}
-									}
-								});
-								break;
-							}
-							aPlayed.setRequestedTimePosMS(aTimePosNew);
-						}
-						aAudio.stop();
-						//Back to the start position, done here (the loop has ended, it no longer moves the cursor),
-						//unless a new play has started in the meantime
-						tde.gui.display.syncExec(new Runnable() {
-							@Override
-							public void run() {
-								if(aGen != playGen || playing || playStop.isDisposed()) {
-									return;
-								}
-								aPlayed.setRequestedTimePosMS(aTimePosStart);
-								if(tde.gui.monitorGUI.getMedia() == aPlayed) {
-									tde.gui.monitorGUI.redraw();
-									if(aIsLibMedia) {
-										showClock(aTimePosStart);
-									}
-								}
-								if(!aIsLibMedia) {
-									tde.gui.timeLinesGUI.redraw();
-								}
-							}
-						});
-					}
-				});
-				aTh.start();
+			//A library media shown in the monitor is played alone, otherwise the montage
+			Media aShown = tde.gui.monitorGUI.getMedia();
+			boolean aIsLibMedia = aShown != null && tde.mediaList.mediaList.contains(aShown);
+			Media aPlayed = aIsLibMedia ? aShown : tde.timeLineStack;
+			//Cursor position at the click (the requested one: the shown one may not be rendered yet), restored at the stop
+			long aTimePosStart = aPlayed.getRequestedTimePosMS();
+			startPlay(aPlayed, aIsLibMedia, aTimePosStart, aTimePosStart);
+		});
+
+		//Two-state pause button, shown while playing or paused: pressed = paused
+		pause = new Label(toolBar,SWT.NONE);
+		pause.setAlignment(SWT.CENTER);
+		pause.setImage(tde.gui.imgsSwt.getIcon("pause.png"));
+		GridData aPauseGD = new GridData();
+		aPauseGD.widthHint = 25;
+		aPauseGD.heightHint = tde.gui.h(25);
+		pause.setLayoutData(aPauseGD);
+		tde.gui.applyColorFont(pause);
+		pause.addListener(SWT.MouseDown, e -> {
+			if(paused) {
+				//Goes on from the current cursor position (it may have been moved during the pause)
+				long aFrom = playedMedia.getRequestedTimePosMS();
+				startPlay(playedMedia, playedIsLib, aFrom, returnPosMS);
 			}
-			@Override
-			public void mouseDoubleClick(MouseEvent arg0) {
+			else if(playing) {
+				//The playing thread ends without going back to the start position
+				paused = true;
+				playing = false;
+				updateButtons();
 			}
 		});
-		
-		clock = new Label(toolBar,SWT.NONE);
+		updateButtons();
+
+		//Editable clock: a valid time jumps there, an invalid one turns the field red
+		clock = framedField(SWT.CENTER);
 		clock.setText(StringUtils.time2Clock(0));
-		clock.setAlignment(SWT.CENTER);
-		tde.gui.applyColorFont(clock);
 		tde.gui.tip(clock, "Clock");
-		GridData aClockGD = new GridData();
+		GridData aClockGD = (GridData)clock.getParent().getLayoutData();
 		aClockGD.widthHint = Math.max(80, clock.computeSize(SWT.DEFAULT, SWT.DEFAULT).x + 8);
-		aClockGD.heightHint = tde.gui.h(12);
-		clock.setLayoutData(aClockGD);
-		
+		//Digits and separators only, at most the length of a clock
+		clock.addListener(SWT.Verify, e -> {
+			String aNew = clock.getText().substring(0, e.start) + e.text + clock.getText().substring(e.end);
+			e.doit = aNew.length() <= 11 && aNew.matches("[0-9:]*");
+		});
+		clock.addListener(SWT.Modify, e -> {
+			if(settingClock) {
+				return;
+			}
+			long aTime = StringUtils.clock2Time(clock.getText());
+			clock.setBackground(aTime < 0 ? tde.gui.colorsSwt.RED : tde.gui.colorsSwt.WHITE);
+			if(aTime >= 0) {
+				jumpTo(aTime);
+			}
+		});
+		//Enter: the typed time is taken, the field is left (it then follows the cursor again)
+		clock.addListener(SWT.DefaultSelection, e -> releaseClockFocus());
+		//Leaving the field with an invalid time: the current time is shown again
+		clock.addListener(SWT.FocusOut, e -> {
+			if(StringUtils.clock2Time(clock.getText()) < 0) {
+				Media aShown = tde.gui.monitorGUI.getMedia();
+				showClock(aShown != null && aShown != tde.timeLineStack && tde.mediaList.mediaList.contains(aShown)
+						? aShown.getRequestedTimePosMS() : tde.timeLineStack.getRequestedTimePosMS());
+			}
+		});
+
 		Label aStart = new Label(toolBar,SWT.NONE);
 		aStart.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 		aStart.setImage(tde.gui.imgsSwt.getIcon("arrowLeftWall.gif"));
@@ -195,7 +144,7 @@ public class PlayerControlGUI extends CompositePanel {
 		aLeft.setBackground(tde.gui.colorsSwt.WHITE);
 		tde.gui.tip(aLeft, "PrevFrame");
 		aLeft.addListener(SWT.MouseDown,e -> {
-			tde.timeLineStack.setRequestedTimePosMS(tde.timeLineStack.getTimePosMS()-(int)(1000.0/tde.config.outFps));
+			tde.timeLineStack.setRequestedTimePosMS(Math.max(0, tde.timeLineStack.getRequestedTimePosMS()-(int)(1000.0/tde.config.outFps)));
 			tde.gui.monitorGUI.redraw();
 		});
 		Label aRight = new Label(toolBar,SWT.NONE);
@@ -204,7 +153,7 @@ public class PlayerControlGUI extends CompositePanel {
 		aRight.setBackground(tde.gui.colorsSwt.WHITE);
 		tde.gui.tip(aRight, "NextFrame");
 		aRight.addListener(SWT.MouseDown,e -> {
-			tde.timeLineStack.setRequestedTimePosMS(tde.timeLineStack.getTimePosMS()+(int)(1000.0/tde.config.outFps));
+			tde.timeLineStack.setRequestedTimePosMS(tde.timeLineStack.getRequestedTimePosMS()+(int)(1000.0/tde.config.outFps));
 			tde.gui.monitorGUI.redraw();
 		});
 		Label aEnd = new Label(toolBar,SWT.NONE);
@@ -213,6 +162,38 @@ public class PlayerControlGUI extends CompositePanel {
 		aEnd.setBackground(tde.gui.colorsSwt.WHITE);
 		tde.gui.tip(aEnd, "ClipEnd");
 		aEnd.addListener(SWT.MouseDown,e -> goToTime(getStartEnd()[1]));
+
+		//Space of a button, then the step in seconds and its back / forward arrows
+		Label aStepSpace = new Label(toolBar,SWT.NONE);
+		tde.gui.applyColorFont(aStepSpace);
+		GridData aSSGD = new GridData();
+		aSSGD.widthHint = 25;
+		aStepSpace.setLayoutData(aSSGD);
+		step = framedField(SWT.RIGHT);
+		step.setText("1");
+		tde.gui.tip(step, "StepSeconds");
+		((GridData)step.getParent().getLayoutData()).widthHint = 40;
+		//Digits and one decimal separator only
+		step.addListener(SWT.Verify, e -> {
+			String aNew = step.getText().substring(0, e.start) + e.text + step.getText().substring(e.end);
+			e.doit = aNew.matches("[0-9]*([.,][0-9]*)?");
+		});
+		Label aStepUnit = new Label(toolBar,SWT.NONE);
+		aStepUnit.setText("s");
+		tde.gui.applyColorFont(aStepUnit);
+		aStepUnit.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+		Label aStepBack = new Label(toolBar,SWT.NONE);
+		aStepBack.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+		aStepBack.setImage(tde.gui.imgsSwt.getIcon("doubleArrowLeft.png"));
+		aStepBack.setBackground(tde.gui.colorsSwt.WHITE);
+		tde.gui.tip(aStepBack, "StepBack");
+		aStepBack.addListener(SWT.MouseDown,e -> stepBy(-1));
+		Label aStepForward = new Label(toolBar,SWT.NONE);
+		aStepForward.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+		aStepForward.setImage(tde.gui.imgsSwt.getIcon("doubleArrowRight.png"));
+		aStepForward.setBackground(tde.gui.colorsSwt.WHITE);
+		tde.gui.tip(aStepForward, "StepForward");
+		aStepForward.addListener(SWT.MouseDown,e -> stepBy(1));
 
 		Label aBlank = new Label(toolBar,SWT.NONE);
 		tde.gui.applyColorFont(aBlank);
@@ -307,21 +288,255 @@ public class PlayerControlGUI extends CompositePanel {
 	}
 
 	/**
-	 * Time shown by the clock (SWT thread)
+	 * Move the montage time cursor by aDir times the step in seconds (in the montage bounds)
 	 */
-	public void showClock(long aTimeMS) {
-		if(!clock.isDisposed()) {
-			clock.setText(StringUtils.time2Clock(aTimeMS));
+	void stepBy(int aDir) {
+		double aSec;
+		try {
+			aSec = Double.parseDouble(step.getText().replace(',', '.'));
+		}
+		catch(Throwable t) {
+			return;
+		}
+		long aTime = tde.timeLineStack.getRequestedTimePosMS() + aDir*Math.round(aSec*1000);
+		goToTime(Math.max(0, Math.min(aTime, Math.max(0, tde.timeLineStack.getMaxTimePosMS()-1))));
+	}
+
+	/**
+	 * Text field with a gray 1 px frame (the native border is hardly visible on macOS)
+	 */
+	Text framedField(int aStyle) {
+		Text aText = tde.gui.framedText(toolBar, aStyle);
+		aText.getParent().setBackground(tde.gui.colorsSwt.GRAY);
+		aText.getParent().setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+		return aText;
+	}
+
+	/**
+	 * Focus out of the clock (to the time lines), so that its text follows the time cursor again
+	 */
+	void releaseClockFocus() {
+		if(!clock.isDisposed() && clock.isFocusControl() && tde.gui.timeLinesGUI != null
+				&& !tde.gui.timeLinesGUI.canvas.isDisposed()) {
+			tde.gui.timeLinesGUI.canvas.setFocus();
 		}
 	}
 
 	/**
-	 * Playing state, with the icon and the help message of the play / stop button (SWT thread)
+	 * Time typed in the clock: the library media shown in the monitor (whose time the clock shows),
+	 * otherwise the montage, goes there (in its bounds)
+	 */
+	void jumpTo(long aTime) {
+		Media aShown = tde.gui.monitorGUI.getMedia();
+		Media aTarget = aShown != null && aShown != tde.timeLineStack && tde.mediaList.mediaList.contains(aShown)
+				? aShown : tde.timeLineStack;
+		aTime = Math.max(0, Math.min(aTime, Math.max(0, aTarget.getMaxTimePosMS()-1)));
+		if(aTarget == tde.timeLineStack) {
+			goToTime(aTime);
+		}
+		else {
+			aTarget.setRequestedTimePosMS(aTime);
+			tde.gui.monitorGUI.redraw();
+		}
+	}
+
+	/**
+	 * Time shown by the clock (SWT thread). An invalid time being typed is left as it is.
+	 */
+	public void showClock(long aTimeMS) {
+		if(clock.isDisposed()) {
+			return;
+		}
+		if(clock.isFocusControl() && StringUtils.clock2Time(clock.getText()) < 0) {
+			return;
+		}
+		String aText = StringUtils.time2Clock(aTimeMS);
+		if(aText.equals(clock.getText())) {
+			return;
+		}
+		settingClock = true;
+		try {
+			int aCaret = clock.getCaretPosition();
+			clock.setText(aText);
+			clock.setBackground(tde.gui.colorsSwt.WHITE);
+			if(clock.isFocusControl()) {
+				clock.setSelection(Math.min(aCaret, aText.length()));
+			}
+		}
+		finally {
+			settingClock = false;
+		}
+	}
+
+	/**
+	 * Play aPlayed from aFromPos; the stop goes back to aReturnPos (SWT thread)
+	 */
+	void startPlay(final Media aPlayed, final boolean aIsLibMedia, final long aFromPos, final long aReturnPos) {
+		//A clock being edited is not refreshed by macOS: the playing time must show
+		releaseClockFocus();
+		playedMedia = aPlayed;
+		playedIsLib = aIsLibMedia;
+		returnPosMS = aReturnPos;
+		paused = false;
+		playing = true;
+		updateButtons();
+		final int aGen = ++playGen;
+		tde.gui.monitorGUI.setMedia(aPlayed);
+		Thread aTh = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				long aTimeStart = System.currentTimeMillis();
+				aPlayed.setRequestedTimePosMS(aFromPos);
+				//The sound card gives the time while playing, otherwise the system clock
+				AudioPlayer aAudio = aIsLibMedia ? new AudioPlayer(tde, aPlayed) : new AudioPlayer(tde);
+				boolean aAudioClock = aAudio.start(aFromPos);
+				final boolean[] aShownChanged = new boolean[] {false};
+				while(playing && aGen == playGen) {
+					long aTimeStartRedraw = System.currentTimeMillis();
+					tde.gui.display.syncExec(new Runnable() {
+						@Override
+						public void run() {
+							if(tde.gui.monitorGUI.getMedia() != aPlayed) {
+								//Another media or the montage clicked: stop playing this one
+								aShownChanged[0] = true;
+								return;
+							}
+							tde.gui.monitorGUI.redraw();
+							if(aIsLibMedia) {
+								showClock(aPlayed.getRequestedTimePosMS());
+							}
+							else {
+								tde.gui.timeLinesGUI.redraw();
+							}
+						}
+					});
+					if(aShownChanged[0]) {
+						tde.gui.display.syncExec(new Runnable() {
+							@Override
+							public void run() {
+								if(aGen == playGen && !playStop.isDisposed()) {
+									setPlaying(false);
+								}
+							}
+						});
+						break;
+					}
+					if(System.currentTimeMillis()-aTimeStartRedraw < 5) {
+						//No more than 200 fps at screen, CPU respect (certainly waiting for an image calculation)
+						try{
+							Thread.sleep(5);
+						}
+						catch(Throwable t) {
+							t.printStackTrace(System.err);
+						}
+					}
+					if(!playing || aGen != playGen) {
+						//Paused or stopped meanwhile: the cursor is not moved any more
+						break;
+					}
+					long aTimePosNew;
+					if(aAudioClock) {
+						//Images follow the sound (frames are skipped if the processing is too slow)
+						aTimePosNew = aAudio.getPositionMS();
+					}
+					else {
+						aTimePosNew = aFromPos+System.currentTimeMillis()-aTimeStart;
+						long aTimePosCur = aIsLibMedia ? aPlayed.getRequestedTimePosMS() : aPlayed.getTimePosMS();
+						if(aTimePosNew-aTimePosCur > 200) {
+							//Dilate time
+							aTimePosNew = aTimePosCur+200;
+						}
+					}
+					//Stop at the end of the media, or of the last clip of the montage
+					if(aTimePosNew >= aPlayed.getMaxTimePosMS()) {
+						tde.gui.display.syncExec(new Runnable() {
+							@Override
+							public void run() {
+								if(aGen == playGen && !playStop.isDisposed()) {
+									setPlaying(false);
+								}
+							}
+						});
+						break;
+					}
+					aPlayed.setRequestedTimePosMS(aTimePosNew);
+				}
+				aAudio.stop();
+				//Back to the start position, done here (the loop has ended, it no longer moves the cursor),
+				//unless paused or a new play has started in the meantime
+				tde.gui.display.syncExec(new Runnable() {
+					@Override
+					public void run() {
+						if(aGen != playGen || playStop.isDisposed()) {
+							return;
+						}
+						endedGen = aGen;
+						if(playing || paused) {
+							return;
+						}
+						returnToStart();
+					}
+				});
+			}
+		});
+		aTh.start();
+	}
+
+	/**
+	 * Stop playing (or the pause) and go back to the position of the play click (SWT thread)
+	 */
+	void stop() {
+		boolean aWasPaused = paused;
+		setPlaying(false);
+		if(aWasPaused && endedGen == playGen) {
+			//The thread has already ended: no one else goes back to the start
+			returnToStart();
+		}
+	}
+
+	/**
+	 * Cursor back to the position of the play click (SWT thread)
+	 */
+	void returnToStart() {
+		if(playedMedia == null) {
+			return;
+		}
+		playedMedia.setRequestedTimePosMS(returnPosMS);
+		if(tde.gui.monitorGUI.getMedia() == playedMedia) {
+			tde.gui.monitorGUI.redraw();
+			if(playedIsLib) {
+				showClock(returnPosMS);
+			}
+		}
+		if(!playedIsLib) {
+			tde.gui.timeLinesGUI.redraw();
+		}
+	}
+
+	/**
+	 * Playing state (false: stopped, the pause too), with the buttons (SWT thread)
 	 */
 	void setPlaying(boolean aPlaying) {
 		playing = aPlaying;
-		playStop.setImage(tde.gui.imgsSwt.getIcon(aPlaying ? "stop.gif" : "play.gif"));
-		tde.gui.tip(playStop, aPlaying ? "Stop" : "Play");
+		paused = false;
+		updateButtons();
+	}
+
+	/**
+	 * Icon and help message of the play / stop button, pause button shown (pressed when paused)
+	 * while playing or paused (SWT thread)
+	 */
+	void updateButtons() {
+		boolean aActive = playing || paused;
+		playStop.setImage(tde.gui.imgsSwt.getIcon(aActive ? "stop.gif" : "play.gif"));
+		tde.gui.tip(playStop, aActive ? "Stop" : "Play");
+		tde.gui.tip(pause, paused ? "Resume" : "Pause");
+		pause.setBackground(paused ? tde.gui.colorsSwt.LIGHTGRAY : tde.gui.colorsSwt.WHITE);
+		if(pause.getVisible() != aActive) {
+			pause.setVisible(aActive);
+			((GridData)pause.getLayoutData()).exclude = !aActive;
+			toolBar.layout(true);
+		}
 	}
 
 	@Override
@@ -333,7 +548,7 @@ public class PlayerControlGUI extends CompositePanel {
 		tde.gui.display.asyncExec(new Runnable() {
 			@Override
 			public void run() {
-				clock.setText(StringUtils.time2Clock(tde.timeLineStack.getTimePosMS()));
+				showClock(tde.timeLineStack.getTimePosMS());
 			}
 		});
 	}

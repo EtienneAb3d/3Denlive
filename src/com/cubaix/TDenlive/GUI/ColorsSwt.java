@@ -17,6 +17,7 @@ public class ColorsSwt {
 	
 	public Color RED = null;
 	public Color CYAN = null;
+	public Color YELLOW = null;//Dark enough to be seen on white
 
 	public Color CUBAIX_BLUE = null;
 	public Color BLUE_L60 = null;
@@ -39,6 +40,7 @@ public class ColorsSwt {
 
 		RED = tde.gui.display.getSystemColor(SWT.COLOR_RED);
 		CYAN = tde.gui.display.getSystemColor(SWT.COLOR_CYAN);
+		YELLOW = new Color(tde.gui.display,240,190,0);
 
 		CUBAIX_BLUE = new Color(tde.gui.display,0,50,141);
 		BLUE_L60 = new Color(tde.gui.display,127,138,244);

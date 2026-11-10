@@ -180,6 +180,7 @@ public class TransparencyGUI extends ProcessorGUI {
 		invB.setText(tde.gui.lngs.get("Transparency.Invert"));
 		invB.setSelection(tr.getInvert(aSelectedKey));
 
+		lkf.change(lkf.displayKey(lkf.getSelection()));
 		tde.timeLineStack.addTimeListener(this);
 	}
 	
@@ -199,11 +200,12 @@ public class TransparencyGUI extends ProcessorGUI {
 			@Override
 			public void run() {
 				lkf.setSelection(aKey);
-				opacityLS.setSelection((int)(tr.getOpacity(aKey)*10000));
-				lumaC.select(tde.gui.lumas.getLumaIndex(tr.getLuma(aKey).path));
-				bevelLS.setSelection((int)(tr.getBevel(aKey)*10000));
-				xLS.setSelection((int)(tr.getX(aKey)*40000));
-				invB.setSelection(tr.getInvert(aKey));
+				int aShow = lkf.displayKey(aKey);
+				opacityLS.setSelection((int)(tr.getOpacity(aShow)*10000));
+				lumaC.select(tde.gui.lumas.getLumaIndex(tr.getLuma(aShow).path));
+				bevelLS.setSelection((int)(tr.getBevel(aShow)*10000));
+				xLS.setSelection((int)(tr.getX(aShow)*40000));
+				invB.setSelection(tr.getInvert(aShow));
 				lkf.checkAddMode(tde.timeLineStack.getTimePosMS());
 			}
 		});

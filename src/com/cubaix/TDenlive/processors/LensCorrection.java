@@ -187,79 +187,79 @@ public class LensCorrection extends Processor {
 	}
 	
 	public double getK1(int aKey) {
-		return keys.elementAt(aKey).k1;
+		return key(aKey).k1;
 	}
 
 	public void setK1(int aKey,double aK1) {
 		warnNextAlignments();
-		keys.elementAt(aKey).k1 = aK1;
+		key(aKey).k1 = aK1;
 	}
 
 	public double getK2(int aKey) {
-		return keys.elementAt(aKey).k2;
+		return key(aKey).k2;
 	}
 
 	public void setK2(int aKey,double aK2) {
 		warnNextAlignments();
-		keys.elementAt(aKey).k2 = aK2;
+		key(aKey).k2 = aK2;
 	}
 
 	public double getCX(int aKey) {
-		return keys.elementAt(aKey).cx;
+		return key(aKey).cx;
 	}
 
 	public void setCX(int aKey,double aCX) {
 		warnNextAlignments();
-		keys.elementAt(aKey).cx = aCX;
+		key(aKey).cx = aCX;
 	}
 
 	public double getCY(int aKey) {
-		return keys.elementAt(aKey).cy;
+		return key(aKey).cy;
 	}
 
 	public void setCY(int aKey,double aCY) {
 		warnNextAlignments();
-		keys.elementAt(aKey).cy = aCY;
+		key(aKey).cy = aCY;
 	}
 
 	public double getK1LR(int aKey) {
-		return keys.elementAt(aKey).k1LR;
+		return key(aKey).k1LR;
 	}
 
 	public void setK1LR(int aKey,double aK1) {
 		warnNextAlignments();
-		keys.elementAt(aKey).k1LR = aK1;
+		key(aKey).k1LR = aK1;
 	}
 
 	public double getK2LR(int aKey) {
-		return keys.elementAt(aKey).k2LR;
+		return key(aKey).k2LR;
 	}
 
 	public void setK2LR(int aKey,double aK2) {
 		warnNextAlignments();
-		keys.elementAt(aKey).k2LR = aK2;
+		key(aKey).k2LR = aK2;
 	}
 
 	public double getCXLR(int aKey) {
-		return keys.elementAt(aKey).cxLR;
+		return key(aKey).cxLR;
 	}
 
 	public void setCXLR(int aKey,double aCXLR) {
 		warnNextAlignments();
-		keys.elementAt(aKey).cxLR = aCXLR;
+		key(aKey).cxLR = aCXLR;
 	}
 
 	public double getCYLR(int aKey) {
-		return keys.elementAt(aKey).cyLR;
+		return key(aKey).cyLR;
 	}
 
 	public void setCYLR(int aKey,double aCYLR) {
 		warnNextAlignments();
-		keys.elementAt(aKey).cyLR = aCYLR;
+		key(aKey).cyLR = aCYLR;
 	}
 
 	public long getTime(int aKey) {
-		return keys.elementAt(aKey).time;
+		return key(aKey).time;
 	}
 
 	public void warnNextAlignments() {
@@ -289,6 +289,25 @@ public class LensCorrection extends Processor {
 	public Image process2Swt(Media aMedia,int aProcessingMode,Rectangle aTargetSize,long aTime) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	/** Values interpolated at the time cursor, for the display (index DISPLAY_KEY, UI thread only) */
+	Key displayKey = null;
+
+	@Override
+	public boolean setDisplayKeyGT(long aTime) {
+		try {
+			displayKey = getInterKeyGT(aTime);
+		}
+		catch(Throwable t) {
+			displayKey = null;
+		}
+		return displayKey != null;
+	}
+
+	/** The key aKey, or the display key */
+	Key key(int aKey) {
+		return aKey == DISPLAY_KEY && displayKey != null ? displayKey : keys.elementAt(aKey);
 	}
 
 	Key getInterKeyGT(long aTimePos){

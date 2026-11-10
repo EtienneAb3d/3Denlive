@@ -1,6 +1,7 @@
 package com.cubaix.TDenlive.GUI;
 
 import java.util.Vector;
+import java.util.function.Consumer;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -61,11 +62,20 @@ public class ShapesPanel implements ShapesEditor.Listener {
 	Button italic = null;
 	Combo align = null;
 	boolean updating = false;
+	//A single text (subtitles): no tools, no actions on the shapes
+	boolean singleText = false;
+	//If set, the text typed goes there instead of the selected shape (e.g. the current subtitle)
+	public Consumer<String> textEdited = null;
 
 	public ShapesPanel(TDenlive aTDe,Composite aParent,ShapesEditor aEditor,boolean aIsClip) {
+		this(aTDe, aParent, aEditor, aIsClip, false);
+	}
+
+	public ShapesPanel(TDenlive aTDe,Composite aParent,ShapesEditor aEditor,boolean aIsClip,boolean aSingleText) {
 		tde = aTDe;
 		editor = aEditor;
 		isClip = aIsClip;
+		singleText = aSingleText;
 		createContents(aParent);
 		editor.addListener(this);
 		container.addDisposeListener(e -> {
@@ -229,58 +239,61 @@ public class ShapesPanel implements ShapesEditor.Listener {
 		tde.gui.applyNoMargin(aGL);
 		container.setLayout(aGL);
 
-		//Tools
-		ToolBar aTools = new ToolBar(container, SWT.FLAT | SWT.WRAP);
-		aTools.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		tde.gui.applyColorFont(aTools);
-		toolItems = new ToolItem[Shape.TYPE_NAMES.length+1];
-		for(int t = -1;t < Shape.TYPE_NAMES.length;t++) {
-			final int aType = t;
-			ToolItem aTI = new ToolItem(aTools, SWT.RADIO);
-			aTI.setImage(createIcon(aType));
-			aTI.setToolTipText(tde.gui.lngs.get(aType < 0 ? "Shapes.Select" : "Shapes."+Shape.TYPE_NAMES[aType]));
-			aTI.addListener(SWT.Selection, e -> {
-				if(updating || !aTI.getSelection()) {
-					return;
-				}
-				editor.setTool(aType);
-			});
-			toolItems[t+1] = aTI;
-		}
+		if(!singleText) {
+			//Tools
+			ToolBar aTools = new ToolBar(container, SWT.FLAT | SWT.WRAP);
+			aTools.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+			tde.gui.applyColorFont(aTools);
+			toolItems = new ToolItem[Shape.TYPE_NAMES.length+1];
+			for(int t = -1;t < Shape.TYPE_NAMES.length;t++) {
+				final int aType = t;
+				ToolItem aTI = new ToolItem(aTools, SWT.RADIO);
+				aTI.setImage(createIcon(aType));
+				aTI.setToolTipText(tde.gui.lngs.get(aType < 0 ? "Shapes.Select" : "Shapes."+Shape.TYPE_NAMES[aType]));
+				aTI.addListener(SWT.Selection, e -> {
+					if(updating || !aTI.getSelection()) {
+						return;
+					}
+					editor.setTool(aType);
+				});
+				toolItems[t+1] = aTI;
+			}
 
-		//Actions on the selected shape
-		Composite aActions = row(container, 2);
-		ToolBar aActTB = new ToolBar(aActions, SWT.FLAT);
-		tde.gui.applyColorFont(aActTB);
-		delete = new ToolItem(aActTB, SWT.PUSH);
-		delete.setImage(tde.gui.imgsSwt.getIcon("trash.png"));
-		delete.setToolTipText(tde.gui.lngs.get(isClip ? "Tip.ShapesHide" : "Tip.ShapesDelete"));
-		delete.addListener(SWT.Selection, e -> editor.deleteSelected());
-		duplicate = new ToolItem(aActTB, SWT.PUSH);
-		duplicate.setImage(tde.gui.imgsSwt.getIcon("clone.png"));
-		duplicate.setToolTipText(tde.gui.lngs.get("Tip.ShapesDuplicate"));
-		duplicate.addListener(SWT.Selection, e -> editor.duplicateSelected());
-		front = new ToolItem(aActTB, SWT.PUSH);
-		front.setImage(tde.gui.imgsSwt.getIcon("arrowUp.png"));
-		front.setToolTipText(tde.gui.lngs.get("Tip.ShapesFront"));
-		front.addListener(SWT.Selection, e -> editor.reorderSelected(true));
-		back = new ToolItem(aActTB, SWT.PUSH);
-		back.setImage(tde.gui.imgsSwt.getIcon("arrowDown.png"));
-		back.setToolTipText(tde.gui.lngs.get("Tip.ShapesBack"));
-		back.addListener(SWT.Selection, e -> editor.reorderSelected(false));
-		if(isClip) {
-			visible = new Button(aActions, SWT.CHECK);
-			tde.gui.applyColorFont(visible);
-			visible.setText(tde.gui.lngs.get("Shapes.Visible"));
-			tde.gui.tip(visible, "ShapesVisible");
-			visible.addListener(SWT.Selection, e -> {
-				if(!updating) {
-					editor.setSelectedHidden(!visible.getSelection());
-				}
-			});
-		}
-		else {
-			new Label(aActions, SWT.NONE);
+			//Actions on the selected shape
+			Composite aActions = row(container, 2);
+			ToolBar aActTB = new ToolBar(aActions, SWT.FLAT);
+			tde.gui.applyColorFont(aActTB);
+			delete = new ToolItem(aActTB, SWT.PUSH);
+			delete.setImage(tde.gui.imgsSwt.getIcon("trash.png"));
+			delete.setToolTipText(tde.gui.lngs.get(isClip ? "Tip.ShapesHide" : "Tip.ShapesDelete"));
+			delete.addListener(SWT.Selection, e -> editor.deleteSelected());
+			duplicate = new ToolItem(aActTB, SWT.PUSH);
+			duplicate.setImage(tde.gui.imgsSwt.getIcon("clone.png"));
+			duplicate.setToolTipText(tde.gui.lngs.get("Tip.ShapesDuplicate"));
+			duplicate.addListener(SWT.Selection, e -> editor.duplicateSelected());
+			front = new ToolItem(aActTB, SWT.PUSH);
+			front.setImage(tde.gui.imgsSwt.getIcon("arrowUp.png"));
+			front.setToolTipText(tde.gui.lngs.get("Tip.ShapesFront"));
+			front.addListener(SWT.Selection, e -> editor.reorderSelected(true));
+			back = new ToolItem(aActTB, SWT.PUSH);
+			back.setImage(tde.gui.imgsSwt.getIcon("arrowDown.png"));
+			back.setToolTipText(tde.gui.lngs.get("Tip.ShapesBack"));
+			back.addListener(SWT.Selection, e -> editor.reorderSelected(false));
+			if(isClip) {
+				visible = new Button(aActions, SWT.CHECK);
+				tde.gui.applyColorFont(visible);
+				visible.setText(tde.gui.lngs.get("Shapes.Visible"));
+				tde.gui.tip(visible, "ShapesVisible");
+				visible.addListener(SWT.Selection, e -> {
+					if(!updating) {
+						editor.setSelectedHidden(!visible.getSelection());
+					}
+				});
+			}
+			else {
+				new Label(aActions, SWT.NONE);
+			}
+
 		}
 
 		selectionL = new Label(container, SWT.NONE);
@@ -298,7 +311,12 @@ public class ShapesPanel implements ShapesEditor.Listener {
 		text.addListener(SWT.Modify, e -> {
 			if(!updating) {
 				String aT = text.getText().replace("\r", "");
-				editor.editSelectedText(s -> s.text = aT);
+				if(textEdited != null) {
+					textEdited.accept(aT);
+				}
+				else {
+					editor.editSelectedText(s -> s.text = aT);
+				}
 			}
 		});
 		font = new Combo(container, SWT.READ_ONLY);
@@ -469,13 +487,15 @@ public class ShapesPanel implements ShapesEditor.Listener {
 			Shape aSel = editor.getSelected();
 			Shape aS = aSel != null ? aSel : editor.style;
 			int aTool = editor.getTool();
-			for(int t = 0;t < toolItems.length;t++) {
-				toolItems[t].setSelection(t == aTool+1);
+			if(!singleText) {
+				for(int t = 0;t < toolItems.length;t++) {
+					toolItems[t].setSelection(t == aTool+1);
+				}
+				delete.setEnabled(aSel != null && !(isClip && aSel.hidden));
+				duplicate.setEnabled(aSel != null);
+				front.setEnabled(aSel != null);
+				back.setEnabled(aSel != null);
 			}
-			delete.setEnabled(aSel != null && !(isClip && aSel.hidden));
-			duplicate.setEnabled(aSel != null);
-			front.setEnabled(aSel != null);
-			back.setEnabled(aSel != null);
 			if(visible != null) {
 				visible.setEnabled(aSel != null);
 				visible.setSelection(aSel != null && !aSel.hidden);
@@ -505,12 +525,16 @@ public class ShapesPanel implements ShapesEditor.Listener {
 			}
 			//Text: of the selected text, or of the next one (text tool)
 			boolean aIsText = aSel != null ? aSel.type == Shape.TEXT : aTool == Shape.TEXT;
+			if(singleText) {
+				//Only the text shown now
+				aIsText = aSel != null;
+			}
 			text.setEnabled(aIsText);
 			font.setEnabled(aIsText);
 			bold.setEnabled(aIsText);
 			italic.setEnabled(aIsText);
 			align.setEnabled(aIsText);
-			String aTxt = aS.text == null ? "" : aS.text;
+			String aTxt = aS.text == null || (singleText && aSel == null) ? "" : aS.text;
 			if(!text.getText().replace("\r", "").equals(aTxt)) {
 				text.setText(aTxt.replace("\n", Text.DELIMITER));
 			}

@@ -153,37 +153,56 @@ public class Framing extends Processor {
 	}
 	
 	public double getOpacity(int aKey) {
-		return keys.elementAt(aKey).opacity;
+		return key(aKey).opacity;
 	}
 
 	public void setOpacity(int aKey,double aOpacity) {
-		keys.elementAt(aKey).opacity = aOpacity;
+		key(aKey).opacity = aOpacity;
 	}
 
 	public double getX(int aKey) {
-		return keys.elementAt(aKey).x;
+		return key(aKey).x;
 	}
 
 	public void setX(int aKey,double aX) {
-		keys.elementAt(aKey).x = aX;
+		key(aKey).x = aX;
 	}
 
 	public Frame getFrame(int aKey) {
-		return keys.elementAt(aKey).frame;
+		return key(aKey).frame;
 	}
 
 	public void setFrame(int aKey,Frame frame) {
-		keys.elementAt(aKey).frame = frame;
+		key(aKey).frame = frame;
 	}
 
 	public long getTime(int aKey) {
-		return keys.elementAt(aKey).time;
+		return key(aKey).time;
 	}
 
 	@Override
 	public Image process2Swt(Media aMedia,int aProcessingMode,Rectangle aTargetSize,long aTime) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	/** Values interpolated at the time cursor, for the display (index DISPLAY_KEY, UI thread only) */
+	Key displayKey = null;
+
+	@Override
+	public boolean setDisplayKeyGT(long aTime) {
+		try {
+			displayKey = getInterKeyGT(aTime);
+		}
+		catch(Throwable t) {
+			displayKey = null;
+		}
+		return displayKey != null;
+	}
+
+	/** The key aKey, or the display key */
+	Key key(int aKey) {
+		return aKey == DISPLAY_KEY && displayKey != null ? displayKey : keys.elementAt(aKey);
 	}
 
 	Key getInterKeyGT(long aTimePos){

@@ -3,6 +3,12 @@ package com.cubaix.TDenlive.GUI;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.DropTarget;
+import org.eclipse.swt.dnd.DropTargetAdapter;
+import org.eclipse.swt.dnd.DropTargetEvent;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseMoveListener;
@@ -20,6 +26,7 @@ import org.eclipse.swt.widgets.Scale;
 
 import com.cubaix.TDenlive.TDenlive;
 import com.cubaix.TDenlive.medias.Clip;
+import com.cubaix.TDenlive.medias.Media;
 import com.cubaix.TDenlive.medias.TimeLineStack;
 import com.cubaix.TDenlive.utils.ImageUtils;
 
@@ -230,7 +237,85 @@ public class TimeLineStackGUI extends CanvasPanel {
 		tde.gui.monitorGUI.redraw();
 	}
 
+	/**
+	 * Media dragged from the media list (see MediaListGUI.MEDIA_DRAG_PREFIX), null if not one
+	 */
+	Media draggedMedia(Object aData) {
+		if(!(aData instanceof String) || !((String)aData).startsWith(MediaListGUI.MEDIA_DRAG_PREFIX)) {
+			return MediaListGUI.draggedMedia;
+		}
+		try {
+			return tde.mediaList.getMediaByUID(Long.parseLong(((String)aData).substring(MediaListGUI.MEDIA_DRAG_PREFIX.length())));
+		}
+		catch(Throwable t) {
+			return null;
+		}
+	}
+
+	/**
+	 * Drop of a media of the media list on a line: a clip at the time of the mouse
+	 */
+	void createDropTarget() {
+		DropTarget aDT = new DropTarget(canvas, DND.DROP_COPY | DND.DROP_MOVE | DND.DROP_DEFAULT);
+		aDT.setTransfer(new Transfer[] {TextTransfer.getInstance()});
+		aDT.addDropListener(new DropTargetAdapter() {
+			void preview(DropTargetEvent e) {
+				//The data is only known at the drop: the media of the current drag
+				Media aMedia = MediaListGUI.draggedMedia;
+				Point aP = canvas.toControl(e.x, e.y);
+				if(aMedia != null && tde.timeLineStack.setDropPreview(aMedia, aP.x, aP.y)) {
+					e.detail = DND.DROP_COPY;
+				}
+				else {
+					e.detail = DND.DROP_NONE;
+				}
+				redraw();
+			}
+			@Override
+			public void dragEnter(DropTargetEvent e) {
+				preview(e);
+			}
+			@Override
+			public void dragOver(DropTargetEvent e) {
+				e.feedback = DND.FEEDBACK_SCROLL;
+				preview(e);
+			}
+			@Override
+			public void dragOperationChanged(DropTargetEvent e) {
+				preview(e);
+			}
+			@Override
+			public void dragLeave(DropTargetEvent e) {
+				tde.timeLineStack.clearDropPreview();
+				redraw();
+			}
+			@Override
+			public void drop(DropTargetEvent e) {
+				tde.timeLineStack.clearDropPreview();
+				Media aMedia = draggedMedia(e.data);
+				Point aP = canvas.toControl(e.x, e.y);
+				Clip aClip = aMedia == null ? null : tde.timeLineStack.dropMedia(aMedia, aP.x, aP.y);
+				if(aClip == null) {
+					e.detail = DND.DROP_NONE;
+					redraw();
+					return;
+				}
+				//Like a double click in the media list
+				canvas.setFocus();
+				tde.gui.setMultiPropsPanel(TDeGUI.MULTIPROPSPANEL_PROCESSORS);
+				tde.gui.setMultiMonitorPanel(TDeGUI.MULTIMONITORPANEL_MONITOR);
+				tde.gui.playerControlGUI.showClock(tde.timeLineStack.getTimePosMS());
+				tde.gui.monitorGUI.setMedia(tde.timeLineStack);
+				tde.gui.processorGUI.setProcessors(aClip.getProcessors());
+				tde.gui.mediaListGUI.redraw();
+				redraw();
+				tde.gui.monitorGUI.redraw();
+			}
+		});
+	}
+
 	void createContents(Composite aParent) {
+		createDropTarget();
 		resizeCursor = new Cursor(tde.gui.display, SWT.CURSOR_SIZEWE);
 		canvas.addListener(SWT.Dispose, e -> resizeCursor.dispose());
 		//SUPPR / DEL (and the delete key of the Mac keyboards, which is a backspace)
@@ -321,6 +406,8 @@ public class TimeLineStackGUI extends CanvasPanel {
 							//Its start or its end sticks, the nearest
 							draggedClip.setStartTimeMS(tde.timeLineStack.snapMoveMS(draggedClipStartMS+aDeltaMS
 									, draggedClipEndMS+aDeltaMS, draggedClip, aSnapMS));
+							//To the line under the mouse (of the same kind: video / audio)
+							tde.timeLineStack.moveClipToLine(draggedClip, tde.timeLineStack.getLineAtY(e.y));
 						}
 						lastMousePos = new Point(e.x,e.y);
 						redraw();

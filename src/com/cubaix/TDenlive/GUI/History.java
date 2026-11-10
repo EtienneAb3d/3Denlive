@@ -320,7 +320,7 @@ public class History {
 		restoring = true;
 		TDeGUI aGUI = tde.gui;
 		try {
-			if(aGUI.playerControlGUI != null && aGUI.playerControlGUI.playing) {
+			if(aGUI.playerControlGUI != null && (aGUI.playerControlGUI.playing || aGUI.playerControlGUI.paused)) {
 				aGUI.playerControlGUI.setPlaying(false);
 			}
 			//Medias: the unchanged ones are kept (not loaded again)

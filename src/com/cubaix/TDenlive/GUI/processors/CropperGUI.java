@@ -10,12 +10,26 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 
 import com.cubaix.TDenlive.TDenlive;
+import com.cubaix.TDenlive.GUI.widgets.LabelKeyFrame;
 import com.cubaix.TDenlive.GUI.widgets.LabelScale;
+import com.cubaix.TDenlive.medias.Clip;
 import com.cubaix.TDenlive.processors.Cropper;
 import com.cubaix.TDenlive.processors.Processor;
 
 public class CropperGUI extends ProcessorGUI {
 	Cropper crp = null;
+	Composite wgt = null;
+	LabelKeyFrame lkf = null;
+	LabelScale leftLLS = null;
+	LabelScale leftRLS = null;
+	LabelScale rightLLS = null;
+	LabelScale rightRLS = null;
+	LabelScale topLS = null;
+	LabelScale bottomLS = null;
+	LabelScale angleLS = null;
+	LabelScale shearLLS = null;
+	LabelScale shearRLS = null;
+	LabelScale transpLS = null;
 
 	public CropperGUI(TDenlive aTDe, Composite aParent,Processor aP) {
 		super(aTDe, aParent,aP);
@@ -23,8 +37,28 @@ public class CropperGUI extends ProcessorGUI {
 		createContents();
 	}
 
+	/** Key to modify at the time cursor (see LabelKeyFrame.editKey()) */
+	Cropper.Key editKey() {
+		return crp.getKey(lkf.editKey());
+	}
+
+	void showKey(int aKey) {
+		Cropper.Key aK = crp.getKey(aKey);
+		leftLLS.setSelection((int)(aK.leftL*10000));
+		leftRLS.setSelection((int)(aK.leftR*10000));
+		rightLLS.setSelection((int)(aK.rightL*10000));
+		rightRLS.setSelection((int)(aK.rightR*10000));
+		topLS.setSelection((int)((1.0-aK.top)*10000));
+		bottomLS.setSelection((int)((1.0-aK.bottom)*10000));
+		angleLS.setSelection((int)(aK.angle*1000));
+		shearLLS.setSelection((int)(aK.shearXL*50000));
+		shearRLS.setSelection((int)(aK.shearXR*50000));
+		transpLS.setSelection((int)(aK.transparency*10000));
+	}
+
 	void createContents() {
-		Composite aWGT = new Composite(container, SWT.NONE);
+		wgt = new Composite(container, SWT.NONE);
+		Composite aWGT = wgt;
 		aWGT.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		GridLayout aGL = new GridLayout(1, false);
 		aGL.marginLeft = aGL.marginTop = aGL.marginRight = aGL.marginBottom = 0;
@@ -33,6 +67,12 @@ public class CropperGUI extends ProcessorGUI {
 		aWGT.setLayout(aGL);
 		aWGT.setBackground(tde.gui.colorsSwt.WHITE);
 		aWGT.setForeground(tde.gui.colorsSwt.CUBAIX_BLUE);
+
+		int aSelectedKey = crp.getPrevKeyGT(tde.timeLineStack.getTimePosMS());
+		if(aSelectedKey < 0) {
+			aSelectedKey = 0;
+		}
+		Cropper.Key aK = crp.getKey(aSelectedKey);
 
 		final Button aDrawCropRectS = new Button(aWGT, SWT.CHECK);
 		tde.gui.applyColorFont(aDrawCropRectS);
@@ -56,22 +96,38 @@ public class CropperGUI extends ProcessorGUI {
 		aDrawCropRectS.setText(tde.gui.lngs.get("Cropper.ShowCutLines"));
 		aDrawCropRectS.setBackground(tde.gui.colorsSwt.WHITE);
 
+		lkf = new LabelKeyFrame(tde,aWGT,crp,"K") {
+			@Override
+			public void change(int aValue) {
+				if(aValue >= 0) {
+					showKey(aValue);
+				}
+			}
+			@Override
+			public void move(int aTime) {
+				tde.timeLineStack.setRequestedTimePosMS(((Clip)crp.targetMedia).getStartTimeMS()+aTime);
+				tde.gui.timeLinesGUI.redraw();
+				tde.gui.monitorGUI.redraw();
+			}
+		};
+		lkf.setSelection(aSelectedKey);
+
 		CLabel aLeft = new CLabel(aWGT, SWT.NONE);
 		tde.gui.applyColorFont(aLeft);
 		aLeft.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		aLeft.setText(tde.gui.lngs.get("Cropper.LeftBorder"));
 		
-		new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.LeftL"),0,0,10000,(int)(crp.getLeftL()*10000)) {
+		leftLLS = new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.LeftL"),0,0,10000,(int)(aK.leftL*10000)) {
 			@Override
 			public void change(int aValue) {
-				crp.setLeftL(aValue/10000.0);
+				editKey().leftL = aValue/10000.0;
 				tde.gui.monitorGUI.redraw();
 			}
 		}.tip("CropLeftL");
-		new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.LeftR"),0,0,10000,(int)(crp.getLeftR()*10000)) {
+		leftRLS = new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.LeftR"),0,0,10000,(int)(aK.leftR*10000)) {
 			@Override
 			public void change(int aValue) {
-				crp.setLeftR(aValue/10000.0);
+				editKey().leftR = aValue/10000.0;
 				tde.gui.monitorGUI.redraw();
 			}
 		}.tip("CropLeftR");
@@ -81,17 +137,17 @@ public class CropperGUI extends ProcessorGUI {
 		aRight.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		aRight.setText(tde.gui.lngs.get("Cropper.RightBorder"));
 
-		new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.RightL"),0,10000,10000,(int)(crp.getRightL()*10000)) {
+		rightLLS = new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.RightL"),0,10000,10000,(int)(aK.rightL*10000)) {
 			@Override
 			public void change(int aValue) {
-				crp.setRightL(aValue/10000.0);
+				editKey().rightL = aValue/10000.0;
 				tde.gui.monitorGUI.redraw();
 			}
 		}.tip("CropRightL");
-		new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.RightR"),0,10000,10000,(int)(crp.getRightR()*10000)) {
+		rightRLS = new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.RightR"),0,10000,10000,(int)(aK.rightR*10000)) {
 			@Override
 			public void change(int aValue) {
-				crp.setRightR(aValue/10000.0);
+				editKey().rightR = aValue/10000.0;
 				tde.gui.monitorGUI.redraw();
 			}
 		}.tip("CropRightR");
@@ -101,17 +157,17 @@ public class CropperGUI extends ProcessorGUI {
 		aTopBottom.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		aTopBottom.setText(tde.gui.lngs.get("Cropper.TopBottomBorder"));
 
-		new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.Top"),0,10000,10000,(int)((1.0-crp.getTop())*10000)) {
+		topLS = new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.Top"),0,10000,10000,(int)((1.0-aK.top)*10000)) {
 			@Override
 			public void change(int aValue) {
-				crp.setTop(1-(aValue/10000.0));
+				editKey().top = 1-(aValue/10000.0);
 				tde.gui.monitorGUI.redraw();
 			}
 		}.tip("CropTop");
-		new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.Bottom"),0,0,10000,(int)((1-crp.getBottom())*10000)) {
+		bottomLS = new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.Bottom"),0,0,10000,(int)((1-aK.bottom)*10000)) {
 			@Override
 			public void change(int aValue) {
-				crp.setBottom(1.0-(aValue/10000.0));
+				editKey().bottom = 1.0-(aValue/10000.0);
 				tde.gui.monitorGUI.redraw();
 			}
 		}.tip("CropBottom");
@@ -121,10 +177,10 @@ public class CropperGUI extends ProcessorGUI {
 		aRot.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		aRot.setText(tde.gui.lngs.get("Cropper.RotationBorder"));
 
-		new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.Rotation"),-90000,0,90000,(int)(crp.getAngle()*1000)) {
+		angleLS = new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.Rotation"),-90000,0,90000,(int)(aK.angle*1000)) {
 			@Override
 			public void change(int aValue) {
-				crp.setAngle(aValue/1000.0);
+				editKey().angle = aValue/1000.0;
 				tde.gui.monitorGUI.redraw();
 			}
 		}.tip("CropRotation");
@@ -134,17 +190,17 @@ public class CropperGUI extends ProcessorGUI {
 		aShear.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		aShear.setText(tde.gui.lngs.get("Cropper.ShearX"));
 
-		new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.ShearXL"),-10000,0,10000,(int)(crp.getShearX()*50000)) {
+		shearLLS = new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.ShearXL"),-10000,0,10000,(int)(aK.shearXL*50000)) {
 			@Override
 			public void change(int aValue) {
-				crp.setShearX(aValue/50000.0);
+				editKey().shearXL = aValue/50000.0;
 				tde.gui.monitorGUI.redraw();
 			}
 		}.tip("CropShearL");
-		new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.ShearXR"),-10000,0,10000,(int)(crp.getShearY()*50000)) {
+		shearRLS = new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.ShearXR"),-10000,0,10000,(int)(aK.shearXR*50000)) {
 			@Override
 			public void change(int aValue) {
-				crp.setShearY(aValue/50000.0);
+				editKey().shearXR = aValue/50000.0;
 				tde.gui.monitorGUI.redraw();
 			}
 		}.tip("CropShearR");
@@ -154,13 +210,42 @@ public class CropperGUI extends ProcessorGUI {
 		aTransp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		aTransp.setText(tde.gui.lngs.get("Cropper.Transparency"));
 
-		new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.TransparencyLetter"),0,10000,10000,(int)(crp.getTransparency()*10000)) {
+		transpLS = new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.TransparencyLetter"),0,10000,10000,(int)(aK.transparency*10000)) {
 			@Override
 			public void change(int aValue) {
-				crp.setTransparency(aValue/10000.0);
+				editKey().transparency = aValue/10000.0;
 				tde.gui.monitorGUI.redraw();
 			}
 		}.tip("CropTransparency");
+
+		lkf.change(lkf.displayKey(lkf.getSelection()));
+		tde.timeLineStack.addTimeListener(this);
+	}
+
+	@Override
+	public void timeChanged(long aTimeNew) {
+		super.timeChanged(aTimeNew);
+		if(wgt.isDisposed()) {
+			tde.timeLineStack.removeTimeListener(this);
+			return;
+		}
+		int aSelectedKey = crp.getPrevKeyGT(tde.timeLineStack.getTimePosMS());
+		if(aSelectedKey < 0) {
+			aSelectedKey = 0;
+		}
+		final int aKey = aSelectedKey;
+		tde.gui.display.asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				if(wgt.isDisposed() || aKey >= crp.getNbKeys()) {
+					return;
+				}
+				lkf.setSelection(aKey);
+				int aShow = lkf.displayKey(aKey);
+				showKey(aShow);
+				lkf.checkAddMode(tde.timeLineStack.getTimePosMS());
+			}
+		});
 	}
 	
 	int scale2bar(double aValue) {

@@ -25,6 +25,7 @@ import com.cubaix.TDenlive.processors.Placer;
 import com.cubaix.TDenlive.processors.Processor;
 import com.cubaix.TDenlive.processors.Scripter;
 import com.cubaix.TDenlive.processors.Shapes;
+import com.cubaix.TDenlive.processors.Subtitles;
 import com.cubaix.TDenlive.processors.StereoAligner;
 import com.cubaix.TDenlive.processors.TimeController;
 import com.cubaix.TDenlive.processors.Transparency;
@@ -163,6 +164,14 @@ public class Clip extends Media {
 					}
 					return o;
 				}
+				if("ProcAutoKey".equalsIgnoreCase(aT.tagName)) {
+					//Of the processor just read
+					o++;
+					if(processors.size() > 0) {
+						processors.lastElement().autoKey = !"false".equalsIgnoreCase(aOs.elementAt(o).text);
+					}
+					continue;
+				}
 				if("StereoAligner".equalsIgnoreCase(aT.tagName)) {
 					StereoAligner aSA = new StereoAligner(tde,this);
 					processors.add(aSA);
@@ -170,6 +179,11 @@ public class Clip extends Media {
 				}
 				if("Shapes".equalsIgnoreCase(aT.tagName)) {
 					Shapes aP = new Shapes(tde,this);
+					processors.add(aP);
+					o = aP.openProject(aOs, o);
+				}
+				if("Subtitles".equalsIgnoreCase(aT.tagName)) {
+					Subtitles aP = new Subtitles(tde,this);
 					processors.add(aP);
 					o = aP.openProject(aOs, o);
 				}
@@ -258,6 +272,9 @@ public class Clip extends Media {
 		aSB.append("					<Processors>\n");
 		for(Processor aP : processors) {
 			aP.saveProject(aSB);
+			if(!aP.autoKey) {
+				aSB.append("						<ProcAutoKey>false</ProcAutoKey>\n");
+			}
 		}
 		aSB.append("					</Processors>\n");
 		aSB.append("					<soundOn>" + soundOn + "</soundOn>\n");
@@ -997,7 +1014,8 @@ public class Clip extends Media {
 		processors.remove(aP);
 		int aPos = 0;
 		while(aPos < processors.size()
-				&& (processors.elementAt(aPos) instanceof TimeController || processors.elementAt(aPos) instanceof Shapes)) {
+				&& (processors.elementAt(aPos) instanceof TimeController
+						|| (processors.elementAt(aPos) instanceof Shapes && !(processors.elementAt(aPos) instanceof Subtitles)))) {
 			aPos++;
 		}
 		processors.add(aPos, aP);
@@ -1057,6 +1075,9 @@ public class Clip extends Media {
 		}
 		if("Volume".equals(aProcessorName)) {
 			processors.add(new Volume(tde, this));
+		}
+		if("Subtitles".equals(aProcessorName)) {
+			processors.add(new Subtitles(tde, this));
 		}
 		Processor aAdded = processors.size() > aNb ? processors.lastElement() : null;
 		if(aAdded != null && aIsDepth) {

@@ -445,6 +445,7 @@ public class LensCorrectionGUI extends ProcessorGUI {
 			}
 		};
 		
+		lkf.change(lkf.displayKey(lkf.getSelection()));
 		tde.timeLineStack.addTimeListener(this);
 	}
 	
@@ -464,23 +465,24 @@ public class LensCorrectionGUI extends ProcessorGUI {
 			@Override
 			public void run() {
 				lkf.setSelection(aKey);
+				int aShow = lkf.displayKey(aKey);
 				lkf.checkAddMode(tde.timeLineStack.getTimePosMS());
-				k1LS.setSelection((int)(lc.getK1(aKey)*10000));
-				k1LT.setValue(""+lc.getK1(aKey));
-				k2LS.setSelection((int)(lc.getK2(aKey)*10000));
-				k2LT.setValue(""+lc.getK2(aKey));
-				cxLS.setSelection((int)(lc.getCX(aKey)*10000));
-				cxLT.setValue(""+lc.getCX(aKey));
-				cyLS.setSelection((int)(lc.getCY(aKey)*10000));
-				cyLT.setValue(""+lc.getCY(aKey));
-				k1LRLS.setSelection((int)(lc.getK1LR(aKey)*10000));
-				k1LRLT.setValue(""+lc.getK1LR(aKey));
-				k2LRLS.setSelection((int)(lc.getK2LR(aKey)*10000));
-				k2LRLT.setValue(""+lc.getK2LR(aKey));
-				cxLRLS.setSelection((int)(lc.getCXLR(aKey)*10000));
-				cxLRLT.setValue(""+lc.getCXLR(aKey));
-				cyLRLS.setSelection((int)(lc.getCYLR(aKey)*10000));
-				cyLRLT.setValue(""+lc.getCYLR(aKey));
+				k1LS.setSelection((int)(lc.getK1(aShow)*10000));
+				k1LT.setValue(""+lc.getK1(aShow));
+				k2LS.setSelection((int)(lc.getK2(aShow)*10000));
+				k2LT.setValue(""+lc.getK2(aShow));
+				cxLS.setSelection((int)(lc.getCX(aShow)*10000));
+				cxLT.setValue(""+lc.getCX(aShow));
+				cyLS.setSelection((int)(lc.getCY(aShow)*10000));
+				cyLT.setValue(""+lc.getCY(aShow));
+				k1LRLS.setSelection((int)(lc.getK1LR(aShow)*10000));
+				k1LRLT.setValue(""+lc.getK1LR(aShow));
+				k2LRLS.setSelection((int)(lc.getK2LR(aShow)*10000));
+				k2LRLT.setValue(""+lc.getK2LR(aShow));
+				cxLRLS.setSelection((int)(lc.getCXLR(aShow)*10000));
+				cxLRLT.setValue(""+lc.getCXLR(aShow));
+				cyLRLS.setSelection((int)(lc.getCYLR(aShow)*10000));
+				cyLRLT.setValue(""+lc.getCYLR(aShow));
 			}
 		});
 	}

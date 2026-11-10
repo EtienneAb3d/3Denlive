@@ -26,6 +26,8 @@ public class DepthmapStereo extends Processor {
 		double d = 0;
 		double x = 0;
 		double p = 0;
+		//Mix of the depth map on the source before the conversion (0: source, 1: depth map)
+		double m = 0;
 		long time = 0;
 		boolean blackIsFront = true;
 		Clip depthmapClipMedia = null;
@@ -77,6 +79,10 @@ public class DepthmapStereo extends Processor {
 					o++;
 					keys.lastElement().p = Double.parseDouble(aOs.elementAt(o).text);
 				}
+				if("m".equalsIgnoreCase(aT.tagName)) {
+					o++;
+					keys.lastElement().m = Double.parseDouble(aOs.elementAt(o).text);
+				}
 				if("time".equalsIgnoreCase(aT.tagName)) {
 					o++;
 					keys.lastElement().time = Long.parseLong(aOs.elementAt(o).text);
@@ -107,6 +113,7 @@ public class DepthmapStereo extends Processor {
 			aSB.append("							<d>" + aK.d + "</d>\n");
 			aSB.append("							<x>" + aK.x + "</x>\n");
 			aSB.append("							<p>" + aK.p + "</p>\n");
+			aSB.append("							<m>" + aK.m + "</m>\n");
 			aSB.append("							<time>" + aK.time + "</time>\n");
 			aSB.append("							<blackIsFront>" + aK.blackIsFront + "</blackIsFront>\n");
 			aSB.append("							<depthmapClipMedia>" + (aK.depthmapClipMedia == null ? -1 : aK.depthmapClipMedia.getMedia().UID) + "</depthmapClipMedia>\n");
@@ -215,50 +222,58 @@ public class DepthmapStereo extends Processor {
 	}
 	
 	public double getX(int aKey) {
-		return keys.elementAt(aKey).x;
+		return key(aKey).x;
 	}
 
 	public void setX(int aKey,double x) {
 		warnNextAlignments();
-		keys.elementAt(aKey).x = x;
+		key(aKey).x = x;
 	}
 
 	public double getP(int aKey) {
-		return keys.elementAt(aKey).p;
+		return key(aKey).p;
 	}
 
 	public void setP(int aKey,double p) {
 		warnNextAlignments();
-		keys.elementAt(aKey).p = p;
+		key(aKey).p = p;
 	}
 
 	public double getD(int aKey) {
-		return keys.elementAt(aKey).d;
+		return key(aKey).d;
 	}
 
 	public void setD(int aKey,double y) {
 		warnNextAlignments();
-		keys.elementAt(aKey).d = y;
+		key(aKey).d = y;
+	}
+
+	public double getM(int aKey) {
+		return key(aKey).m;
+	}
+
+	public void setM(int aKey,double m) {
+		key(aKey).m = m;
 	}
 
 	public boolean getBlackIsFront(int aKey) {
-		return keys.elementAt(aKey).blackIsFront;
+		return key(aKey).blackIsFront;
 	}
 
 	public void setBlackIsFront(int aKey,boolean aBlackIsFront) {
 		warnNextAlignments();
-		keys.elementAt(aKey).blackIsFront = aBlackIsFront;
+		key(aKey).blackIsFront = aBlackIsFront;
 	}
 	
 	public long getTime(int aKey) {
-		return keys.elementAt(aKey).time;
+		return key(aKey).time;
 	}
 
 	public void setDepthmapClipMedia(int aKey,String aUID) {
 		warnNextAlignments();
-		Clip aOld = keys.elementAt(aKey).depthmapClipMedia;
+		Clip aOld = key(aKey).depthmapClipMedia;
 		Media aMedia = aUID.trim().isEmpty() ? null : tde.mediaList.getMediaByUID(Long.parseLong(aUID));
-		keys.elementAt(aKey).depthmapClipMedia = aMedia == null ? null : ((Clip)targetMedia).addPairedClip(aMedia, 1);
+		key(aKey).depthmapClipMedia = aMedia == null ? null : ((Clip)targetMedia).addPairedClip(aMedia, 1);
 		//The paired clip of the previous media, unless another key (copied from this one) still uses it
 		if(aOld != null) {
 			for(Key aK : keys) {
@@ -270,8 +285,32 @@ public class DepthmapStereo extends Processor {
 		}
 	}
 	
+	/**
+	 * True if a key uses aMedia (of the media list) as depth map
+	 */
+	public boolean usesDepthMedia(Media aMedia) {
+		for(Key aK : keys) {
+			if(aK.depthmapClipMedia != null && aK.depthmapClipMedia.getMedia() == aMedia) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * aMedia leaves the media list: the keys that use it as depth map no longer have their own
+	 */
+	public void releaseDepthMedia(Media aMedia) {
+		for(int k = 0;k < keys.size();k++) {
+			Clip aC = keys.elementAt(k).depthmapClipMedia;
+			if(aC != null && aC.getMedia() == aMedia) {
+				setDepthmapClipMedia(k, "");
+			}
+		}
+	}
+
 	public Clip getDepthmapClipMedia(int aKey) {
-		return keys.elementAt(aKey).depthmapClipMedia;
+		return key(aKey).depthmapClipMedia;
 	}
 
 	public void warnNextAlignments() {
@@ -303,6 +342,25 @@ public class DepthmapStereo extends Processor {
 		return null;
 	}
 
+	/** Values interpolated at the time cursor, for the display (index DISPLAY_KEY, UI thread only) */
+	Key displayKey = null;
+
+	@Override
+	public boolean setDisplayKeyGT(long aTime) {
+		try {
+			displayKey = getInterKeyGT(aTime);
+		}
+		catch(Throwable t) {
+			displayKey = null;
+		}
+		return displayKey != null;
+	}
+
+	/** The key aKey, or the display key */
+	Key key(int aKey) {
+		return aKey == DISPLAY_KEY && displayKey != null ? displayKey : keys.elementAt(aKey);
+	}
+
 	Key getInterKeyGT(long aTimePos){
 		long aTime = aTimePos-((Clip)targetMedia).getKeysOriginMS();
 		for(int k = keys.size()-1;k >= 0;k--) {
@@ -313,6 +371,7 @@ public class DepthmapStereo extends Processor {
 					aInter.d = aKey.d;
 					aInter.x = aKey.x;
 					aInter.p = aKey.p;
+					aInter.m = aKey.m;
 					aInter.time = aTime;
 					aInter.blackIsFront = aKey.blackIsFront;
 					aInter.depthmapClipMedia = aKey.depthmapClipMedia;
@@ -324,6 +383,7 @@ public class DepthmapStereo extends Processor {
 				aInter.d = aKey.d*(1.0-aFact)+aNext.d*aFact;
 				aInter.x = aKey.x*(1.0-aFact)+aNext.x*aFact;
 				aInter.p = aKey.p*(1.0-aFact)+aNext.p*aFact;
+				aInter.m = aKey.m*(1.0-aFact)+aNext.m*aFact;
 				aInter.time = aTime;
 				aInter.blackIsFront = aKey.blackIsFront;
 				aInter.depthmapClipMedia = aKey.depthmapClipMedia;
@@ -336,6 +396,7 @@ public class DepthmapStereo extends Processor {
 		aInter.d = aKey.d;
 		aInter.x = aKey.x;
 		aInter.p = aKey.p;
+		aInter.m = aKey.m;
 		aInter.time = aTime;
 		aInter.blackIsFront = aKey.blackIsFront;
 		aInter.depthmapClipMedia = aKey.depthmapClipMedia;
@@ -355,15 +416,18 @@ public class DepthmapStereo extends Processor {
 			if(aDC == null) {
 				return;
 			}
-			BufferedImage aBIL = aMedia.getWorkLeft(aProcessingMode,aTime);
-			BufferedImage aBIR = aMedia.getWorkRight(aProcessingMode,aTime);
-			BufferedImage aBIDML = ImageUtils.fitTo(aDC.getWorkLeft(aProcessingMode,aTime), aBIL);
-			BufferedImage aBIDMR = ImageUtils.fitTo(aDC.getWorkRight(aProcessingMode,aTime), aBIR);
+			BufferedImage aBISrcL = aMedia.getWorkLeft(aProcessingMode,aTime);
+			BufferedImage aBISrcR = aMedia.getWorkRight(aProcessingMode,aTime);
+			BufferedImage aBIDML = ImageUtils.fitTo(aDC.getWorkLeft(aProcessingMode,aTime), aBISrcL);
+			BufferedImage aBIDMR = ImageUtils.fitTo(aDC.getWorkRight(aProcessingMode,aTime), aBISrcR);
 			if(showDepth && aProcessingMode != TDConfig.PROCESSING_MODE_RENDER) {
 				aMedia.setWorkLeft(aBIDML);
 				aMedia.setWorkRight(aBIDMR);
 				return;
 			}
+			//Depth maps mixed on the sources, then converted
+			BufferedImage aBIL = Depthmap.mixDepth(aBISrcL, aBIDML, aKey.m);
+			BufferedImage aBIR = Depthmap.mixDepth(aBISrcR, aBIDMR, aKey.m);
 			Thread aThL = new Thread(new Runnable() {
 				@Override
 				public void run() {

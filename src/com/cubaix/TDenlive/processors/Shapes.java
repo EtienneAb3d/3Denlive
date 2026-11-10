@@ -307,12 +307,26 @@ public class Shapes extends Processor {
 	}
 
 	/**
+	 * Manual key mode (TDConfig.autoKey off): the key left of the time cursor, edited and shown
+	 * instead of the interpolated shapes. -1 out of the clip
+	 */
+	int manualKey() {
+		if(currentClipTime() < 0) {
+			return -1;
+		}
+		return Math.max(0, getPrevKeyGT(tde.timeLineStack.getTimePosMS()));
+	}
+
+	/**
 	 * Key at the current time, created if needed, -1 out of the clip
 	 */
 	public int ensureCurrentKey() {
 		long aT = currentClipTime();
 		if(aT < 0) {
 			return -1;
+		}
+		if(!autoKey) {
+			return manualKey();
 		}
 		synchronized (keys) {
 			int aK = keyAt(aT);
@@ -330,6 +344,21 @@ public class Shapes extends Processor {
 		editor = new ShapesEditor(new ShapesEditor.Source() {
 			@Override
 			public Vector<Shape> getShapes() {
+				long aT = currentClipTime();
+				if(aT < 0) {
+					return null;
+				}
+				synchronized (keys) {
+					int aK = autoKey ? keyAt(aT) : manualKey();
+					if(aK >= 0) {
+						return keys.elementAt(aK).shapes;
+					}
+				}
+				return interpolate(aT);
+			}
+			@Override
+			public Vector<Shape> getDisplayedShapes() {
+				//As drawn in the image: the key at the time, else interpolated
 				long aT = currentClipTime();
 				if(aT < 0) {
 					return null;

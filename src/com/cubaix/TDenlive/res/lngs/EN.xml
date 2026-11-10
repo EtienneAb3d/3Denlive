@@ -114,6 +114,23 @@
 	<entry label="HintSelect">Click a shape to select it</entry>
 	<entry label="HintClip">The shapes are edited on the image, at the time cursor: the first change adds a key there, the values are interpolated between the keys. A deleted shape is only hidden from its key on (very light while the clip is selected).</entry>
 </EntrySet>
+<EntrySet label="Subtitles">
+	<entry label="Add">Add a subtitle</entry>
+	<entry label="Files">Subtitles (.srt, .vtt)</entry>
+	<entry label="NoFile">No subtitles file: click "Add a subtitle" to choose one (.srt, .vtt)</entry>
+	<entry label="File">%s: %n subtitles</entry>
+	<entry label="Empty">No subtitle found in %s (SubRip .srt or WebVTT .vtt expected)</entry>
+	<entry label="Error">The subtitles file %s can't be read</entry>
+	<entry label="Sample">Subtitle</entry>
+	<entry label="Hint">The text shows the subtitle at the time of the video. Move, resize, rotate it on the image and change its style here, at the time cursor: the first change adds a key there, the values are interpolated between the keys. A subtitle of several lines grows upward from the bottom of the text. Typing in the text field changes the subtitle shown.</entry>
+</EntrySet>
+<EntrySet label="MediaTrash">
+	<entry label="Title">Remove a media</entry>
+	<entry label="Used">The media %s is used by %n clip(s) of the time lines: they will be removed from the time lines too.</entry>
+	<entry label="UsedDepthOnly">The media %s is used as depth map by %d clip(s) of the time lines: they will no longer use it.</entry>
+	<entry label="Depth">It is also used as depth map by %n clip(s), which will no longer use it.</entry>
+	<entry label="Confirm">Remove it anyway?</entry>
+</EntrySet>
 <EntrySet label="Glasses">
 	<entry label="AnaMixerRC">Red / cyan anaglyph</entry>
 	<entry label="AnaMixerRC_Dubois">Red / cyan anaglyph Dubois</entry>
@@ -155,6 +172,7 @@
 	<entry label="RotateRight">Rotate right view</entry>
 </EntrySet>
 <EntrySet label="Processor">
+	<entry label="AutoKey">Automatic key adding (K)</entry>
 	<entry label="NotYetAvailable">This feature will be available in a next version</entry>
 	<entry label="SelectAClip">Please select a clip in a time line</entry>
 	<entry label="SelectAnAudioClip">This processor works on sound: please select a clip with a sound (video or audio)</entry>
@@ -187,6 +205,9 @@
 
 	<entry label="Expert">Expert</entry>
 	<entry label="Scripter">Script</entry>
+
+	<entry label="Video">Video</entry>
+	<entry label="Subtitles">Subtitles</entry>
 
 	<entry label="Audio">Sound</entry>
 	<entry label="Volume">Volume / balance</entry>
@@ -479,6 +500,7 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="ShapesStyle">Style of the border</entry>
 	<entry label="ShapesOpacity">Opacity of the shape</entry>
 	<entry label="ShapesDepth">Depth of the shape: shift between the left and right views (&gt; 0: behind the screen)</entry>
+	<entry label="MediaTrash">Remove this media from the list (if it is used in the time lines, its clips are removed too, after a confirmation)</entry>
 	<entry label="MediaList">Click: select and preview a media\nDouble-click: add it to the time lines</entry>
 
 	<entry label="Ratio">Image ratio of the montage (width / height)</entry>
@@ -512,7 +534,9 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 
 	<entry label="Play">Play the montage from the time cursor</entry>
 	<entry label="Stop">Stop playing</entry>
-	<entry label="Clock">Position of the time cursor</entry>
+	<entry label="Pause">Pause the playing (the cursor stays where it is)</entry>
+	<entry label="Resume">Resume the playing</entry>
+	<entry label="Clock">Position of the time cursor (hh:mm:ss:cc): type a time to go there</entry>
 	<entry label="PrevFrame">Previous frame</entry>
 	<entry label="NextFrame">Next frame</entry>
 	<entry label="MonitorZoomIn">Zoom in the preview</entry>
@@ -524,9 +548,12 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="LineActive">Enable / disable this line (images and sound) in the preview and the rendering</entry>
 	<entry label="AudioLineActive">Enable / disable this sound line in the playing and the rendering</entry>
 	<entry label="LineSound">Sound of the clips of this line: left video (default), right video (two files) or mute</entry>
+	<entry label="LineUp">Move this whole line up (with its clips)</entry>
+	<entry label="LineDown">Move this whole line down (with its clips)</entry>
 	<entry label="Ruler">Click or drag to move the time cursor</entry>
 
 	<entry label="ProcTitle">Click to show / hide the settings of this processor</entry>
+	<entry label="AutoKey">Checked: a change adds a key at the time cursor, and the settings show the values interpolated there. Unchecked: a change modifies the key left of the time cursor (yellow square), whose values the settings show</entry>
 	<entry label="ProcCollapseAll">Hide the settings of all the processors</entry>
 	<entry label="ProcActive">Enable / disable this processor</entry>
 	<entry label="ProcUp">Move this processor up (applied earlier)</entry>
@@ -552,6 +579,8 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="ProcLib_Framing">Add a decorative frame over the image</entry>
 	<entry label="ProcLib_Volume">Change the volume and the left / right balance of the sound</entry>
 	<entry label="ProcLib_Scripter">Process the images with a BeanShell script</entry>
+	<entry label="ProcLib_Subtitles">Show the subtitles of a .srt or .vtt file over the clip</entry>
+	<entry label="SubtitlesAdd">Choose the subtitles file of the clip (SubRip .srt or WebVTT .vtt), timed from the start of the video</entry>
 
 	<entry label="ScaleMinus">Decrease (Shift or Ctrl: bigger step)</entry>
 	<entry label="ScaleZero">Back to the default value</entry>
@@ -607,6 +636,9 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="HScroll">Scroll the time lines (touchpad and tilt wheel work too)</entry>
 	<entry label="ClipStart">Go to the start of the selected clip (or of the montage if no clip is selected)</entry>
 	<entry label="ClipEnd">Go to the end of the selected clip (or of the montage if no clip is selected)</entry>
+	<entry label="StepSeconds">Step in seconds of the double arrows</entry>
+	<entry label="StepBack">Go back in the montage by the step in seconds</entry>
+	<entry label="StepForward">Go forward in the montage by the step in seconds</entry>
 
 	<entry label="AlignX">Horizontal shift between the left and right views (depth of the whole image)</entry>
 	<entry label="AlignY">Vertical shift between the left and right views</entry>
@@ -616,6 +648,7 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="DepthZ">Depth intensity given by the depth map</entry>
 	<entry label="DepthX">Distribution of the shift between the left and right views (stereo position)</entry>
 	<entry label="DepthP">Perspective: shift growing with the distance to the image center</entry>
+	<entry label="DepthM">Mix of the depth map on the source image before the 3D conversion: 0 = source image only, 100 = depth map only (converted to stereo)</entry>
 	<entry label="PlaceX">Horizontal position of the image</entry>
 	<entry label="PlaceY">Vertical position of the image</entry>
 	<entry label="PlaceS">Size of the image</entry>

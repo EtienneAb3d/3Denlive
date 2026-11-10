@@ -96,6 +96,7 @@ public class ScripterGUI extends ProcessorGUI {
 		scriptL.setText(new File(scr.getScript(aSelectedKey)).getName());
 		tde.gui.applyColorFont(scriptL);
 		
+		lkf.change(lkf.displayKey(lkf.getSelection()));
 		tde.timeLineStack.addTimeListener(this);
 	}
 	
@@ -115,8 +116,9 @@ public class ScripterGUI extends ProcessorGUI {
 			@Override
 			public void run() {
 				lkf.setSelection(aKey);
+				int aShow = lkf.displayKey(aKey);
 				lkf.checkAddMode(tde.timeLineStack.getTimePosMS());
-				scriptL.setText(new File(scr.getScript(aKey)).getName());
+				scriptL.setText(new File(scr.getScript(aShow)).getName());
 			}
 		});
 	}

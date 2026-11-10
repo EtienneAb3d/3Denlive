@@ -18,28 +18,50 @@ import org.eclipse.swt.graphics.Rectangle;
 
 import com.cubaix.TDenlive.TDConfig;
 import com.cubaix.TDenlive.TDenlive;
+import com.cubaix.TDenlive.medias.Clip;
 import com.cubaix.TDenlive.medias.Media;
 import com.cubaix.TDenlive.utils.ImageUtils;
 import com.cubaix.TDenlive.xml.XmlObject;
 import com.cubaix.TDenlive.xml.XmlTag;
 
 public class Cropper extends Processor {
-	public double leftL = 0.0;
-	public double leftR = 0.0;
-	public double rightL = 1.0;
-	public double rightR = 1.0;
-	public double top = 0.0;
-	public double bottom = 1.0;
-	public double angle = 0.0;
-	public double shearXL = 0.0;
-	public double shearXR = 0.0;
-	public double transparency = 1.0;
+	public static class Key{
+		public double leftL = 0.0;
+		public double leftR = 0.0;
+		public double rightL = 1.0;
+		public double rightR = 1.0;
+		public double top = 0.0;
+		public double bottom = 1.0;
+		public double angle = 0.0;
+		public double shearXL = 0.0;
+		public double shearXR = 0.0;
+		public double transparency = 1.0;
+		public long time = 0;
+
+		Key copy(long aTime) {
+			Key aK = new Key();
+			aK.leftL = leftL;
+			aK.leftR = leftR;
+			aK.rightL = rightL;
+			aK.rightR = rightR;
+			aK.top = top;
+			aK.bottom = bottom;
+			aK.angle = angle;
+			aK.shearXL = shearXL;
+			aK.shearXR = shearXR;
+			aK.transparency = transparency;
+			aK.time = aTime;
+			return aK;
+		}
+	}
+	Vector<Key> keys = new Vector<Key>();
 	
 	public boolean showCutLines = true;
 
 	public Cropper(TDenlive aTDe, Media aTargetMedia) {
 		super(aTDe, aTargetMedia);
 		isExpended = true;
+		keys.add(new Key());
 	}
 
 	@Override
@@ -47,58 +69,75 @@ public class Cropper extends Processor {
 
 	@Override
 	public int openProject(Vector<XmlObject> aOs, int o) throws Exception {
+		keys.clear();
 		for(;o < aOs.size();o++) {
 			XmlObject aO = aOs.elementAt(o);
 			if(aO instanceof XmlTag) {
 				XmlTag aT = (XmlTag)aO;
 				if("/Cropper".equalsIgnoreCase(aT.tagName)) {
-					return o;
+					break;
 				}
 				if("showCutLines".equalsIgnoreCase(aT.tagName)) {
 					o++;
 					showCutLines = "true".equals(aOs.elementAt(o).text);
+					continue;
 				}
 				if("leftL".equalsIgnoreCase(aT.tagName)) {
+					//First tag of a key (projects before the keys have a single key without time)
+					keys.add(new Key());
+				}
+				if(keys.size() <= 0) {
+					continue;
+				}
+				Key aK = keys.lastElement();
+				if("leftL".equalsIgnoreCase(aT.tagName)) {
 					o++;
-					leftL = Double.parseDouble(aOs.elementAt(o).text);
+					aK.leftL = Double.parseDouble(aOs.elementAt(o).text);
 				}
 				if("leftR".equalsIgnoreCase(aT.tagName)) {
 					o++;
-					leftR = Double.parseDouble(aOs.elementAt(o).text);
+					aK.leftR = Double.parseDouble(aOs.elementAt(o).text);
 				}
 				if("rightL".equalsIgnoreCase(aT.tagName)) {
 					o++;
-					rightL = Double.parseDouble(aOs.elementAt(o).text);
+					aK.rightL = Double.parseDouble(aOs.elementAt(o).text);
 				}
 				if("rightR".equalsIgnoreCase(aT.tagName)) {
 					o++;
-					rightR = Double.parseDouble(aOs.elementAt(o).text);
+					aK.rightR = Double.parseDouble(aOs.elementAt(o).text);
 				}
 				if("top".equalsIgnoreCase(aT.tagName)) {
 					o++;
-					top = Double.parseDouble(aOs.elementAt(o).text);
+					aK.top = Double.parseDouble(aOs.elementAt(o).text);
 				}
 				if("bottom".equalsIgnoreCase(aT.tagName)) {
 					o++;
-					bottom = Double.parseDouble(aOs.elementAt(o).text);
+					aK.bottom = Double.parseDouble(aOs.elementAt(o).text);
 				}
 				if("angle".equalsIgnoreCase(aT.tagName)) {
 					o++;
-					angle = Double.parseDouble(aOs.elementAt(o).text);
+					aK.angle = Double.parseDouble(aOs.elementAt(o).text);
 				}
 				if("shearXL".equalsIgnoreCase(aT.tagName)) {
 					o++;
-					shearXL = Double.parseDouble(aOs.elementAt(o).text);
+					aK.shearXL = Double.parseDouble(aOs.elementAt(o).text);
 				}
 				if("shearXR".equalsIgnoreCase(aT.tagName)) {
 					o++;
-					shearXR = Double.parseDouble(aOs.elementAt(o).text);
+					aK.shearXR = Double.parseDouble(aOs.elementAt(o).text);
 				}
 				if("transparency".equalsIgnoreCase(aT.tagName)) {
 					o++;
-					transparency = Double.parseDouble(aOs.elementAt(o).text);
+					aK.transparency = Double.parseDouble(aOs.elementAt(o).text);
+				}
+				if("time".equalsIgnoreCase(aT.tagName)) {
+					o++;
+					aK.time = Long.parseLong(aOs.elementAt(o).text);
 				}
 			}
+		}
+		if(keys.size() <= 0) {
+			keys.add(new Key());
 		}
 		return o;
 	}
@@ -107,16 +146,19 @@ public class Cropper extends Processor {
 	public void saveProject(StringBuffer aSB) throws Exception {
 		aSB.append("						<Cropper>\n");
 		aSB.append("							<showCutLines>" + showCutLines + "</showCutLines>\n");
-		aSB.append("							<leftL>" + leftL + "</leftL>\n");
-		aSB.append("							<leftR>" + leftR + "</leftR>\n");
-		aSB.append("							<rightL>" + rightL + "</rightL>\n");
-		aSB.append("							<rightR>" + rightR + "</rightR>\n");
-		aSB.append("							<top>" + top + "</top>\n");
-		aSB.append("							<bottom>" + bottom + "</bottom>\n");
-		aSB.append("							<angle>" + angle + "</angle>\n");
-		aSB.append("							<shearXL>" + shearXL + "</shearXL>\n");
-		aSB.append("							<shearXR>" + shearXR + "</shearXR>\n");
-		aSB.append("							<transparency>" + transparency + "</transparency>\n");
+		for(Key aK : keys) {
+			aSB.append("							<leftL>" + aK.leftL + "</leftL>\n");
+			aSB.append("							<leftR>" + aK.leftR + "</leftR>\n");
+			aSB.append("							<rightL>" + aK.rightL + "</rightL>\n");
+			aSB.append("							<rightR>" + aK.rightR + "</rightR>\n");
+			aSB.append("							<top>" + aK.top + "</top>\n");
+			aSB.append("							<bottom>" + aK.bottom + "</bottom>\n");
+			aSB.append("							<angle>" + aK.angle + "</angle>\n");
+			aSB.append("							<shearXL>" + aK.shearXL + "</shearXL>\n");
+			aSB.append("							<shearXR>" + aK.shearXR + "</shearXR>\n");
+			aSB.append("							<transparency>" + aK.transparency + "</transparency>\n");
+			aSB.append("							<time>" + aK.time + "</time>\n");
+		}
 		aSB.append("						</Cropper>\n");
 	}
 
@@ -126,84 +168,119 @@ public class Cropper extends Processor {
 		icon = "rectFrame.gif";
 	}
 
-	public double getLeftL() {
-		return leftL;
+	@Override
+	public int getNbKeys() {
+		return keys.size();
+	}
+	
+	@Override
+	public int addKeyGT(long aTime){
+		if(aTime < ((Clip)targetMedia).getStartTimeMS() || aTime <= ((Clip)targetMedia).getKeysOriginMS() || aTime > ((Clip)targetMedia).getStartTimeMS() + ((Clip)targetMedia).getDurationMS()) {
+			//Can't insert outside
+			return -1;
+		}
+		Key aKey = getInterKeyGT(aTime);
+		for(int k = keys.size() - 1;k >= 0;k--) {
+			Key aK = keys.elementAt(k);
+			if(aK.time <= aKey.time) {
+				keys.add(k+1, aKey);
+				return k+1;
+			}
+		}
+		//??
+		keys.add(aKey);
+		return 0;
+	}
+	
+	@Override
+	public void deleteKey(int aKey) {
+		//Can't delete first
+		if(aKey <= 0 || aKey >= keys.size()) {
+			return;
+		}
+		keys.remove(aKey);
+	}
+	
+	@Override
+	public int getPrevKeyGT(long aTime){
+		long aT = aTime-((Clip)targetMedia).getKeysOriginMS();
+		for(int k = keys.size() - 1;k >= 0;k--) {
+			if(keys.elementAt(k).time <= aT) {
+				return k;
+			}
+		}
+		//No key before
+		return -1;
+	}
+	
+	@Override
+	public int getNextKeyGT(long aTime){
+		long aT = aTime-((Clip)targetMedia).getKeysOriginMS();
+		for(int k = 0;k < keys.size();k++) {
+			if(keys.elementAt(k).time > aT) {
+				return k;
+			}
+		}
+		//No key after
+		return -1;
 	}
 
-	public void setLeftL(double leftL) {
-		this.leftL = leftL;
+	@Override
+	public long getTime(int aKey) {
+		return key(aKey).time;
 	}
 
-	public double getLeftR() {
-		return leftR;
+	public Key getKey(int aKey) {
+		return key(aKey);
 	}
 
-	public void setLeftR(double leftR) {
-		this.leftR = leftR;
+	/** Values interpolated at the time cursor, for the display (index DISPLAY_KEY, UI thread only) */
+	Key displayKey = null;
+
+	@Override
+	public boolean setDisplayKeyGT(long aTime) {
+		try {
+			displayKey = getInterKeyGT(aTime);
+		}
+		catch(Throwable t) {
+			displayKey = null;
+		}
+		return displayKey != null;
 	}
 
-	public double getRightL() {
-		return rightL;
+	/** The key aKey, or the display key */
+	Key key(int aKey) {
+		return aKey == DISPLAY_KEY && displayKey != null ? displayKey : keys.elementAt(aKey);
 	}
 
-	public void setRightL(double rightL) {
-		this.rightL = rightL;
-	}
-
-	public double getRightR() {
-		return rightR;
-	}
-
-	public void setRightR(double rightR) {
-		this.rightR = rightR;
-	}
-
-	public double getTop() {
-		return top;
-	}
-
-	public void setTop(double top) {
-		this.top = top;
-	}
-
-	public double getBottom() {
-		return bottom;
-	}
-
-	public void setBottom(double bottom) {
-		this.bottom = bottom;
-	}
-
-	public double getAngle() {
-		return angle;
-	}
-
-	public void setAngle(double angle) {
-		this.angle = angle;
-	}
-
-	public double getShearX() {
-		return shearXL;
-	}
-
-	public void setShearX(double shearX) {
-		this.shearXL = shearX;
-	}
-
-	public double getShearY() {
-		return shearXR;
-	}
-
-	public void setShearY(double shearY) {
-		this.shearXR = shearY;
-	}
-
-	public double getTransparency() {
-		return transparency;
-	}
-
-	public void setTransparency(double transparency) {
-		this.transparency = transparency;
+	Key getInterKeyGT(long aTimePos){
+		long aTime = aTimePos-((Clip)targetMedia).getKeysOriginMS();
+		for(int k = keys.size()-1;k >= 0;k--) {
+			Key aKey = keys.elementAt(k);
+			if(aKey.time <= aTime) {
+				if(k == keys.size()-1) {
+					return aKey.copy(aTime);
+				}
+				Key aNext = keys.elementAt(k+1);
+				double aF = (aTime-aKey.time)/(double)(aNext.time-aKey.time);
+				double aG = 1.0-aF;
+				Key aInter = new Key();
+				aInter.leftL = aKey.leftL*aG+aNext.leftL*aF;
+				aInter.leftR = aKey.leftR*aG+aNext.leftR*aF;
+				aInter.rightL = aKey.rightL*aG+aNext.rightL*aF;
+				aInter.rightR = aKey.rightR*aG+aNext.rightR*aF;
+				aInter.top = aKey.top*aG+aNext.top*aF;
+				aInter.bottom = aKey.bottom*aG+aNext.bottom*aF;
+				aInter.angle = aKey.angle*aG+aNext.angle*aF;
+				aInter.shearXL = aKey.shearXL*aG+aNext.shearXL*aF;
+				aInter.shearXR = aKey.shearXR*aG+aNext.shearXR*aF;
+				aInter.transparency = aKey.transparency*aG+aNext.transparency*aF;
+				aInter.time = aTime;
+				return aInter;
+			}
+		}
+		//Before the first key
+		return keys.firstElement().copy(aTime);
 	}
 
 	public boolean isShowCutLines() {
@@ -223,6 +300,7 @@ public class Cropper extends Processor {
 	@Override
 	public void process2Awt(Media aMedia, int aProcessingMode, long aTime) {
 		try {
+			final Key aK = getInterKeyGT(aTime);
 			Thread aThL = new Thread(new Runnable() {
 				@Override
 				public void run() {
@@ -230,7 +308,7 @@ public class Cropper extends Processor {
 					BufferedImage aProcessedBIL = 
 //							tde.config.processingHdr[aProcessingMode]?
 //							processAwtHdr(aBIL,aProcessingMode,true):
-								processAwtImage(aBIL,aProcessingMode,true,tde.config.processingHdr[aProcessingMode]);
+								processAwtImage(aBIL,aK,aProcessingMode,true,tde.config.processingHdr[aProcessingMode]);
 					aMedia.setWorkLeft(aProcessedBIL);
 				}
 			});
@@ -242,7 +320,7 @@ public class Cropper extends Processor {
 					BufferedImage aProcessedBIR = 
 //							tde.config.processingHdr[aProcessingMode]?
 //							processAwtHdr(aBIR,aProcessingMode,false):
-								processAwtImage(aBIR,aProcessingMode,false,tde.config.processingHdr[aProcessingMode]);
+								processAwtImage(aBIR,aK,aProcessingMode,false,tde.config.processingHdr[aProcessingMode]);
 					aMedia.setWorkRight(aProcessedBIR);
 				}
 			});
@@ -255,7 +333,10 @@ public class Cropper extends Processor {
 		}
 	}
 
-	BufferedImage processAwtImage(BufferedImage aBI,int aProcessingMode,boolean aIsL,boolean aIsHdr) {
+	BufferedImage processAwtImage(BufferedImage aBI,Key aK,int aProcessingMode,boolean aIsL,boolean aIsHdr) {
+		double leftL = aK.leftL, leftR = aK.leftR, rightL = aK.rightL, rightR = aK.rightR;
+		double top = aK.top, bottom = aK.bottom, angle = aK.angle;
+		double shearXL = aK.shearXL, shearXR = aK.shearXR, transparency = aK.transparency;
 		int aWidth = aBI.getWidth();
 		int aHeight = aBI.getHeight();
 		BufferedImage aFBI = aIsHdr?ImageUtils.createHdr(aWidth, aHeight)

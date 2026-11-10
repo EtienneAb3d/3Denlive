@@ -264,6 +264,7 @@ public class StereoAlignerGUI extends ProcessorGUI {
 			}
 		}.tip("AlignR");
 
+		lkf.change(lkf.displayKey(lkf.getSelection()));
 		tde.timeLineStack.addTimeListener(this);
 	}
 
@@ -283,12 +284,13 @@ public class StereoAlignerGUI extends ProcessorGUI {
 			@Override
 			public void run() {
 				lkf.setSelection(aKey);
+				int aShow = lkf.displayKey(aKey);
 				lkf.checkAddMode(tde.timeLineStack.getTimePosMS());
-				xLLS.setSelection((int)(sa.getXL(aKey)*10000));
-				yLLS.setSelection((int)(-sa.getYL(aKey)*10000));
-				wLLS.setSelection((int)(sa.getWL(aKey)-1.0));
-				hLLS.setSelection((int)(sa.getHL(aKey)-1.0));
-				rLLS.setSelection((int)(-(sa.getRL(aKey)/Math.PI)*10000));
+				xLLS.setSelection((int)(sa.getXL(aShow)*10000));
+				yLLS.setSelection((int)(-sa.getYL(aShow)*10000));
+				wLLS.setSelection((int)(sa.getWL(aShow)-1.0));
+				hLLS.setSelection((int)(sa.getHL(aShow)-1.0));
+				rLLS.setSelection((int)(-(sa.getRL(aShow)/Math.PI)*10000));
 			}
 		});
 	}

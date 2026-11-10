@@ -151,7 +151,17 @@ public abstract class KeyFrame extends Widget {
 				if(k == selection) {
 					aGC.setBackground(tde.gui.colorsSwt.CUBAIX_PINK);
 					aGC.setForeground(tde.gui.colorsSwt.CUBAIX_PINK);
-					aGC.drawOval(aBulletX-5, aLineY-5, 10, 10);
+					if(proc.autoKey) {
+						aGC.drawOval(aBulletX-5, aLineY-5, 10, 10);
+					}
+					else {
+						//Manual mode: the key the parameters change
+						aGC.setForeground(tde.gui.colorsSwt.YELLOW);
+						aGC.setLineWidth(2);
+						aGC.drawRectangle(aBulletX-5, aLineY-5, 10, 10);
+						aGC.setLineWidth(1);
+						aGC.setForeground(tde.gui.colorsSwt.CUBAIX_PINK);
+					}
 					int aBulletXN = lineX+lineW;
 					if(k < aNbKey-1) {
 						double aPosN = (proc.getTime(k+1)-aKeysShift)/

@@ -114,6 +114,23 @@
 	<entry label="HintSelect">Cliquez une forme pour la sélectionner</entry>
 	<entry label="HintClip">Les formes se modifient sur l'image, au curseur de temps : la première modification y ajoute une clé, les valeurs sont interpolées entre les clés. Une forme supprimée est seulement masquée à partir de sa clé (très claire tant que le clip est sélectionné).</entry>
 </EntrySet>
+<EntrySet label="Subtitles">
+	<entry label="Add">Ajouter un sous-titre</entry>
+	<entry label="Files">Sous-titres (.srt, .vtt)</entry>
+	<entry label="NoFile">Pas de fichier de sous-titres : cliquer sur "Ajouter un sous-titre" pour en choisir un (.srt, .vtt)</entry>
+	<entry label="File">%s : %n sous-titres</entry>
+	<entry label="Empty">Aucun sous-titre trouvé dans %s (SubRip .srt ou WebVTT .vtt attendu)</entry>
+	<entry label="Error">Le fichier de sous-titres %s ne peut pas être lu</entry>
+	<entry label="Sample">Sous-titre</entry>
+	<entry label="Hint">Le texte affiche le sous-titre au temps de la vidéo. Le déplacer, le redimensionner, le tourner sur l'image et changer son style ici, au curseur de temps : la première modification y ajoute une clé, les valeurs sont interpolées entre les clés. Un sous-titre de plusieurs lignes grandit vers le haut à partir du bas du texte. Taper dans le champ texte modifie le sous-titre affiché.</entry>
+</EntrySet>
+<EntrySet label="MediaTrash">
+	<entry label="Title">Supprimer un média</entry>
+	<entry label="Used">Le média %s est utilisé par %n clip(s) des lignes de temps : ils seront aussi supprimés des lignes de temps.</entry>
+	<entry label="UsedDepthOnly">Le média %s est utilisé comme carte de profondeur par %d clip(s) des lignes de temps : ils ne l'utiliseront plus.</entry>
+	<entry label="Depth">Il est aussi utilisé comme carte de profondeur par %n clip(s), qui ne l'utiliseront plus.</entry>
+	<entry label="Confirm">Le supprimer quand même ?</entry>
+</EntrySet>
 <EntrySet label="Glasses">
 	<entry label="AnaMixerRC">Anaglyphe rouge / cyan</entry>
 	<entry label="AnaMixerRC_Dubois">Anaglyphe rouge / cyan Dubois</entry>
@@ -155,6 +172,7 @@
 	<entry label="RotateRight">Tourner la vue droite</entry>
 </EntrySet>
 <EntrySet label="Processor">
+	<entry label="AutoKey">Ajout automatique (K)</entry>
 	<entry label="NotYetAvailable">Cette fonctionnalité sera disponible dans une prochaine version</entry>
 	<entry label="SelectAClip">Veuillez sélectionner un clip dans une ligne de temps</entry>
 	<entry label="SelectAnAudioClip">Ce traitement agit sur le son : veuillez sélectionner un clip qui a du son (vidéo ou audio)</entry>
@@ -187,6 +205,9 @@
 
 	<entry label="Expert">Expert</entry>
 	<entry label="Scripter">Script</entry>
+
+	<entry label="Video">Vidéo</entry>
+	<entry label="Subtitles">Sous-titres</entry>
 
 	<entry label="Audio">Son</entry>
 	<entry label="Volume">Volume / balance</entry>
@@ -479,6 +500,7 @@ Calculer les cartes de profondeur des deux vues à partir du clip (intelligence 
 	<entry label="ShapesStyle">Style du bord</entry>
 	<entry label="ShapesOpacity">Opacité de la forme</entry>
 	<entry label="ShapesDepth">Profondeur de la forme : décalage entre les vues gauche et droite (&gt; 0 : derrière l'écran)</entry>
+	<entry label="MediaTrash">Supprimer ce média de la liste (s'il est utilisé dans les lignes de temps, ses clips sont aussi supprimés, après confirmation)</entry>
 	<entry label="MediaList">Clic : sélectionner et prévisualiser un média\nDouble-clic : l'ajouter aux lignes de temps</entry>
 
 	<entry label="Ratio">Format d'image du montage (largeur / hauteur)</entry>
@@ -512,7 +534,9 @@ Calculer les cartes de profondeur des deux vues à partir du clip (intelligence 
 
 	<entry label="Play">Lire le montage depuis le curseur de temps</entry>
 	<entry label="Stop">Arrêter la lecture</entry>
-	<entry label="Clock">Position du curseur de temps</entry>
+	<entry label="Pause">Mettre la lecture en pause (le curseur reste où il est)</entry>
+	<entry label="Resume">Reprendre la lecture</entry>
+	<entry label="Clock">Position du curseur de temps (hh:mm:ss:cc) : saisir un temps pour y aller</entry>
 	<entry label="PrevFrame">Image précédente</entry>
 	<entry label="NextFrame">Image suivante</entry>
 	<entry label="MonitorZoomIn">Agrandir la prévisualisation</entry>
@@ -524,9 +548,12 @@ Calculer les cartes de profondeur des deux vues à partir du clip (intelligence 
 	<entry label="LineActive">Activer / désactiver cette ligne (images et son) dans la prévisualisation et le rendu</entry>
 	<entry label="AudioLineActive">Activer / désactiver cette ligne son dans la lecture et le rendu</entry>
 	<entry label="LineSound">Son des clips de cette ligne : vidéo de gauche (par défaut), vidéo de droite (deux fichiers) ou muet</entry>
+	<entry label="LineUp">Monter toute cette ligne (avec ses clips)</entry>
+	<entry label="LineDown">Descendre toute cette ligne (avec ses clips)</entry>
 	<entry label="Ruler">Cliquer ou glisser pour déplacer le curseur de temps</entry>
 
 	<entry label="ProcTitle">Cliquer pour afficher / masquer les réglages de ce traitement</entry>
+	<entry label="AutoKey">Cochée : une modification ajoute une clef au curseur de temps, et les réglages montrent les valeurs interpolées à cet endroit. Décochée : une modification change la clef à gauche du curseur de temps (carré jaune), dont les réglages montrent les valeurs</entry>
 	<entry label="ProcCollapseAll">Masquer les réglages de tous les traitements</entry>
 	<entry label="ProcActive">Activer / désactiver ce traitement</entry>
 	<entry label="ProcUp">Monter ce traitement (appliqué plus tôt)</entry>
@@ -552,6 +579,8 @@ Calculer les cartes de profondeur des deux vues à partir du clip (intelligence 
 	<entry label="ProcLib_Framing">Ajouter un cadre décoratif sur l'image</entry>
 	<entry label="ProcLib_Volume">Modifier le volume et la balance gauche / droite du son</entry>
 	<entry label="ProcLib_Scripter">Traiter les images avec un script BeanShell</entry>
+	<entry label="ProcLib_Subtitles">Afficher sur le clip les sous-titres d'un fichier .srt ou .vtt</entry>
+	<entry label="SubtitlesAdd">Choisir le fichier de sous-titres du clip (SubRip .srt ou WebVTT .vtt), minuté depuis le début de la vidéo</entry>
 
 	<entry label="ScaleMinus">Diminuer (Maj ou Ctrl : pas plus grand)</entry>
 	<entry label="ScaleZero">Revenir à la valeur par défaut</entry>
@@ -607,6 +636,9 @@ Calculer les cartes de profondeur des deux vues à partir du clip (intelligence 
 	<entry label="HScroll">Faire défiler les lignes de temps (le pavé tactile et la molette inclinable fonctionnent aussi)</entry>
 	<entry label="ClipStart">Aller au début du clip sélectionné (ou du montage si aucun clip n'est sélectionné)</entry>
 	<entry label="ClipEnd">Aller à la fin du clip sélectionné (ou du montage si aucun clip n'est sélectionné)</entry>
+	<entry label="StepSeconds">Pas en secondes des doubles flèches</entry>
+	<entry label="StepBack">Reculer dans le montage du pas en secondes</entry>
+	<entry label="StepForward">Avancer dans le montage du pas en secondes</entry>
 
 	<entry label="AlignX">Décalage horizontal entre les vues gauche et droite (profondeur de toute l'image)</entry>
 	<entry label="AlignY">Décalage vertical entre les vues gauche et droite</entry>
@@ -616,6 +648,7 @@ Calculer les cartes de profondeur des deux vues à partir du clip (intelligence 
 	<entry label="DepthZ">Intensité de la profondeur donnée par la carte de profondeur</entry>
 	<entry label="DepthX">Répartition du décalage entre les vues gauche et droite (position stéréo)</entry>
 	<entry label="DepthP">Perspective : décalage croissant avec la distance au centre de l'image</entry>
+	<entry label="DepthM">Fusion de la carte de profondeur sur l'image source avant la conversion 3D : 0 = image source seule, 100 = carte de profondeur seule (convertie en stéréo)</entry>
 	<entry label="PlaceX">Position horizontale de l'image</entry>
 	<entry label="PlaceY">Position verticale de l'image</entry>
 	<entry label="PlaceS">Taille de l'image</entry>

@@ -151,16 +151,16 @@ public class Scripter extends Processor {
 	}
 	
 	public String getScript(int aKey) {
-		return keys.elementAt(aKey).script;
+		return key(aKey).script;
 	}
 
 	public void setScript(int aKey,String script) {
 		warnNextAlignments();
-		keys.elementAt(aKey).script = script;
+		key(aKey).script = script;
 	}
 
 	public long getTime(int aKey) {
-		return keys.elementAt(aKey).time;
+		return key(aKey).time;
 	}
 
 	public void warnNextAlignments() {
@@ -202,6 +202,25 @@ public class Scripter extends Processor {
 		return tde.lastDir+File.separatorChar+new File(aPath).getName();
 	}
 	
+	/** Values interpolated at the time cursor, for the display (index DISPLAY_KEY, UI thread only) */
+	Key displayKey = null;
+
+	@Override
+	public boolean setDisplayKeyGT(long aTime) {
+		try {
+			displayKey = getInterKeyGT(aTime);
+		}
+		catch(Throwable t) {
+			displayKey = null;
+		}
+		return displayKey != null;
+	}
+
+	/** The key aKey, or the display key */
+	Key key(int aKey) {
+		return aKey == DISPLAY_KEY && displayKey != null ? displayKey : keys.elementAt(aKey);
+	}
+
 	Key getInterKeyGT(long aTimePos){
 		long aTime = aTimePos-((Clip)targetMedia).getKeysOriginMS();
 		for(int k = keys.size()-1;k >= 0;k--) {

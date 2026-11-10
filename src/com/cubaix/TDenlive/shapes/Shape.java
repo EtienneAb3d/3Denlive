@@ -167,6 +167,56 @@ public class Shape {
 		ys[2] = ys[3]+aV1Y;
 	}
 
+	/**
+	 * TEXT: replace the text, the box keeps the height of a line, the stretch and the orientation
+	 * of the text, and the middle (or the left / right end, with the alignment) of its bottom side:
+	 * a text of several lines grows upward. aFrameRatio is width / height of the frame
+	 */
+	public void setTextKeepLines(String aText,double aFrameRatio) {
+		if(!isText() || aFrameRatio <= 0) {
+			text = aText;
+			return;
+		}
+		//In pixels of a frame of height 1
+		double aV1X = (xs[1]-xs[0])*aFrameRatio;
+		double aV1Y = ys[1]-ys[0];
+		double aV3X = (xs[3]-xs[0])*aFrameRatio;
+		double aV3Y = ys[3]-ys[0];
+		double aW = Math.hypot(aV1X, aV1Y);
+		double aH = Math.hypot(aV3X, aV3Y);
+		double aRatio = textRatio();
+		if(aW < 1e-9 || aH < 1e-9 || aRatio <= 0) {
+			text = aText;
+			fitText(aFrameRatio);
+			return;
+		}
+		double aStretch = aW/(aH*aRatio);
+		double aLineH = aH/ShapeText.getLinesFactor(this);
+		double aUX = aV1X/aW;
+		double aUY = aV1Y/aW;
+		double aU3X = aV3X/aH;
+		double aU3Y = aV3Y/aH;
+		//Anchor on the bottom side
+		double aA = align == ALIGN_LEFT ? 0 : (align == ALIGN_RIGHT ? 1 : 0.5);
+		double aBX = xs[3]*aFrameRatio+aV1X*aA;
+		double aBY = ys[3]+aV1Y*aA;
+		text = aText;
+		double aNewH = aLineH*ShapeText.getLinesFactor(this);
+		double aNewW = aNewH*textRatio()*aStretch;
+		double aX3 = aBX-aUX*aNewW*aA;
+		double aY3 = aBY-aUY*aNewW*aA;
+		double aX0 = aX3-aU3X*aNewH;
+		double aY0 = aY3-aU3Y*aNewH;
+		xs[0] = aX0/aFrameRatio;
+		ys[0] = aY0;
+		xs[1] = (aX0+aUX*aNewW)/aFrameRatio;
+		ys[1] = aY0+aUY*aNewW;
+		xs[2] = (aX3+aUX*aNewW)/aFrameRatio;
+		ys[2] = aY3+aUY*aNewW;
+		xs[3] = aX3/aFrameRatio;
+		ys[3] = aY3;
+	}
+
 	public int nbPoints() {
 		return xs.length;
 	}
@@ -536,11 +586,11 @@ public class Shape {
 	 * Free text in the project: URL encoded (the XML parser cuts on < > [ ] and drops the
 	 * empty texts), after a '=' so that it is never empty
 	 */
-	static String encode(String aS) {
+	public static String encode(String aS) {
 		return "="+URLEncoder.encode(aS == null ? "" : aS, StandardCharsets.UTF_8);
 	}
 
-	static String decode(String aS) {
+	public static String decode(String aS) {
 		if(aS.startsWith("=")) {
 			aS = aS.substring(1);
 		}

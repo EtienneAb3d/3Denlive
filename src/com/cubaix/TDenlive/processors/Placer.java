@@ -152,34 +152,34 @@ public class Placer extends Processor {
 	}
 	
 	public double getX(int aKey) {
-		return keys.elementAt(aKey).x;
+		return key(aKey).x;
 	}
 
 	public void setX(int aKey,double x) {
 		warnNextAlignments();
-		keys.elementAt(aKey).x = x;
+		key(aKey).x = x;
 	}
 
 	public double getY(int aKey) {
-		return keys.elementAt(aKey).y;
+		return key(aKey).y;
 	}
 
 	public void setY(int aKey,double y) {
 		warnNextAlignments();
-		keys.elementAt(aKey).y = y;
+		key(aKey).y = y;
 	}
 
 	public double getScale(int aKey) {
-		return keys.elementAt(aKey).scale;
+		return key(aKey).scale;
 	}
 
 	public void setScale(int aKey,double scale) {
 		warnNextAlignments();
-		keys.elementAt(aKey).scale = scale;
+		key(aKey).scale = scale;
 	}
 	
 	public long getTime(int aKey) {
-		return keys.elementAt(aKey).time;
+		return key(aKey).time;
 	}
 
 	public void warnNextAlignments() {
@@ -209,6 +209,25 @@ public class Placer extends Processor {
 	public Image process2Swt(Media aMedia,int aProcessingMode,Rectangle aTargetSize,long aTime) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	/** Values interpolated at the time cursor, for the display (index DISPLAY_KEY, UI thread only) */
+	Key displayKey = null;
+
+	@Override
+	public boolean setDisplayKeyGT(long aTime) {
+		try {
+			displayKey = getInterKeyGT(aTime);
+		}
+		catch(Throwable t) {
+			displayKey = null;
+		}
+		return displayKey != null;
+	}
+
+	/** The key aKey, or the display key */
+	Key key(int aKey) {
+		return aKey == DISPLAY_KEY && displayKey != null ? displayKey : keys.elementAt(aKey);
 	}
 
 	Key getInterKeyGT(long aTimePos){

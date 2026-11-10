@@ -137,23 +137,42 @@ public class Volume extends Processor {
 	}
 
 	public long getTime(int aKey) {
-		return keys.elementAt(aKey).time;
+		return key(aKey).time;
 	}
 
 	public double getGain(int aKey) {
-		return keys.elementAt(aKey).gain;
+		return key(aKey).gain;
 	}
 
 	public void setGain(int aKey,double aGain) {
-		keys.elementAt(aKey).gain = aGain;
+		key(aKey).gain = aGain;
 	}
 
 	public double getPan(int aKey) {
-		return keys.elementAt(aKey).pan;
+		return key(aKey).pan;
 	}
 
 	public void setPan(int aKey,double aPan) {
-		keys.elementAt(aKey).pan = aPan;
+		key(aKey).pan = aPan;
+	}
+
+	/** Values interpolated at the time cursor, for the display (index DISPLAY_KEY, UI thread only) */
+	Key displayKey = null;
+
+	@Override
+	public boolean setDisplayKeyGT(long aTime) {
+		try {
+			displayKey = getInterKeyGT(aTime);
+		}
+		catch(Throwable t) {
+			displayKey = null;
+		}
+		return displayKey != null;
+	}
+
+	/** The key aKey, or the display key */
+	Key key(int aKey) {
+		return aKey == DISPLAY_KEY && displayKey != null ? displayKey : keys.elementAt(aKey);
 	}
 
 	Key getInterKeyGT(long aTimePos){

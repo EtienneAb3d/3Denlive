@@ -139,6 +139,7 @@ public class FramingGUI extends ProcessorGUI {
 			}
 		}.tip("FrameX");
 
+		lkf.change(lkf.displayKey(lkf.getSelection()));
 		tde.timeLineStack.addTimeListener(this);
 	}
 	
@@ -158,9 +159,10 @@ public class FramingGUI extends ProcessorGUI {
 			@Override
 			public void run() {
 				lkf.setSelection(aKey);
-				opacityLS.setSelection((int)(fr.getOpacity(aKey)*10000));
-				frameC.select(tde.gui.frames.getFrameIndex(fr.getFrame(aKey).path));
-				xLS.setSelection((int)(fr.getX(aKey)*40000));
+				int aShow = lkf.displayKey(aKey);
+				opacityLS.setSelection((int)(fr.getOpacity(aShow)*10000));
+				frameC.select(tde.gui.frames.getFrameIndex(fr.getFrame(aShow).path));
+				xLS.setSelection((int)(fr.getX(aShow)*40000));
 				lkf.checkAddMode(tde.timeLineStack.getTimePosMS());
 			}
 		});

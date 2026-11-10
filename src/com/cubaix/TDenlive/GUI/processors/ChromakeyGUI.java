@@ -174,6 +174,7 @@ public class ChromakeyGUI extends ProcessorGUI {
 			}
 		}.tip("ChromaBevel");
 
+		lkf.change(lkf.displayKey(lkf.getSelection()));
 		tde.timeLineStack.addTimeListener(this);
 	}
 	
@@ -193,8 +194,9 @@ public class ChromakeyGUI extends ProcessorGUI {
 			@Override
 			public void run() {
 				lkf.setSelection(aKey);
-				toleranceLS.setSelection((int)(ck.getTolerance(aKey)*10000));
-				bevelLS.setSelection((int)(ck.getBevel(aKey)*10000));
+				int aShow = lkf.displayKey(aKey);
+				toleranceLS.setSelection((int)(ck.getTolerance(aShow)*10000));
+				bevelLS.setSelection((int)(ck.getBevel(aShow)*10000));
 				lkf.checkAddMode(tde.timeLineStack.getTimePosMS());
 			}
 		});

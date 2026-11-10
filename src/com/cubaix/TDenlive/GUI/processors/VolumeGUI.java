@@ -90,6 +90,7 @@ public class VolumeGUI extends ProcessorGUI {
 			}
 		}.tip("Pan");
 
+		lkf.change(lkf.displayKey(lkf.getSelection()));
 		tde.timeLineStack.addTimeListener(this);
 	}
 
@@ -112,8 +113,9 @@ public class VolumeGUI extends ProcessorGUI {
 					return;
 				}
 				lkf.setSelection(aKey);
-				gainLS.setSelection((int)(vol.getGain(aKey)*GAIN_SCALE));
-				panLS.setSelection((int)(vol.getPan(aKey)*GAIN_SCALE));
+				int aShow = lkf.displayKey(aKey);
+				gainLS.setSelection((int)(vol.getGain(aShow)*GAIN_SCALE));
+				panLS.setSelection((int)(vol.getPan(aShow)*GAIN_SCALE));
 				lkf.checkAddMode(tde.timeLineStack.getTimePosMS());
 			}
 		});

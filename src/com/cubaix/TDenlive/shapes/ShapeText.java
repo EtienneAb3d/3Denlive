@@ -37,6 +37,8 @@ public class ShapeText {
 	static class Layout {
 		Path2D.Double unit = new Path2D.Double();
 		double ratio = 1.0;
+		//Height of the text block / height of one line
+		double linesFactor = 1.0;
 	}
 
 	//Last layouts (a shape is copied at each frame: the cache is by content)
@@ -147,6 +149,7 @@ public class ShapeText {
 			aP.transform(AffineTransform.getScaleInstance(1.0/aW, 1.0/aH));
 			aL.unit = aP;
 			aL.ratio = aW/aH;
+			aL.linesFactor = aH/aLineH;
 		}
 		catch(Throwable t) {
 			t.printStackTrace(System.err);
@@ -162,6 +165,13 @@ public class ShapeText {
 	 */
 	public static double getRatio(Shape aS) {
 		return layout(aS).ratio;
+	}
+
+	/**
+	 * Height of the text block of the shape / height of one of its lines (1 for one line)
+	 */
+	public static double getLinesFactor(Shape aS) {
+		return layout(aS).linesFactor;
 	}
 
 	/**

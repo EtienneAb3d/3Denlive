@@ -27,6 +27,12 @@ public class VideoTimeLine extends Media {
 	String name = null;
 	Rectangle isActiveCheckboxBounds = null;
 	Rectangle soundIconBounds = null;
+	//Arrows moving the whole line up / down in the stack (see TimeLineStack.moveLine()), null if not shown
+	Rectangle lineUpBounds = null;
+	Rectangle lineDownBounds = null;
+	//Set by TimeLineStack before drawing: the line is not the top / bottom one of its kind
+	boolean canMoveUp = false;
+	boolean canMoveDown = false;
 	public static final int SOUND_BAR_H = 16;
 	//Sound of the clips of this line (play and rendering): the left video (the only one for a single file),
 	//the right one of two files (else the single one), or none
@@ -267,6 +273,17 @@ public class VideoTimeLine extends Media {
 			}
 		}
 		
+		//Below the sound icon and the checkbox: move the whole line up / down
+		lineUpBounds = lineDownBounds = null;
+		if(canMoveUp) {
+			lineUpBounds = new Rectangle(isActiveCheckboxBounds.x-20, aY+28, 16, 16);
+			aGC.drawImage(tde.gui.imgsAwt.getIcon("arrowUp.png"), lineUpBounds.x, lineUpBounds.y, 16, 16, null);
+		}
+		if(canMoveDown) {
+			lineDownBounds = new Rectangle(isActiveCheckboxBounds.x, aY+28, 16, 16);
+			aGC.drawImage(tde.gui.imgsAwt.getIcon("arrowDown.png"), lineDownBounds.x, lineDownBounds.y, 16, 16, null);
+		}
+		
 		aGC.setColor(tde.gui.colorsAwt.CUBAIX_BLUE);
 		aGC.drawLine(tde.config.thumbW, aY, tde.config.thumbW, aY+aRowH);
 		
@@ -382,6 +399,12 @@ public class VideoTimeLine extends Media {
 		}
 		if(hasSoundIcon() && soundIconBounds != null && soundIconBounds.contains(aX,aY)) {
 			return "LineSound";
+		}
+		if(lineUpBounds != null && lineUpBounds.contains(aX,aY)) {
+			return "LineUp";
+		}
+		if(lineDownBounds != null && lineDownBounds.contains(aX,aY)) {
+			return "LineDown";
 		}
 		return null;
 	}
