@@ -33,6 +33,20 @@ public class ShapesMedia extends StereoImage {
 		workLeft = workRight = null;
 	}
 
+	/**
+	 * Images and thumbnail again after a change of the shapes
+	 */
+	public void reloadShapes() {
+		workLeft = workRight = null;
+		lastProcessedRes = -1;
+		try {
+			reloadOrig(com.cubaix.TDenlive.TDConfig.PROCESSING_MODE_WORK, -1);
+		}
+		catch(Throwable t) {
+			t.printStackTrace(System.err);
+		}
+	}
+
 	@Override
 	public int openProject(Vector<XmlObject> aOs, int o) throws Exception {
 		shapes.clear();

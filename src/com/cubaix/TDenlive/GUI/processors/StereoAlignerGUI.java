@@ -222,7 +222,7 @@ public class StereoAlignerGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					sa.setXL(lkf.editKey(),aValue/10000.0);
+					lkf.edit(aEK -> sa.setXL(aEK, aValue/10000.0));
 					tde.gui.monitorGUI.redraw();
 				}
 			}
@@ -231,7 +231,7 @@ public class StereoAlignerGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					sa.setYL(lkf.editKey(),-aValue/10000.0);
+					lkf.edit(aEK -> sa.setYL(aEK, -aValue/10000.0));
 					tde.gui.monitorGUI.redraw();
 				}
 			}
@@ -240,7 +240,7 @@ public class StereoAlignerGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					sa.setWL(lkf.editKey(),1.0+aValue/10000.0);
+					lkf.edit(aEK -> sa.setWL(aEK, 1.0+aValue/10000.0));
 					tde.gui.monitorGUI.redraw();
 				}
 			}
@@ -249,7 +249,7 @@ public class StereoAlignerGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					sa.setHL(lkf.editKey(),1.0+aValue/10000.0);
+					lkf.edit(aEK -> sa.setHL(aEK, 1.0+aValue/10000.0));
 					tde.gui.monitorGUI.redraw();
 				}
 			}
@@ -258,7 +258,7 @@ public class StereoAlignerGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					sa.setRL(lkf.editKey(),-Math.PI*aValue/10000.0);
+					lkf.edit(aEK -> sa.setRL(aEK, -Math.PI*aValue/10000.0));
 					tde.gui.monitorGUI.redraw();
 				}
 			}

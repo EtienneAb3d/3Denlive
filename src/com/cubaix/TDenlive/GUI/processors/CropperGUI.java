@@ -37,9 +37,61 @@ public class CropperGUI extends ProcessorGUI {
 		createContents();
 	}
 
-	/** Key to modify at the time cursor (see LabelKeyFrame.editKey()) */
-	Cropper.Key editKey() {
-		return crp.getKey(lkf.editKey());
+
+	//Linkable sliders, in the order of Cropper.linked
+	static final int LINK_LEFT_L = 0, LINK_LEFT_R = 1, LINK_RIGHT_L = 2, LINK_RIGHT_R = 3;
+	static final int LINK_TOP = 4, LINK_BOTTOM = 5, LINK_SHEAR_L = 6, LINK_SHEAR_R = 7;
+	//Group of each slider: borders (left / right / top / bottom), shears
+	static final int[] LINK_GROUP = {0,0,0,0,0,0,1,1};
+	//Sliders whose value is reversed (1-value) against the others of their group:
+	//right borders and top (their 0 is at the max of the bar). So top and bottom are reversed,
+	//top takes the value of the right borders, bottom that of the left borders
+	static final boolean[] LINK_REVERSED = {false,false,true,true,true,false,false,false};
+
+	LabelScale linkLS(int aId) {
+		switch(aId) {
+		case LINK_LEFT_L: return leftLLS;
+		case LINK_LEFT_R: return leftRLS;
+		case LINK_RIGHT_L: return rightLLS;
+		case LINK_RIGHT_R: return rightRLS;
+		case LINK_TOP: return topLS;
+		case LINK_BOTTOM: return bottomLS;
+		case LINK_SHEAR_L: return shearLLS;
+		default: return shearRLS;
+		}
+	}
+
+	/** Sets the parameter of the slider aId to the bar value aValue (in the keys being edited) */
+	void setParam(int aId,int aValue) {
+		switch(aId) {
+		case LINK_LEFT_L: lkf.edit(aEK -> crp.getKey(aEK).leftL = aValue/10000.0); break;
+		case LINK_LEFT_R: lkf.edit(aEK -> crp.getKey(aEK).leftR = aValue/10000.0); break;
+		case LINK_RIGHT_L: lkf.edit(aEK -> crp.getKey(aEK).rightL = aValue/10000.0); break;
+		case LINK_RIGHT_R: lkf.edit(aEK -> crp.getKey(aEK).rightR = aValue/10000.0); break;
+		case LINK_TOP: lkf.edit(aEK -> crp.getKey(aEK).top = 1-(aValue/10000.0)); break;
+		case LINK_BOTTOM: lkf.edit(aEK -> crp.getKey(aEK).bottom = 1.0-(aValue/10000.0)); break;
+		case LINK_SHEAR_L: lkf.edit(aEK -> crp.getKey(aEK).shearXL = aValue/50000.0); break;
+		default: lkf.edit(aEK -> crp.getKey(aEK).shearXR = aValue/50000.0); break;
+		}
+	}
+
+	/**
+	 * Change of the slider aId: if it is linked, the other linked sliders of its group take the same
+	 * value (reversed, 10000-value, between a left / bottom slider and a right / top one)
+	 */
+	void changeLinked(int aId,int aValue) {
+		setParam(aId, aValue);
+		if(crp.linked[aId]) {
+			for(int aO = 0;aO < crp.linked.length;aO++) {
+				if(aO == aId || !crp.linked[aO] || LINK_GROUP[aO] != LINK_GROUP[aId]) {
+					continue;
+				}
+				int aV = LINK_REVERSED[aO] == LINK_REVERSED[aId] ? aValue : 10000-aValue;
+				linkLS(aO).setSelection(aV);
+				setParam(aO, aV);
+			}
+		}
+		tde.gui.monitorGUI.redraw();
 	}
 
 	void showKey(int aKey) {
@@ -120,14 +172,14 @@ public class CropperGUI extends ProcessorGUI {
 		leftLLS = new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.LeftL"),0,0,10000,(int)(aK.leftL*10000)) {
 			@Override
 			public void change(int aValue) {
-				editKey().leftL = aValue/10000.0;
+				changeLinked(0, aValue);
 				tde.gui.monitorGUI.redraw();
 			}
 		}.tip("CropLeftL");
 		leftRLS = new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.LeftR"),0,0,10000,(int)(aK.leftR*10000)) {
 			@Override
 			public void change(int aValue) {
-				editKey().leftR = aValue/10000.0;
+				changeLinked(1, aValue);
 				tde.gui.monitorGUI.redraw();
 			}
 		}.tip("CropLeftR");
@@ -140,14 +192,14 @@ public class CropperGUI extends ProcessorGUI {
 		rightLLS = new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.RightL"),0,10000,10000,(int)(aK.rightL*10000)) {
 			@Override
 			public void change(int aValue) {
-				editKey().rightL = aValue/10000.0;
+				changeLinked(2, aValue);
 				tde.gui.monitorGUI.redraw();
 			}
 		}.tip("CropRightL");
 		rightRLS = new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.RightR"),0,10000,10000,(int)(aK.rightR*10000)) {
 			@Override
 			public void change(int aValue) {
-				editKey().rightR = aValue/10000.0;
+				changeLinked(3, aValue);
 				tde.gui.monitorGUI.redraw();
 			}
 		}.tip("CropRightR");
@@ -160,14 +212,14 @@ public class CropperGUI extends ProcessorGUI {
 		topLS = new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.Top"),0,10000,10000,(int)((1.0-aK.top)*10000)) {
 			@Override
 			public void change(int aValue) {
-				editKey().top = 1-(aValue/10000.0);
+				changeLinked(4, aValue);
 				tde.gui.monitorGUI.redraw();
 			}
 		}.tip("CropTop");
 		bottomLS = new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.Bottom"),0,0,10000,(int)((1-aK.bottom)*10000)) {
 			@Override
 			public void change(int aValue) {
-				editKey().bottom = 1.0-(aValue/10000.0);
+				changeLinked(5, aValue);
 				tde.gui.monitorGUI.redraw();
 			}
 		}.tip("CropBottom");
@@ -180,7 +232,7 @@ public class CropperGUI extends ProcessorGUI {
 		angleLS = new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.Rotation"),-90000,0,90000,(int)(aK.angle*1000)) {
 			@Override
 			public void change(int aValue) {
-				editKey().angle = aValue/1000.0;
+				lkf.edit(aEK -> crp.getKey(aEK).angle = aValue/1000.0);
 				tde.gui.monitorGUI.redraw();
 			}
 		}.tip("CropRotation");
@@ -193,14 +245,14 @@ public class CropperGUI extends ProcessorGUI {
 		shearLLS = new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.ShearXL"),-10000,0,10000,(int)(aK.shearXL*50000)) {
 			@Override
 			public void change(int aValue) {
-				editKey().shearXL = aValue/50000.0;
+				changeLinked(6, aValue);
 				tde.gui.monitorGUI.redraw();
 			}
 		}.tip("CropShearL");
 		shearRLS = new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.ShearXR"),-10000,0,10000,(int)(aK.shearXR*50000)) {
 			@Override
 			public void change(int aValue) {
-				editKey().shearXR = aValue/50000.0;
+				changeLinked(7, aValue);
 				tde.gui.monitorGUI.redraw();
 			}
 		}.tip("CropShearR");
@@ -213,10 +265,16 @@ public class CropperGUI extends ProcessorGUI {
 		transpLS = new LabelScale(tde,aWGT,tde.gui.lngs.get("Cropper.TransparencyLetter"),0,10000,10000,(int)(aK.transparency*10000)) {
 			@Override
 			public void change(int aValue) {
-				editKey().transparency = aValue/10000.0;
+				lkf.edit(aEK -> crp.getKey(aEK).transparency = aValue/10000.0);
 				tde.gui.monitorGUI.redraw();
 			}
 		}.tip("CropTransparency");
+
+		for(int aId = 0;aId < crp.linked.length;aId++) {
+			final int aFId = aId;
+			Button aLinkB = linkLS(aId).addLinkCheck(crp.linked[aId], "CropLink");
+			aLinkB.addListener(SWT.Selection, e -> crp.linked[aFId] = aLinkB.getSelection());
+		}
 
 		lkf.change(lkf.displayKey(lkf.getSelection()));
 		tde.timeLineStack.addTimeListener(this);

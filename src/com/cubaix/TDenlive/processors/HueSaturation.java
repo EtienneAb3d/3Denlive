@@ -10,23 +10,54 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 
 import com.cubaix.TDenlive.TDenlive;
+import com.cubaix.TDenlive.medias.Clip;
 import com.cubaix.TDenlive.medias.Media;
 import com.cubaix.TDenlive.utils.ImageUtils;
 import com.cubaix.TDenlive.xml.XmlObject;
 import com.cubaix.TDenlive.xml.XmlTag;
 
 public class HueSaturation extends Processor {
-	public int applyTo = 2;//0=left, 1=right, 2=both
-	public int color = 3;//0=red, 1=green, 2=blue, 3=all, 4=cyan, 5=magenta, 6=yellow
-	public double brightness = 1.0;
-	public double saturation = 1.0;
-	public double hue = 0.0;
-	public double threshold = 0.5;
-	public double range = 50;
+	/** Parameters at a time (relative to Clip.getKeysOriginMS()) */
+	class Key {
+		int applyTo = 2;//0=left, 1=right, 2=both
+		int color = 3;//0=red, 1=green, 2=blue, 3=all, 4=cyan, 5=magenta, 6=yellow
+		double brightness = 1.0;
+		double saturation = 1.0;
+		double hue = 0.0;
+		double threshold = 0.5;
+		double range = 50;
+		long time = 0;
+
+		Key copy(long aTime) {
+			Key aK = new Key();
+			aK.applyTo = applyTo;
+			aK.color = color;
+			aK.brightness = brightness;
+			aK.saturation = saturation;
+			aK.hue = hue;
+			aK.threshold = threshold;
+			aK.range = range;
+			aK.time = aTime;
+			return aK;
+		}
+
+		/** Interpolated between this key and aNext (the choices: those of this key) */
+		Key inter(Key aNext,double aF,long aTime) {
+			Key aK = copy(aTime);
+			aK.brightness = brightness*(1.0-aF)+aNext.brightness*aF;
+			aK.saturation = saturation*(1.0-aF)+aNext.saturation*aF;
+			aK.hue = hue*(1.0-aF)+aNext.hue*aF;
+			aK.threshold = threshold*(1.0-aF)+aNext.threshold*aF;
+			aK.range = range*(1.0-aF)+aNext.range*aF;
+			return aK;
+		}
+	}
+	Vector<Key> keys = new Vector<Key>();
 
 	public HueSaturation(TDenlive aTDe, Media aTargetMedia) {
 		super(aTDe, aTargetMedia);
 		isExpended = true;
+		keys.add(new Key());
 	}
 
 	@Override
@@ -34,42 +65,55 @@ public class HueSaturation extends Processor {
 
 	@Override
 	public int openProject(Vector<XmlObject> aOs, int o) throws Exception {
+		keys.clear();
 		for(;o < aOs.size();o++) {
 			XmlObject aO = aOs.elementAt(o);
 			if(aO instanceof XmlTag) {
 				XmlTag aT = (XmlTag)aO;
 				if("/HueSaturation".equalsIgnoreCase(aT.tagName)) {
-					return o;
+					break;
 				}
+				//applyTo starts a key (old projects: a single key without time)
+				if("applyTo".equalsIgnoreCase(aT.tagName) || keys.isEmpty()) {
+					keys.add(new Key());
+				}
+				Key aK = keys.lastElement();
 				if("applyTo".equalsIgnoreCase(aT.tagName)) {
 					o++;
-					applyTo = Integer.parseInt(aOs.elementAt(o).text);
+					aK.applyTo = Integer.parseInt(aOs.elementAt(o).text);
 				}
-				if("color".equalsIgnoreCase(aT.tagName)) {
+				else if("color".equalsIgnoreCase(aT.tagName)) {
 					o++;
-					color = Integer.parseInt(aOs.elementAt(o).text);
+					aK.color = Integer.parseInt(aOs.elementAt(o).text);
 				}
-				if("brightness".equalsIgnoreCase(aT.tagName)) {
+				else if("brightness".equalsIgnoreCase(aT.tagName)) {
 					o++;
-					brightness = Double.parseDouble(aOs.elementAt(o).text);
+					aK.brightness = Double.parseDouble(aOs.elementAt(o).text);
 				}
-				if("saturation".equalsIgnoreCase(aT.tagName)) {
+				else if("saturation".equalsIgnoreCase(aT.tagName)) {
 					o++;
-					saturation = Double.parseDouble(aOs.elementAt(o).text);
+					aK.saturation = Double.parseDouble(aOs.elementAt(o).text);
 				}
-				if("hue".equalsIgnoreCase(aT.tagName)) {
+				else if("hue".equalsIgnoreCase(aT.tagName)) {
 					o++;
-					hue = Double.parseDouble(aOs.elementAt(o).text);
+					aK.hue = Double.parseDouble(aOs.elementAt(o).text);
 				}
-				if("threshold".equalsIgnoreCase(aT.tagName)) {
+				else if("threshold".equalsIgnoreCase(aT.tagName)) {
 					o++;
-					threshold = Double.parseDouble(aOs.elementAt(o).text);
+					aK.threshold = Double.parseDouble(aOs.elementAt(o).text);
 				}
-				if("range".equalsIgnoreCase(aT.tagName)) {
+				else if("range".equalsIgnoreCase(aT.tagName)) {
 					o++;
-					range = Double.parseDouble(aOs.elementAt(o).text);
+					aK.range = Double.parseDouble(aOs.elementAt(o).text);
+				}
+				else if("time".equalsIgnoreCase(aT.tagName)) {
+					o++;
+					aK.time = Long.parseLong(aOs.elementAt(o).text);
 				}
 			}
+		}
+		if(keys.isEmpty()) {
+			keys.add(new Key());
 		}
 		return o;
 	}
@@ -77,13 +121,16 @@ public class HueSaturation extends Processor {
 	@Override
 	public void saveProject(StringBuffer aSB) throws Exception {
 		aSB.append("						<HueSaturation>\n");
-		aSB.append("							<applyTo>" + applyTo + "</applyTo>\n");
-		aSB.append("							<color>" + color + "</color>\n");
-		aSB.append("							<brightness>" + brightness + "</brightness>\n");
-		aSB.append("							<saturation>" + saturation + "</saturation>\n");
-		aSB.append("							<hue>" + hue + "</hue>\n");
-		aSB.append("							<threshold>" + threshold + "</threshold>\n");
-		aSB.append("							<range>" + range + "</range>\n");
+		for(Key aK : keys) {
+			aSB.append("							<applyTo>" + aK.applyTo + "</applyTo>\n");
+			aSB.append("							<color>" + aK.color + "</color>\n");
+			aSB.append("							<brightness>" + aK.brightness + "</brightness>\n");
+			aSB.append("							<saturation>" + aK.saturation + "</saturation>\n");
+			aSB.append("							<hue>" + aK.hue + "</hue>\n");
+			aSB.append("							<threshold>" + aK.threshold + "</threshold>\n");
+			aSB.append("							<range>" + aK.range + "</range>\n");
+			aSB.append("							<time>" + aK.time + "</time>\n");
+		}
 		aSB.append("						</HueSaturation>\n");
 	}
 
@@ -93,60 +140,155 @@ public class HueSaturation extends Processor {
 		icon = "colorPalette.gif";
 	}
 
-	public int getApplyTo() {
-		return applyTo;
+	@Override
+	public int getNbKeys() {
+		return keys.size();
 	}
 
-	public void setApplyTo(int applyTo) {
-		this.applyTo = applyTo;
+	@Override
+	public int addKeyGT(long aTime){
+		if(aTime < ((Clip)targetMedia).getStartTimeMS() || aTime <= ((Clip)targetMedia).getKeysOriginMS() || aTime > ((Clip)targetMedia).getStartTimeMS() + ((Clip)targetMedia).getDurationMS()) {
+			//Can't insert outside
+			return -1;
+		}
+		Key aKey = getInterKeyGT(aTime);
+		for(int k = keys.size() - 1;k >= 0;k--) {
+			if(keys.elementAt(k).time <= aKey.time) {
+				keys.add(k+1, aKey);
+				return k+1;
+			}
+		}
+		keys.add(0, aKey);
+		return 0;
 	}
 
-	public int getColor() {
-		return color;
+	@Override
+	public void deleteKey(int aKey) {
+		//Can't delete first
+		if(aKey <= 0 || aKey >= keys.size()) {
+			return;
+		}
+		keys.remove(aKey);
 	}
 
-	public void setColor(int color) {
-		this.color = color;
+	@Override
+	public int getPrevKeyGT(long aTime){
+		long aT = aTime-((Clip)targetMedia).getKeysOriginMS();
+		for(int k = keys.size() - 1;k >= 0;k--) {
+			if(keys.elementAt(k).time <= aT) {
+				return k;
+			}
+		}
+		//No key before
+		return -1;
 	}
 
-	public double getBrightness() {
-		return brightness;
+	@Override
+	public int getNextKeyGT(long aTime){
+		long aT = aTime-((Clip)targetMedia).getKeysOriginMS();
+		for(int k = 0;k < keys.size();k++) {
+			if(keys.elementAt(k).time > aT) {
+				return k;
+			}
+		}
+		//No key after
+		return -1;
 	}
 
-	public void setBrightness(double brightness) {
-		this.brightness = brightness;
+	@Override
+	public long getTime(int aKey) {
+		return key(aKey).time;
 	}
 
-	public double getSaturation() {
-		return saturation;
+	/** Values interpolated at the time cursor, for the display (index DISPLAY_KEY, UI thread only) */
+	Key displayKey = null;
+
+	@Override
+	public boolean setDisplayKeyGT(long aTime) {
+		try {
+			displayKey = getInterKeyGT(aTime);
+		}
+		catch(Throwable t) {
+			displayKey = null;
+		}
+		return displayKey != null;
 	}
 
-	public void setSaturation(double saturation) {
-		this.saturation = saturation;
+	/** The key aKey, or the display key */
+	Key key(int aKey) {
+		return aKey == DISPLAY_KEY && displayKey != null ? displayKey : keys.elementAt(aKey);
 	}
 
-	public double getHue() {
-		return hue;
+	Key getInterKeyGT(long aTimePos){
+		long aTime = aTimePos-((Clip)targetMedia).getKeysOriginMS();
+		for(int k = keys.size()-1;k >= 0;k--) {
+			Key aKey = keys.elementAt(k);
+			if(aKey.time <= aTime) {
+				if(k == keys.size()-1) {
+					return aKey.copy(aTime);
+				}
+				Key aNext = keys.elementAt(k+1);
+				double aFact = (aTime-aKey.time)/(double)(aNext.time-aKey.time);
+				return aKey.inter(aNext, aFact, aTime);
+			}
+		}
+		return keys.firstElement().copy(aTime);
 	}
 
-	public void setHue(double hue) {
-		this.hue = hue;
+	public int getApplyTo(int aKey) {
+		return key(aKey).applyTo;
 	}
 
-	public double getThreshold() {
-		return threshold;
+	public void setApplyTo(int aKey,int aApplyTo) {
+		key(aKey).applyTo = aApplyTo;
 	}
 
-	public void setThreshold(double threshold) {
-		this.threshold = threshold;
+	public int getColor(int aKey) {
+		return key(aKey).color;
 	}
 
-	public double getRange() {
-		return range;
+	public void setColor(int aKey,int aColor) {
+		key(aKey).color = aColor;
 	}
 
-	public void setRange(double range) {
-		this.range = range;
+	public double getBrightness(int aKey) {
+		return key(aKey).brightness;
+	}
+
+	public void setBrightness(int aKey,double aBrightness) {
+		key(aKey).brightness = aBrightness;
+	}
+
+	public double getSaturation(int aKey) {
+		return key(aKey).saturation;
+	}
+
+	public void setSaturation(int aKey,double aSaturation) {
+		key(aKey).saturation = aSaturation;
+	}
+
+	public double getHue(int aKey) {
+		return key(aKey).hue;
+	}
+
+	public void setHue(int aKey,double aHue) {
+		key(aKey).hue = aHue;
+	}
+
+	public double getThreshold(int aKey) {
+		return key(aKey).threshold;
+	}
+
+	public void setThreshold(int aKey,double aThreshold) {
+		key(aKey).threshold = aThreshold;
+	}
+
+	public double getRange(int aKey) {
+		return key(aKey).range;
+	}
+
+	public void setRange(int aKey,double aRange) {
+		key(aKey).range = aRange;
 	}
 
 	@Override
@@ -158,13 +300,15 @@ public class HueSaturation extends Processor {
 	@Override
 	public void process2Awt(Media aMedia, int aProcessingMode, long aTime) {
 		try {
+			final Key aKey = getInterKeyGT(aTime);
+			final int applyTo = aKey.applyTo;
 			Thread aThL = new Thread(new Runnable() {
 				@Override
 				public void run() {
 					if(applyTo == 0 || applyTo == 2) {
 						BufferedImage aBIL = aMedia.getWorkLeft(aProcessingMode,aTime);
 						BufferedImage aProcessedBIL = tde.config.processingHdr[aProcessingMode]?
-								processAwtHdr(aBIL,true):processAwtImage(aBIL,aProcessingMode,true);
+								processAwtHdr(aBIL,true,aKey):processAwtImage(aBIL,aProcessingMode,true,aKey);
 								aMedia.setWorkLeft(aProcessedBIL);
 					}
 				}
@@ -176,7 +320,7 @@ public class HueSaturation extends Processor {
 					if(applyTo == 1 || applyTo == 2) {
 						BufferedImage aBIR = aMedia.getWorkRight(aProcessingMode,aTime);
 						BufferedImage aProcessedBIR = tde.config.processingHdr[aProcessingMode]?
-								processAwtHdr(aBIR,false):processAwtImage(aBIR,aProcessingMode,false);
+								processAwtHdr(aBIR,false,aKey):processAwtImage(aBIR,aProcessingMode,false,aKey);
 								aMedia.setWorkRight(aProcessedBIR);
 					}
 				}
@@ -194,7 +338,10 @@ public class HueSaturation extends Processor {
 		return 0.5*Math.log((1+x)/(1-x));
 	}
 	
-	BufferedImage processAwtImage(BufferedImage aBI,int aProcessingMode,boolean aIsL) {
+	BufferedImage processAwtImage(BufferedImage aBI,int aProcessingMode,boolean aIsL,Key aK) {
+		int color = aK.color;
+		double threshold = aK.threshold,range = aK.range;
+
 		int aWidth = aBI.getWidth();
 		int aHeight = aBI.getHeight();
 		int[] aDB = ((DataBufferInt)aBI.getRaster().getDataBuffer()).getData();
@@ -275,11 +422,11 @@ public class HueSaturation extends Processor {
 		        default:
 		        	break;
 		        }
-		        saturation = saturation*(1-aWeight)+saturation*aWeight*this.saturation;
+		        saturation = saturation*(1-aWeight)+saturation*aWeight*aK.saturation;
 		        saturation = (saturation >= 1.0f) ? 1.0f : ((saturation <= 0f) ? 0f : saturation);
-		        brightness = brightness*(1-aWeight)+brightness*aWeight*this.brightness;
+		        brightness = brightness*(1-aWeight)+brightness*aWeight*aK.brightness;
 		    	brightness = (brightness >= 1.0f) ? 1.0f : ((brightness <= 0f) ? 0f : brightness);
-		    	hue = hue + aWeight*this.hue/360.0f;
+		    	hue = hue + aWeight*aK.hue/360.0f;
 
 		        if (saturation == 0) {
 		            r = g = b = (int) (brightness * 255.0f + 0.5f);
@@ -335,7 +482,10 @@ public class HueSaturation extends Processor {
 		return aFBI;
 	}
 
-	BufferedImage processAwtHdr(BufferedImage aBI,boolean aIsL) {
+	BufferedImage processAwtHdr(BufferedImage aBI,boolean aIsL,Key aK) {
+		int color = aK.color;
+		double threshold = aK.threshold,range = aK.range;
+
 		int aWidth = aBI.getWidth();
 		int aHeight = aBI.getHeight();
 		float[] aDB = ((DataBufferFloat)aBI.getRaster().getDataBuffer()).getData();
@@ -415,11 +565,11 @@ public class HueSaturation extends Processor {
 		        default:
 		        	break;
 		        }
-		        saturation = saturation*(1-aWeight)+saturation*aWeight*this.saturation;
+		        saturation = saturation*(1-aWeight)+saturation*aWeight*aK.saturation;
 		        saturation = (saturation >= 1.0f) ? 1.0f : ((saturation <= 0f) ? 0f : saturation);
-		        brightness = brightness*(1-aWeight)+brightness*aWeight*this.brightness;
+		        brightness = brightness*(1-aWeight)+brightness*aWeight*aK.brightness;
 		    	brightness = (brightness >= 1.0f) ? 1.0f : ((brightness <= 0f) ? 0f : brightness);
-		    	hue = hue + aWeight*this.hue/360.0f;
+		    	hue = hue + aWeight*aK.hue/360.0f;
 
 		        if (saturation == 0) {
 		            r = g = b = (int) (brightness * 255.0f + 0.5f);

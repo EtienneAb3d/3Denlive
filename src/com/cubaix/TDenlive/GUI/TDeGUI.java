@@ -977,6 +977,17 @@ public class TDeGUI {
 		}
 	}
 
+	/**
+	 * New mixer in the view mode of the monitor (anaglyph, side by side...), its default mode
+	 * when the monitor is not created yet (web page shown in its place)
+	 */
+	public com.cubaix.TDenlive.processors.Mixer copyMonitorMixer() {
+		if(monitorGUI != null && monitorGUI.mixer != null) {
+			return monitorGUI.mixer.copyMode();
+		}
+		return new com.cubaix.TDenlive.processors.AnaMixer(tde, null, 0);
+	}
+
 	public void applyColorFont(Control aC) {
 		aC.setBackground(colorsSwt.WHITE);
 		aC.setForeground(colorsSwt.CUBAIX_BLUE);

@@ -1,11 +1,15 @@
 package com.cubaix.TDenlive.GUI.widgets;
 
+import java.util.function.IntConsumer;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+
+import java.util.Vector;
 
 import com.cubaix.TDenlive.TDenlive;
 import com.cubaix.TDenlive.medias.Clip;
@@ -62,12 +66,16 @@ public abstract class LabelKeyFrame extends Widget {
 	}
 
 	/**
-	 * Key whose values the widgets show at the time cursor, aKey being the selected key (left of the cursor).
+	 * Key whose values the widgets show at the time cursor, aKey being the key left of the cursor.
 	 * Automatic mode: the values interpolated at the cursor (Processor.DISPLAY_KEY), unless a key is
-	 * exactly there or the cursor is outside the clip. Manual mode: aKey.
+	 * exactly there or the cursor is outside the clip. With selected keys: the main selected key.
 	 */
 	public int displayKey(int aKey) {
-		if(!proc.autoKey || aKey < 0) {
+		int aMain = proc.getMainSelectedKey();
+		if(aMain >= 0) {
+			return aMain;
+		}
+		if(aKey < 0) {
 			return aKey;
 		}
 		long aTimePos = tde.timeLineStack.getTimePosMS();
@@ -86,11 +94,12 @@ public abstract class LabelKeyFrame extends Widget {
 	 * otherwise a new key inserted there (interpolated values) and selected.
 	 * Outside the clip, the selected key.
 	 * The widgets are refreshed from the key after the current event, once the change is stored.
+	 * With selected keys: the main selected key (use edit() to change all of them).
 	 */
 	public int editKey() {
-		if(!proc.autoKey) {
-			//Manual mode: the selected key (left of the time cursor)
-			return kf.getSelection();
+		int aMain = proc.getMainSelectedKey();
+		if(aMain >= 0) {
+			return aMain;
 		}
 		long aTimePos = tde.timeLineStack.getTimePosMS();
 		long aOrigin = ((Clip)proc.targetMedia).getKeysOriginMS();
@@ -120,6 +129,36 @@ public abstract class LabelKeyFrame extends Widget {
 		return aNew;
 	}
 	
+	/**
+	 * Parameter change: aSet sets the new value of the key it receives. With selected keys,
+	 * all of them take it, else the key of editKey() (automatic mode)
+	 */
+	public void edit(IntConsumer aSet) {
+		Vector<Integer> aKeys = proc.getSelectedKeys();
+		if(aKeys.isEmpty()) {
+			int aKey = editKey();
+			if(aKey >= 0) {
+				aSet.accept(aKey);
+			}
+			return;
+		}
+		for(int aKey : aKeys) {
+			aSet.accept(aKey);
+		}
+	}
+
+	/** After a change of the selected keys: marks, values shown, add / delete mode */
+	void selectionChanged() {
+		kf.container.redraw();
+		int aKey = kf.getSelection();
+		if(aKey >= 0) {
+			change(displayKey(aKey));
+		}
+		checkAddMode(tde.timeLineStack.getTimePosMS());
+		tde.gui.timeLinesGUI.redraw();
+		tde.gui.monitorGUI.redraw();
+	}
+
 	@Override
 	void createContents() {
 		GridLayout aGL = new GridLayout(6,false);
@@ -130,26 +169,38 @@ public abstract class LabelKeyFrame extends Widget {
 		container.setBackground(tde.gui.colorsSwt.WHITE);
 		container.setForeground(tde.gui.colorsSwt.CUBAIX_BLUE);
 
-		//Key frames mode of this processor, above its K row
-		Button aAutoKeyCB = new Button(container, SWT.CHECK);
-		tde.gui.applyColorFont(aAutoKeyCB);
-		aAutoKeyCB.setBackground(tde.gui.colorsSwt.WHITE);
-		GridData aACGD = new GridData(GridData.FILL_HORIZONTAL);
-		aACGD.horizontalSpan = 6;
-		aACGD.heightHint = tde.gui.h(20);
-		aAutoKeyCB.setLayoutData(aACGD);
-		aAutoKeyCB.setText(tde.gui.lngs.get("Processor.AutoKey"));
-		tde.gui.tip(aAutoKeyCB, "AutoKey");
-		aAutoKeyCB.setSelection(proc.autoKey);
-		aAutoKeyCB.addListener(SWT.Selection, e -> {
-			proc.autoKey = aAutoKeyCB.getSelection();
-			//Selected key mark, and the values shown: interpolated or of the selected key
-			kf.container.redraw();
-			int aKey = kf.getSelection();
+		//Key selection of this processor, above its K row
+		Composite aSelC = new Composite(container, SWT.NONE);
+		aSelC.setBackground(tde.gui.colorsSwt.WHITE);
+		GridData aSCGD = new GridData(GridData.FILL_HORIZONTAL);
+		aSCGD.horizontalSpan = 6;
+		aSelC.setLayoutData(aSCGD);
+		GridLayout aSCGL = new GridLayout(2, false);
+		tde.gui.applyNoMargin(aSCGL);
+		aSelC.setLayout(aSCGL);
+		Button aSelectB = new Button(aSelC, SWT.PUSH);
+		tde.gui.applyColorFont(aSelectB);
+		aSelectB.setText(tde.gui.lngs.get("Processor.KeySelect"));
+		tde.gui.tip(aSelectB, "KeySelect");
+		aSelectB.addListener(SWT.Selection, e -> {
+			int aKey = proc.selectKeyGT(tde.timeLineStack.getTimePosMS());
 			if(aKey >= 0) {
-				change(displayKey(aKey));
+				kf.setSelection(aKey);
 			}
-			tde.gui.monitorGUI.redraw();
+			selectionChanged();
+		});
+		Button aUnselectB = new Button(aSelC, SWT.PUSH);
+		tde.gui.applyColorFont(aUnselectB);
+		aUnselectB.setText(tde.gui.lngs.get("Processor.KeyUnselect"));
+		tde.gui.tip(aUnselectB, "KeyUnselect");
+		aUnselectB.addListener(SWT.Selection, e -> {
+			proc.unselectKeys();
+			//Back to the key left of the time cursor
+			int aKey = proc.getPrevKeyGT(tde.timeLineStack.getTimePosMS());
+			if(aKey >= 0) {
+				kf.setSelection(aKey);
+			}
+			selectionChanged();
 		});
 
 		Composite aSpace = new Composite(container, SWT.SEPARATOR);

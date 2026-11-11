@@ -114,6 +114,64 @@
 	<entry label="HintSelect">Cliquez une forme pour la sélectionner</entry>
 	<entry label="HintClip">Les formes se modifient sur l'image, au curseur de temps : la première modification y ajoute une clé, les valeurs sont interpolées entre les clés. Une forme supprimée est seulement masquée à partir de sa clé (très claire tant que le clip est sélectionné).</entry>
 </EntrySet>
+<EntrySet label="Model3D">
+	<entry label="Title">Modèle 3D</entry>
+	<entry label="Save">Enregistrer</entry>
+	<entry label="Cancel">Annuler</entry>
+	<entry label="MediaName">Modèle 3D</entry>
+	<entry label="Edit">Modifier le modèle 3D</entry>
+	<entry label="Name">Nom</entry>
+	<entry label="Add">Ajouter une forme</entry>
+	<entry label="Cube">Cube</entry>
+	<entry label="Sphere">Sphère</entry>
+	<entry label="Cylinder">Cylindre</entry>
+	<entry label="Cone">Cône</entry>
+	<entry label="Torus">Tore</entry>
+	<entry label="Pyramid">Pyramide</entry>
+	<entry label="Plane">Plan</entry>
+	<entry label="Tube">Tube</entry>
+	<entry label="Tool">Outil</entry>
+	<entry label="ToolMove">Déplacer (G)</entry>
+	<entry label="ToolRotate">Tourner (R)</entry>
+	<entry label="ToolScale">Échelle (S)</entry>
+	<entry label="Free">Libre</entry>
+	<entry label="Snap">Magnétisme (grille 0,25, 15°, échelle 0,1)</entry>
+	<entry label="Objects">Objets</entry>
+	<entry label="Duplicate">Dupliquer</entry>
+	<entry label="Delete">Supprimer</entry>
+	<entry label="Color">Couleur</entry>
+	<entry label="Transform">Sélection</entry>
+	<entry label="Position">Position</entry>
+	<entry label="Rotation">Rotation</entry>
+	<entry label="Size">Échelle</entry>
+	<entry label="View">Vue</entry>
+	<entry label="Front">Face (1)</entry>
+	<entry label="Right">Droite (3)</entry>
+	<entry label="Top">Dessus (7)</entry>
+	<entry label="Perspective">Perspective (5)</entry>
+	<entry label="Frame">Cadrer (F)</entry>
+	<entry label="Grid">Grille au sol</entry>
+	<entry label="StereoPreview">Aperçu en relief (mode du moniteur)</entry>
+	<entry label="Stereo">Relief et animation</entry>
+	<entry label="Depth">Relief</entry>
+	<entry label="Spin">Rotation auto (°/s)</entry>
+	<entry label="Undo">Annuler</entry>
+	<entry label="Redo">Rétablir</entry>
+	<entry label="Help">Clic : sélectionner (le groupe ; Cmd / Ctrl : l'objet lui-même ; Maj : ajouter / retirer). Glisser un objet ou une poignée : outil courant (X / Y / Z : axe). Glisser le fond ou bouton droit : tourner la vue, avec Maj : la déplacer ; molette : zoom. G / R / S : outils, F : cadrer, 1 / 3 / 7 / 5 : vues, flèches : déplacer la sélection (page haut / bas : hauteur), Suppr : supprimer, Ctrl+D : dupliquer, Ctrl+G / Maj+Ctrl+G : grouper / dégrouper, Ctrl+A : tout sélectionner, Ctrl+Z / Maj+Ctrl+Z : annuler / rétablir (Cmd sur macOS). Les champs sont relatifs au groupe de l'objet. Le cadre est ce que montre le clip ; la convergence est au centre de la vue.</entry>
+	<entry label="EmptyHint">Ajoutez une forme avec les boutons de gauche</entry>
+	<entry label="StereoHint">Aperçu en relief : vue seulement (tourner, déplacer, zoomer)</entry>
+	<entry label="Text">Texte</entry>
+	<entry label="Group">Groupe</entry>
+	<entry label="GroupAction">Grouper (Ctrl+G)</entry>
+	<entry label="Ungroup">Dégrouper</entry>
+	<entry label="TextProps">Texte</entry>
+	<entry label="Bold">Gras</entry>
+	<entry label="Italic">Italique</entry>
+	<entry label="Extrusion">Épaisseur</entry>
+	<entry label="SnapShort">Magnétisme</entry>
+	<entry label="Reset">Réinitialiser</entry>
+	<entry label="HintClip">Cliquez un objet dans la vue ou dans l'arbre (Cmd / Ctrl : un objet dans un groupe), puis glissez-le ou ses poignées. Les modifications vont aux clés sélectionnées, sinon à une clé au curseur de temps.</entry>
+</EntrySet>
 <EntrySet label="Subtitles">
 	<entry label="Add">Ajouter un sous-titre</entry>
 	<entry label="Files">Sous-titres (.srt, .vtt)</entry>
@@ -172,7 +230,8 @@
 	<entry label="RotateRight">Tourner la vue droite</entry>
 </EntrySet>
 <EntrySet label="Processor">
-	<entry label="AutoKey">Ajout automatique (K)</entry>
+	<entry label="KeySelect">Sélectionner</entry>
+	<entry label="KeyUnselect">Désélectionner</entry>
 	<entry label="NotYetAvailable">Cette fonctionnalité sera disponible dans une prochaine version</entry>
 	<entry label="SelectAClip">Veuillez sélectionner un clip dans une ligne de temps</entry>
 	<entry label="SelectAnAudioClip">Ce traitement agit sur le son : veuillez sélectionner un clip qui a du son (vidéo ou audio)</entry>
@@ -213,6 +272,7 @@
 	<entry label="Volume">Volume / balance</entry>
 	<entry label="Shapes">Formes</entry>
 	<entry label="OneDepthmap">Ce clip a déjà un filtre de carte de profondeur (un seul par clip, toujours en premier).</entry>
+	<entry label="Objects3D">Objets 3D</entry>
 </EntrySet>
 <EntrySet label="TimeController">
 	<entry label="TrashClip">Supprimer le clip</entry>
@@ -484,6 +544,9 @@ Calculer les cartes de profondeur des deux vues à partir du clip (intelligence 
 	<entry label="AddMedia">Ajouter des photos, vidéos ou sons à la liste des médias</entry>
 	<entry label="AddColor">Ajouter un fond de couleur unie à la liste des médias</entry>
 	<entry label="AddShapes">Ajouter un clip de formes (rectangles, ellipses, flèches...) à la liste des médias</entry>
+	<entry label="AddModel3D">Ajouter un modèle 3D (mini modeleur 3D : cubes, sphères, cylindres...) à la liste des médias</entry>
+	<entry label="MediaEdit">Le rouvrir dans son éditeur (les clips du montage suivent les modifications)</entry>
+	<entry label="Objects3DReset">Revenir au modèle pour les objets sélectionnés, dans la clé</entry>
 	<entry label="AddAI">Ajouter à la liste des médias une vidéo générée par une intelligence artificielle (Wan2.2-TI2V-5B) à partir d'un texte</entry>
 	<entry label="ShapesHide">Supprimer la forme sélectionnée à partir de cette clé (elle est seulement masquée)</entry>
 	<entry label="ShapesDelete">Supprimer la forme sélectionnée (SUPPR)</entry>
@@ -553,7 +616,8 @@ Calculer les cartes de profondeur des deux vues à partir du clip (intelligence 
 	<entry label="Ruler">Cliquer ou glisser pour déplacer le curseur de temps</entry>
 
 	<entry label="ProcTitle">Cliquer pour afficher / masquer les réglages de ce traitement</entry>
-	<entry label="AutoKey">Cochée : une modification ajoute une clef au curseur de temps, et les réglages montrent les valeurs interpolées à cet endroit. Décochée : une modification change la clef à gauche du curseur de temps (carré jaune), dont les réglages montrent les valeurs</entry>
+	<entry label="KeySelect">Ajoute à la sélection la clef sous le curseur de temps, sinon la plus proche à sa gauche (carré jaune). Une modification d'un réglage donne la même valeur à toutes les clefs sélectionnées, et les réglages montrent les valeurs de la dernière clef sélectionnée</entry>
+	<entry label="KeyUnselect">Désélectionne toutes les clefs : retour à l'ajout automatique de clef (une modification ajoute une clef au curseur de temps, les réglages montrent les valeurs interpolées à cet endroit)</entry>
 	<entry label="ProcCollapseAll">Masquer les réglages de tous les traitements</entry>
 	<entry label="ProcActive">Activer / désactiver ce traitement</entry>
 	<entry label="ProcUp">Monter ce traitement (appliqué plus tôt)</entry>
@@ -680,6 +744,7 @@ Calculer les cartes de profondeur des deux vues à partir du clip (intelligence 
 	<entry label="CropRotation">Rotation de l'image</entry>
 	<entry label="CropShearL">Inclinaison horizontale de la vue gauche</entry>
 	<entry label="CropShearR">Inclinaison horizontale de la vue droite</entry>
+	<entry label="CropLink">Lier : les curseurs cochés de ce groupe bougent ensemble (bords : gauche et droit, haut et bas symétriques, haut = droit, bas = gauche)</entry>
 	<entry label="CropTransparency">Transparence des zones rognées</entry>
 	<entry label="Hue">Décalage de teinte</entry>
 	<entry label="Saturation">Saturation (intensité des couleurs)</entry>

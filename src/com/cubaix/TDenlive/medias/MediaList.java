@@ -21,6 +21,8 @@ public class MediaList extends Drawable {
 	//Trash buttons of the medias, where they were drawn last (control coordinates)
 	java.util.Map<Media,Rectangle> trashRects = new java.util.IdentityHashMap<Media,Rectangle>();
 	static final int TRASH_MARGIN = 4;
+	//Edit buttons (pencil, left of the trash) of the medias made in an editor of the application
+	java.util.Map<Media,Rectangle> editRects = new java.util.IdentityHashMap<Media,Rectangle>();
 	//Mouse position over the list (hover frame of the trash buttons), -1 outside
 	public int hoverX = -1;
 	public int hoverY = -1;
@@ -58,6 +60,11 @@ public class MediaList extends Drawable {
 					catch(Throwable t) {
 						t.printStackTrace(System.err);
 					}
+				}
+				if("Model3DMedia".equalsIgnoreCase(aT.tagName)) {
+					Model3DMedia aMM = new Model3DMedia(tde);
+					mediaList.add(aMM);
+					o = aMM.openProject(aOs, o);
 				}
 				if("StereoImage".equalsIgnoreCase(aT.tagName)) {
 					StereoImage aSI = new StereoImage(tde);
@@ -223,6 +230,13 @@ public class MediaList extends Drawable {
 		tde.updateFirstMediaRatio();
 	}
 
+	public void createModel3D(com.cubaix.TDenlive.model3d.Model3D aModel) {
+		Model3DMedia aMM = new Model3DMedia(tde);
+		aMM.setModel(aModel);
+		mediaList.add(aMM);
+		tde.updateFirstMediaRatio();
+	}
+
 	/**
 	 * Remove a media from the list (its clips must be removed from the time lines before, see
 	 * TimeLineStack.releaseMedia())
@@ -236,6 +250,7 @@ public class MediaList extends Drawable {
 		}
 		synchronized (trashRects) {
 			trashRects.clear();
+			editRects.clear();
 		}
 		tde.selected.medias.remove(aMedia);
 		tde.updateFirstMediaRatio();
@@ -255,14 +270,37 @@ public class MediaList extends Drawable {
 		return null;
 	}
 
+	/**
+	 * Media whose edit button is at (aX,aY) (control coordinates), null if none
+	 */
+	public Media editAt(int aX,int aY) {
+		synchronized (trashRects) {
+			for(java.util.Map.Entry<Media,Rectangle> aE : editRects.entrySet()) {
+				if(aE.getValue().contains(aX, aY) && mediaList.contains(aE.getKey())) {
+					return aE.getKey();
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Made in an editor of the application (shapes, 3D model): an edit button opens it again
+	 */
+	public static boolean isEditable(Media aM) {
+		return aM instanceof ShapesMedia || aM instanceof Model3DMedia;
+	}
+
 	public Rectangle drawSwt(GC aGC,int aX, int aY,Rectangle aClippingR) {
 		int aW = 0;
 		int aH = 0;
 		org.eclipse.swt.graphics.Image aTrash = tde.gui.imgsSwt.getIcon("trash.png");
 		Rectangle aTB = aTrash.getBounds();
 		
+		org.eclipse.swt.graphics.Image aPencil = tde.gui.imgsSwt.getIcon("pencil.png");
 		synchronized (trashRects) {
 			trashRects.clear();
+			editRects.clear();
 		}
 		synchronized (mediaList) {
 			for(Media aM : mediaList) {
@@ -280,6 +318,20 @@ public class MediaList extends Drawable {
 				}
 				synchronized (trashRects) {
 					trashRects.put(aM, aTR);
+				}
+				if(isEditable(aM)) {
+					//Pencil left of the trash
+					Rectangle aER = new Rectangle(aTR.x-TRASH_MARGIN/2-aTB.width, aRowY+TRASH_MARGIN, aTB.width, aTB.height);
+					aGC.drawImage(aPencil, aER.x, aER.y);
+					aER = new Rectangle(aER.x-TRASH_MARGIN/2, aER.y-TRASH_MARGIN/2, aER.width+TRASH_MARGIN, aER.height+TRASH_MARGIN);
+					if(aER.contains(hoverX, hoverY)) {
+						aGC.setForeground(tde.gui.colorsSwt.LIGHTGRAY);
+						aGC.setLineWidth(1);
+						aGC.drawRectangle(aER.x, aER.y, aER.width-1, aER.height-1);
+					}
+					synchronized (trashRects) {
+						editRects.put(aM, aER);
+					}
 				}
 				aH += aR.height;
 				if(aW < aR.width) {

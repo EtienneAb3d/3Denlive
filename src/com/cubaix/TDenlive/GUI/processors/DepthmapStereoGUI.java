@@ -126,7 +126,7 @@ public class DepthmapStereoGUI extends ProcessorGUI {
 		dmLC = new LabelCombo(tde,wgt,tde.gui.lngs.get("DepthmapStereo.Depthmap"),aValTextsR,aUID) {
 			@Override
 			public void change(String aValue) {
-				pl.setDepthmapClipMedia(lkf.editKey(), aValue);
+				lkf.edit(aEK -> pl.setDepthmapClipMedia(aEK, aValue));
 				tde.gui.monitorGUI.redraw();
 			}
 		};
@@ -141,12 +141,12 @@ public class DepthmapStereoGUI extends ProcessorGUI {
 		aBIFB.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
-				pl.setBlackIsFront(lkf.editKey(), aBIFB.getSelection());
+				lkf.edit(aEK -> pl.setBlackIsFront(aEK, aBIFB.getSelection()));
 				tde.gui.monitorGUI.redraw();
 			}
 			@Override
 			public void widgetDefaultSelected(SelectionEvent arg0) {
-				pl.setBlackIsFront(lkf.editKey(), aBIFB.getSelection());
+				lkf.edit(aEK -> pl.setBlackIsFront(aEK, aBIFB.getSelection()));
 				tde.gui.monitorGUI.redraw();
 			}
 		});
@@ -157,7 +157,7 @@ public class DepthmapStereoGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					pl.setD(lkf.editKey(),-aValue/30000.0);
+					lkf.edit(aEK -> pl.setD(aEK, -aValue/30000.0));
 					tde.gui.monitorGUI.redraw();
 				}
 			}
@@ -166,7 +166,7 @@ public class DepthmapStereoGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					pl.setX(lkf.editKey(),aValue/10000.0);
+					lkf.edit(aEK -> pl.setX(aEK, aValue/10000.0));
 					tde.gui.monitorGUI.redraw();
 				}
 			}
@@ -175,7 +175,7 @@ public class DepthmapStereoGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					pl.setP(lkf.editKey(),aValue/10000.0);
+					lkf.edit(aEK -> pl.setP(aEK, aValue/10000.0));
 					tde.gui.monitorGUI.redraw();
 				}
 			}
@@ -184,7 +184,7 @@ public class DepthmapStereoGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					pl.setM(lkf.editKey(),aValue/100.0);
+					lkf.edit(aEK -> pl.setM(aEK, aValue/100.0));
 					tde.gui.monitorGUI.redraw();
 				}
 			}

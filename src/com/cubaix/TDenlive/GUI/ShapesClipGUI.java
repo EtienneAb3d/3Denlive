@@ -40,9 +40,23 @@ public class ShapesClipGUI implements ShapesEditor.Listener {
 	//Same view mode as the monitor (anaglyph, side by side...), without its zoom
 	Mixer mixer = null;
 
+	//Lowest id of a new shape (edition of a media whose clips have shapes of their own)
+	int minId = 0;
+
 	public ShapesClipGUI(TDenlive aTDe) {
+		this(aTDe, null, 0);
+	}
+
+	/**
+	 * Edition of existing shapes (copied); new shapes get ids from aMinId
+	 */
+	public ShapesClipGUI(TDenlive aTDe, Vector<Shape> aShapes, int aMinId) {
 		tde = aTDe;
-		mixer = tde.gui.monitorGUI.mixer.copyMode();
+		minId = aMinId;
+		if(aShapes != null) {
+			shapes = Shape.copyAll(aShapes);
+		}
+		mixer = tde.gui.copyMonitorMixer();
 		editor = new ShapesEditor(new ShapesEditor.Source() {
 			@Override
 			public Vector<Shape> getShapes() {
@@ -54,7 +68,7 @@ public class ShapesClipGUI implements ShapesEditor.Listener {
 			}
 			@Override
 			public void addShape(Shape aS) {
-				int aId = 0;
+				int aId = minId;
 				for(Shape aS2 : shapes) {
 					aId = Math.max(aId, aS2.id+1);
 				}

@@ -114,6 +114,64 @@
 	<entry label="HintSelect">Click a shape to select it</entry>
 	<entry label="HintClip">The shapes are edited on the image, at the time cursor: the first change adds a key there, the values are interpolated between the keys. A deleted shape is only hidden from its key on (very light while the clip is selected).</entry>
 </EntrySet>
+<EntrySet label="Model3D">
+	<entry label="Title">3D model</entry>
+	<entry label="Save">Save</entry>
+	<entry label="Cancel">Cancel</entry>
+	<entry label="MediaName">3D model</entry>
+	<entry label="Edit">Edit the 3D model</entry>
+	<entry label="Name">Name</entry>
+	<entry label="Add">Add a shape</entry>
+	<entry label="Cube">Cube</entry>
+	<entry label="Sphere">Sphere</entry>
+	<entry label="Cylinder">Cylinder</entry>
+	<entry label="Cone">Cone</entry>
+	<entry label="Torus">Torus</entry>
+	<entry label="Pyramid">Pyramid</entry>
+	<entry label="Plane">Plane</entry>
+	<entry label="Tube">Tube</entry>
+	<entry label="Tool">Tool</entry>
+	<entry label="ToolMove">Move (G)</entry>
+	<entry label="ToolRotate">Rotate (R)</entry>
+	<entry label="ToolScale">Scale (S)</entry>
+	<entry label="Free">Free</entry>
+	<entry label="Snap">Snap (grid 0.25, 15°, scale 0.1)</entry>
+	<entry label="Objects">Objects</entry>
+	<entry label="Duplicate">Duplicate</entry>
+	<entry label="Delete">Delete</entry>
+	<entry label="Color">Color</entry>
+	<entry label="Transform">Selection</entry>
+	<entry label="Position">Position</entry>
+	<entry label="Rotation">Rotation</entry>
+	<entry label="Size">Scale</entry>
+	<entry label="View">View</entry>
+	<entry label="Front">Front (1)</entry>
+	<entry label="Right">Right (3)</entry>
+	<entry label="Top">Top (7)</entry>
+	<entry label="Perspective">Perspective (5)</entry>
+	<entry label="Frame">Frame (F)</entry>
+	<entry label="Grid">Floor grid</entry>
+	<entry label="StereoPreview">Stereo preview (monitor mode)</entry>
+	<entry label="Stereo">Stereo and animation</entry>
+	<entry label="Depth">Depth</entry>
+	<entry label="Spin">Turntable (°/s)</entry>
+	<entry label="Undo">Undo</entry>
+	<entry label="Redo">Redo</entry>
+	<entry label="Help">Click: select (the group; Cmd / Ctrl: the object itself; Shift: add / remove). Drag an object or a handle: current tool (X / Y / Z: axis). Drag the background or right button: orbit, with Shift: pan; wheel: zoom. G / R / S: tools, F: frame, 1 / 3 / 7 / 5: views, arrows: move the selection (page up / down: height), Del: delete, Ctrl+D: duplicate, Ctrl+G / Shift+Ctrl+G: group / ungroup, Ctrl+A: select all, Ctrl+Z / Shift+Ctrl+Z: undo / redo (Cmd on macOS). The fields are relative to the group of the object. The output frame is what the clip shows; the convergence is at the center of the view.</entry>
+	<entry label="EmptyHint">Add a shape with the buttons on the left</entry>
+	<entry label="StereoHint">Stereo preview: view only (orbit, pan, zoom)</entry>
+	<entry label="Text">Text</entry>
+	<entry label="Group">Group</entry>
+	<entry label="GroupAction">Group (Ctrl+G)</entry>
+	<entry label="Ungroup">Ungroup</entry>
+	<entry label="TextProps">Text</entry>
+	<entry label="Bold">Bold</entry>
+	<entry label="Italic">Italic</entry>
+	<entry label="Extrusion">Thickness</entry>
+	<entry label="SnapShort">Snap</entry>
+	<entry label="Reset">Reset</entry>
+	<entry label="HintClip">Click an object in the view or in the tree (Cmd / Ctrl: an object inside a group), then drag it or its handles. The changes go to the selected keys, else to a key at the time cursor.</entry>
+</EntrySet>
 <EntrySet label="Subtitles">
 	<entry label="Add">Add a subtitle</entry>
 	<entry label="Files">Subtitles (.srt, .vtt)</entry>
@@ -172,7 +230,8 @@
 	<entry label="RotateRight">Rotate right view</entry>
 </EntrySet>
 <EntrySet label="Processor">
-	<entry label="AutoKey">Automatic key adding (K)</entry>
+	<entry label="KeySelect">Select</entry>
+	<entry label="KeyUnselect">Unselect</entry>
 	<entry label="NotYetAvailable">This feature will be available in a next version</entry>
 	<entry label="SelectAClip">Please select a clip in a time line</entry>
 	<entry label="SelectAnAudioClip">This processor works on sound: please select a clip with a sound (video or audio)</entry>
@@ -213,6 +272,7 @@
 	<entry label="Volume">Volume / balance</entry>
 	<entry label="Shapes">Shapes</entry>
 	<entry label="OneDepthmap">This clip already has a depth map processor (only one per clip, always first).</entry>
+	<entry label="Objects3D">3D objects</entry>
 </EntrySet>
 <EntrySet label="TimeController">
 	<entry label="TrashClip">Delete clip</entry>
@@ -484,6 +544,9 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="AddMedia">Add photos, videos or sounds to the media list</entry>
 	<entry label="AddColor">Add a plain color background to the media list</entry>
 	<entry label="AddShapes">Add a shapes clip (rectangles, ellipses, arrows...) to the media list</entry>
+	<entry label="AddModel3D">Add a 3D model (mini 3D modeler: cubes, spheres, cylinders...) to the media list</entry>
+	<entry label="MediaEdit">Open it again in its editor (the clips of the montage follow the changes)</entry>
+	<entry label="Objects3DReset">Back to the model for the selected objects, in the key</entry>
 	<entry label="AddAI">Add a video generated by an artificial intelligence (Wan2.2-TI2V-5B) from a text to the media list</entry>
 	<entry label="ShapesHide">Delete the selected shape from this key on (it is only hidden)</entry>
 	<entry label="ShapesDelete">Delete the selected shape (DEL)</entry>
@@ -553,7 +616,8 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="Ruler">Click or drag to move the time cursor</entry>
 
 	<entry label="ProcTitle">Click to show / hide the settings of this processor</entry>
-	<entry label="AutoKey">Checked: a change adds a key at the time cursor, and the settings show the values interpolated there. Unchecked: a change modifies the key left of the time cursor (yellow square), whose values the settings show</entry>
+	<entry label="KeySelect">Adds to the selection the key under the time cursor, or else the nearest one on its left (yellow square). A change of a setting gives the same value to all the selected keys, and the settings show the values of the last selected key</entry>
+	<entry label="KeyUnselect">Unselects all the keys: back to the automatic key adding (a change adds a key at the time cursor, the settings show the values interpolated there)</entry>
 	<entry label="ProcCollapseAll">Hide the settings of all the processors</entry>
 	<entry label="ProcActive">Enable / disable this processor</entry>
 	<entry label="ProcUp">Move this processor up (applied earlier)</entry>
@@ -680,6 +744,7 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="CropRotation">Rotation of the image</entry>
 	<entry label="CropShearL">Horizontal shear of the left view</entry>
 	<entry label="CropShearR">Horizontal shear of the right view</entry>
+	<entry label="CropLink">Link: the checked sliders of this group move together (borders: left and right, top and bottom mirrored, top = right, bottom = left)</entry>
 	<entry label="CropTransparency">Transparency of the cropped areas</entry>
 	<entry label="Hue">Hue shift</entry>
 	<entry label="Saturation">Saturation (color intensity)</entry>

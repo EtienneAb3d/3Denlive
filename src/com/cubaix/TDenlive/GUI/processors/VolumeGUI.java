@@ -70,7 +70,7 @@ public class VolumeGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					vol.setGain(lkf.editKey(),aValue/(double)GAIN_SCALE);
+					lkf.edit(aEK -> vol.setGain(aEK, aValue/(double)GAIN_SCALE));
 				}
 			}
 		}.tip("Gain");
@@ -85,7 +85,7 @@ public class VolumeGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					vol.setPan(lkf.editKey(),aValue/(double)GAIN_SCALE);
+					lkf.edit(aEK -> vol.setPan(aEK, aValue/(double)GAIN_SCALE));
 				}
 			}
 		}.tip("Pan");

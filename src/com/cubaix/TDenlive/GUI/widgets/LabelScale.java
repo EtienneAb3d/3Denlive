@@ -3,6 +3,7 @@ package com.cubaix.TDenlive.GUI.widgets;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -29,6 +30,24 @@ public abstract class LabelScale extends Widget {
 	
 	public void setSelection(int aSelection) {
 		sb.setSelection(aSelection);
+	}
+
+	public int getSelection() {
+		return sb.getSelection();
+	}
+
+	/**
+	 * Small check box right of the slider (to link it to other sliders), with the help "Tip.<aTipKey>"
+	 */
+	public Button addLinkCheck(boolean aInit,String aTipKey) {
+		((GridLayout)container.getLayout()).numColumns++;
+		Button aB = new Button(container, SWT.CHECK);
+		aB.setBackground(tde.gui.colorsSwt.WHITE);
+		aB.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER));
+		aB.setSelection(aInit);
+		tde.gui.tip(aB, aTipKey);
+		container.layout();
+		return aB;
 	}
 	
 	@Override

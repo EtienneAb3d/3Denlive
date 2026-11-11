@@ -10,22 +10,51 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 
 import com.cubaix.TDenlive.TDenlive;
+import com.cubaix.TDenlive.medias.Clip;
 import com.cubaix.TDenlive.medias.Media;
 import com.cubaix.TDenlive.utils.ImageUtils;
 import com.cubaix.TDenlive.xml.XmlObject;
 import com.cubaix.TDenlive.xml.XmlTag;
 
 public class BrightnessContrast extends Processor {
-	public int applyTo = 2;//0=left, 1=right, 2=both
-	public int color = 3;//0=red, 1=green, 2=blue, 3=all, 4=cyan, 5=magenta, 6=yellow
-	public double brightness = 0.0;
-	public double contrast = 0.0;
-	public double gamma = 0.0;
-	public double th = 0.0;
+	/** Parameters at a time (relative to Clip.getKeysOriginMS()) */
+	class Key {
+		int applyTo = 2;//0=left, 1=right, 2=both
+		int color = 3;//0=red, 1=green, 2=blue, 3=all, 4=cyan, 5=magenta, 6=yellow
+		double brightness = 0.0;
+		double contrast = 0.0;
+		double gamma = 0.0;
+		double th = 0.0;
+		long time = 0;
+
+		Key copy(long aTime) {
+			Key aK = new Key();
+			aK.applyTo = applyTo;
+			aK.color = color;
+			aK.brightness = brightness;
+			aK.contrast = contrast;
+			aK.gamma = gamma;
+			aK.th = th;
+			aK.time = aTime;
+			return aK;
+		}
+
+		/** Interpolated between this key and aNext (the choices: those of this key) */
+		Key inter(Key aNext,double aF,long aTime) {
+			Key aK = copy(aTime);
+			aK.brightness = brightness*(1.0-aF)+aNext.brightness*aF;
+			aK.contrast = contrast*(1.0-aF)+aNext.contrast*aF;
+			aK.gamma = gamma*(1.0-aF)+aNext.gamma*aF;
+			aK.th = th*(1.0-aF)+aNext.th*aF;
+			return aK;
+		}
+	}
+	Vector<Key> keys = new Vector<Key>();
 
 	public BrightnessContrast(TDenlive aTDe, Media aTargetMedia) {
 		super(aTDe, aTargetMedia);
 		isExpended = true;
+		keys.add(new Key());
 	}
 
 	@Override
@@ -33,40 +62,53 @@ public class BrightnessContrast extends Processor {
 
 	@Override
 	public int openProject(Vector<XmlObject> aOs, int o) throws Exception {
+		keys.clear();
 		for(;o < aOs.size();o++) {
 			XmlObject aO = aOs.elementAt(o);
 			if(aO instanceof XmlTag) {
 				XmlTag aT = (XmlTag)aO;
 				if("/BrightnessContrast".equalsIgnoreCase(aT.tagName)) {
-					return o;
+					break;
 				}
+				//applyTo starts a key (old projects: a single key without time)
+				if("applyTo".equalsIgnoreCase(aT.tagName) || keys.isEmpty()) {
+					keys.add(new Key());
+				}
+				Key aK = keys.lastElement();
 				if("applyTo".equalsIgnoreCase(aT.tagName)) {
 					o++;
-					applyTo = Integer.parseInt(aOs.elementAt(o).text);
+					aK.applyTo = Integer.parseInt(aOs.elementAt(o).text);
 				}
-				if("color".equalsIgnoreCase(aT.tagName)) {
+				else if("color".equalsIgnoreCase(aT.tagName)) {
 					o++;
-					color = Integer.parseInt(aOs.elementAt(o).text);
+					aK.color = Integer.parseInt(aOs.elementAt(o).text);
 				}
-				if("brightness".equalsIgnoreCase(aT.tagName)) {
+				else if("brightness".equalsIgnoreCase(aT.tagName)) {
 					o++;
-					brightness = Double.parseDouble(aOs.elementAt(o).text);
+					aK.brightness = Double.parseDouble(aOs.elementAt(o).text);
 				}
-				if("contrast".equalsIgnoreCase(aT.tagName)) {
+				else if("contrast".equalsIgnoreCase(aT.tagName)) {
 					o++;
-					contrast = Double.parseDouble(aOs.elementAt(o).text);
+					aK.contrast = Double.parseDouble(aOs.elementAt(o).text);
 				}
-				if("gamma".equalsIgnoreCase(aT.tagName)) {
+				else if("gamma".equalsIgnoreCase(aT.tagName)) {
 					o++;
-					gamma = Double.parseDouble(aOs.elementAt(o).text);
+					aK.gamma = Double.parseDouble(aOs.elementAt(o).text);
 				}
-				if("th".equalsIgnoreCase(aT.tagName)
+				else if("th".equalsIgnoreCase(aT.tagName)
 						//Bug in the name
-						||"sh".equalsIgnoreCase(aT.tagName)) {
+						|| "sh".equalsIgnoreCase(aT.tagName)) {
 					o++;
-					th = Double.parseDouble(aOs.elementAt(o).text);
+					aK.th = Double.parseDouble(aOs.elementAt(o).text);
+				}
+				else if("time".equalsIgnoreCase(aT.tagName)) {
+					o++;
+					aK.time = Long.parseLong(aOs.elementAt(o).text);
 				}
 			}
+		}
+		if(keys.isEmpty()) {
+			keys.add(new Key());
 		}
 		return o;
 	}
@@ -74,12 +116,15 @@ public class BrightnessContrast extends Processor {
 	@Override
 	public void saveProject(StringBuffer aSB) throws Exception {
 		aSB.append("						<BrightnessContrast>\n");
-		aSB.append("							<applyTo>" + applyTo + "</applyTo>\n");
-		aSB.append("							<color>" + color + "</color>\n");
-		aSB.append("							<brightness>" + brightness + "</brightness>\n");
-		aSB.append("							<contrast>" + contrast + "</contrast>\n");
-		aSB.append("							<gamma>" + gamma + "</gamma>\n");
-		aSB.append("							<th>" + th + "</th>\n");
+		for(Key aK : keys) {
+			aSB.append("							<applyTo>" + aK.applyTo + "</applyTo>\n");
+			aSB.append("							<color>" + aK.color + "</color>\n");
+			aSB.append("							<brightness>" + aK.brightness + "</brightness>\n");
+			aSB.append("							<contrast>" + aK.contrast + "</contrast>\n");
+			aSB.append("							<gamma>" + aK.gamma + "</gamma>\n");
+			aSB.append("							<th>" + aK.th + "</th>\n");
+			aSB.append("							<time>" + aK.time + "</time>\n");
+		}
 		aSB.append("						</BrightnessContrast>\n");
 	}
 
@@ -89,52 +134,147 @@ public class BrightnessContrast extends Processor {
 		icon = "starsColor.gif";
 	}
 
-	public int getApplyTo() {
-		return applyTo;
+	@Override
+	public int getNbKeys() {
+		return keys.size();
 	}
 
-	public void setApplyTo(int applyTo) {
-		this.applyTo = applyTo;
+	@Override
+	public int addKeyGT(long aTime){
+		if(aTime < ((Clip)targetMedia).getStartTimeMS() || aTime <= ((Clip)targetMedia).getKeysOriginMS() || aTime > ((Clip)targetMedia).getStartTimeMS() + ((Clip)targetMedia).getDurationMS()) {
+			//Can't insert outside
+			return -1;
+		}
+		Key aKey = getInterKeyGT(aTime);
+		for(int k = keys.size() - 1;k >= 0;k--) {
+			if(keys.elementAt(k).time <= aKey.time) {
+				keys.add(k+1, aKey);
+				return k+1;
+			}
+		}
+		keys.add(0, aKey);
+		return 0;
 	}
 
-	public int getColor() {
-		return color;
+	@Override
+	public void deleteKey(int aKey) {
+		//Can't delete first
+		if(aKey <= 0 || aKey >= keys.size()) {
+			return;
+		}
+		keys.remove(aKey);
 	}
 
-	public void setColor(int color) {
-		this.color = color;
+	@Override
+	public int getPrevKeyGT(long aTime){
+		long aT = aTime-((Clip)targetMedia).getKeysOriginMS();
+		for(int k = keys.size() - 1;k >= 0;k--) {
+			if(keys.elementAt(k).time <= aT) {
+				return k;
+			}
+		}
+		//No key before
+		return -1;
 	}
 
-	public double getBrightness() {
-		return brightness;
+	@Override
+	public int getNextKeyGT(long aTime){
+		long aT = aTime-((Clip)targetMedia).getKeysOriginMS();
+		for(int k = 0;k < keys.size();k++) {
+			if(keys.elementAt(k).time > aT) {
+				return k;
+			}
+		}
+		//No key after
+		return -1;
 	}
 
-	public void setBrightness(double brightness) {
-		this.brightness = brightness;
+	@Override
+	public long getTime(int aKey) {
+		return key(aKey).time;
 	}
 
-	public double getContrast() {
-		return contrast;
+	/** Values interpolated at the time cursor, for the display (index DISPLAY_KEY, UI thread only) */
+	Key displayKey = null;
+
+	@Override
+	public boolean setDisplayKeyGT(long aTime) {
+		try {
+			displayKey = getInterKeyGT(aTime);
+		}
+		catch(Throwable t) {
+			displayKey = null;
+		}
+		return displayKey != null;
 	}
 
-	public void setContrast(double contrast) {
-		this.contrast = contrast;
+	/** The key aKey, or the display key */
+	Key key(int aKey) {
+		return aKey == DISPLAY_KEY && displayKey != null ? displayKey : keys.elementAt(aKey);
 	}
 
-	public double getGamma() {
-		return gamma;
+	Key getInterKeyGT(long aTimePos){
+		long aTime = aTimePos-((Clip)targetMedia).getKeysOriginMS();
+		for(int k = keys.size()-1;k >= 0;k--) {
+			Key aKey = keys.elementAt(k);
+			if(aKey.time <= aTime) {
+				if(k == keys.size()-1) {
+					return aKey.copy(aTime);
+				}
+				Key aNext = keys.elementAt(k+1);
+				double aFact = (aTime-aKey.time)/(double)(aNext.time-aKey.time);
+				return aKey.inter(aNext, aFact, aTime);
+			}
+		}
+		return keys.firstElement().copy(aTime);
 	}
 
-	public void setGamma(double gamma) {
-		this.gamma = gamma;
+	public int getApplyTo(int aKey) {
+		return key(aKey).applyTo;
 	}
 
-	public double getTh() {
-		return th;
+	public void setApplyTo(int aKey,int aApplyTo) {
+		key(aKey).applyTo = aApplyTo;
 	}
 
-	public void setTh(double th) {
-		this.th = th;
+	public int getColor(int aKey) {
+		return key(aKey).color;
+	}
+
+	public void setColor(int aKey,int aColor) {
+		key(aKey).color = aColor;
+	}
+
+	public double getBrightness(int aKey) {
+		return key(aKey).brightness;
+	}
+
+	public void setBrightness(int aKey,double aBrightness) {
+		key(aKey).brightness = aBrightness;
+	}
+
+	public double getContrast(int aKey) {
+		return key(aKey).contrast;
+	}
+
+	public void setContrast(int aKey,double aContrast) {
+		key(aKey).contrast = aContrast;
+	}
+
+	public double getGamma(int aKey) {
+		return key(aKey).gamma;
+	}
+
+	public void setGamma(int aKey,double aGamma) {
+		key(aKey).gamma = aGamma;
+	}
+
+	public double getTh(int aKey) {
+		return key(aKey).th;
+	}
+
+	public void setTh(int aKey,double aTh) {
+		key(aKey).th = aTh;
 	}
 
 	@Override
@@ -146,13 +286,15 @@ public class BrightnessContrast extends Processor {
 	@Override
 	public void process2Awt(Media aMedia, int aProcessingMode, long aTime) {
 		try {
+			final Key aKey = getInterKeyGT(aTime);
+			final int applyTo = aKey.applyTo;
 			Thread aThL = new Thread(new Runnable() {
 				@Override
 				public void run() {
 					if(applyTo == 0 || applyTo == 2) {
 						BufferedImage aBIL = aMedia.getWorkLeft(aProcessingMode,aTime);
 						BufferedImage aProcessedBIL = tde.config.processingHdr[aProcessingMode]?
-								processAwtHdr(aBIL,true):processAwtImage(aBIL,aProcessingMode,true);
+								processAwtHdr(aBIL,true,aKey):processAwtImage(aBIL,aProcessingMode,true,aKey);
 								aMedia.setWorkLeft(aProcessedBIL);
 					}
 				}
@@ -164,7 +306,7 @@ public class BrightnessContrast extends Processor {
 					if(applyTo == 1 || applyTo == 2) {
 						BufferedImage aBIR = aMedia.getWorkRight(aProcessingMode,aTime);
 						BufferedImage aProcessedBIR = tde.config.processingHdr[aProcessingMode]?
-								processAwtHdr(aBIR,false):processAwtImage(aBIR,aProcessingMode,false);
+								processAwtHdr(aBIR,false,aKey):processAwtImage(aBIR,aProcessingMode,false,aKey);
 								aMedia.setWorkRight(aProcessedBIR);
 					}
 				}
@@ -182,7 +324,10 @@ public class BrightnessContrast extends Processor {
 		return 0.5*Math.log((1+x)/(1-x));
 	}
 	
-	BufferedImage processAwtImage(BufferedImage aBI,int aProcessingMode,boolean aIsL) {
+	BufferedImage processAwtImage(BufferedImage aBI,int aProcessingMode,boolean aIsL,Key aK) {
+		int color = aK.color;
+		double brightness = aK.brightness,contrast = aK.contrast,gamma = aK.gamma,th = aK.th;
+
 		int aWidth = aBI.getWidth();
 		int aHeight = aBI.getHeight();
 		int[] aDB = ((DataBufferInt)aBI.getRaster().getDataBuffer()).getData();
@@ -274,7 +419,10 @@ public class BrightnessContrast extends Processor {
 		return aFBI;
 	}
 
-	BufferedImage processAwtHdr(BufferedImage aBI,boolean aIsL) {
+	BufferedImage processAwtHdr(BufferedImage aBI,boolean aIsL,Key aK) {
+		int color = aK.color;
+		double brightness = aK.brightness,contrast = aK.contrast,gamma = aK.gamma,th = aK.th;
+
 		int aWidth = aBI.getWidth();
 		int aHeight = aBI.getHeight();
 		float[] aDB = ((DataBufferFloat)aBI.getRaster().getDataBuffer()).getData();

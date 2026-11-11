@@ -108,6 +108,61 @@ public class Shapes extends Processor {
 		return (Clip)targetMedia;
 	}
 
+	/**
+	 * Highest id of the shapes of the keys, -1 if none
+	 */
+	public int maxShapeId() {
+		int aMax = -1;
+		synchronized (keys) {
+			for(Key aK : keys) {
+				for(Shape aS : aK.shapes) {
+					aMax = Math.max(aMax, aS.id);
+				}
+			}
+		}
+		return aMax;
+	}
+
+	/**
+	 * The shapes of the media were edited (aOld → aNew): in every key, a removed shape is removed,
+	 * a new one added, and a changed one replaced where the key still has it as in the media
+	 * (an animated shape keeps its keys)
+	 */
+	public void mediaShapesChanged(Vector<Shape> aOld, Vector<Shape> aNew) {
+		synchronized (keys) {
+			for(Key aK : keys) {
+				for(Shape aO : aOld) {
+					if(Shape.findById(aNew, aO.id) == null) {
+						Shape aS = Shape.findById(aK.shapes, aO.id);
+						if(aS != null) {
+							aK.shapes.remove(aS);
+						}
+					}
+				}
+				for(Shape aN : aNew) {
+					Shape aO = Shape.findById(aOld, aN.id);
+					Shape aS = Shape.findById(aK.shapes, aN.id);
+					if(aO == null) {
+						if(aS == null) {
+							aK.shapes.add(aN.copy());
+						}
+						continue;
+					}
+					if(aS == null || shapeXml(aO).equals(shapeXml(aN))) {
+						continue;
+					}
+					Shape aCmp = aS.copy();
+					aCmp.hidden = aO.hidden;
+					if(shapeXml(aCmp).equals(shapeXml(aO))) {
+						Shape aR = aN.copy();
+						aR.hidden = aS.hidden;
+						aK.shapes.set(aK.shapes.indexOf(aS), aR);
+					}
+				}
+			}
+		}
+	}
+
 	@Override
 	public int getNbKeys() {
 		return keys.size();
@@ -307,15 +362,78 @@ public class Shapes extends Processor {
 	}
 
 	/**
-	 * Manual key mode (TDConfig.autoKey off): the key left of the time cursor, edited and shown
-	 * instead of the interpolated shapes. -1 out of the clip
+	 * With selected keys: the main selected key, edited and shown instead of the interpolated shapes.
+	 * -1 out of the clip
 	 */
 	int manualKey() {
 		if(currentClipTime() < 0) {
 			return -1;
 		}
-		return Math.max(0, getPrevKeyGT(tde.timeLineStack.getTimePosMS()));
+		return Math.max(0, getMainSelectedKey());
 	}
+
+	//Main selected key and copy of its shapes at the last synchronization (see syncSelectedKeys())
+	Key syncKey = null;
+	Vector<Shape> syncShapes = null;
+
+	@Override
+	protected void keySelectionChanged() {
+		syncSelectedKeys();
+	}
+
+	static String shapeXml(Shape aS) {
+		StringBuffer aSB = new StringBuffer();
+		aS.saveProject(aSB, "");
+		return aSB.toString();
+	}
+
+	/**
+	 * After a change of the shapes of the main selected key: the shapes changed since the last call
+	 * are copied into the other selected keys (same value in all of them)
+	 */
+	void syncSelectedKeys() {
+		Vector<Integer> aSel = getSelectedKeys();
+		synchronized (keys) {
+			if(aSel.isEmpty()) {
+				syncKey = null;
+				syncShapes = null;
+				return;
+			}
+			int aMain = aSel.lastElement();
+			Key aMK = keys.elementAt(aMain);
+			if(aMK == syncKey && syncShapes != null && aSel.size() > 1) {
+				for(Shape aS : aMK.shapes) {
+					Shape aOld = Shape.findById(syncShapes, aS.id);
+					if(aOld != null && shapeXml(aOld).equals(shapeXml(aS))) {
+						continue;
+					}
+					for(int aK : aSel) {
+						if(aK == aMain || aK >= keys.size()) {
+							continue;
+						}
+						Vector<Shape> aShapes = keys.elementAt(aK).shapes;
+						Shape aT = Shape.findById(aShapes, aS.id);
+						if(aT != null) {
+							aShapes.set(aShapes.indexOf(aT), aS.copy());
+						}
+					}
+				}
+			}
+			syncKey = aMK;
+			syncShapes = Shape.copyAll(aMK.shapes);
+		}
+	}
+
+	/** Editor listener: the changes of the main selected key go to the other selected keys */
+	ShapesEditor.Listener syncListener = new ShapesEditor.Listener() {
+		@Override
+		public void shapesChanged() {
+			syncSelectedKeys();
+		}
+		@Override
+		public void selectionChanged() {
+		}
+	};
 
 	/**
 	 * Key at the current time, created if needed, -1 out of the clip
@@ -325,7 +443,7 @@ public class Shapes extends Processor {
 		if(aT < 0) {
 			return -1;
 		}
-		if(!autoKey) {
+		if(!isAutoKey()) {
 			return manualKey();
 		}
 		synchronized (keys) {
@@ -349,7 +467,7 @@ public class Shapes extends Processor {
 					return null;
 				}
 				synchronized (keys) {
-					int aK = autoKey ? keyAt(aT) : manualKey();
+					int aK = isAutoKey() ? keyAt(aT) : manualKey();
 					if(aK >= 0) {
 						return keys.elementAt(aK).shapes;
 					}
@@ -458,6 +576,7 @@ public class Shapes extends Processor {
 				return aFollowing;
 			}
 		});
+		editor.addListener(syncListener);
 		return editor;
 	}
 }

@@ -71,6 +71,10 @@ public class Clip extends Media {
 			//Mandatory: draws the shapes of the clip
 			processors.add(new Shapes(tde,this));
 		}
+		if(media instanceof Model3DMedia) {
+			//Mandatory: moves the objects of the model, with keys
+			processors.add(new com.cubaix.TDenlive.processors.Objects3D(tde,this));
+		}
 		if(!(media instanceof AudioMedia)) {
 			processors.add(new StereoAligner(tde,this));
 		}
@@ -162,13 +166,32 @@ public class Clip extends Media {
 					if(aDP != null) {
 						placeDepthProcessor(aDP);
 					}
+					//Clips of 3D models made before the processor of their objects
+					if(media instanceof Model3DMedia) {
+						boolean aHas = false;
+						for(Processor aP : processors) {
+							aHas |= aP instanceof com.cubaix.TDenlive.processors.Objects3D;
+						}
+						if(!aHas) {
+							int aPos = 0;
+							while(aPos < processors.size() && processors.elementAt(aPos) instanceof TimeController) {
+								aPos++;
+							}
+							processors.add(aPos, new com.cubaix.TDenlive.processors.Objects3D(tde,this));
+						}
+					}
 					return o;
 				}
 				if("ProcAutoKey".equalsIgnoreCase(aT.tagName)) {
-					//Of the processor just read
+					//Former manual key mode (before the key selection): ignored
+					o++;
+					continue;
+				}
+				if("ProcSelKeys".equalsIgnoreCase(aT.tagName)) {
+					//Selected keys of the processor just read
 					o++;
 					if(processors.size() > 0) {
-						processors.lastElement().autoKey = !"false".equalsIgnoreCase(aOs.elementAt(o).text);
+						processors.lastElement().selectedKeysFromString(aOs.elementAt(o).text);
 					}
 					continue;
 				}
@@ -179,6 +202,11 @@ public class Clip extends Media {
 				}
 				if("Shapes".equalsIgnoreCase(aT.tagName)) {
 					Shapes aP = new Shapes(tde,this);
+					processors.add(aP);
+					o = aP.openProject(aOs, o);
+				}
+				if("Objects3D".equalsIgnoreCase(aT.tagName)) {
+					com.cubaix.TDenlive.processors.Objects3D aP = new com.cubaix.TDenlive.processors.Objects3D(tde,this);
 					processors.add(aP);
 					o = aP.openProject(aOs, o);
 				}
@@ -272,8 +300,9 @@ public class Clip extends Media {
 		aSB.append("					<Processors>\n");
 		for(Processor aP : processors) {
 			aP.saveProject(aSB);
-			if(!aP.autoKey) {
-				aSB.append("						<ProcAutoKey>false</ProcAutoKey>\n");
+			String aSel = aP.selectedKeysToString();
+			if(aSel.length() > 0) {
+				aSB.append("						<ProcSelKeys>" + aSel + "</ProcSelKeys>\n");
 			}
 		}
 		aSB.append("					</Processors>\n");
@@ -1015,6 +1044,7 @@ public class Clip extends Media {
 		int aPos = 0;
 		while(aPos < processors.size()
 				&& (processors.elementAt(aPos) instanceof TimeController
+						|| processors.elementAt(aPos) instanceof com.cubaix.TDenlive.processors.Objects3D
 						|| (processors.elementAt(aPos) instanceof Shapes && !(processors.elementAt(aPos) instanceof Subtitles)))) {
 			aPos++;
 		}

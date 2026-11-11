@@ -18,6 +18,8 @@ import org.eclipse.swt.widgets.MessageBox;
 import com.cubaix.TDenlive.TDenlive;
 import com.cubaix.TDenlive.medias.Clip;
 import com.cubaix.TDenlive.medias.Media;
+import com.cubaix.TDenlive.medias.Model3DMedia;
+import com.cubaix.TDenlive.medias.ShapesMedia;
 
 public class MediaListGUI extends CanvasPanel {
 
@@ -42,7 +44,7 @@ public class MediaListGUI extends CanvasPanel {
 			public void dragStart(DragSourceEvent e) {
 				draggedMedia = null;
 				//The media selected by the mouse down, not its trash button
-				if(tde.mediaList.trashAt(e.x, e.y) != null || tde.selected.medias.size() != 1) {
+				if(tde.mediaList.trashAt(e.x, e.y) != null || tde.mediaList.editAt(e.x, e.y) != null || tde.selected.medias.size() != 1) {
 					e.doit = false;
 					return;
 				}
@@ -68,17 +70,17 @@ public class MediaListGUI extends CanvasPanel {
 		tde.gui.tip(canvas, "MediaList");
 		//Trash buttons: hover frame and help
 		canvas.addListener(SWT.MouseMove, e -> {
-			boolean aWasOn = tde.mediaList.trashAt(tde.mediaList.hoverX, tde.mediaList.hoverY) != null;
+			int aWasOn = buttonAt(tde.mediaList.hoverX, tde.mediaList.hoverY);
 			tde.mediaList.hoverX = e.x;
 			tde.mediaList.hoverY = e.y;
-			boolean aOn = tde.mediaList.trashAt(e.x, e.y) != null;
+			int aOn = buttonAt(e.x, e.y);
 			if(aOn != aWasOn) {
-				tde.gui.tip(canvas, aOn ? "MediaTrash" : "MediaList");
+				tde.gui.tip(canvas, aOn == 1 ? "MediaTrash" : (aOn == 2 ? "MediaEdit" : "MediaList"));
 				canvas.redraw();
 			}
 		});
 		canvas.addListener(SWT.MouseExit, e -> {
-			boolean aWasOn = tde.mediaList.trashAt(tde.mediaList.hoverX, tde.mediaList.hoverY) != null;
+			boolean aWasOn = buttonAt(tde.mediaList.hoverX, tde.mediaList.hoverY) != 0;
 			tde.mediaList.hoverX = tde.mediaList.hoverY = -1;
 			if(aWasOn) {
 				tde.gui.tip(canvas, "MediaList");
@@ -86,6 +88,13 @@ public class MediaListGUI extends CanvasPanel {
 			}
 		});
 		canvas.addListener(SWT.MouseDown,e -> {
+			Media aEdited = tde.mediaList.editAt(e.x, e.y);
+			if(aEdited != null) {
+				if(e.count == 1 && e.button == 1) {
+					tde.gui.display.asyncExec(() -> editMedia(aEdited));
+				}
+				return;
+			}
 			Media aTrashed = tde.mediaList.trashAt(e.x, e.y);
 			if(aTrashed != null) {
 				//Not the second click of a double click (it would remove the next media)
@@ -112,7 +121,7 @@ public class MediaListGUI extends CanvasPanel {
 		});
 		
 		canvas.addListener(SWT.MouseDoubleClick,e -> {
-			if(tde.mediaList.trashAt(e.x, e.y) != null) {
+			if(buttonAt(e.x, e.y) != 0) {
 				return;
 			}
 			tde.mediaList.select(e.x, e.y, true);
@@ -135,6 +144,79 @@ public class MediaListGUI extends CanvasPanel {
 
 	}
 	
+	/**
+	 * Button of a media row under the mouse: 1 trash, 2 edit, 0 none
+	 */
+	int buttonAt(int aX, int aY) {
+		if(tde.mediaList.trashAt(aX, aY) != null) {
+			return 1;
+		}
+		return tde.mediaList.editAt(aX, aY) != null ? 2 : 0;
+	}
+
+	/**
+	 * Opens a media made in the application in its editor again: shapes (the changes go to the clips
+	 * of the media, see Shapes.mediaShapesChanged()) or 3D model (the clips follow it, their keys are
+	 * relative to it)
+	 */
+	void editMedia(Media aMedia) {
+		if(!tde.mediaList.mediaList.contains(aMedia)) {
+			return;
+		}
+		try {
+			if(aMedia instanceof ShapesMedia) {
+				ShapesMedia aSM = (ShapesMedia)aMedia;
+				Vector<Clip> aClips = tde.timeLineStack.clipsOf(aSM);
+				//New shapes: ids above all those of the clips (shapes added on the monitor)
+				int aMinId = 0;
+				for(com.cubaix.TDenlive.shapes.Shape aS : aSM.getShapes()) {
+					aMinId = Math.max(aMinId, aS.id+1);
+				}
+				for(Clip aC : aClips) {
+					for(com.cubaix.TDenlive.processors.Processor aP : aC.getProcessors()) {
+						if(aP instanceof com.cubaix.TDenlive.processors.Shapes) {
+							aMinId = Math.max(aMinId, ((com.cubaix.TDenlive.processors.Shapes)aP).maxShapeId()+1);
+						}
+					}
+				}
+				Vector<com.cubaix.TDenlive.shapes.Shape> aOld = com.cubaix.TDenlive.shapes.Shape.copyAll(aSM.getShapes());
+				Vector<com.cubaix.TDenlive.shapes.Shape> aNew = new ShapesClipGUI(tde, aOld, aMinId).open();
+				if(aNew == null) {
+					return;
+				}
+				for(Clip aC : aClips) {
+					for(com.cubaix.TDenlive.processors.Processor aP : aC.getProcessors()) {
+						if(aP instanceof com.cubaix.TDenlive.processors.Shapes) {
+							((com.cubaix.TDenlive.processors.Shapes)aP).mediaShapesChanged(aOld, aNew);
+						}
+					}
+				}
+				aSM.setShapes(aNew);
+				aSM.reloadShapes();
+			}
+			else if(aMedia instanceof Model3DMedia) {
+				Model3DMedia aMM = (Model3DMedia)aMedia;
+				com.cubaix.TDenlive.model3d.Model3D aModel = new Model3DGUI(tde, aMM.getModel()).open();
+				if(aModel == null) {
+					return;
+				}
+				aMM.setModel(aModel);
+			}
+			canvas.redraw();
+			if(tde.gui.monitorGUI != null) {
+				tde.gui.monitorGUI.redraw();
+			}
+			tde.gui.timeLinesGUI.redraw();
+			if(tde.gui.processorGUI != null && tde.selected.clips.size() > 0) {
+				//The panels of the selected clip show the new contents
+				tde.gui.processorGUI.setProcessors(tde.selected.clips.elementAt(0).getProcessors());
+			}
+		}
+		catch(Throwable t) {
+			t.printStackTrace(System.err);
+		}
+	}
+
 	/**
 	 * Remove a media from the list, after a confirmation if it is used in the montage
 	 * (its clips are removed from the time lines too)

@@ -290,6 +290,10 @@ public class ProcessorsGUI extends CompositePanel {
 			aBox.setData(new SubtitlesGUI(tde, aBox,aP));
 			return;
 		}
+		if("Objects3D".equals(aClassP)) {
+			aBox.setData(new com.cubaix.TDenlive.GUI.processors.Objects3DGUI(tde, aBox,aP));
+			return;
+		}
 		if("StereoAligner".equals(aClassP)) {
 			aBox.setData(new StereoAlignerGUI(tde, aBox,aP));
 			return;

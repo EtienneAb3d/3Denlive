@@ -64,7 +64,7 @@ public class PlacerGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					pl.setX(lkf.editKey(),aValue/10000.0);
+					lkf.edit(aEK -> pl.setX(aEK, aValue/10000.0));
 					tde.gui.monitorGUI.redraw();
 				}
 			}
@@ -73,7 +73,7 @@ public class PlacerGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					pl.setY(lkf.editKey(),-aValue/10000.0);
+					lkf.edit(aEK -> pl.setY(aEK, -aValue/10000.0));
 					tde.gui.monitorGUI.redraw();
 				}
 			}
@@ -82,7 +82,7 @@ public class PlacerGUI extends ProcessorGUI {
 			@Override
 			public void change(int aValue) {
 				if(lkf.getSelection() >= 0) {
-					pl.setScale(lkf.editKey(),bar2Scale(aValue));
+					lkf.edit(aEK -> pl.setScale(aEK, bar2Scale(aValue)));
 					tde.gui.monitorGUI.redraw();
 				}
 			}

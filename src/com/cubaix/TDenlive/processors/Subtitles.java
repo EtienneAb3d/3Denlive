@@ -363,7 +363,7 @@ public class Subtitles extends Shapes {
 					return null;
 				}
 				Vector<Shape> aShapes;
-				if(autoKey) {
+				if(isAutoKey()) {
 					aShapes = interpolate(aT);
 				}
 				else {
@@ -424,6 +424,7 @@ public class Subtitles extends Shapes {
 				return false;
 			}
 		});
+		editor.addListener(syncListener);
 		return editor;
 	}
 

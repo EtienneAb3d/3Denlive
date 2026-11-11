@@ -48,11 +48,120 @@ public abstract class Processor {
 	/** Key index of the values interpolated at the time cursor, for the display only (see setDisplayKeyGT()) */
 	public static final int DISPLAY_KEY = Integer.MAX_VALUE;
 	/**
-	 * Key frames of this processor: a parameter change adds a key at the time cursor, the widgets show the
-	 * interpolated values (true, default); else a change modifies the key left of the cursor, whose values
-	 * the widgets show. Saved by the clip (<ProcAutoKey> after the processor, only when false)
+	 * Selected keys of this processor ("Select" button of the K row), by their time (relative to
+	 * Clip.getKeysOriginMS()), in the order of selection: the last one is the main selected key,
+	 * whose values the widgets show. A parameter change gives the same value to all of them.
+	 * None: automatic mode, a parameter change adds a key at the time cursor, the widgets show
+	 * the interpolated values. Saved by the clip (<ProcSelKeys> after the processor, if any)
 	 */
-	public boolean autoKey = true;
+	Vector<Long> selectedKeyTimes = new Vector<Long>();
+
+	/** True without selected key: a change adds a key at the time cursor */
+	public boolean isAutoKey() {
+		return getMainSelectedKey() < 0;
+	}
+
+	/** Index of the key at aT (time of the keys), -1 if none */
+	int keyIndexOfTime(long aT) {
+		int aNb = getNbKeys();
+		for(int k = 0;k < aNb;k++) {
+			if(getTime(k) == aT) {
+				return k;
+			}
+		}
+		return -1;
+	}
+
+	/** Indexes of the selected keys (in the order of selection), the deleted ones are forgotten */
+	public Vector<Integer> getSelectedKeys() {
+		Vector<Integer> aKeys = new Vector<Integer>();
+		synchronized (selectedKeyTimes) {
+			for(int i = 0;i < selectedKeyTimes.size();i++) {
+				int aK = keyIndexOfTime(selectedKeyTimes.elementAt(i));
+				if(aK < 0) {
+					selectedKeyTimes.remove(i--);
+					continue;
+				}
+				aKeys.add(aK);
+			}
+		}
+		return aKeys;
+	}
+
+	/** Main selected key (the last selected), -1 if none */
+	public int getMainSelectedKey() {
+		Vector<Integer> aKeys = getSelectedKeys();
+		return aKeys.isEmpty() ? -1 : aKeys.lastElement();
+	}
+
+	public boolean isKeySelected(int aKey) {
+		return aKey >= 0 && aKey < getNbKeys() && selectedKeyTimes.contains(getTime(aKey));
+	}
+
+	/**
+	 * Adds to the selection the key at aTimePos (time of the montage), else the nearest one on its
+	 * left (the first key if none), as the main selected key.
+	 * @return its index, -1 if the processor has no key
+	 */
+	public int selectKeyGT(long aTimePos) {
+		int aK = getPrevKeyGT(aTimePos);
+		if(aK < 0) {
+			if(getNbKeys() <= 0) {
+				return -1;
+			}
+			aK = 0;
+		}
+		synchronized (selectedKeyTimes) {
+			Long aT = getTime(aK);
+			selectedKeyTimes.remove(aT);
+			selectedKeyTimes.add(aT);
+		}
+		keySelectionChanged();
+		return aK;
+	}
+
+	/** Back to the automatic mode */
+	public void unselectKeys() {
+		synchronized (selectedKeyTimes) {
+			selectedKeyTimes.clear();
+		}
+		keySelectionChanged();
+	}
+
+	/** Selection for the project file: times separated by ';', "" if none */
+	public String selectedKeysToString() {
+		StringBuffer aSB = new StringBuffer();
+		synchronized (selectedKeyTimes) {
+			for(Long aT : selectedKeyTimes) {
+				if(aSB.length() > 0) {
+					aSB.append(';');
+				}
+				aSB.append(aT);
+			}
+		}
+		return aSB.toString();
+	}
+
+	public void selectedKeysFromString(String aS) {
+		synchronized (selectedKeyTimes) {
+			selectedKeyTimes.clear();
+			for(String aT : aS.split(";")) {
+				try {
+					if(!aT.isBlank()) {
+						selectedKeyTimes.add(Long.parseLong(aT.trim()));
+					}
+				}
+				catch(Throwable t) {
+					t.printStackTrace(System.err);
+				}
+			}
+		}
+		keySelectionChanged();
+	}
+
+	/** Called when the selected keys change */
+	protected void keySelectionChanged() {}
+
 	/**
 	 * Computes the display key: the values interpolated at aTime, read with the index DISPLAY_KEY
 	 * by the getters (never by the setters). The keys of the processor are not changed.

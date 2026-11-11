@@ -57,6 +57,11 @@ public class Cropper extends Processor {
 	Vector<Key> keys = new Vector<Key>();
 	
 	public boolean showCutLines = true;
+	/**
+	 * Sliders of the GUI linked by their check box (not saved): leftL, leftR, rightL, rightR, top, bottom,
+	 * shearXL, shearXR (see CropperGUI)
+	 */
+	public boolean[] linked = new boolean[8];
 
 	public Cropper(TDenlive aTDe, Media aTargetMedia) {
 		super(aTDe, aTargetMedia);

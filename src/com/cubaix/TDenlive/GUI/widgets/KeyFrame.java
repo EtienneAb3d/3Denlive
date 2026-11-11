@@ -1,5 +1,7 @@
 package com.cubaix.TDenlive.GUI.widgets;
 
+import java.util.Vector;
+
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
@@ -141,6 +143,7 @@ public abstract class KeyFrame extends Widget {
 //				&& tde.timeLineStack.getTimePosMS() <= ((Clip)proc.targetMedia).getStartTimeMS()+((Clip)proc.targetMedia).getDurationMS()
 				) {
 			int aNbKey = proc.getNbKeys();
+			Vector<Integer> aSelected = proc.getSelectedKeys();
 			//Keys out of the clip (cut clip): not shown, but their interval is if selected
 			long aKeysShift = ((Clip)proc.targetMedia).getStartTimeMS()-((Clip)proc.targetMedia).getKeysOriginMS();
 			for(int k = 0;k < aNbKey;k++) {
@@ -151,16 +154,8 @@ public abstract class KeyFrame extends Widget {
 				if(k == selection) {
 					aGC.setBackground(tde.gui.colorsSwt.CUBAIX_PINK);
 					aGC.setForeground(tde.gui.colorsSwt.CUBAIX_PINK);
-					if(proc.autoKey) {
+					if(!aSelected.contains(k)) {
 						aGC.drawOval(aBulletX-5, aLineY-5, 10, 10);
-					}
-					else {
-						//Manual mode: the key the parameters change
-						aGC.setForeground(tde.gui.colorsSwt.YELLOW);
-						aGC.setLineWidth(2);
-						aGC.drawRectangle(aBulletX-5, aLineY-5, 10, 10);
-						aGC.setLineWidth(1);
-						aGC.setForeground(tde.gui.colorsSwt.CUBAIX_PINK);
 					}
 					int aBulletXN = lineX+lineW;
 					if(k < aNbKey-1) {
@@ -172,6 +167,13 @@ public abstract class KeyFrame extends Widget {
 				}
 				if(aOut) {
 					continue;
+				}
+				if(aSelected.contains(k)) {
+					//Selected key: the parameter changes go to all of them
+					aGC.setForeground(tde.gui.colorsSwt.YELLOW);
+					aGC.setLineWidth(2);
+					aGC.drawRectangle(aBulletX-5, aLineY-5, 10, 10);
+					aGC.setLineWidth(1);
 				}
 				//				else {
 				aGC.setBackground(tde.gui.colorsSwt.CUBAIX_BLUE);

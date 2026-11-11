@@ -31,7 +31,7 @@ public class MediaListControlGUI extends CompositePanel {
 		aTB.heightHint = tde.gui.h(25);
 		toolBar.setLayoutData(aTB);
 		tde.gui.applyColorFont(toolBar);
-		GridLayout aGL = new GridLayout(5, false);
+		GridLayout aGL = new GridLayout(6, false);
 		tde.gui.applyNoMargin(aGL);
 		toolBar.setLayout(aGL);
 		
@@ -97,6 +97,31 @@ public class MediaListControlGUI extends CompositePanel {
 				Vector<Shape> aShapes = new ShapesClipGUI(tde).open();
 				if(aShapes != null) {
 					tde.mediaList.createShapes(aShapes,TDConfig.PROCESSING_MODE_RENDER);
+					tde.gui.mediaListGUI.redraw();
+				}
+			}
+			@Override
+			public void mouseDoubleClick(MouseEvent arg0) {}
+		});
+		
+		//3D model: mini 3D modeler
+		CLabel addModel3D = new CLabel(toolBar,SWT.NONE);
+		addModel3D.setImage(tde.gui.imgsSwt.getIcon("cube3d.png"));
+		addModel3D.setAlignment(SWT.CENTER);
+		GridData aModel3DGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
+		aModel3DGD.widthHint = 32;
+		aModel3DGD.heightHint = tde.gui.h(25);
+		addModel3D.setLayoutData(aModel3DGD);
+		tde.gui.applyColorFont(addModel3D);
+		tde.gui.tip(addModel3D, "AddModel3D");
+		addModel3D.addMouseListener(new MouseListener() {
+			@Override
+			public void mouseUp(MouseEvent arg0) {}
+			@Override
+			public void mouseDown(MouseEvent arg0) {
+				com.cubaix.TDenlive.model3d.Model3D aModel = new Model3DGUI(tde, null).open();
+				if(aModel != null) {
+					tde.mediaList.createModel3D(aModel);
 					tde.gui.mediaListGUI.redraw();
 				}
 			}
