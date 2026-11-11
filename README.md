@@ -16,7 +16,7 @@ Download 3Denlive for <a href="https://3denlive.com/3DenlivePPC64le.tar.gz">Linu
 
 To launch it, extract the archive, then run `3Denlive.bat` (Windows) or `3Denlive.sh` (macOS, Linux).
 
-<img src="https://3denlive.com/LatestScreenCopyEN.png?date=2020-12-20"/>
+<img src="https://3denlive.com/LatestScreenCopyEN.png?date=2026-11-11"/>
 
 # Dev config
 
