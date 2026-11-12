@@ -19,6 +19,8 @@ import com.cubaix.TDenlive.utils.BrowserControl;
 
 public class WebBrowserGUI extends CompositePanel {
 	Browser browser = null;
+	/** WebKit of JavaFX, when SWT has no browser (Linux without WebKitGTK) */
+	FxBrowser fx = null;
 	/** Page asked, opened in the browser of the system when no embedded browser is available */
 	String url = null;
 
@@ -56,6 +58,11 @@ public class WebBrowserGUI extends CompositePanel {
 		if(browser != null && !browser.isDisposed()) {
 			setCookies(aURL);
 			browser.setUrl(aURL);
+		}
+		else if(fx != null) {
+			if(!fx.getControl().isDisposed()) {
+				fx.load(aURL);
+			}
 		}
 		else if(browser == null) {
 			//No embedded browser: the page asked by a button goes to the browser of the system
@@ -105,9 +112,12 @@ public class WebBrowserGUI extends CompositePanel {
 			aBrowser = browser = new Browser(container, SWT.NONE);
 		}
 		catch(Throwable t) {
-			//Linux without WebKitGTK: no embedded browser, a message and a button to the system browser
-			System.err.println("No embedded web browser: " + t.getMessage());
+			//Linux without WebKitGTK: the WebKit of JavaFX if present, else a message and a button to the system browser
+			System.err.println("No SWT web browser: " + t.getMessage());
 			browser = null;
+			if(createFxContents(aURL)) {
+				return;
+			}
 			createNoBrowserContents();
 			if(aStartURL != null) {
 				BrowserControl.openURL(aStartURL);
@@ -167,7 +177,46 @@ public class WebBrowserGUI extends CompositePanel {
 	}
 
 	/**
-	 * Shown instead of the web page when SWT has no browser (WebKitGTK missing on Linux)
+	 * The page in the WebKit of JavaFX (FxBrowser), when SWT has no browser
+	 * @return false when JavaFX is absent or fails
+	 */
+	boolean createFxContents(String aURL) {
+		if(!FxBrowser.isAvailable()) {
+			return false;
+		}
+		try {
+			fx = new FxBrowser(container,
+				aLoc -> fx.execute(DEMO_BUTTONS_JS),
+				aLoc -> {
+					System.err.println("Web page not loaded: " + aLoc);
+					fx.loadContent(errorPage());
+				},
+				aZip -> tde.gui.display.asyncExec(() -> {
+					if(DemoProjectGUI.isDemoZip(aZip)) {
+						DemoProjectGUI.open(tde, aZip);
+					}
+					else {
+						BrowserControl.openURL(aZip);
+					}
+				}));
+			fx.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
+			fx.load(aURL);
+			System.err.println("Web pages shown with JavaFX");
+			return true;
+		}
+		catch(Throwable t) {
+			System.err.println("No JavaFX web browser either:");
+			t.printStackTrace(System.err);
+			if(fx != null && fx.getControl() != null && !fx.getControl().isDisposed()) {
+				fx.getControl().dispose();
+			}
+			fx = null;
+			return false;
+		}
+	}
+
+	/**
+	 * Shown instead of the web page when there is no embedded browser (Linux without WebKitGTK nor JavaFX)
 	 */
 	void createNoBrowserContents() {
 		Composite aBox = new Composite(container, SWT.NONE);

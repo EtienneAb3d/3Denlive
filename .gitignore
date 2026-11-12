@@ -1,5 +1,6 @@
 /bin/
 /distrib/ffmpeg/
+/distrib/Linux/javafx/
 .DS_Store
 /delivery/
 /JVMs/

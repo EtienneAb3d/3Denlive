@@ -10,7 +10,7 @@
 # Usage: ./build_delivery.sh [config...]
 #   configs: Linux PPC64le Win-x64 MacIntel MacSilicon (default: all)
 #
-# Prerequisites: a JDK >= JAVA_RELEASE (javac, jar), tar, zip, and ./Install-Dev.sh run
+# Prerequisites: a JDK >= JAVA_RELEASE (see find_jdk.sh), tar, zip, and ./Install-Dev.sh run
 # beforehand (it fills distrib/ffmpeg/ and JVMs/).
 
 set -euo pipefail
@@ -46,13 +46,17 @@ ffmpeg_name() {
 
 ########## Checks ##########
 
-for tool in javac jar tar zip; do
+for tool in tar zip; do
 	command -v "$tool" >/dev/null || { echo "Missing required tool: $tool" >&2; exit 1; }
 done
-JDK_MAJOR="$(javac -version 2>&1 | sed -E 's/^javac ([0-9]+).*/\1/')"
-if [ "$JDK_MAJOR" -lt "$JAVA_RELEASE" ]; then
-	echo "javac $JDK_MAJOR found, JDK $JAVA_RELEASE+ required" >&2; exit 1
+# JDK 27+, even when the default javac of the system is older
+. "$ROOT/find_jdk.sh"
+JDK_BIN="$(find_java_bin "$JAVA_RELEASE" javac)"
+if [ -z "$JDK_BIN" ] || [ ! -x "$JDK_BIN/jar" ]; then
+	echo "No JDK $JAVA_RELEASE+ found: set JAVA_HOME, or run ./Install-Dev.sh --jdk-only" >&2; exit 1
 fi
+JAVAC="$JDK_BIN/javac"
+JAR="$JDK_BIN/jar"
 
 MISSING=0
 for c in "${CONFIGS[@]}"; do
@@ -60,6 +64,9 @@ for c in "${CONFIGS[@]}"; do
 		echo "[$c] missing JVM: JVMs/$c" >&2; MISSING=1
 	elif ! grep -qE "^JAVA_VERSION=\"($JAVA_RELEASE|[0-9]{3,}|[3-9][0-9]|2[89])([.\"])" "$ROOT/JVMs/$c/release"; then
 		echo "[$c] JVMs/$c is older than Java $JAVA_RELEASE: $(grep '^JAVA_VERSION=' "$ROOT/JVMs/$c/release")" >&2; MISSING=1
+	fi
+	if [ "$c" = Linux ] && [ ! -f "$DISTRIB/Linux/javafx/javafx.web.jar" ]; then
+		echo "[$c] missing JavaFX (web pages without WebKitGTK): distrib/Linux/javafx" >&2; MISSING=1
 	fi
 	f="$(ffmpeg_name "$c")"
 	if [ -n "$f" ] && [ ! -f "$DISTRIB/ffmpeg/$f" ]; then
@@ -76,14 +83,14 @@ echo "Compiling (javac --release $JAVA_RELEASE)..."
 rm -rf "$BUILD"
 mkdir -p "$BUILD/classes"
 find "$ROOT/src" -name '*.java' > "$BUILD/sources.txt"
-javac --release "$JAVA_RELEASE" -nowarn -encoding UTF-8 -d "$BUILD/classes" \
+"$JAVAC" --release "$JAVA_RELEASE" -nowarn -encoding UTF-8 -d "$BUILD/classes" \
 	-cp "$DISTRIB/*:$DISTRIB/Linux/swt.jar" @"$BUILD/sources.txt"
 # Resources (language files, images, fonts) next to the classes, as Eclipse does
 (cd "$ROOT/src" && find . -type f ! -name '*.java' ! -name '.DS_Store' | while read -r f; do
 	mkdir -p "$BUILD/classes/$(dirname "$f")"
 	cp "$f" "$BUILD/classes/$f"
 done)
-jar --create --file "$BUILD/3Denlive.jar" --main-class com.cubaix.TDenlive.TDenlive -C "$BUILD/classes" .
+"$JAR" --create --file "$BUILD/3Denlive.jar" --main-class com.cubaix.TDenlive.TDenlive -C "$BUILD/classes" .
 VERSION="$(tr -d '[:space:]' < "$ROOT/src/com/cubaix/TDenlive/VERSION.txt")"
 echo "3Denlive $VERSION: $BUILD/3Denlive.jar"
 

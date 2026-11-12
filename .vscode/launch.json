@@ -54,7 +54,7 @@
 				"${workspaceFolder}/distrib/Linux/swt.jar"
 			],
 			"vmArgs": "-Xmx4G -XX:G1PeriodicGCInterval=30000 --enable-native-access=ALL-UNNAMED -Djava.library.path=${workspaceFolder}/distrib/Linux/lib",
-			"env": { "GTK_OVERLAY_SCROLLING": "0" }
+			"env": { "GTK_OVERLAY_SCROLLING": "0", "GDK_BACKEND": "x11" }
 		},
 		{
 			"type": "java",

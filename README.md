@@ -26,13 +26,14 @@ Configurations: `Linux`, `PPC64le`, `Win-x64`, `MacIntel`, `MacSilicon`
 
 1- Install a JDK 27 or later, for example Eclipse Temurin<br/>
 https://adoptium.net/
+Or, after step 2, `./Install-Dev.sh --jdk-only` downloads one into `JVMs/JDK/` (the scripts find it there, as well as in `JAVA_HOME`, on the `PATH` or among the installed JDKs, even when the default `javac` of the system is older).<br/>
 
 2- Clone the repository<br/>
 `git clone https://github.com/EtienneAb3d/3Denlive.git`
 
 3- Download the ffmpeg binaries into `distrib/ffmpeg/` (they are not stored in Git)<br/>
 `./Install-Dev.sh --ffmpeg-only` (all configurations), or for example `./Install-Dev.sh --ffmpeg-only MacSilicon`<br/>
-Without `--ffmpeg-only`, it also downloads the Java runtimes (`JVMs/`) needed to build the deliveries.<br/>
+Without `--ffmpeg-only`, it also downloads the Java runtimes (`JVMs/`) needed to build the deliveries, and JavaFX for Linux (`distrib/Linux/javafx/`), whose WebKit shows the web pages of the central panel when WebKitGTK is not installed (`./Install-Dev.sh --javafx-only Linux` for it alone).<br/>
 Run it again with `-f` later to update to the latest releases.<br/>
 On Windows, run it from Git Bash.
 

@@ -3,6 +3,8 @@
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 cd "$DIR"
 export GTK_OVERLAY_SCROLLING=0
+# X11 (XWayland in a Wayland session): needed by JavaFX, which shows the web pages without WebKitGTK
+export GDK_BACKEND="${GDK_BACKEND:-x11}"
 JAVA=java
 if [ -x "$DIR/jre/bin/java" ]; then
 	JAVA="$DIR/jre/bin/java"
