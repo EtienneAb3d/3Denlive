@@ -2,6 +2,8 @@ package com.cubaix.TDenlive.GUI;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.browser.LocationAdapter;
+import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.ProgressEvent;
 import org.eclipse.swt.browser.ProgressListener;
 import org.eclipse.swt.browser.StatusTextEvent;
@@ -12,19 +14,96 @@ import org.eclipse.swt.widgets.Composite;
 import com.cubaix.TDenlive.TDenlive;
 
 public class WebBrowserGUI extends CompositePanel {
+	Browser browser = null;
 
 	public WebBrowserGUI(TDenlive aTDe, Composite aParent) {
-		super(aTDe, aParent);
-		createContents();
+		this(aTDe, aParent, null);
 	}
 
-	void createContents() {
+	/**
+	 * @param aURL page shown, null: the news page
+	 */
+	public WebBrowserGUI(TDenlive aTDe, Composite aParent, String aURL) {
+		super(aTDe, aParent);
+		createContents(aURL);
+	}
+
+	/**
+	 * News page of the web site, in the language of the interface
+	 */
+	public static String newsURL(TDenlive aTDe) {
+		return "https://3denlive.com/news"+aTDe.config.lng.toUpperCase()+".php";
+	}
+
+	/**
+	 * Demos page of the web site, in the language of the interface (FR, else EN)
+	 */
+	public static String demosURL(TDenlive aTDe) {
+		return "FR".equalsIgnoreCase(aTDe.config.lng) ? "https://3denlive.com/demos/index.php" : "https://3denlive.com/demos/en.php";
+	}
+
+	/**
+	 * Show another page
+	 */
+	public void setUrl(String aURL) {
+		if(browser != null && !browser.isDisposed()) {
+			setCookies(aURL);
+			browser.setUrl(aURL);
+		}
+	}
+
+	static void setCookies(String aURL) {
+		Browser.setCookie("COOKU=3De; expires=Sun, 10 Jan 2038 07:59:59 GMT", aURL);
+		Browser.setCookie("CN=3De; expires=Sun, 10 Jan 2038 07:59:59 GMT", aURL);
+	}
+
+	/**
+	 * Script run on each loaded page: the links to the demo zips ("Project") become buttons with a
+	 * download sign, so that it is clear that a click there opens the project in the application.
+	 * ES5 only, idempotent (style and buttons added once).
+	 */
+	static final String DEMO_BUTTONS_JS =
+		"(function(){" +
+		"var aLinks=document.getElementsByTagName('a');var aFound=false;" +
+		"for(var i=0;i<aLinks.length;i++){" +
+		" var aA=aLinks[i];var aH=aA.href||'';" +
+		" if(!/^https?:\\/\\/(www\\.)?3denlive\\.com\\/demos\\/[^?#]+\\.zip([?#].*)?$/i.test(aH)){continue;}" +
+		" aFound=true;" +
+		" if(aA.className.indexOf('tde-demo-btn')>=0){continue;}" +
+		" aA.className+=' tde-demo-btn';" +
+		" var aI=document.createElement('span');aI.className='tde-demo-ico';aI.appendChild(document.createTextNode('\\u2B07'));" +
+		" aA.insertBefore(aI,aA.firstChild);" +
+		"}" +
+		"if(aFound&&!document.getElementById('tde-demo-style')){" +
+		" var aS=document.createElement('style');aS.id='tde-demo-style';" +
+		" aS.appendChild(document.createTextNode(" +
+		"  'a.tde-demo-btn{display:inline-block;background:#792c7d;color:#fff !important;text-decoration:none;" +
+		"padding:6px 16px;margin:4px 6px;border-radius:6px;font-weight:bold;box-shadow:0 2px 4px rgba(0,0,0,.25);" +
+		"cursor:pointer;transition:background .15s,transform .1s;}'+" +
+		"  'a.tde-demo-btn:hover{background:#00328d;}'+" +
+		"  'a.tde-demo-btn:active{transform:translateY(1px);box-shadow:0 1px 2px rgba(0,0,0,.25);}'+" +
+		"  '.tde-demo-ico{margin-right:8px;}'));" +
+		" (document.head||document.documentElement).appendChild(aS);" +
+		"}" +
+		"})();";
+
+	void createContents(String aStartURL) {
 		try {
-			Browser aBrowser = new Browser(container, SWT.NONE);
+			Browser aBrowser = browser = new Browser(container, SWT.NONE);
 			aBrowser.setLayoutData(new GridData(GridData.FILL_BOTH));
-			String aURL = "https://3denlive.com/news"+tde.config.lng.toUpperCase()+".php";
-			Browser.setCookie("COOKU=3De; expires=Sun, 10 Jan 2038 07:59:59 GMT", aURL);
-			Browser.setCookie("CN=3De; expires=Sun, 10 Jan 2038 07:59:59 GMT", aURL);
+			String aURL = aStartURL != null ? aStartURL : newsURL(tde);
+			setCookies(aURL);
+			//The "Project" zips of the demos page: downloaded, unzipped and opened by the application
+			aBrowser.addLocationListener(new LocationAdapter() {
+				@Override
+				public void changing(LocationEvent aE) {
+					if(DemoProjectGUI.isDemoZip(aE.location)) {
+						aE.doit = false;
+						String aZip = aE.location;
+						tde.gui.display.asyncExec(() -> DemoProjectGUI.open(tde, aZip));
+					}
+				}
+			});
 			aBrowser.setUrl(aURL);
 			aBrowser.addStatusTextListener(new StatusTextListener() {
 
@@ -44,6 +123,13 @@ public class WebBrowserGUI extends CompositePanel {
 					if(aContent.indexOf("Roboto") < 0) {
 						String aMsg = errorPage();
 						aBrowser.setText(aMsg);
+						return;
+					}
+					try {
+						aBrowser.execute(DEMO_BUTTONS_JS);
+					}
+					catch(Throwable t) {
+						t.printStackTrace(System.err);
 					}
 				}
 				@Override
@@ -75,8 +161,8 @@ public class WebBrowserGUI extends CompositePanel {
 	}
 	String errorMessageEN() {
 		//Should be done later with lgns
-		return "I can't open the News page from the 3Denlive website.<br/><br/>"
+		return "I can't open this page from the 3Denlive website.<br/><br/>"
 		+ "You are certainly offline, or you have a security system blocking that call from the software.<br/><br/>"
-		+ "The News page can be called outside of 3Denlive by clicking the lampe button on the right of the main menu bar.";
+		+ "The News page can be called outside of 3Denlive by clicking the lamp button on the right of the main menu bar.";
 	}
 }

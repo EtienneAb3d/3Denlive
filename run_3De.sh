@@ -62,7 +62,7 @@ if [ "$COMPILE" = 1 ]; then
 	rm -f "$ROOT/bin.sources.tmp"
 fi
 
-JVM_OPTS=(-Xmx4G --enable-native-access=ALL-UNNAMED)
+JVM_OPTS=(-Xmx4G -XX:G1PeriodicGCInterval=30000 --enable-native-access=ALL-UNNAMED)
 case "$CONFIG" in
 	Mac*) JVM_OPTS=(-XstartOnFirstThread "${JVM_OPTS[@]}") ;;
 	*) export GTK_OVERLAY_SCROLLING=0 ;;

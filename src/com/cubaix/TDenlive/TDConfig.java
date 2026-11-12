@@ -53,6 +53,12 @@ public class TDConfig {
 	final public static String[] FPSLIST = new String[] {"25","30","50","60"};
 	
 	public String lng = "FR";
+	//AI panel (GUI/AiClipGUI): kind last chosen (video, music, sfx), and the model of each kind chosen by the user
+	//("": the one advised for the hardware, WanGenerator.defaultVariant(), SoundGenerator.defaultModel())
+	public String aiKind = "music";
+	public String aiVideoModel = "";
+	public String aiMusicModel = "";
+	public String aiSfxModel = "";
 	
 	public String renderDir = "";
 	
@@ -100,6 +106,29 @@ public class TDConfig {
 					if("lng".equalsIgnoreCase(aT.tagName)) {
 						o++;
 						lng = aOs.elementAt(o).text;
+						continue;
+					}
+					if("aiKind".equalsIgnoreCase(aT.tagName)) {
+						o++;
+						if(!(aOs.elementAt(o) instanceof XmlTag)) {
+							aiKind = aOs.elementAt(o).text.trim();
+						}
+						continue;
+					}
+					//Empty: automatic (the closing tag is read)
+					if("aiVideoModel".equalsIgnoreCase(aT.tagName)) {
+						o++;
+						aiVideoModel = aOs.elementAt(o) instanceof XmlTag ? "" : aOs.elementAt(o).text.trim();
+						continue;
+					}
+					if("aiMusicModel".equalsIgnoreCase(aT.tagName)) {
+						o++;
+						aiMusicModel = aOs.elementAt(o) instanceof XmlTag ? "" : aOs.elementAt(o).text.trim();
+						continue;
+					}
+					if("aiSfxModel".equalsIgnoreCase(aT.tagName)) {
+						o++;
+						aiSfxModel = aOs.elementAt(o) instanceof XmlTag ? "" : aOs.elementAt(o).text.trim();
 						continue;
 					}
 					if("renderDir".equalsIgnoreCase(aT.tagName)) {
@@ -180,6 +209,10 @@ public class TDConfig {
 			aOut.write("<processingResValues>"+processingResValues[0]+"\t"+processingResValues[1]+"\t"+processingResValues[2]+"</processingResValues>\n");
 			aOut.write("<outRatio>"+outRatio+"</outRatio>\n");
 			aOut.write("<outRatioName>"+outRatioName+"</outRatioName>\n");
+			aOut.write("<aiKind>"+aiKind+"</aiKind>\n");
+			aOut.write("<aiVideoModel>"+aiVideoModel+"</aiVideoModel>\n");
+			aOut.write("<aiMusicModel>"+aiMusicModel+"</aiMusicModel>\n");
+			aOut.write("<aiSfxModel>"+aiSfxModel+"</aiSfxModel>\n");
 			aOut.flush();
 			aOut.close();
 		}

@@ -31,6 +31,8 @@ public class PlayerControlGUI extends CompositePanel {
 	long returnPosMS = 0;
 	Label playStop = null;
 	Label pause = null;
+	//Shown while paused: stops and stays at the current position
+	Label stopHere = null;
 	Text clock = null;
 	//True while the program sets the clock text (not a user input)
 	boolean settingClock = false;
@@ -50,7 +52,7 @@ public class PlayerControlGUI extends CompositePanel {
 		aTB.heightHint = tde.gui.h(25);
 		toolBar.setLayoutData(aTB);
 		tde.gui.applyColorFont(toolBar);
-		GridLayout aGL = new GridLayout(16, false);
+		GridLayout aGL = new GridLayout(17, false);
 		tde.gui.applyNoMargin(aGL);
 		toolBar.setLayout(aGL);
 
@@ -98,6 +100,18 @@ public class PlayerControlGUI extends CompositePanel {
 				updateButtons();
 			}
 		});
+
+		//Stop at the current position (no return to the position of the play click), shown while paused
+		stopHere = new Label(toolBar,SWT.NONE);
+		stopHere.setAlignment(SWT.CENTER);
+		stopHere.setImage(tde.gui.imgsSwt.getIcon("stopHere.png"));
+		GridData aStopHereGD = new GridData();
+		aStopHereGD.widthHint = 25;
+		aStopHereGD.heightHint = tde.gui.h(25);
+		stopHere.setLayoutData(aStopHereGD);
+		tde.gui.applyColorFont(stopHere);
+		tde.gui.tip(stopHere, "StopHere");
+		stopHere.addListener(SWT.MouseDown, e -> stopHere());
 		updateButtons();
 
 		//Editable clock: a valid time jumps there, an invalid one turns the field red
@@ -495,6 +509,17 @@ public class PlayerControlGUI extends CompositePanel {
 	}
 
 	/**
+	 * Stop the pause where the cursor is: the return position becomes the current one (SWT thread)
+	 */
+	void stopHere() {
+		if(!paused || playedMedia == null) {
+			return;
+		}
+		returnPosMS = playedMedia.getRequestedTimePosMS();
+		stop();
+	}
+
+	/**
 	 * Cursor back to the position of the play click (SWT thread)
 	 */
 	void returnToStart() {
@@ -524,7 +549,7 @@ public class PlayerControlGUI extends CompositePanel {
 
 	/**
 	 * Icon and help message of the play / stop button, pause button shown (pressed when paused)
-	 * while playing or paused (SWT thread)
+	 * while playing or paused, stop here button shown while paused (SWT thread)
 	 */
 	void updateButtons() {
 		boolean aActive = playing || paused;
@@ -532,9 +557,18 @@ public class PlayerControlGUI extends CompositePanel {
 		tde.gui.tip(playStop, aActive ? "Stop" : "Play");
 		tde.gui.tip(pause, paused ? "Resume" : "Pause");
 		pause.setBackground(paused ? tde.gui.colorsSwt.LIGHTGRAY : tde.gui.colorsSwt.WHITE);
+		boolean aLayout = false;
 		if(pause.getVisible() != aActive) {
 			pause.setVisible(aActive);
 			((GridData)pause.getLayoutData()).exclude = !aActive;
+			aLayout = true;
+		}
+		if(stopHere.getVisible() != paused) {
+			stopHere.setVisible(paused);
+			((GridData)stopHere.getLayoutData()).exclude = !paused;
+			aLayout = true;
+		}
+		if(aLayout) {
 			toolBar.layout(true);
 		}
 	}

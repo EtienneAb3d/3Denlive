@@ -127,28 +127,24 @@ public class VideoTimeLine extends Media {
 	
 	public boolean addMedia(Media aMedia,boolean aOnlyAfterSelected) {
 		Clip aClipNew = null;
-		for(int c = 0;c < clipList.size();c++) {
-			Clip aClip = clipList.elementAt(c);
-			if(aClip.selState > 0) {
-				aClipNew = newClip(aMedia);
-				clipList.add(c,aClipNew);
-				aClip.selState = 0;
-				aClipNew.startTimeMS = aClip.startTimeMS+aClip.durationMS;
-				aClipNew.selState = 1;
-				tde.selected.clips.clear();
-				tde.selected.clips.add(aClipNew);
-				c++;
-			}
+		//After the main selected clip (the last selected) if it is on this line
+		Clip aMain = tde.selected.clips.size() > 0 ? tde.selected.clips.lastElement() : null;
+		int aMainI = aMain == null ? -1 : clipList.indexOf(aMain);
+		if(aMainI >= 0) {
+			aClipNew = newClip(aMedia);
+			aClipNew.startTimeMS = aMain.startTimeMS+aMain.durationMS;
+			clipList.add(aMainI+1,aClipNew);
 		}
-		if(!aOnlyAfterSelected || selState > 0) {
+		else if(!aOnlyAfterSelected || selState > 0) {
 			aClipNew = newClip(aMedia);
 			if(clipList.size() > 0) {
 				aClipNew.startTimeMS = clipList.lastElement().startTimeMS+clipList.lastElement().durationMS;
 			}
 			clipList.add(aClipNew);
-			aClipNew.selState = 1;
-			tde.selected.clips.clear();
-			tde.selected.clips.add(aClipNew);
+		}
+		if(aClipNew != null) {
+			//The new clip is the only selection
+			tde.timeLineStack.selectClip(aClipNew, false);
 		}
 		return aClipNew != null;
 	}

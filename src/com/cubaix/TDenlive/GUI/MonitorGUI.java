@@ -349,6 +349,16 @@ public class MonitorGUI {
 	public void setMedia(Media aMedia) {
 		media = aMedia;
 		canvas.redraw();
+		redrawRuler();
+	}
+
+	/**
+	 * Time ruler of the main monitor (the shown media or its time may have changed)
+	 */
+	void redrawRuler() {
+		if(tde.gui != null && tde.gui.monitorGUI == this && tde.gui.monitorRulerGUI != null) {
+			tde.gui.monitorRulerGUI.redraw();
+		}
 	}
 	
 	public void setEdgeDetector(boolean aActive) {
@@ -438,6 +448,7 @@ public class MonitorGUI {
 	}
 	
 	public void redraw() {
+		redrawRuler();
 		if(countWaitingRequests > 5) {
 			return;
 		}

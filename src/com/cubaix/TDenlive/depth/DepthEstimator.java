@@ -3,7 +3,12 @@ package com.cubaix.TDenlive.depth;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -23,6 +28,9 @@ import java.util.Vector;
  * into ~/3Denlive/Models/ and loaded with its own class loader, so it is neither needed to compile
  * nor shipped with the application: its API is called by reflection.
  * The result is a relative inverse depth: the higher, the nearer (white is front once normalized).
+ * The model runs in a child JVM (main() of this class, started by the public constructor, stopped by close()):
+ * ONNX Runtime keeps its native memory (weights, arenas, GPU buffers: about 2 GB for the Large model) after
+ * its session is closed, until the end of the process; the child gives everything back to the system.
  */
 public class DepthEstimator implements AutoCloseable {
 	public static final String ORT_VERSION = "1.31.1";
@@ -70,6 +78,11 @@ public class DepthEstimator implements AutoCloseable {
 	boolean cudaFailed = false;
 	//Why the CPU is used (CPU_REASON_*), null on the GPU
 	public String cpuReason = null;
+	//Child process running the model (null in the child itself)
+	Process worker = null;
+	DataInputStream workerIn = null;
+	DataOutputStream workerOut = null;
+	Thread workerHook = null;
 
 	/**
 	 * Platforms with ONNX Runtime natives in its jar (not macOS x86_64 nor PPC64le)
@@ -216,11 +229,140 @@ public class DepthEstimator implements AutoCloseable {
 	}
 
 	/**
-	 * Load the model (the model and the ONNX Runtime jar must be downloaded).
+	 * Load the model in a child JVM (the model and the ONNX Runtime jar must be downloaded); close() stops it
+	 */
+	public DepthEstimator(String aTdeDir,DepthModel aModel) throws Exception {
+		model = aModel;
+		String aJava = ProcessHandle.current().info().command().orElse("java");
+		Vector<String> aCmd = new Vector<String>();
+		aCmd.add(aJava);
+		aCmd.add("-Xmx2G");
+		aCmd.add("-Djava.awt.headless=true");
+		aCmd.add("--enable-native-access=ALL-UNNAMED");
+		aCmd.add("-cp");
+		aCmd.add(System.getProperty("java.class.path"));
+		aCmd.add(DepthEstimator.class.getName());
+		aCmd.add(aTdeDir);
+		aCmd.add(aModel.id);
+		ProcessBuilder aPB = new ProcessBuilder(aCmd);
+		//Logs of the child into the log of the application
+		aPB.redirectError(ProcessBuilder.Redirect.INHERIT);
+		System.out.println("Depth worker: "+String.join(" ", aCmd));
+		worker = aPB.start();
+		Process aWorker = worker;
+		//The application quits: the worker stops at once (it would also stop at the end of its stdin)
+		workerHook = new Thread(() -> aWorker.destroyForcibly());
+		Runtime.getRuntime().addShutdownHook(workerHook);
+		workerOut = new DataOutputStream(new BufferedOutputStream(worker.getOutputStream(), 1 << 20));
+		workerIn = new DataInputStream(new BufferedInputStream(worker.getInputStream(), 1 << 20));
+		try {
+			readAnswer();
+			readState();
+		}
+		catch(Throwable t) {
+			close();
+			throw t instanceof Exception ? (Exception)t : new Exception(t);
+		}
+	}
+
+	/**
+	 * Child JVM: args tdeDir, model id. Protocol on stdin / stdout (DataStream), the logs go to stderr:
+	 * - after the loading: answer, state;
+	 * - request: width, height (-1: end), width*height RGB ints; answer: answer, depth width, height, floats, state.
+	 * answer = int 0, or 1 + UTF message (error); state = UTF provider, UTF cpu reason ("": none), long free GPU memory.
+	 */
+	public static void main(String[] aArgs) {
+		PrintStream aStdout = System.out;
+		System.setOut(System.err);
+		System.setProperty("java.awt.headless", "true");
+		DataOutputStream aOut = new DataOutputStream(new BufferedOutputStream(aStdout, 1 << 20));
+		DepthEstimator aE = null;
+		try {
+			try {
+				aE = new DepthEstimator(aArgs[0], DepthModel.byId(aArgs[1]), true);
+			}
+			catch(Throwable t) {
+				t.printStackTrace(System.err);
+				writeError(aOut, t);
+				aOut.flush();
+				return;
+			}
+			aOut.writeInt(0);
+			aE.writeState(aOut);
+			aOut.flush();
+			DataInputStream aIn = new DataInputStream(new BufferedInputStream(System.in, 1 << 20));
+			while(true) {
+				int aW = aIn.readInt();
+				if(aW < 0) {
+					break;
+				}
+				int aH = aIn.readInt();
+				int[] aPix = new int[aW*aH];
+				for(int i = 0;i < aPix.length;i++) {
+					aPix[i] = aIn.readInt();
+				}
+				BufferedImage aBI = new BufferedImage(aW, aH, BufferedImage.TYPE_INT_RGB);
+				aBI.setRGB(0, 0, aW, aH, aPix, 0, aW);
+				try {
+					Object[] aR = aE.estimate(aBI);
+					float[] aD = (float[])aR[0];
+					aOut.writeInt(0);
+					aOut.writeInt((Integer)aR[1]);
+					aOut.writeInt((Integer)aR[2]);
+					for(float aF : aD) {
+						aOut.writeFloat(aF);
+					}
+				}
+				catch(Throwable t) {
+					t.printStackTrace(System.err);
+					writeError(aOut, t);
+				}
+				aE.writeState(aOut);
+				aOut.flush();
+			}
+		}
+		catch(Throwable t) {
+			//stdin closed: the application stopped the worker or quit
+		}
+		finally {
+			if(aE != null) {
+				aE.close();
+			}
+		}
+		System.exit(0);
+	}
+
+	static void writeError(DataOutputStream aOut,Throwable t) throws Exception {
+		aOut.writeInt(1);
+		String aM = t.getMessage() == null ? t.toString() : t.getMessage();
+		aOut.writeUTF(aM.length() > 2000 ? aM.substring(0, 2000) : aM);
+	}
+
+	void writeState(DataOutputStream aOut) throws Exception {
+		aOut.writeUTF(provider == null ? "CPU" : provider);
+		aOut.writeUTF(cpuReason == null ? "" : cpuReason);
+		aOut.writeLong(gpuFree);
+	}
+
+	void readAnswer() throws Exception {
+		if(workerIn.readInt() != 0) {
+			throw new Exception(workerIn.readUTF());
+		}
+	}
+
+	void readState() throws Exception {
+		provider = workerIn.readUTF();
+		String aR = workerIn.readUTF();
+		cpuReason = aR.isEmpty() ? null : aR;
+		gpuFree = workerIn.readLong();
+	}
+
+	/**
+	 * Load the model in this process.
 	 * It runs on the GPU when there is one with enough free memory for it (see DepthModel.gpuMemory),
 	 * with the first usable provider (CUDA, WebGPU), else on the CPU (see cpuReason).
 	 */
-	public DepthEstimator(String aTdeDir,DepthModel aModel) throws Exception {
+	DepthEstimator(String aTdeDir,DepthModel aModel,boolean aLocal) throws Exception {
 		ClassLoader aCL = getOrtLoader(aTdeDir);
 		envC = aCL.loadClass("ai.onnxruntime.OrtEnvironment");
 		optsC = aCL.loadClass("ai.onnxruntime.OrtSession$SessionOptions");
@@ -330,6 +472,9 @@ public class DepthEstimator implements AutoCloseable {
 	 * @return {depth values (row by row), width, height}: the higher, the nearer
 	 */
 	public Object[] estimate(BufferedImage aBI) throws Exception {
+		if(worker != null) {
+			return estimateInWorker(aBI);
+		}
 		try {
 			return estimateOnce(aBI);
 		}
@@ -348,16 +493,71 @@ public class DepthEstimator implements AutoCloseable {
 		}
 	}
 
-	Object[] estimateOnce(BufferedImage aBI) throws Exception {
+	/**
+	 * The image at the size given to the model (unchanged when it already has it)
+	 */
+	static BufferedImage toModelSize(BufferedImage aBI) {
 		int[] aSize = inputSize(aBI.getWidth(), aBI.getHeight());
 		int aW = aSize[0];
 		int aH = aSize[1];
+		if(aBI.getWidth() == aW && aBI.getHeight() == aH && aBI.getType() == BufferedImage.TYPE_INT_RGB) {
+			return aBI;
+		}
 		BufferedImage aRes = new BufferedImage(aW, aH, BufferedImage.TYPE_INT_RGB);
 		Graphics2D aG = aRes.createGraphics();
 		aG.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 		aG.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 		aG.drawImage(aBI, 0, 0, aW, aH, null);
 		aG.dispose();
+		return aRes;
+	}
+
+	/**
+	 * The image resized here (less data to send), the depth computed by the child
+	 */
+	synchronized Object[] estimateInWorker(BufferedImage aBI) throws Exception {
+		if(workerOut == null) {
+			throw new Exception("Depth worker stopped");
+		}
+		BufferedImage aRes = toModelSize(aBI);
+		int aW = aRes.getWidth();
+		int aH = aRes.getHeight();
+		int[] aPix = aRes.getRGB(0, 0, aW, aH, null, 0, aW);
+		workerOut.writeInt(aW);
+		workerOut.writeInt(aH);
+		for(int aP : aPix) {
+			workerOut.writeInt(aP);
+		}
+		workerOut.flush();
+		Exception aErr = null;
+		Object[] aResult = null;
+		try {
+			readAnswer();
+			int aOW = workerIn.readInt();
+			int aOH = workerIn.readInt();
+			float[] aDepth = new float[aOW*aOH];
+			for(int i = 0;i < aDepth.length;i++) {
+				aDepth[i] = workerIn.readFloat();
+			}
+			aResult = new Object[] {aDepth, aOW, aOH};
+		}
+		catch(Exception e) {
+			aErr = e;
+		}
+		//State sent after an error too (except when the child died)
+		if(aErr == null || worker.isAlive()) {
+			readState();
+		}
+		if(aErr != null) {
+			throw aErr;
+		}
+		return aResult;
+	}
+
+	Object[] estimateOnce(BufferedImage aBI) throws Exception {
+		BufferedImage aRes = toModelSize(aBI);
+		int aW = aRes.getWidth();
+		int aH = aRes.getHeight();
 		int[] aPix = aRes.getRGB(0, 0, aW, aH, null, 0, aW);
 		int aPlane = aW*aH;
 		FloatBuffer aFB = ByteBuffer.allocateDirect(3*aPlane*4).order(ByteOrder.nativeOrder()).asFloatBuffer();
@@ -462,5 +662,32 @@ public class DepthEstimator implements AutoCloseable {
 	public void close() {
 		closeQuietly(session);
 		session = null;
+		Process aP = worker;
+		if(aP != null) {
+			worker = null;
+			try {
+				workerOut.writeInt(-1);
+				workerOut.flush();
+				workerOut.close();
+			}
+			catch(Throwable t) {
+			}
+			workerOut = null;
+			try {
+				if(!aP.waitFor(5, java.util.concurrent.TimeUnit.SECONDS)) {
+					aP.destroyForcibly();
+				}
+			}
+			catch(Throwable t) {
+				aP.destroyForcibly();
+			}
+			try {
+				Runtime.getRuntime().removeShutdownHook(workerHook);
+			}
+			catch(Throwable t) {
+				//Already quitting
+			}
+			System.out.println("Depth worker stopped");
+		}
 	}
 }

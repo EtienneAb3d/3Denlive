@@ -19,7 +19,7 @@
 				"${workspaceFolder}/distrib/bsh-2.0b6.jar",
 				"${workspaceFolder}/distrib/MacSilicon/swt.jar"
 			],
-			"vmArgs": "-XstartOnFirstThread -Xmx4G --enable-native-access=ALL-UNNAMED -Djava.library.path=${workspaceFolder}/distrib/MacSilicon/lib"
+			"vmArgs": "-XstartOnFirstThread -Xmx4G -XX:G1PeriodicGCInterval=30000 --enable-native-access=ALL-UNNAMED -Djava.library.path=${workspaceFolder}/distrib/MacSilicon/lib"
 		},
 		{
 			"type": "java",
@@ -36,7 +36,7 @@
 				"${workspaceFolder}/distrib/bsh-2.0b6.jar",
 				"${workspaceFolder}/distrib/MacIntel/swt.jar"
 			],
-			"vmArgs": "-XstartOnFirstThread -Xmx4G --enable-native-access=ALL-UNNAMED -Djava.library.path=${workspaceFolder}/distrib/MacIntel/lib"
+			"vmArgs": "-XstartOnFirstThread -Xmx4G -XX:G1PeriodicGCInterval=30000 --enable-native-access=ALL-UNNAMED -Djava.library.path=${workspaceFolder}/distrib/MacIntel/lib"
 		},
 		{
 			"type": "java",
@@ -53,7 +53,7 @@
 				"${workspaceFolder}/distrib/bsh-2.0b6.jar",
 				"${workspaceFolder}/distrib/Linux/swt.jar"
 			],
-			"vmArgs": "-Xmx4G --enable-native-access=ALL-UNNAMED -Djava.library.path=${workspaceFolder}/distrib/Linux/lib",
+			"vmArgs": "-Xmx4G -XX:G1PeriodicGCInterval=30000 --enable-native-access=ALL-UNNAMED -Djava.library.path=${workspaceFolder}/distrib/Linux/lib",
 			"env": { "GTK_OVERLAY_SCROLLING": "0" }
 		},
 		{
@@ -71,7 +71,7 @@
 				"${workspaceFolder}/distrib/bsh-2.0b6.jar",
 				"${workspaceFolder}/distrib/PPC64le/swt-PPC64le.jar"
 			],
-			"vmArgs": "-Xmx4G --enable-native-access=ALL-UNNAMED -Djava.library.path=${workspaceFolder}/distrib/PPC64le/lib",
+			"vmArgs": "-Xmx4G -XX:G1PeriodicGCInterval=30000 --enable-native-access=ALL-UNNAMED -Djava.library.path=${workspaceFolder}/distrib/PPC64le/lib",
 			"env": { "GTK_OVERLAY_SCROLLING": "0" }
 		},
 		{
@@ -89,7 +89,7 @@
 				"${workspaceFolder}/distrib/bsh-2.0b6.jar",
 				"${workspaceFolder}/distrib/Win-x64/swt.jar"
 			],
-			"vmArgs": "-Xmx4G --enable-native-access=ALL-UNNAMED"
+			"vmArgs": "-Xmx4G -XX:G1PeriodicGCInterval=30000 --enable-native-access=ALL-UNNAMED"
 		}
 	]
 }

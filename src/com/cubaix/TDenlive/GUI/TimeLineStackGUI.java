@@ -2,6 +2,7 @@ package com.cubaix.TDenlive.GUI;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.util.Vector;
 
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTarget;
@@ -25,9 +26,11 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Scale;
 
 import com.cubaix.TDenlive.TDenlive;
+import com.cubaix.TDenlive.medias.AudioTimeLine;
 import com.cubaix.TDenlive.medias.Clip;
 import com.cubaix.TDenlive.medias.Media;
 import com.cubaix.TDenlive.medias.TimeLineStack;
+import com.cubaix.TDenlive.medias.VideoTimeLine;
 import com.cubaix.TDenlive.utils.ImageUtils;
 
 public class TimeLineStackGUI extends CanvasPanel {
@@ -45,6 +48,18 @@ public class TimeLineStackGUI extends CanvasPanel {
 	Clip draggedClip = null;
 	long draggedClipStartMS = 0;
 	long draggedClipEndMS = 0;
+	//Move of the selection (see TimeLineStack.moveClips()): the clips, their starts and lines at the click
+	Vector<Clip> movedClips = new Vector<Clip>();
+	long[] movedStartsMS = new long[0];
+	VideoTimeLine[] movedLines = new VideoTimeLine[0];
+	VideoTimeLine draggedClipLine = null;
+	int movedLineDelta = 0;
+	//Click on a clip already selected: kept selected for a move of the whole selection; at the mouse up
+	//without a move, unselected (shift) or the only one selected
+	Clip pendingClickClip = null;
+	boolean pendingUnselect = false;
+	//Mouse moves of less than this from the click (pixels) are not a drag of the clips
+	static final int CLICK_MOVE_PX = 3;
 	Cursor resizeCursor = null;
 	Point clickedMousePos = null;
 	Point lastMousePos = null;
@@ -204,6 +219,10 @@ public class TimeLineStackGUI extends CanvasPanel {
 		//Content changed: always render again, even if the paint is merged with a self repaint
 		drawRequested = true;
 		super.redraw();
+		//Duration of the montage on the ruler of the monitor
+		if(tde.gui.monitorRulerGUI != null) {
+			tde.gui.monitorRulerGUI.redraw();
+		}
 	}
 
 	/**
@@ -225,13 +244,15 @@ public class TimeLineStackGUI extends CanvasPanel {
 	}
 
 	/**
-	 * Remove the selected clip (and its twins) from the time lines
+	 * Remove the selected clips (and their twins) from the time lines
 	 */
 	void trashSelectedClip() {
 		if(tde.selected.clips.size() <= 0) {
 			return;
 		}
-		tde.timeLineStack.trashClip(tde.selected.clips.lastElement());
+		for(Clip aC : new Vector<Clip>(tde.selected.clips)) {
+			tde.timeLineStack.trashClip(aC);
+		}
 		tde.gui.processorGUI.clean();
 		redraw();
 		tde.gui.monitorGUI.redraw();
@@ -328,12 +349,32 @@ public class TimeLineStackGUI extends CanvasPanel {
 			@Override
 			public void mouseUp(MouseEvent e) {
 				isMouseDown = false;
+				if(pendingClickClip != null && clickedMousePos != null
+						&& Math.abs(e.x-clickedMousePos.x) < CLICK_MOVE_PX && Math.abs(e.y-clickedMousePos.y) < CLICK_MOVE_PX) {
+					//A click without a move on a clip already selected
+					if(pendingUnselect) {
+						tde.timeLineStack.unselectClip(pendingClickClip);
+					}
+					else {
+						tde.timeLineStack.selectClip(pendingClickClip, false);
+					}
+					if(tde.selected.clips.size() > 0) {
+						tde.gui.processorGUI.setProcessors(tde.selected.clips.lastElement().getProcessors());
+					}
+					else {
+						tde.gui.processorGUI.clean();
+					}
+					redraw();
+					tde.gui.monitorGUI.redraw();
+				}
+				pendingClickClip = null;
 				//Refresh in case of a move
 				if(isDrag && tde.selected.clips.size() > 0) {
 					tde.gui.processorGUI.setProcessors(tde.selected.clips.lastElement().getProcessors());
 				}
 				isDrag = false;
 				draggedClip = null;
+				movedClips = new Vector<Clip>();
 				clickedMousePos = lastMousePos = null;
 			}
 			@Override
@@ -346,16 +387,55 @@ public class TimeLineStackGUI extends CanvasPanel {
 				//To receive SUPPR / DEL
 				canvas.setFocus();
 				clickedMousePos = lastMousePos = new Point(e.x,e.y);
-				tde.timeLineStack.select(e.x, e.y, true);
+				boolean aShift = (e.stateMask & SWT.SHIFT) != 0;
+				TimeLineStack aTLS = tde.timeLineStack;
+				pendingClickClip = null;
+				pendingUnselect = false;
 				draggedClip = null;
-				if(tde.selected.clips.size() > 0) {
-					Clip aClip = tde.selected.clips.lastElement();
-					if(aClip.bounds != null && aClip.bounds.contains(e.x, e.y)) {
-						draggedClip = aClip;
-						clipDragMode = clipDragModeAt(aClip, e.x);
-						draggedClipStartMS = aClip.getStartTimeMS();
-						draggedClipEndMS = aClip.getMaxTimePosMS();
+				Clip aHit = null;
+				if(!aTLS.selectWidget(e.x, e.y)) {
+					VideoTimeLine aHead = aTLS.getLineHeadAt(e.x, e.y);
+					aHit = aHead == null ? aTLS.getClipAt(e.x, e.y) : null;
+					if(aHead != null) {
+						//Head of a line (V1, A1...): all its clips; shift: lines added to the selection
+						aTLS.selectLine(aHead, aShift);
 					}
+					else if(aHit != null) {
+						if(aHit.selState > 0 && (aShift || tde.selected.clips.size() > 1)) {
+							//Kept with the others, to move them together
+							aTLS.selectClip(aHit, true);
+							pendingClickClip = aHit;
+							pendingUnselect = aShift;
+						}
+						else {
+							aTLS.selectClip(aHit, aShift);
+						}
+					}
+					else if(!aShift) {
+						//Empty place: selects the line
+						aTLS.select(e.x, e.y, true);
+					}
+				}
+				if(aHit != null && aHit.selState > 0) {
+					draggedClip = aHit;
+					clipDragMode = clipDragModeAt(aHit, e.x);
+					draggedClipStartMS = aHit.getStartTimeMS();
+					draggedClipEndMS = aHit.getMaxTimePosMS();
+					//A move takes all the selected clips along
+					movedClips = new Vector<Clip>();
+					for(Clip aC : tde.selected.clips) {
+						if(aTLS.getLineOf(aC) != null) {
+							movedClips.add(aC);
+						}
+					}
+					movedStartsMS = new long[movedClips.size()];
+					movedLines = new VideoTimeLine[movedClips.size()];
+					for(int c = 0;c < movedClips.size();c++) {
+						movedStartsMS[c] = movedClips.elementAt(c).getStartTimeMS();
+						movedLines[c] = aTLS.getLineOf(movedClips.elementAt(c));
+					}
+					draggedClipLine = aTLS.getLineOf(aHit);
+					movedLineDelta = 0;
 				}
 				tde.gui.setMultiPropsPanel(TDeGUI.MULTIPROPSPANEL_PROCESSORS);
 				tde.gui.setMultiMonitorPanel(TDeGUI.MULTIMONITORPANEL_MONITOR);
@@ -390,7 +470,9 @@ public class TimeLineStackGUI extends CanvasPanel {
 						redraw();
 						tde.gui.monitorGUI.redraw();
 					}
-					else if(draggedClip != null) {
+					else if(draggedClip != null && (isDrag || Math.abs(e.x-clickedMousePos.x) >= CLICK_MOVE_PX
+							|| Math.abs(e.y-clickedMousePos.y) >= CLICK_MOVE_PX)) {
+						//(a click on a clip of the selection, without a real move, does not move it)
 						isDrag = true;
 						//From the position at the click: no drift of the rounding
 						long aDeltaMS = Math.round((e.x-clickedMousePos.x)/tde.timeLineStack.pixPerMS);
@@ -403,11 +485,16 @@ public class TimeLineStackGUI extends CanvasPanel {
 							draggedClip.trimEnd(tde.timeLineStack.snapTimeMS(draggedClipEndMS+aDeltaMS, draggedClip, aSnapMS));
 						}
 						else {
-							//Its start or its end sticks, the nearest
-							draggedClip.setStartTimeMS(tde.timeLineStack.snapMoveMS(draggedClipStartMS+aDeltaMS
-									, draggedClipEndMS+aDeltaMS, draggedClip, aSnapMS));
-							//To the line under the mouse (of the same kind: video / audio)
-							tde.timeLineStack.moveClipToLine(draggedClip, tde.timeLineStack.getLineAtY(e.y));
+							TimeLineStack aTLS = tde.timeLineStack;
+							//The start or the end of one of the clips sticks, the nearest
+							aDeltaMS = aTLS.snapGroupMoveMS(movedClips, movedStartsMS, aDeltaMS, aSnapMS);
+							//To the line under the mouse (of the same kind: video / audio), the others follow
+							VideoTimeLine aUnder = aTLS.getLineAtY(e.y);
+							if(aUnder != null && draggedClipLine != null
+									&& (aUnder instanceof AudioTimeLine) == (draggedClipLine instanceof AudioTimeLine)) {
+								movedLineDelta = aTLS.stackIndexOf(aUnder)-aTLS.stackIndexOf(draggedClipLine);
+							}
+							aTLS.moveClips(movedClips, movedStartsMS, movedLines, aDeltaMS, draggedClipLine, movedLineDelta);
 						}
 						lastMousePos = new Point(e.x,e.y);
 						redraw();

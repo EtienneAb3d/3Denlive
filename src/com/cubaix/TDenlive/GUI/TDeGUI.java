@@ -77,6 +77,7 @@ public class TDeGUI {
 	public WebBrowserGUI browserGUI = null;
 	public MonitorControlGUI monitorControlGUI = null;
 	public MonitorGUI monitorGUI = null;
+	public MonitorRulerGUI monitorRulerGUI = null;
 	public PlayerControlGUI playerControlGUI = null;
 	
 	public CompositePanel multiPropsPanel = null;
@@ -466,6 +467,7 @@ public class TDeGUI {
 			browserGUI = null;
 			monitorControlGUI = null;
 			monitorGUI = null;
+			monitorRulerGUI = null;
 			playerControlGUI = null;
 			multiPropsPanel = null;
 			propsGUI = null;
@@ -566,9 +568,21 @@ public class TDeGUI {
 		aTB.heightHint = h(25);
 		toolBar.setLayoutData(aTB);
 		applyColorFont(toolBar);
-		GridLayout aGL = new GridLayout(13, false);
+		GridLayout aGL = new GridLayout(14, false);
 		applyNoMargin(aGL);
 		toolBar.setLayout(aGL);
+
+		//Demos page of the web site in the central panel (its "Project" links open the demo projects)
+		CLabel aDemos = new CLabel(toolBar,SWT.NONE);
+		aDemos.setImage(tde.gui.imgsSwt.getIcon("demos.png"));
+		aDemos.setAlignment(SWT.CENTER);
+		GridData aDemosGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
+		aDemosGD.widthHint = 32;
+		aDemosGD.heightHint = h(25);
+		aDemos.setLayoutData(aDemosGD);
+		applyColorFont(aDemos);
+		tip(aDemos, "Demos");
+		aDemos.addListener(SWT.MouseDown, e -> showDemos());
 		
 		CLabel aOpenProject = new CLabel(toolBar,SWT.NONE);
 		aOpenProject.setImage(tde.gui.imgsSwt.getIcon("openProject.png"));
@@ -822,22 +836,60 @@ public class TDeGUI {
 	}
 	
 	public void setMultiMonitorPanel(int aKind) {
+		setMultiMonitorPanel(aKind, null);
+	}
+
+	/**
+	 * Show the web page (aURL: page to open, null: the one already there, else the news) or the monitor
+	 * in the central panel. Both are kept once created, only the shown one is visible: the monitor keeps
+	 * its state (media, mixer...) while a page is shown.
+	 */
+	public void setMultiMonitorPanel(int aKind,String aURL) {
+		Composite aShown = null;
+		boolean aChanged = false;
 		if(aKind == MULTIMONITORPANEL_BROWSER) {
-			if(browserGUI == null) {
-				multiMonitorPanel.clean();//Dispose all contents
-				browserGUI = new WebBrowserGUI(tde, multiMonitorPanel.getContainer());
-				multiMonitorPanel.getContainer().layout(true);
+			if(browserGUI == null || browserGUI.container.isDisposed()) {
+				aChanged = true;
+				browserGUI = new WebBrowserGUI(tde, multiMonitorPanel.getContainer(), aURL);
 			}
+			else if(aURL != null) {
+				browserGUI.setUrl(aURL);
+			}
+			aShown = browserGUI.container;
 		}
 		else if(aKind == MULTIMONITORPANEL_MONITOR) {
-			if(monitorControlGUI == null) {
-				multiMonitorPanel.clean();//Dispose all contents
+			if(monitorControlGUI == null || monitorControlGUI.container.isDisposed()) {
+				aChanged = true;
 				monitorControlGUI = new MonitorControlGUI(tde, multiMonitorPanel.getContainer());
 				monitorGUI = new MonitorGUI(tde,monitorControlGUI.container);
+				monitorRulerGUI = new MonitorRulerGUI(tde, monitorControlGUI.container);
 				playerControlGUI = new PlayerControlGUI(tde, monitorControlGUI.container);
-				multiMonitorPanel.getContainer().layout(true);
+			}
+			aShown = monitorControlGUI.container;
+		}
+		if(aShown == null) {
+			return;
+		}
+		for(Control aC : multiMonitorPanel.getContainer().getChildren()) {
+			boolean aVisible = aC == aShown;
+			if(aC.getVisible() != aVisible) {
+				aChanged = true;
+				aC.setVisible(aVisible);
+			}
+			if(aC.getLayoutData() instanceof GridData) {
+				((GridData)aC.getLayoutData()).exclude = !aVisible;
 			}
 		}
+		if(aChanged || aURL != null) {
+			multiMonitorPanel.getContainer().layout(true, true);
+		}
+	}
+
+	/**
+	 * Demos page of the web site (language of the interface) in the central panel
+	 */
+	public void showDemos() {
+		setMultiMonitorPanel(MULTIMONITORPANEL_BROWSER, WebBrowserGUI.demosURL(tde));
 	}
 	
 	public void setMultiPropsPanel(int aKind) {

@@ -47,7 +47,7 @@ Example for macOS Apple Silicon:
 
 ```sh
 cd distrib
-java -XstartOnFirstThread -Xmx4G --enable-native-access=ALL-UNNAMED \
+java -XstartOnFirstThread -Xmx4G -XX:G1PeriodicGCInterval=30000 --enable-native-access=ALL-UNNAMED \
   -cp "../bin:../src:*:MacSilicon/swt.jar" -Djava.library.path=MacSilicon/lib \
   com.cubaix.TDenlive.TDenlive
 ```

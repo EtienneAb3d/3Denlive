@@ -213,13 +213,31 @@ public class TimeLineStack extends Media {
 	 * Targets of the sticky edges: the time cursor and the start / end of the clips, except aIgnored and its twins
 	 */
 	Vector<Long> snapTargetsMS(Clip aIgnored) {
+		Vector<Clip> aIgnoredV = new Vector<Clip>();
+		if(aIgnored != null) {
+			aIgnoredV.add(aIgnored);
+		}
+		return snapTargetsMS(aIgnoredV);
+	}
+
+	/**
+	 * Targets of the sticky edges: the time cursor and the start / end of the clips, except aIgnored and their twins
+	 */
+	Vector<Long> snapTargetsMS(Vector<Clip> aIgnored) {
 		Vector<VideoTimeLine> aTLs = new Vector<VideoTimeLine>(videoTimeLineStack);
 		aTLs.addAll(audioTimeLineStack);
 		Vector<Long> aTargets = new Vector<Long>();
 		aTargets.add(getRequestedTimePosMS());
 		for(VideoTimeLine aTL : aTLs) {
 			for(Clip aC : aTL.clipList) {
-				if(aC == aIgnored || (aIgnored != null && aIgnored.getTwinClips().contains(aC))) {
+				boolean aSkip = false;
+				for(Clip aI : aIgnored) {
+					if(aC == aI || aI.getTwinClips().contains(aC)) {
+						aSkip = true;
+						break;
+					}
+				}
+				if(aSkip) {
 					continue;
 				}
 				aTargets.add(aC.getStartTimeMS());
@@ -924,6 +942,149 @@ public class TimeLineStack extends Media {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Unselects all the clips and lines
+	 */
+	public void clearSelection() {
+		Vector<VideoTimeLine> aTLs = new Vector<VideoTimeLine>(videoTimeLineStack);
+		aTLs.addAll(audioTimeLineStack);
+		for(VideoTimeLine aTL : aTLs) {
+			aTL.selState = Drawable.THUMBSELSTATE_NONE;
+			for(Clip aC : aTL.clipList) {
+				aC.selState = Drawable.THUMBSELSTATE_NONE;
+			}
+		}
+		tde.selected.clips.clear();
+		tde.selected.timeLines.clear();
+	}
+
+	/**
+	 * Line whose head (name, checkbox... left of the clips) is at this place, null if none
+	 */
+	public VideoTimeLine getLineHeadAt(int aX, int aY) {
+		if(aX < 0 || aX >= tde.config.thumbW) {
+			return null;
+		}
+		return getLineAtY(aY);
+	}
+
+	/**
+	 * Selects aClip as the main selected clip (last of tde.selected.clips, shown in the processors panel).
+	 * aAdd: added to the selection, else the only one selected
+	 */
+	public void selectClip(Clip aClip, boolean aAdd) {
+		if(!aAdd) {
+			clearSelection();
+		}
+		aClip.selState = Drawable.THUMBSELSTATE_SELECTED;
+		tde.selected.clips.remove(aClip);
+		tde.selected.clips.add(aClip);
+	}
+
+	public void unselectClip(Clip aClip) {
+		aClip.selState = Drawable.THUMBSELSTATE_NONE;
+		tde.selected.clips.remove(aClip);
+	}
+
+	/**
+	 * Selects aLine and all its clips. aAdd: added to the selection (a line already selected is then
+	 * unselected, with its clips), else the only ones selected
+	 */
+	public void selectLine(VideoTimeLine aLine, boolean aAdd) {
+		if(aAdd && aLine.selState > 0) {
+			aLine.selState = Drawable.THUMBSELSTATE_NONE;
+			tde.selected.timeLines.remove(aLine);
+			for(Clip aC : aLine.clipList) {
+				unselectClip(aC);
+			}
+			return;
+		}
+		if(!aAdd) {
+			clearSelection();
+		}
+		aLine.selState = Drawable.THUMBSELSTATE_SELECTED;
+		if(!tde.selected.timeLines.contains(aLine)) {
+			tde.selected.timeLines.add(aLine);
+		}
+		for(Clip aC : aLine.clipList) {
+			selectClip(aC, true);
+		}
+	}
+
+	/**
+	 * Stack (video or audio) of aLine
+	 */
+	Vector<? extends VideoTimeLine> stackOf(VideoTimeLine aLine) {
+		return aLine instanceof AudioTimeLine ? audioTimeLineStack : videoTimeLineStack;
+	}
+
+	/**
+	 * Index of aLine in its stack (video or audio: V1 / A1 = 0), -1 if none
+	 */
+	public int stackIndexOf(VideoTimeLine aLine) {
+		return aLine == null ? -1 : stackOf(aLine).indexOf(aLine);
+	}
+
+	/**
+	 * Sticky move of a group of clips by aDeltaMS from their starts aStartsMS: the delta to apply so that
+	 * the start or the end of one of them (the nearest) sticks to a target of snapTimeMS() at most aWindowMS away
+	 * (the clips of the group and their twins are not targets); aDeltaMS otherwise
+	 */
+	public long snapGroupMoveMS(Vector<Clip> aClips, long[] aStartsMS, long aDeltaMS, long aWindowMS) {
+		long aBestCorr = 0;
+		long aBestDist = aWindowMS+1;
+		Vector<Long> aTargets = snapTargetsMS(aClips);
+		for(int c = 0;c < aClips.size();c++) {
+			long aStart = aStartsMS[c]+aDeltaMS;
+			long aEnd = aStart+aClips.elementAt(c).getDurationMS();
+			for(long aT : aTargets) {
+				for(long aEdge : new long[] {aStart,aEnd}) {
+					long aDist = Math.abs(aT-aEdge);
+					if(aDist < aBestDist) {
+						aBestDist = aDist;
+						aBestCorr = aT-aEdge;
+					}
+				}
+			}
+		}
+		return aDeltaMS+aBestCorr;
+	}
+
+	/**
+	 * Moves a group of clips together: each one starts at aStartsMS + aDeltaMS (the earliest at 0 at least, the
+	 * gaps are kept), and the clips of aLines (their lines at the start of the move) of the same kind as aKindLine
+	 * (video / audio) go aLineDelta lines up in their stack (limited so that all of them stay in the stack, their
+	 * vertical gaps are kept). The clips of the other kind only move in time
+	 */
+	public void moveClips(Vector<Clip> aClips, long[] aStartsMS, VideoTimeLine[] aLines, long aDeltaMS
+			, VideoTimeLine aKindLine, int aLineDelta) {
+		long aMinStart = Long.MAX_VALUE;
+		for(long aS : aStartsMS) {
+			aMinStart = Math.min(aMinStart, aS);
+		}
+		if(aClips.size() > 0) {
+			aDeltaMS = Math.max(aDeltaMS, -aMinStart);
+		}
+		boolean aAudio = aKindLine instanceof AudioTimeLine;
+		Vector<? extends VideoTimeLine> aStack = aAudio ? audioTimeLineStack : videoTimeLineStack;
+		for(VideoTimeLine aL : aLines) {
+			int aI = aL != null && (aL instanceof AudioTimeLine) == aAudio ? aStack.indexOf(aL) : -1;
+			if(aI >= 0) {
+				aLineDelta = Math.max(aLineDelta, -aI);
+				aLineDelta = Math.min(aLineDelta, aStack.size()-1-aI);
+			}
+		}
+		for(int c = 0;c < aClips.size();c++) {
+			Clip aC = aClips.elementAt(c);
+			aC.setStartTimeMS(aStartsMS[c]+aDeltaMS);
+			VideoTimeLine aL = aLines[c];
+			int aI = aL != null && (aL instanceof AudioTimeLine) == aAudio ? aStack.indexOf(aL) : -1;
+			if(aI >= 0) {
+				moveClipToLine(aC, aStack.elementAt(aI+aLineDelta));
+			}
+		}
 	}
 
 	@Override
