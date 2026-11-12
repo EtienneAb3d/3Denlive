@@ -892,6 +892,11 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="Crossed">Crossed view</entry>
 	<entry label="Parallel">Parallel view</entry>
 </EntrySet>
+<EntrySet label="Web">
+	<entry label="NoBrowser">The web page can't be shown inside 3Denlive: no embedded web browser is available on this system.</entry>
+	<entry label="NoBrowserLinux">Install WebKitGTK to show it here (Debian / Ubuntu: sudo apt install libwebkit2gtk-4.1-0, Fedora: sudo dnf install webkit2gtk4.1), then restart 3Denlive.</entry>
+	<entry label="OpenInBrowser">Open the page in the web browser</entry>
+</EntrySet>
 <EntrySet label="Demos">
 	<entry label="Title">Demo project</entry>
 	<entry label="SaveBefore">The project has unsaved changes. Save them before opening the demo?</entry>

@@ -9,12 +9,18 @@ import org.eclipse.swt.browser.ProgressListener;
 import org.eclipse.swt.browser.StatusTextEvent;
 import org.eclipse.swt.browser.StatusTextListener;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 
 import com.cubaix.TDenlive.TDenlive;
+import com.cubaix.TDenlive.utils.BrowserControl;
 
 public class WebBrowserGUI extends CompositePanel {
 	Browser browser = null;
+	/** Page asked, opened in the browser of the system when no embedded browser is available */
+	String url = null;
 
 	public WebBrowserGUI(TDenlive aTDe, Composite aParent) {
 		this(aTDe, aParent, null);
@@ -46,9 +52,14 @@ public class WebBrowserGUI extends CompositePanel {
 	 * Show another page
 	 */
 	public void setUrl(String aURL) {
+		url = aURL;
 		if(browser != null && !browser.isDisposed()) {
 			setCookies(aURL);
 			browser.setUrl(aURL);
+		}
+		else if(browser == null) {
+			//No embedded browser: the page asked by a button goes to the browser of the system
+			BrowserControl.openURL(aURL);
 		}
 	}
 
@@ -88,10 +99,23 @@ public class WebBrowserGUI extends CompositePanel {
 		"})();";
 
 	void createContents(String aStartURL) {
+		String aURL = url = aStartURL != null ? aStartURL : newsURL(tde);
+		Browser aBrowser;
 		try {
-			Browser aBrowser = browser = new Browser(container, SWT.NONE);
+			aBrowser = browser = new Browser(container, SWT.NONE);
+		}
+		catch(Throwable t) {
+			//Linux without WebKitGTK: no embedded browser, a message and a button to the system browser
+			System.err.println("No embedded web browser: " + t.getMessage());
+			browser = null;
+			createNoBrowserContents();
+			if(aStartURL != null) {
+				BrowserControl.openURL(aStartURL);
+			}
+			return;
+		}
+		try {
 			aBrowser.setLayoutData(new GridData(GridData.FILL_BOTH));
-			String aURL = aStartURL != null ? aStartURL : newsURL(tde);
 			setCookies(aURL);
 			//The "Project" zips of the demos page: downloaded, unzipped and opened by the application
 			aBrowser.addLocationListener(new LocationAdapter() {
@@ -140,6 +164,29 @@ public class WebBrowserGUI extends CompositePanel {
 		catch(Throwable t) {
 			t.printStackTrace(System.err);
 		}
+	}
+
+	/**
+	 * Shown instead of the web page when SWT has no browser (WebKitGTK missing on Linux)
+	 */
+	void createNoBrowserContents() {
+		Composite aBox = new Composite(container, SWT.NONE);
+		aBox.setBackground(tde.gui.colorsSwt.WHITE);
+		aBox.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
+		GridLayout aLayout = new GridLayout(1, false);
+		aLayout.verticalSpacing = 12;
+		aBox.setLayout(aLayout);
+		boolean aLinux = !System.getProperty("os.name").startsWith("Mac OS") && !System.getProperty("os.name").startsWith("Windows");
+		Label aMsg = new Label(aBox, SWT.WRAP | SWT.CENTER);
+		aMsg.setBackground(tde.gui.colorsSwt.WHITE);
+		aMsg.setText(tde.gui.lngs.get("Web.NoBrowser") + (aLinux ? "\n\n" + tde.gui.lngs.get("Web.NoBrowserLinux") : ""));
+		GridData aGD = new GridData(SWT.CENTER, SWT.CENTER, true, false);
+		aGD.widthHint = 460;
+		aMsg.setLayoutData(aGD);
+		Button aOpen = new Button(aBox, SWT.PUSH);
+		aOpen.setText(tde.gui.lngs.get("Web.OpenInBrowser"));
+		aOpen.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false));
+		aOpen.addListener(SWT.Selection, e -> BrowserControl.openURL(url));
 	}
 
 	String errorPage() {

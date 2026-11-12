@@ -81,6 +81,36 @@ public class BrowserControl {
 		}
 	}
 
+	/**
+	 * Opens a web page with the default browser of the system, without waiting
+	 */
+	public static void openURL(String aURL) {
+		if(aURL == null) {
+			return;
+		}
+		String osName = System.getProperty("os.name");
+		try {
+			ProcessBuilder aPB;
+			if (osName.startsWith("Mac OS")) {
+				aPB = new ProcessBuilder("open", aURL);
+			} else if (osName.startsWith("Windows")) {
+				aPB = new ProcessBuilder("rundll32", "url.dll,FileProtocolHandler", aURL);
+			} else {
+				aPB = new ProcessBuilder("xdg-open", aURL);
+			}
+			aPB.redirectErrorStream(true);
+			aPB.redirectOutput(ProcessBuilder.Redirect.DISCARD);
+			aPB.start();
+		} catch (Throwable t) {
+			if (!osName.startsWith("Mac OS") && !osName.startsWith("Windows")) {
+				//No xdg-open: the old browser list
+				displayURLNoWait(aURL);
+				return;
+			}
+			t.printStackTrace(System.err);
+		}
+	}
+
 	public static void displayURLNoWait(String url) {
 		String osName = System.getProperty("os.name");
 		try {

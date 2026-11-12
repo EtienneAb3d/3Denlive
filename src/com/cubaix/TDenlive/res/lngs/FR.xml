@@ -892,6 +892,11 @@ Calculer les cartes de profondeur des deux vues à partir du clip (intelligence 
 	<entry label="Crossed">Vue croisée</entry>
 	<entry label="Parallel">Vue parallèle</entry>
 </EntrySet>
+<EntrySet label="Web">
+	<entry label="NoBrowser">La page web ne peut pas être affichée dans 3Denlive : aucun navigateur web intégré n'est disponible sur ce système.</entry>
+	<entry label="NoBrowserLinux">Installez WebKitGTK pour l'afficher ici (Debian / Ubuntu : sudo apt install libwebkit2gtk-4.1-0, Fedora : sudo dnf install webkit2gtk4.1), puis relancez 3Denlive.</entry>
+	<entry label="OpenInBrowser">Ouvrir la page dans le navigateur web</entry>
+</EntrySet>
 <EntrySet label="Demos">
 	<entry label="Title">Projet de démo</entry>
 	<entry label="SaveBefore">Le projet a des modifications non enregistrées. Les enregistrer avant d'ouvrir la démo ?</entry>
