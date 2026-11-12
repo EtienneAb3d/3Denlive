@@ -17,7 +17,7 @@ Download 3Denlive for <a href="https://3denlive.com/3DenlivePPC64le.tar.gz">Linu
 To launch it, extract the archive, then run `3Denlive.bat` (Windows) or `3Denlive.sh` (macOS, Linux).
 On Linux, the news and demos pages are shown inside the application only when WebKitGTK is installed (Debian / Ubuntu: `sudo apt install libwebkit2gtk-4.1-0`); otherwise they open in the web browser of the system.
 
-<img src="https://3denlive.com/LatestScreenCopyEN.png?date=2026-11-11"/>
+<img src="https://3denlive.com/LatestScreenCopyEN.png?date=2026-11-12"/>
 
 # Dev config
 
