@@ -43,8 +43,11 @@ public class ProcessorLibGUI extends TreeView {
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.Framing"), "Framing",true);
 		aFolder = createFolder(tree, tde.gui.lngs.get("Processor.Video"));
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.Subtitles"), "Subtitles",true);
+		createProcessor(aFolder,tde.gui.lngs.get("Processor.Speed"), "Speed",true);
 		aFolder = createFolder(tree, tde.gui.lngs.get("Processor.Audio"));
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.Volume"), "Volume",true);
+		//Same processor as in the Video folder: speed of the images and of the sound of any video or sound clip
+		createProcessor(aFolder,tde.gui.lngs.get("Processor.Speed"), "Speed",true);
 		aFolder = createFolder(tree, tde.gui.lngs.get("Processor.Expert"));
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.Scripter"), "Scripter",true);
 		
@@ -85,7 +88,18 @@ public class ProcessorLibGUI extends TreeView {
 			boolean aIsAudioClip = tde.timeLineStack.isAudioClip(aClip);
 			boolean aIsAudioProc = AUDIO_PROCESSORS.indexOf(";"+aTI.getData()+";") >= 0;
 			boolean aHasSound = aClip.getMedia() != null && aClip.getMedia().getAudioReader() != null;
-			if((aIsAudioProc && !aHasSound) || (!aIsAudioProc && aIsAudioClip)) {
+			if("Speed".equals(aTI.getData())) {
+				//Speed: any clip of a video or a sound (also on the audio lines), only one
+				String aMsg = aClip.getMediaLimitMS() < 0 ? "Processor.SelectAVideoOrSoundClip"
+						: (aClip.getSpeedProcessor(false) != null ? "Processor.OneSpeed" : null);
+				if(aMsg != null) {
+					MessageBox messageBox = new MessageBox(tde.gui.shell,SWT.ICON_INFORMATION|SWT.OK);
+				    messageBox.setMessage(tde.gui.lngs.get(aMsg));
+				    messageBox.open();
+					return;
+				}
+			}
+			else if((aIsAudioProc && !aHasSound) || (!aIsAudioProc && aIsAudioClip)) {
 				MessageBox messageBox = new MessageBox(tde.gui.shell,SWT.ICON_INFORMATION|SWT.OK);
 			    messageBox.setMessage(tde.gui.lngs.get(aIsAudioProc ? "Processor.SelectAnAudioClip" : "Processor.SelectAVideoClip"));
 			    messageBox.open();

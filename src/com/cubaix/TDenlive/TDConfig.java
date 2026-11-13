@@ -57,6 +57,8 @@ public class TDConfig {
 	//("": the one advised for the hardware, WanGenerator.defaultVariant(), SoundGenerator.defaultModel())
 	public String aiKind = "music";
 	public String aiVideoModel = "";
+	//Colorization model chosen ("": the advised one)
+	public String aiColorModel = "";
 	public String aiMusicModel = "";
 	public String aiSfxModel = "";
 	
@@ -124,6 +126,11 @@ public class TDConfig {
 					if("aiMusicModel".equalsIgnoreCase(aT.tagName)) {
 						o++;
 						aiMusicModel = aOs.elementAt(o) instanceof XmlTag ? "" : aOs.elementAt(o).text.trim();
+						continue;
+					}
+					if("aiColorModel".equalsIgnoreCase(aT.tagName)) {
+						o++;
+						aiColorModel = aOs.elementAt(o) instanceof XmlTag ? "" : aOs.elementAt(o).text.trim();
 						continue;
 					}
 					if("aiSfxModel".equalsIgnoreCase(aT.tagName)) {
@@ -213,6 +220,7 @@ public class TDConfig {
 			aOut.write("<aiVideoModel>"+aiVideoModel+"</aiVideoModel>\n");
 			aOut.write("<aiMusicModel>"+aiMusicModel+"</aiMusicModel>\n");
 			aOut.write("<aiSfxModel>"+aiSfxModel+"</aiSfxModel>\n");
+			aOut.write("<aiColorModel>"+aiColorModel+"</aiColorModel>\n");
 			aOut.flush();
 			aOut.close();
 		}

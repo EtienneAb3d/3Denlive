@@ -117,7 +117,7 @@ public class Subtitles extends Shapes {
 	 */
 	long mediaTime(long aTimePos) {
 		Clip aClip = getClip();
-		return aTimePos-aClip.getStartTimeMS()+aClip.getShiftTimeMS();
+		return aClip.mediaTimeMS(aTimePos);
 	}
 
 	/**
@@ -205,7 +205,7 @@ public class Subtitles extends Shapes {
 	 */
 	@Override
 	Vector<Shape> interpolate(long aT) {
-		String aText = textAt(aT+getClip().getKeysOriginMS(), true);
+		String aText = textAt(keyTimePos(aT), true);
 		if(aText == null) {
 			aText = sampleText();
 		}
@@ -233,7 +233,7 @@ public class Subtitles extends Shapes {
 
 	@Override
 	public Vector<Shape> getShapesAt(long aTimePos) {
-		Vector<Shape> aShapes = interpolate(aTimePos-getClip().getKeysOriginMS());
+		Vector<Shape> aShapes = interpolate(keyTime(aTimePos));
 		adapt(aShapes, aTimePos, false);
 		return aShapes;
 	}

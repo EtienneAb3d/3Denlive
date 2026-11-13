@@ -254,7 +254,7 @@ public class StereoMovie extends StereoImage {
 	/**
 	 * Same rotation and anamorphosis as the left view (see StereoImage.rotate())
 	 */
-	BufferedImage orient(BufferedImage aBI) {
+	public BufferedImage orient(BufferedImage aBI) {
 		if(rotateL.equals("0") && anamorphW.equals("1")) {
 			return aBI;
 		}

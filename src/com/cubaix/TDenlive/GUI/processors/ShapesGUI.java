@@ -78,7 +78,7 @@ public class ShapesGUI extends ProcessorGUI implements ShapesEditor.Listener {
 			aKey = 0;
 		}
 		lkf.setSelection(aKey);
-		boolean aOnKey = sh.getTime(aKey)+((Clip)sh.targetMedia).getKeysOriginMS() == aTime;
+		boolean aOnKey = sh.isKeyAt(aKey, aTime);
 		lkf.setAddMode(!aOnKey);
 	}
 

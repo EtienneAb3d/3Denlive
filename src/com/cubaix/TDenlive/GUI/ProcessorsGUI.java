@@ -42,6 +42,7 @@ import com.cubaix.TDenlive.GUI.processors.StereoAlignerGUI;
 import com.cubaix.TDenlive.GUI.processors.TimeControllerGUI;
 import com.cubaix.TDenlive.GUI.processors.TransparencyGUI;
 import com.cubaix.TDenlive.GUI.processors.VolumeGUI;
+import com.cubaix.TDenlive.GUI.processors.SpeedGUI;
 import com.cubaix.TDenlive.medias.Clip;
 import com.cubaix.TDenlive.processors.Processor;
 import com.cubaix.TDenlive.xml.XmlMinimalParser;
@@ -167,13 +168,11 @@ public class ProcessorsGUI extends CompositePanel {
 				aActCB.addSelectionListener(new SelectionListener() {
 					@Override
 					public void widgetSelected(SelectionEvent arg0) {
-						aP.isActive = aActCB.getSelection();
-						tde.gui.monitorGUI.redraw();
+						setActive(aP, aActCB.getSelection());
 					}
 					@Override
 					public void widgetDefaultSelected(SelectionEvent arg0) {
-						aP.isActive = aActCB.getSelection();
-						tde.gui.monitorGUI.redraw();
+						setActive(aP, aActCB.getSelection());
 					}
 				});
 			}
@@ -262,6 +261,7 @@ public class ProcessorsGUI extends CompositePanel {
 					((Clip)aP.targetMedia).removeProcessor(aP);
 					aBox.dispose();
 					tde.gui.monitorGUI.redraw();
+					tde.gui.timeLinesGUI.redraw();
 				});
 			}
 			else {
@@ -350,6 +350,10 @@ public class ProcessorsGUI extends CompositePanel {
 			aBox.setData(new VolumeGUI(tde, aBox,aP));
 			return;
 		}
+		if("Speed".equals(aClassP)) {
+			aBox.setData(new SpeedGUI(tde, aBox,aP));
+			return;
+		}
 		
 		//Simply create a label
 		Label aL = new Label(aBox, SWT.NONE);
@@ -413,4 +417,19 @@ public class ProcessorsGUI extends CompositePanel {
 	}
 
 
+
+	/**
+	 * (De)activate a processor; a speed processor changes the time in the media: the clip keeps the
+	 * same end in its media, so its duration on the time line changes
+	 */
+	void setActive(Processor aP,boolean aActive) {
+		if(aP.targetMedia instanceof Clip && aP.getClassName().equals("Speed")) {
+			((Clip)aP.targetMedia).keepMediaEnd(() -> aP.isActive = aActive);
+			tde.gui.timeLinesGUI.redraw();
+		}
+		else {
+			aP.isActive = aActive;
+		}
+		tde.gui.monitorGUI.redraw();
+	}
 }

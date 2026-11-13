@@ -25,6 +25,7 @@ import com.cubaix.TDenlive.processors.Placer;
 import com.cubaix.TDenlive.processors.Processor;
 import com.cubaix.TDenlive.processors.Scripter;
 import com.cubaix.TDenlive.processors.Shapes;
+import com.cubaix.TDenlive.processors.Speed;
 import com.cubaix.TDenlive.processors.Subtitles;
 import com.cubaix.TDenlive.processors.StereoAligner;
 import com.cubaix.TDenlive.processors.TimeController;
@@ -49,6 +50,12 @@ public class Clip extends Media {
 	//Time of the keys of the processors at the start of the clip (> 0 for the second part of a cut clip):
 	//a key at time t is at startTimeMS-keysShiftMS+t on the time line
 	long keysShiftMS = 0;
+	//Keys of the processors below the speed processor: they are in media time (see keyTimeAt()), their
+	//time 0 is at the media time shiftTimeMS-keysShiftMS-keysMediaShiftMS (0 but for a clip cut
+	//with a speed processor, whose media time and time line time differ at the cut)
+	long keysMediaShiftMS = 0;
+	//Sound at another speed with the same pitch (speed processor with keepPitch)
+	final com.cubaix.TDenlive.audio.TimeStretch stretch = new com.cubaix.TDenlive.audio.TimeStretch();
 	Vector<Clip> pairedClips = new Vector<Clip>();
 	public int pairedType = -1;//-1 = not a paired, 0 = unknown, 1 = depthmap
 	//Paired clip whose media takes the rotation / anamorphosis of the media of its clip (computed depth maps)
@@ -124,6 +131,10 @@ public class Clip extends Media {
 					o++;
 					keysShiftMS = Long.parseLong(aOs.elementAt(o).text);
 				}
+				if("keysMediaShiftMS".equalsIgnoreCase(aT.tagName)) {
+					o++;
+					keysMediaShiftMS = Long.parseLong(aOs.elementAt(o).text);
+				}
 				if("fadeInMS".equalsIgnoreCase(aT.tagName)) {
 					o++;
 					fadeInMS = Long.parseLong(aOs.elementAt(o).text);
@@ -161,6 +172,11 @@ public class Clip extends Media {
 			if(aO instanceof XmlTag) {
 				XmlTag aT = (XmlTag)aO;
 				if("/Processors".equalsIgnoreCase(aT.tagName)) {
+					//The speed processor goes first: the keys of the processors below it are in media time
+					Speed aSP = getSpeedProcessor(false);
+					if(aSP != null) {
+						placeSpeedProcessor(aSP);
+					}
 					//Projects made before the rule: the depth map processor goes first
 					Processor aDP = getDepthProcessor();
 					if(aDP != null) {
@@ -280,6 +296,11 @@ public class Clip extends Media {
 					processors.add(aP);
 					o = aP.openProject(aOs, o);
 				}
+				if("Speed".equalsIgnoreCase(aT.tagName)) {
+					Speed aP = new Speed(tde,this);
+					processors.add(aP);
+					o = aP.openProject(aOs, o);
+				}
 			}
 		}
 		return o;
@@ -294,6 +315,9 @@ public class Clip extends Media {
 		aSB.append("						<shiftTimeMS>" + shiftTimeMS + "</shiftTimeMS>\n");
 		aSB.append("						<durationMS>" + durationMS + "</durationMS>\n");
 		aSB.append("						<keysShiftMS>" + keysShiftMS + "</keysShiftMS>\n");
+		if(keysMediaShiftMS != 0) {
+			aSB.append("						<keysMediaShiftMS>" + keysMediaShiftMS + "</keysMediaShiftMS>\n");
+		}
 		aSB.append("						<fadeInMS>" + fadeInMS + "</fadeInMS>\n");
 		aSB.append("						<fadeOutMS>" + fadeOutMS + "</fadeOutMS>\n");
 		aSB.append("					</Media>\n");
@@ -353,9 +377,12 @@ public class Clip extends Media {
 		aSecond.durationMS = durationMS-aCut;
 		if(getMediaLimitMS() >= 0) {
 			//Like trimStart(): the media position only moves for the videos and sounds
-			aSecond.shiftTimeMS = shiftTimeMS+aCut;
+			aSecond.shiftTimeMS = Math.max(0, Math.round(mediaTimeD(aTimeMS)));
 		}
 		aSecond.keysShiftMS = keysShiftMS+aCut;
+		//The keys in media time stay on the same images (speed processor: media and time line times differ)
+		aSecond.keysMediaShiftMS = keysMediaShiftMS
+				+(getMediaLimitMS() >= 0 ? aSecond.shiftTimeMS-shiftTimeMS-aCut : 0);
 		//The fade in stays on the first part, the fade out goes to the second one
 		aSecond.fadeInMS = 0;
 		fadeOutMS = 0;
@@ -367,6 +394,200 @@ public class Clip extends Media {
 		return aSecond;
 	}
 	
+	/**
+	 * Active speed processor of the clip, null if none
+	 */
+	public Speed getSpeedProcessor() {
+		return getSpeedProcessor(true);
+	}
+
+	/**
+	 * Speed processor of the clip (only if active when aActiveOnly), null if none
+	 */
+	public Speed getSpeedProcessor(boolean aActiveOnly) {
+		for(Processor aP : new Vector<Processor>(processors)) {
+			if(aP instanceof Speed && (aP.isActive || !aActiveOnly)) {
+				return (Speed)aP;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Key time (media time from the origin of the keys, see keyTimeAt()) at the start of the clip
+	 */
+	double keyTimeAtStart() {
+		return keysShiftMS+keysMediaShiftMS;
+	}
+
+	/**
+	 * Time in the media (ms, not limited) at aTime (time line). With a speed processor, whose speed is
+	 * a function of the media time (its keys are in media time): the media time reached after playing
+	 * aTime-startTimeMS of time line from the start of the clip (Speed.advance())
+	 */
+	public double mediaTimeD(double aTime) {
+		Speed aS = getSpeedProcessor();
+		if(aS == null) {
+			return aTime-startTimeMS+shiftTimeMS;
+		}
+		return shiftTimeMS+aS.advance(keyTimeAtStart(), aTime-startTimeMS)-keyTimeAtStart();
+	}
+
+	/**
+	 * Time in the media (ms) at aTime (time line). With a speed processor, kept inside the media
+	 * (its last image after its end)
+	 */
+	public long mediaTimeMS(long aTime) {
+		if(getSpeedProcessor() == null) {
+			return aTime-startTimeMS+shiftTimeMS;
+		}
+		long aT = Math.round(mediaTimeD(aTime));
+		long aLimit = getMediaLimitMS();
+		if(aLimit > 0 && aT > aLimit-1) {
+			aT = aLimit-1;
+		}
+		return Math.max(0, aT);
+	}
+
+	/**
+	 * Time line time at which the media reaches aMediaMS (inverse of mediaTimeD(), exact)
+	 */
+	public long timeForMediaMS(double aMediaMS) {
+		Speed aS = getSpeedProcessor();
+		if(aS == null) {
+			return Math.round(aMediaMS-shiftTimeMS+startTimeMS);
+		}
+		return Math.round(startTimeMS+aS.timeSpan(keyTimeAtStart(), aMediaMS-shiftTimeMS+keyTimeAtStart()));
+	}
+
+	/**
+	 * Time of the keys of the processors below the speed processor (all but TimeController and Speed)
+	 * at aTimePos (time line): media time from their origin, so that they stay on the same images
+	 * whatever the speed. Without speed processor: aTimePos-getKeysOriginMS() as for the others
+	 */
+	public long keyTimeAt(long aTimePos) {
+		if(getSpeedProcessor() == null) {
+			return aTimePos-startTimeMS+keysShiftMS+keysMediaShiftMS;
+		}
+		return Math.round(mediaTimeD(aTimePos)-shiftTimeMS+keysShiftMS+keysMediaShiftMS);
+	}
+
+	/**
+	 * Time line position of the key time aKeyTime (inverse of keyTimeAt())
+	 */
+	public long keyTimePos(long aKeyTime) {
+		if(getSpeedProcessor() == null) {
+			return aKeyTime+startTimeMS-keysShiftMS-keysMediaShiftMS;
+		}
+		return timeForMediaMS(aKeyTime+shiftTimeMS-keysShiftMS-keysMediaShiftMS);
+	}
+
+	/**
+	 * Run aChange (of the speed of the clip) keeping the time in the media at the end of the clip:
+	 * the duration of the clip on the time line follows the speed (slower: longer clip)
+	 */
+	public void keepMediaEnd(Runnable aChange) {
+		keepMediaEnd(aChange, timeRef());
+	}
+
+	/**
+	 * Media times kept by a change of speed: the end of the clip, and the time cursor if it is in the
+	 * clip. Taken once at the start of a drag of a speed slider, so that the successive changes don't
+	 * accumulate the roundings to the ms of the time line (see keepMediaEnd(Runnable,TimeRef))
+	 */
+	public static class TimeRef {
+		public double mediaEnd = 0;
+		public Double mediaCursor = null;//null: cursor out of the clip, not moved
+	}
+
+	/** Media times of the end of the clip and of the time cursor now */
+	public TimeRef timeRef() {
+		TimeRef aRef = new TimeRef();
+		aRef.mediaEnd = mediaTimeD(startTimeMS+durationMS);
+		long aCursor = tde.timeLineStack.getTimePosMS();
+		if(aCursor >= startTimeMS && aCursor <= startTimeMS+durationMS) {
+			aRef.mediaCursor = mediaTimeD(aCursor);
+		}
+		return aRef;
+	}
+
+	/**
+	 * Run aChange (of the speed of the clip), then put back the end of the clip and the time cursor at
+	 * the media times of aRef: the duration of the clip follows the speed (slower: longer clip), and the
+	 * cursor stays on the same image of the media
+	 */
+	public void keepMediaEnd(Runnable aChange,TimeRef aRef) {
+		aChange.run();
+		//The grains of the sound follow the new speeds
+		stretch.reset();
+		double aMediaEnd = aRef.mediaEnd;
+		long aLimit = getMediaLimitMS();
+		if(aLimit >= 0 && aMediaEnd > aLimit) {
+			aMediaEnd = aLimit;
+		}
+		setDurationMS(Math.max(MIN_DURATION_MS, timeForMediaMS(aMediaEnd)-startTimeMS));
+		if(aRef.mediaCursor != null) {
+			long aCursor = Math.max(startTimeMS, Math.min(startTimeMS+durationMS, timeForMediaMS(aRef.mediaCursor)));
+			tde.timeLineStack.setTimePosMS(aCursor);
+			tde.timeLineStack.setRequestedTimePosMS(aCursor);
+		}
+	}
+
+	/**
+	 * Clip duration that ends it at the end of its media (videos and sounds), -1 if no limit
+	 */
+	public long durationToMediaEndMS() {
+		long aLimit = getMediaLimitMS();
+		if(aLimit < 0) {
+			return -1;
+		}
+		return Math.max(MIN_DURATION_MS, timeForMediaMS(aLimit)-startTimeMS);
+	}
+
+	/**
+	 * Sound of the clip with a speed processor: aN frames from aFrom (time line frame), read in the media
+	 * at the integrated speed and resampled (linear), so the pitch follows the speed
+	 */
+	void readAtSpeed(AudioReader aAR,Speed aSpeed,long aFrom,float[] aBuf,int aN,double aFrameMS) {
+		long aRate = AudioReader.RATE;
+		if(aSpeed.isKeepPitch()) {
+			//Same pitch: grains of the source at the speed positions, overlapped (TimeStretch)
+			long aClipStartF = startTimeMS*aRate/1000;
+			stretch.render(aAR, aF -> mediaTimeD((aClipStartF+aF)*1000.0/aRate)*aRate/1000.0
+					, aFrom-aClipStartF, aBuf, aN);
+			return;
+		}
+		long aLimitF = getMediaLimitMS() >= 0 ? getMediaLimitMS()*aRate/1000 : Long.MAX_VALUE;
+		//Position in the media (frames) of each output frame
+		double[] aPos = new double[aN+1];
+		double aT = aFrom*aFrameMS;
+		for(int f = 0;f <= aN;f++) {
+			aPos[f] = mediaTimeD(aT+f*aFrameMS)*aRate/1000.0;
+		}
+		double aMin = Math.min(aPos[0], aPos[aN]);
+		double aMax = Math.max(aPos[0], aPos[aN]);
+		long aSrcFrom = (long)Math.floor(aMin);
+		int aSrcN = (int)Math.min(Integer.MAX_VALUE/4, (long)Math.ceil(aMax)-aSrcFrom+2);
+		float[] aSrc = new float[aSrcN*AudioReader.CHANNELS];
+		aAR.read(aSrcFrom, aSrc, aSrcN);
+		for(int f = 0;f < aN;f++) {
+			double aP = aPos[f];
+			if(aP < 0 || aP >= aLimitF) {
+				aBuf[2*f] = aBuf[2*f+1] = 0;
+				continue;
+			}
+			int aI = (int)(Math.floor(aP)-aSrcFrom);
+			double aFr = aP-Math.floor(aP);
+			if(aI < 0 || aI+1 >= aSrcN) {
+				aBuf[2*f] = aBuf[2*f+1] = 0;
+				continue;
+			}
+			for(int c = 0;c < AudioReader.CHANNELS;c++) {
+				aBuf[2*f+c] = (float)(aSrc[2*aI+c]*(1.0-aFr)+aSrc[2*(aI+1)+c]*aFr);
+			}
+		}
+	}
+
 	/**
 	 * Time line position of the time 0 of the keys of the processors
 	 */
@@ -498,10 +719,12 @@ public class Clip extends Media {
 		if(aDelta == 0) {
 			return;
 		}
+		//Media time at the new start (speed processor: not aDelta)
+		long aNewShift = Math.max(0, Math.round(mediaTimeD(startTimeMS+aDelta)));
 		startTimeMS += aDelta;
 		durationMS -= aDelta;
 		if(aLimited) {
-			shiftTimeMS += aDelta;
+			shiftTimeMS = aNewShift;
 		}
 		for(Clip aC : twinClips) {
 			aC.startTimeMS = startTimeMS;
@@ -516,8 +739,8 @@ public class Clip extends Media {
 	public void trimEnd(long aEndTimeMS) {
 		long aDuration = aEndTimeMS-startTimeMS;
 		long aLimit = getMediaLimitMS();
-		if(aLimit >= 0 && shiftTimeMS+aDuration > aLimit) {
-			aDuration = aLimit-shiftTimeMS;
+		if(aLimit >= 0 && mediaTimeD(startTimeMS+aDuration) > aLimit) {
+			aDuration = timeForMediaMS(aLimit)-startTimeMS;
 		}
 		if(aDuration < MIN_DURATION_MS) {
 			aDuration = MIN_DURATION_MS;
@@ -633,14 +856,15 @@ public class Clip extends Media {
 			return;
 		}
 		workLeft = workRight = finalLeft = finalRight = null;
-		media.reBuild(aProcessingMode, aTime-startTimeMS+shiftTimeMS);
+		long aMediaTime = mediaTimeMS(aTime);
+		media.reBuild(aProcessingMode, aMediaTime);
 		for(Clip aC : pairedClips) {
 			if(aC.pairedType == 1) {
 				if(aC.followsOrientation) {
 					aC.followOrientation(media);
 				}
 				aC.workLeft = aC.workRight = aC.finalLeft = aC.finalRight = null;
-				aC.media.reBuild(aProcessingMode, aTime-startTimeMS+shiftTimeMS);
+				aC.media.reBuild(aProcessingMode, aMediaTime);
 			}
 		}
 		for(Processor aP : processors) {
@@ -817,7 +1041,7 @@ public class Clip extends Media {
 			int aTileW = aTile == null ? tde.config.thumbW : Math.max(1, aTile.getWidth());
 			if(aStartPos+aW+aTileW >= aClippingR.x) {
 				//Time in the media at the middle of the tile
-				long aMediaTime = shiftTimeMS+(long)((aW+aTileW/2)/tde.timeLineStack.pixPerMS);
+				long aMediaTime = mediaTimeMS(startTimeMS+(long)((aW+aTileW/2)/tde.timeLineStack.pixPerMS));
 				BufferedImage aBI = media.getThumbAwtAt(aMediaTime);
 				if(aBI != null) {
 					aGC.drawImage(aBI, aStartPos+aW, aY,null);
@@ -911,8 +1135,14 @@ public class Clip extends Media {
 		}
 		int aN = (int)(aTo-aFrom);
 		float[] aBuf = new float[aN*AudioReader.CHANNELS];
-		aAR.read(aFrom-aClipStartF+shiftTimeMS*aRate/1000, aBuf, aN);
 		double aFrameMS = 1000.0/aRate;
+		Speed aSpeed = getSpeedProcessor();
+		if(aSpeed == null) {
+			aAR.read(aFrom-aClipStartF+shiftTimeMS*aRate/1000, aBuf, aN);
+		}
+		else {
+			readAtSpeed(aAR, aSpeed, aFrom, aBuf, aN, aFrameMS);
+		}
 		long aTimeMS = aFrom*1000/aRate;
 		for(Processor aP : new Vector<Processor>(processors)) {
 			if(aP.isActive) {
@@ -939,7 +1169,7 @@ public class Clip extends Media {
 			for(int x = aXFrom;x < aXTo;x++) {
 				double aT0 = startTimeMS+(x-aStartPos)/tde.timeLineStack.pixPerMS;
 				double aT1 = startTimeMS+(x+1-aStartPos)/tde.timeLineStack.pixPerMS;
-				float aPeak = aAR.getPeak((long)(aT0-startTimeMS+shiftTimeMS), (long)(aT1-startTimeMS+shiftTimeMS));
+				float aPeak = aAR.getPeak((long)mediaTimeD(aT0), (long)mediaTimeD(aT1));
 				if(aPeak <= 0) {
 					continue;
 				}
@@ -1036,6 +1266,19 @@ public class Clip extends Media {
 	}
 
 	/**
+	 * The speed processor changes the time of the processors below it: always the first one after the
+	 * mandatory TimeController, and unmovable, so all the others are below it
+	 */
+	void placeSpeedProcessor(Processor aP) {
+		processors.remove(aP);
+		int aPos = 0;
+		while(aPos < processors.size() && processors.elementAt(aPos) instanceof TimeController) {
+			aPos++;
+		}
+		processors.add(aPos, aP);
+	}
+
+	/**
 	 * The depth map processor builds the views from the media: always the first one after the
 	 * mandatory TimeController (and Shapes), and unmovable (see Processor.isUnmovable)
 	 */
@@ -1044,6 +1287,7 @@ public class Clip extends Media {
 		int aPos = 0;
 		while(aPos < processors.size()
 				&& (processors.elementAt(aPos) instanceof TimeController
+						|| processors.elementAt(aPos) instanceof Speed
 						|| processors.elementAt(aPos) instanceof com.cubaix.TDenlive.processors.Objects3D
 						|| (processors.elementAt(aPos) instanceof Shapes && !(processors.elementAt(aPos) instanceof Subtitles)))) {
 			aPos++;
@@ -1109,9 +1353,15 @@ public class Clip extends Media {
 		if("Subtitles".equals(aProcessorName)) {
 			processors.add(new Subtitles(tde, this));
 		}
+		if("Speed".equals(aProcessorName) && getSpeedProcessor(false) == null) {
+			processors.add(new Speed(tde, this));
+		}
 		Processor aAdded = processors.size() > aNb ? processors.lastElement() : null;
 		if(aAdded != null && aIsDepth) {
 			placeDepthProcessor(aAdded);
+		}
+		if(aAdded instanceof Speed) {
+			placeSpeedProcessor(aAdded);
 		}
 		tde.gui.processorGUI.setProcessors(processors);
 		return aAdded;
@@ -1146,7 +1396,14 @@ public class Clip extends Media {
 	public void removeProcessor(Processor aP) {
 		for(int p = 0;p < processors.size();p++) {
 			if(processors.elementAt(p) == aP) {
-				processors.remove(p);
+				final int aPos = p;
+				if(aP instanceof Speed) {
+					//The clip keeps the same part of its media: its duration changes
+					keepMediaEnd(() -> processors.remove(aPos));
+				}
+				else {
+					processors.remove(p);
+				}
 				aP.removed();
 				return;
 			}

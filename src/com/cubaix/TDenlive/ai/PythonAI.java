@@ -262,6 +262,35 @@ public abstract class PythonAI {
 	 * @return the path of the DONE message, null if canceled
 	 */
 	String runScript(Vector<String> aCmd) throws Exception {
+		ProcessBuilder aPB = scriptProcess(aCmd);
+		String[] aResult = {null, null};
+		runProcess(aPB, aL -> {
+			if(aL.startsWith("DONE ")) {
+				aResult[0] = aL.substring(5).trim();
+			}
+			else if(aL.startsWith("ERROR ")) {
+				aResult[1] = aL.substring(6).trim();
+			}
+			else {
+				commonLine(aL);
+			}
+		});
+		if(canceled()) {
+			return null;
+		}
+		if(aResult[1] != null) {
+			throw new GenerationException(aResult[1]);
+		}
+		if(aResult[0] == null) {
+			throw new Exception("Nothing produced (see log/3De.log)");
+		}
+		return aResult[0];
+	}
+
+	/**
+	 * Process of a script: offline, on the NVIDIA GPU with the most free memory
+	 */
+	ProcessBuilder scriptProcess(Vector<String> aCmd) {
 		ProcessBuilder aPB = new ProcessBuilder(aCmd);
 		Map<String,String> aEnv = aPB.environment();
 		long[] aBest = DepthEstimator.bestGpu();
@@ -275,41 +304,29 @@ public abstract class PythonAI {
 		//Apple Silicon: operations missing on MPS run on the CPU
 		aEnv.put("PYTORCH_ENABLE_MPS_FALLBACK", "1");
 		System.out.println("AI: "+String.join(" ", aCmd));
-		String[] aResult = {null, null};
-		runProcess(aPB, aL -> {
-			if(aL.startsWith("STATUS ")) {
-				status("AI."+aL.substring(7).trim(), null, 0, 0);
-			}
-			else if(aL.startsWith("STEP ")) {
-				String[] aS = aL.split(" ");
-				status(stepKey(), null, Long.parseLong(aS[1]), Long.parseLong(aS[2]));
-			}
-			else if(aL.startsWith("PEAK ")) {
-				String[] aS = aL.split(" ");
-				String aPeak = aS[1]+" "+DepthModel.gb(Long.parseLong(aS[2]))+" GB";
-				peaks += (peaks.isEmpty() ? "" : ", ")+aPeak;
-				System.out.println("AI GPU memory peak: "+aPeak);
-			}
-			else if(aL.startsWith("DONE ")) {
-				aResult[0] = aL.substring(5).trim();
-			}
-			else if(aL.startsWith("ERROR ")) {
-				aResult[1] = aL.substring(6).trim();
-			}
-			else if(!handleLine(aL)) {
-				System.out.println("AI: "+aL);
-			}
-		});
-		if(canceled()) {
-			return null;
+		return aPB;
+	}
+
+	/**
+	 * STATUS, STEP, PEAK and the other lines (handleLine(), else the log)
+	 */
+	void commonLine(String aL) {
+		if(aL.startsWith("STATUS ")) {
+			status("AI."+aL.substring(7).trim(), null, 0, 0);
 		}
-		if(aResult[1] != null) {
-			throw new GenerationException(aResult[1]);
+		else if(aL.startsWith("STEP ")) {
+			String[] aS = aL.split(" ");
+			status(stepKey(), null, Long.parseLong(aS[1]), Long.parseLong(aS[2]));
 		}
-		if(aResult[0] == null) {
-			throw new Exception("Nothing produced (see log/3De.log)");
+		else if(aL.startsWith("PEAK ")) {
+			String[] aS = aL.split(" ");
+			String aPeak = aS[1]+" "+DepthModel.gb(Long.parseLong(aS[2]))+" GB";
+			peaks += (peaks.isEmpty() ? "" : ", ")+aPeak;
+			System.out.println("AI GPU memory peak: "+aPeak);
 		}
-		return aResult[0];
+		else if(!handleLine(aL)) {
+			System.out.println("AI: "+aL);
+		}
 	}
 
 	/**
@@ -381,8 +398,37 @@ public abstract class PythonAI {
 	}
 
 	static void kill(Process aP) {
-		aP.descendants().forEach(ProcessHandle::destroyForcibly);
+		if(!aP.isAlive()) {
+			return;
+		}
+		long aT0 = System.currentTimeMillis();
+		java.util.List<ProcessHandle> aKids = aP.descendants().collect(java.util.stream.Collectors.toList());
+		aKids.forEach(ProcessHandle::destroyForcibly);
 		aP.destroyForcibly();
+		System.out.println("AI: process "+aP.pid()+" killed ("+aKids.size()+" child processes)");
+		//Its real end, logged (a process killed during a long GPU operation ends with it)
+		Thread aW = new Thread(() -> {
+			try {
+				boolean aEnded = aP.waitFor(60, java.util.concurrent.TimeUnit.SECONDS);
+				for(ProcessHandle aK : aKids) {
+					aK.onExit().get(5, java.util.concurrent.TimeUnit.SECONDS);
+				}
+				System.out.println("AI: process "+aP.pid()+(aEnded ? " ended "+(System.currentTimeMillis()-aT0)+" ms after the kill" : " still running 60 s after the kill"));
+			}
+			catch(Throwable t) {
+				System.out.println("AI: process "+aP.pid()+" end not confirmed: "+t);
+			}
+		}, "AI kill watch");
+		aW.setDaemon(true);
+		aW.start();
+	}
+
+	/**
+	 * Its script is running (or still ending after a kill)
+	 */
+	public boolean isRunning() {
+		Process aP = process;
+		return aP != null && aP.isAlive();
 	}
 
 	/**

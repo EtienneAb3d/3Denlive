@@ -152,7 +152,7 @@ public class Objects3DGUI extends ProcessorGUI implements Model3DView.Source {
 			aKey = 0;
 		}
 		lkf.setSelection(aKey);
-		boolean aOnKey = ob.getTime(aKey)+((Clip)ob.targetMedia).getKeysOriginMS() == aTime;
+		boolean aOnKey = ob.isKeyAt(aKey, aTime);
 		lkf.setAddMode(!aOnKey);
 	}
 

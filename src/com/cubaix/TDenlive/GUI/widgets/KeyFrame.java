@@ -145,9 +145,10 @@ public abstract class KeyFrame extends Widget {
 			int aNbKey = proc.getNbKeys();
 			Vector<Integer> aSelected = proc.getSelectedKeys();
 			//Keys out of the clip (cut clip): not shown, but their interval is if selected
-			long aKeysShift = ((Clip)proc.targetMedia).getStartTimeMS()-((Clip)proc.targetMedia).getKeysOriginMS();
+			//Key time -> time line (below a speed processor, the keys are in media time)
+			long aStart = ((Clip)proc.targetMedia).getStartTimeMS();
 			for(int k = 0;k < aNbKey;k++) {
-				double aPos = (proc.getTime(k)-aKeysShift)/
+				double aPos = (proc.keyTimePos(proc.getTime(k))-aStart)/
 						(double)((Clip)proc.targetMedia).getDurationMS();
 				boolean aOut = aPos < 0 || aPos > 1;
 				int aBulletX = lineX+(int)(Math.max(0, Math.min(1, aPos))*lineW);
@@ -159,7 +160,7 @@ public abstract class KeyFrame extends Widget {
 					}
 					int aBulletXN = lineX+lineW;
 					if(k < aNbKey-1) {
-						double aPosN = (proc.getTime(k+1)-aKeysShift)/
+						double aPosN = (proc.keyTimePos(proc.getTime(k+1))-aStart)/
 								(double)((Clip)proc.targetMedia).getDurationMS();
 						aBulletXN = lineX+(int)(Math.max(0, Math.min(1, aPosN))*lineW);
 					}

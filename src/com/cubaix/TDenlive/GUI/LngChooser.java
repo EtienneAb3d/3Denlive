@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Shell;
 
 import com.cubaix.TDenlive.TDenlive;
+import com.cubaix.TDenlive.res.Lngs;
 
 public class LngChooser {
 	TDenlive tde = null;
@@ -29,56 +30,39 @@ public class LngChooser {
 	void createContents() {
 		shell = new Shell(tde.gui.display);
 		shell.setText("3Denlive");
-		shell.setLayout(new GridLayout(2, true));
-		shell.setSize(600, 300);
+		//One flag button per interface language, 3 per row (2 rows for 6 languages)
+		shell.setLayout(new GridLayout(3, true));
+		shell.setSize(600, 340);
 		shell.setBackground(tde.gui.colorsSwt.WHITE);
 		shell.setForeground(tde.gui.colorsSwt.CUBAIX_BLUE);
 		shell.setFont(tde.gui.fontsSwt.roboto);
 		shell.setImage(tde.gui.imgsSwt.getIcon("3Denlive32.png"));
 
-		Button aFR = new Button(shell, SWT.PUSH);
-		GridData aFRGD = new GridData(GridData.FILL_BOTH);
-		aFR.setLayoutData(aFRGD);
-		aFR.setImage(tde.gui.imgsSwt.getImage("FR.png"));
-		aFR.setBackground(tde.gui.colorsSwt.WHITE);
-		aFR.setForeground(tde.gui.colorsSwt.CUBAIX_BLUE);
-		aFR.setFont(tde.gui.fontsSwt.roboto);
-		aFR.setToolTipText("Français");
-		aFR.addSelectionListener(new SelectionListener() {
-			@Override
-			public void widgetSelected(SelectionEvent arg0) {
-				tde.config.lng = "FR";
-				shell.close();
-				shell.dispose();
-			}
-			@Override
-			public void widgetDefaultSelected(SelectionEvent arg0) {
-				tde.config.lng = "FR";
-				shell.close();
-				shell.dispose();
-			}
-		});
-		Button aEN = new Button(shell, SWT.PUSH);
-		GridData aENGD = new GridData(GridData.FILL_BOTH);
-		aEN.setLayoutData(aENGD);
-		aEN.setImage(tde.gui.imgsSwt.getImage("EN.png"));
-		aEN.setBackground(tde.gui.colorsSwt.WHITE);
-		aEN.setForeground(tde.gui.colorsSwt.CUBAIX_BLUE);
-		aEN.setFont(tde.gui.fontsSwt.roboto);
-		aEN.setToolTipText("English");
-		aEN.addSelectionListener(new SelectionListener() {
-			@Override
-			public void widgetSelected(SelectionEvent arg0) {
-				tde.config.lng = "EN";
-				shell.close();
-				shell.dispose();
-			}
-			@Override
-			public void widgetDefaultSelected(SelectionEvent arg0) {
-				tde.config.lng = "EN";
-				shell.close();
-				shell.dispose();
-			}
-		});
+		for(String[] aL : Lngs.LANGUAGES) {
+			final String aCode = aL[0];
+			Button aB = new Button(shell, SWT.PUSH);
+			aB.setLayoutData(new GridData(GridData.FILL_BOTH));
+			aB.setImage(tde.gui.imgsSwt.getImage(aCode+".png"));
+			aB.setBackground(tde.gui.colorsSwt.WHITE);
+			aB.setForeground(tde.gui.colorsSwt.CUBAIX_BLUE);
+			aB.setFont(tde.gui.fontsSwt.roboto);
+			aB.setToolTipText(aL[1]);
+			aB.addSelectionListener(new SelectionListener() {
+				@Override
+				public void widgetSelected(SelectionEvent arg0) {
+					choose(aCode);
+				}
+				@Override
+				public void widgetDefaultSelected(SelectionEvent arg0) {
+					choose(aCode);
+				}
+			});
+		}
+	}
+
+	void choose(String aCode) {
+		tde.config.lng = aCode;
+		shell.close();
+		shell.dispose();
 	}
 }

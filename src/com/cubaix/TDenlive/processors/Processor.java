@@ -45,6 +45,33 @@ public abstract class Processor {
 	public int getPrevKeyGT(long aTime){return -1;}
 	public int getNextKeyGT(long aTime){return -1;}
 	public long getTime(int aKey) {return -1;}
+
+	/**
+	 * Time of the keys at aTimePos (time line). Below a speed processor, the keys are in media time:
+	 * they stay on the same images whatever the speed (see Clip.keyTimeAt())
+	 */
+	public long keyTime(long aTimePos) {
+		return targetMedia instanceof com.cubaix.TDenlive.medias.Clip
+				? ((com.cubaix.TDenlive.medias.Clip)targetMedia).keyTimeAt(aTimePos) : aTimePos;
+	}
+
+	/** Time line position of the key time aKeyTime (inverse of keyTime()) */
+	public long keyTimePos(long aKeyTime) {
+		return targetMedia instanceof com.cubaix.TDenlive.medias.Clip
+				? ((com.cubaix.TDenlive.medias.Clip)targetMedia).keyTimePos(aKeyTime) : aKeyTime;
+	}
+
+	/**
+	 * True if the key aKey is at aTimePos (time line). With a speed, several time line times can give
+	 * the same key time (slow motion) and a key time lands on one of them (fast motion): both count
+	 */
+	public boolean isKeyAt(int aKey,long aTimePos) {
+		if(aKey < 0 || aKey >= getNbKeys()) {
+			return false;
+		}
+		long aT = getTime(aKey);
+		return aT == keyTime(aTimePos) || keyTimePos(aT) == aTimePos;
+	}
 	/** Key index of the values interpolated at the time cursor, for the display only (see setDisplayKeyGT()) */
 	public static final int DISPLAY_KEY = Integer.MAX_VALUE;
 	/**

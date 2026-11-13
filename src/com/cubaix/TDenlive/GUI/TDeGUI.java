@@ -736,7 +736,7 @@ public class TDeGUI {
 			@Override
 			public void mouseDown(MouseEvent arg0) {
 				BrowserControl.displayURL(
-						"https://www.3denlive.com/news"+tde.config.lng.toUpperCase()+ ".php"
+						WebBrowserGUI.newsURL(tde)
 						);
 			}
 			@Override
@@ -760,7 +760,7 @@ public class TDeGUI {
 			@Override
 			public void mouseDown(MouseEvent arg0) {
 				BrowserControl.displayURL(
-						"https://www.3denlive.com/doc/EN/"
+						WebBrowserGUI.guideURL(tde)
 						);
 			}
 			@Override

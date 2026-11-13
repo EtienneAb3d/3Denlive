@@ -40,6 +40,14 @@ public abstract class ScaleBar extends Widget {
 	
 	public abstract void change(int aValue);
 
+	/** End of a drag of the bar (mouse up after a mouse down on it) */
+	public void changeEnd() {}
+
+	/** True while the bar is dragged (mouse button down on it) */
+	public boolean isDragging() {
+		return isMouseDown;
+	}
+
 	public int getSelection() {
 		return selection;
 	}
@@ -75,7 +83,11 @@ public abstract class ScaleBar extends Widget {
 		container.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseUp(MouseEvent e) {
+				boolean aWasDown = isMouseDown;
 				isMouseDown = false;
+				if(aWasDown) {
+					changeEnd();
+				}
 			}
 			@Override
 			public void mouseDown(MouseEvent e) {

@@ -37,17 +37,80 @@ public class WebBrowserGUI extends CompositePanel {
 	}
 
 	/**
-	 * News page of the web site, in the language of the interface
+	 * Code of the interface language among Lngs.LANGUAGES (EN for an unknown one)
 	 */
-	public static String newsURL(TDenlive aTDe) {
-		return "https://3denlive.com/news"+aTDe.config.lng.toUpperCase()+".php";
+	static String lng(TDenlive aTDe) {
+		for(String[] aL : com.cubaix.TDenlive.res.Lngs.LANGUAGES) {
+			if(aL[0].equalsIgnoreCase(aTDe.config.lng)) {
+				return aL[0];
+			}
+		}
+		return "EN";
+	}
+
+	//Pages of the web site checked: URL -> exists (an answer of the server, not the network errors)
+	static final java.util.Map<String,Boolean> EXISTS = new java.util.concurrent.ConcurrentHashMap<String,Boolean>();
+
+	/**
+	 * The page exists on the server: HEAD answered below 400 (the missing pages of the site answer 500 or 404).
+	 * Cached; a network error is not cached and counts as missing.
+	 */
+	public static boolean pageExists(String aURL) {
+		Boolean aE = EXISTS.get(aURL);
+		if(aE != null) {
+			return aE;
+		}
+		try {
+			java.net.http.HttpClient aC = java.net.http.HttpClient.newBuilder()
+					.connectTimeout(java.time.Duration.ofSeconds(2))
+					.followRedirects(java.net.http.HttpClient.Redirect.NORMAL).build();
+			java.net.http.HttpRequest aR = java.net.http.HttpRequest.newBuilder(java.net.URI.create(aURL))
+					.method("HEAD", java.net.http.HttpRequest.BodyPublishers.noBody())
+					.timeout(java.time.Duration.ofSeconds(3))
+					.header("User-Agent", "3Denlive").build();
+			int aCode = aC.send(aR, java.net.http.HttpResponse.BodyHandlers.discarding()).statusCode();
+			aE = aCode < 400;
+			EXISTS.put(aURL, aE);
+			if(!aE) {
+				System.out.println("Web: "+aURL+" answers "+aCode+", English page used");
+			}
+			return aE;
+		}
+		catch(Throwable t) {
+			System.err.println("Web: "+aURL+" not checked: "+t);
+			return false;
+		}
 	}
 
 	/**
-	 * Demos page of the web site, in the language of the interface (FR, else EN)
+	 * Page in the interface language if it exists on the server, else the English one
+	 */
+	public static String localized(String aLocalizedURL,String aEnglishURL) {
+		return aLocalizedURL.equals(aEnglishURL) || pageExists(aLocalizedURL) ? aLocalizedURL : aEnglishURL;
+	}
+
+	/**
+	 * News page of the web site in the interface language (newsEN, newsFR, newsDE...), else the English one
+	 */
+	public static String newsURL(TDenlive aTDe) {
+		return localized("https://3denlive.com/news"+lng(aTDe)+".php", "https://3denlive.com/newsEN.php");
+	}
+
+	/**
+	 * Demos page of the web site in the interface language (FR: index.php, else demos/<lng>.php: en, de, es...),
+	 * else the English one
 	 */
 	public static String demosURL(TDenlive aTDe) {
-		return "FR".equalsIgnoreCase(aTDe.config.lng) ? "https://3denlive.com/demos/index.php" : "https://3denlive.com/demos/en.php";
+		String aL = lng(aTDe);
+		return localized("https://3denlive.com/demos/"+("FR".equals(aL) ? "index" : aL.toLowerCase())+".php"
+				, "https://3denlive.com/demos/en.php");
+	}
+
+	/**
+	 * User guide in the interface language (doc/<LNG>/), else the English one
+	 */
+	public static String guideURL(TDenlive aTDe) {
+		return localized("https://www.3denlive.com/doc/"+lng(aTDe)+"/", "https://www.3denlive.com/doc/EN/");
 	}
 
 	/**

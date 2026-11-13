@@ -14,6 +14,10 @@ public class Lngs {
 	public static final String[][] LANGUAGES = new String[][] {
 		new String[] {"EN", "English"}
 		,new String[] {"FR", "Français"}
+		,new String[] {"DE", "Deutsch"}
+		,new String[] {"ES", "Español"}
+		,new String[] {"IT", "Italiano"}
+		,new String[] {"PT", "Português"}
 	};
 	static final HashMap<String,String> LNGS = new HashMap<String,String>();
 	static {

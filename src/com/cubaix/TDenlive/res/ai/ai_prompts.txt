@@ -1,6 +1,7 @@
 # Example prompts of the AI panel (GUI/AiClipGUI), shown as a tree in the panel of their kind:
 # category > subcategory > prompts. One per line: kind|Category/Subcategory|BPM|Name|prompt
-# - kind: video (Wan2.2-TI2V-5B), music (MusicGen) or sfx (sound effects, AudioLDM 2);
+# - kind: video (Wan2.2-TI2V-5B), image (Wan2.2-TI2V-5B with a reference image: shown instead of the video
+#   examples once an image is chosen, they animate the image), music (MusicGen) or sfx (sound effects, AudioLDM 2);
 # - BPM: tempo of a music (also written at the end of its prompt), empty for the others;
 # - Name: name given to the clip in the media list (its file name), filled in with the prompt;
 #   the music prompts of a subcategory are shown by tempo;
@@ -3008,3 +3009,1060 @@ sfx|Cartoon and music cues/Bells and chimes||Tubular bells|tubular bells chiming
 sfx|Cartoon and music cues/Bells and chimes||Glockenspiel melody|a glockenspiel playing a light twinkling melody
 sfx|Cartoon and music cues/Bells and chimes||Clock tower chime|a large clock tower chiming the hour over a city square
 sfx|Cartoon and music cues/Bells and chimes||Triangle ding|an orchestral triangle struck once and ringing out
+
+# Image to video: shown instead of the video examples once a reference image is chosen
+# First the "Any image" category: prompts that suit almost any image
+image|Any image/Bring to life||Animate this image|everything in the image comes gently to life with natural, subtle movements, static camera
+image|Any image/Bring to life||Living photo|the scene in the photo starts moving naturally, as if the moment continues, soft light, static camera
+image|Any image/Bring to life||Subtle motion everywhere|subtle natural motion everywhere in the image: leaves, hair, water and light move slightly, static camera
+image|Any image/Bring to life||Gentle breeze over the scene|a gentle breeze moves through the scene, everything light sways softly, static camera
+image|Any image/Bring to life||Cinemagraph loop|only one element of the image moves in a smooth loop while the rest stays still, static camera
+image|Any image/Bring to life||Characters move naturally|the people or animals in the image move naturally, breathing, blinking and shifting slightly, static camera
+image|Any image/Bring to life||Slow motion moment|the moment captured in the image unfolds in slow motion, static camera
+image|Any image/Bring to life||Realistic animation|realistic animation of the image, natural movements, consistent details, smooth motion, static camera
+image|Any image/What happens next||What happens next|the scene continues naturally from this image, showing what happens in the next seconds, static camera
+image|Any image/What happens next||The action continues|the action shown in the image continues smoothly and naturally, camera following the subject
+image|Any image/What happens next||Main subject starts moving|the main subject of the image starts moving and walks away from the camera, static camera
+image|Any image/What happens next||Subject turns to camera|the main subject of the image slowly turns toward the camera, slow push in
+image|Any image/What happens next||Something enters the frame|something enters the frame from the side and crosses the scene, static camera
+image|Any image/What happens next||Life goes on around|the background of the image comes alive with people, birds or vehicles passing by, static camera
+image|Any image/What happens next||The scene calms down|the movement in the image slowly calms down until everything is still and peaceful, static camera
+image|Any image/What happens next||Happy ending|the scene continues toward a happy moment, smiles and warm light, slow camera push in
+image|Any image/Before and after||Time passes|time passes quickly over the scene like a time-lapse: light, shadows, clouds and people change, static camera
+image|Any image/Before and after||Years go by|years go by over the place in the image: it slowly ages, weathers and changes, static camera
+image|Any image/Before and after||Back in time|the scene slowly goes back in time, as it looked decades ago, static camera
+image|Any image/Before and after||Day turns to night|the scene in the image slowly turns from day to night, lights switching on, static camera
+image|Any image/Before and after||Scene goes from summer to winter|the scene slowly changes from summer to winter, snow covering everything, static camera
+image|Any image/Before and after||Plants grow and bloom|time-lapse of the plants in the image growing and blooming, static camera
+image|Any image/Before and after||Ruin restored|the old worn place in the image is slowly restored to look brand new, static camera
+image|Any image/Before and after||Empty then full|the empty place in the image slowly fills with people and life, static camera
+image|Any image/Before and after||Storm then sunshine|dark storm clouds over the scene clear away and bright sunshine returns, static camera
+image|Any image/Transformation||Sketch becomes real|the image starts as a pencil sketch and slowly becomes a realistic colored scene, static camera
+image|Any image/Transformation||Photo turns into a painting|the image slowly turns into an oil painting, brush strokes appearing over the scene, static camera
+image|Any image/Transformation||Painting turns into a photo|the painted image slowly turns into a realistic photo with natural light and details, static camera
+image|Any image/Transformation||Turns into a cartoon|the scene slowly turns into a colorful cartoon animation, static camera
+image|Any image/Transformation||Turns into a watercolor|the image slowly dissolves into a soft watercolor painting, colors bleeding gently, static camera
+image|Any image/Transformation||Emerges from darkness|the scene slowly emerges from complete darkness as light reveals it, static camera
+image|Any image/Transformation||Turns into a miniature model|the scene slowly turns into a tiny miniature model with toy-like colors and tilt-shift blur, static camera
+image|Any image/Camera movements||Slow push in on the subject|the image stays still while the camera slowly pushes in toward the main subject
+image|Any image/Camera movements||Slow pull back reveal|the camera slowly pulls back from the image, revealing more of the scene
+image|Any image/Camera movements||Gentle pan across the scene|the camera pans slowly from left to right across the scene, subtle natural motion
+image|Any image/Camera movements||Slow orbit around the subject|the camera orbits slowly around the main subject of the image, smooth motion
+image|Any image/Camera movements||Cinematic crane up|the camera rises slowly above the scene like a crane shot, cinematic
+image|Any image/Camera movements||Handheld documentary feel|slight handheld camera movement over the scene, natural documentary feel
+image|Any image/Camera movements||Ken Burns effect|slow zoom and gentle pan over the still image, Ken Burns effect
+image|Any image/Camera movements||Rack focus to background|the focus slowly shifts from the foreground to the background of the image, static camera
+image|Any image/Light and atmosphere||Moving sunlight and shadows|sunlight and shadows slowly move across the scene as clouds pass, static camera
+image|Any image/Light and atmosphere||Golden hour glow|the light in the image slowly turns warm and golden like a sunset, static camera
+image|Any image/Light and atmosphere||Drifting mist|a light mist drifts slowly through the scene, soft diffuse light, static camera
+image|Any image/Light and atmosphere||Floating dust in light|tiny dust particles float in the light across the scene, static camera
+image|Any image/Light and atmosphere||Light rain begins|light rain starts falling over the scene, reflections appearing, static camera
+image|Any image/Light and atmosphere||Snow starts falling|soft snowflakes start falling over the scene, static camera
+image|Any image/Light and atmosphere||Flickering warm light|a warm flickering light like candles or a fire plays over the scene, static camera
+image|Any image/Light and atmosphere||Dreamy soft glow|a soft dreamy glow and gentle light flares spread over the scene, static camera
+image|Any image/3D effect||Parallax depth effect|the camera moves slightly sideways, the foreground and background of the image shifting in parallax
+image|Any image/3D effect||Foreground stands out|the camera slowly moves forward, the foreground of the image standing out in front of the background
+image|Any image/3D effect||Subject pops out|the main subject of the image seems to come forward out of the picture, slow push in
+image|Any image/3D effect||Gentle dolly forward in depth|the camera dollies gently forward into the depth of the scene, strong sense of depth
+image|Any image/3D effect||Floating particles in front|small particles float close to the camera in front of the scene, slow push in
+image|Any image/3D effect||Layered depth drift|the layers of the image drift at different speeds as the camera slowly moves, strong depth
+image|Any image/3D effect||Dolly zoom on the subject|dolly zoom on the main subject, the background stretching behind it
+image|Any image/3D effect||Walking into the picture|the camera moves forward as if walking into the picture, the scene opening up around it
+image|People and portraits/Expressions||Shy smile appears|the person in the photo starts with a neutral face, then a shy smile slowly spreads across their lips, soft window light, static camera
+image|People and portraits/Expressions||Burst of laughter|the person in the picture suddenly bursts out laughing, shoulders shaking and eyes crinkling, warm daylight, static camera
+image|People and portraits/Expressions||Surprised raised eyebrows|the person in the image raises their eyebrows in surprise and opens their mouth slightly, then relaxes, static camera
+image|People and portraits/Expressions||Thoughtful frown fades|the person in the photo frowns in thought, then their face softens into a calm expression, gentle side light, slow push in
+image|People and portraits/Expressions||Wink at the viewer|the person in the portrait looks at the camera and gives a playful wink, a small smile at the corner of the mouth, static camera
+image|People and portraits/Expressions||Tears welling up|the person in the photo blinks slowly as tears well up in their eyes, lips trembling slightly, dim soft light, very slow push in
+image|People and portraits/Expressions||Grandmother warm smile|the elderly woman in the picture smiles warmly, her wrinkles deepening around her eyes, golden afternoon light, static camera
+image|People and portraits/Expressions||Child giggles and scrunches|the child in the photo giggles and scrunches up their nose, cheeks rising, bright daylight, static camera
+image|People and portraits/Expressions||Sigh of relief|the person in the image closes their eyes and lets out a long sigh of relief, shoulders dropping, soft light, static camera
+image|People and portraits/Expressions||Stern look softens|the man in the portrait keeps a stern look, then his eyes soften and he gives a faint smile, static camera
+image|People and portraits/Expressions||Playful pout then laugh|the person in the photo pushes out their lips in a playful pout, then laughs, bright light, static camera
+image|People and portraits/Expressions||Proud chin lifted|the person in the picture lifts their chin with a proud, confident expression and a slight smile, dramatic side light, slow push in
+image|People and portraits/Expressions||Startled blink then smile|the person in the image blinks rapidly as if startled, then breaks into a relieved smile, static camera
+image|People and portraits/Expressions||Dreamy half smile|the person in the photo gazes into the distance with a dreamy half smile, eyelids slowly lowering, hazy warm light, static camera
+image|People and portraits/Expressions||Painted face comes alive|the face in the painting comes alive, the eyes blink and the lips form a gentle smile, brush strokes stay visible, static camera
+image|People and portraits/Expressions||Skeptical raised brow|the person in the portrait raises one eyebrow skeptically and tilts their head slightly, static camera
+image|People and portraits/Expressions||Wide joyful grin|the person in the photo breaks into a wide joyful smile showing their teeth, eyes sparkling, sunny light, slow push in
+image|People and portraits/Expressions||Nervous lip bite|the person in the picture bites their lower lip nervously and glances down, soft indoor light, static camera
+image|People and portraits/Expressions||Silently mouthed words|the person in the image silently forms a few words with their lips, as if whispering to the viewer, close-up, static camera
+image|People and portraits/Expressions||Anger slowly fades|the person in the photo starts with an angry glare, then takes a breath and their face slowly relaxes, moody light, static camera
+image|People and portraits/Gaze and head||Head turns toward camera|the person in the photo slowly turns their head toward the camera and smiles, soft light, static camera
+image|People and portraits/Gaze and head||Glance over the shoulder|the person in the picture glances back over their shoulder at the viewer, hair moving slightly, static camera
+image|People and portraits/Gaze and head||Eyes follow someone|the eyes of the person in the portrait slowly move from left to right as if following someone, head still, static camera
+image|People and portraits/Gaze and head||Gaze lifts to the sky|the person in the image slowly lifts their gaze toward the sky, light falling on their face, slow tilt up
+image|People and portraits/Gaze and head||Curious head tilt|the person in the photo tilts their head to one side with curiosity, eyes fixed on the camera, static camera
+image|People and portraits/Gaze and head||Slow nod of agreement|the person in the picture nods slowly twice in agreement, a calm expression, soft daylight, static camera
+image|People and portraits/Gaze and head||Eyes rise from the ground|the person in the photo looks down at the ground, then raises their eyes to meet the camera, static camera
+image|People and portraits/Gaze and head||Profile turns to face|the person shown in profile slowly turns to face the camera, side light sweeping across their features, static camera
+image|People and portraits/Gaze and head||Glance toward the window|the person in the image turns their gaze toward a window, daylight on their cheek, slow push in
+image|People and portraits/Gaze and head||Amused head shake|the person in the portrait gently shakes their head with a small amused smile, static camera
+image|People and portraits/Gaze and head||Head tips back peacefully|the person in the photo slowly closes their eyes and tilts their head back slightly, peaceful expression, static camera
+image|People and portraits/Gaze and head||Searching the crowd|the person in the picture looks left, then right, as if searching for someone in a crowd, static camera
+image|People and portraits/Gaze and head||Statue turns its head|the stone statue in the photo slowly turns its head toward the camera, dust falling from its neck, static camera
+image|People and portraits/Gaze and head||Sidelong glance away|the person in the image casts a sidelong glance at the camera without moving their head, then looks away, static camera
+image|People and portraits/Gaze and head||Old portrait looks up|the person in the old black and white portrait slowly raises their eyes and looks straight at the viewer, film grain, static camera
+image|People and portraits/Gaze and head||Sleeper opens their eyes|the sleeping person in the photo slowly opens their eyes and looks toward the camera, soft morning light, static camera
+image|People and portraits/Gaze and head||Chin rests on hand|the person in the picture turns their head and rests their chin on their hand, looking thoughtfully aside, static camera
+image|People and portraits/Gaze and head||Turning to the horizon|the person in the photo turns away from the camera and looks toward the horizon, wind in their hair, slow pull back
+image|People and portraits/Gaze and head||Walker looks back|the person walking away in the image turns briefly to look back, then faces forward again, static camera
+image|People and portraits/Gaze and head||Upward glance and blink|the person in the portrait glances up, blinks slowly and lowers their eyes again, soft light, very slow push in
+image|People and portraits/Hair and clothes in the wind||Long hair in the breeze|the long hair of the person in the photo flows gently in the breeze, strands crossing their face, golden hour light, static camera
+image|People and portraits/Hair and clothes in the wind||Scarf flutters in the wind|the scarf around the person's neck flutters in the wind while they stand still, cloudy sky, static camera
+image|People and portraits/Hair and clothes in the wind||Dress billows on the beach|the long dress of the woman in the picture billows in the sea wind, fabric rippling, sunset light, slow pan right
+image|People and portraits/Hair and clothes in the wind||Curls bounce in gusts|the curly hair of the person in the image bounces and lifts with strong gusts of wind, static camera
+image|People and portraits/Hair and clothes in the wind||Bridal veil floats|the bridal veil in the photo lifts and floats in the wind behind the bride, soft backlight, slow push in
+image|People and portraits/Hair and clothes in the wind||Coat flaps on a cliff|the coat of the person standing on the cliff flaps in strong wind, clouds racing behind, static camera
+image|People and portraits/Hair and clothes in the wind||Backlit hair strands|loose strands of hair drift across the person's face, catching the backlight, shallow depth of field, static camera
+image|People and portraits/Hair and clothes in the wind||Cape sweeps behind|the long cape of the figure in the picture sweeps and ripples behind them in the wind, dramatic sky, slow tilt up
+image|People and portraits/Hair and clothes in the wind||Cyclist shirt ripples|the shirt of the cyclist in the photo ripples in the wind as they ride, background softly blurred, tracking shot
+image|People and portraits/Hair and clothes in the wind||Ponytail swings sideways|the ponytail of the person in the image swings from side to side in the breeze, bright daylight, static camera
+image|People and portraits/Hair and clothes in the wind||Straw hat held in wind|the brim of the straw hat trembles in the wind and the person holds it with one hand, summer light, static camera
+image|People and portraits/Hair and clothes in the wind||Sari waves gracefully|the flowing sari of the woman in the photo waves gracefully in the wind, colorful fabric shimmering, static camera
+image|People and portraits/Hair and clothes in the wind||Windswept old man|the beard and hair of the old man in the picture are tousled by a cold wind, he squints, static camera
+image|People and portraits/Hair and clothes in the wind||Skirt sways in the field|the skirt of the girl standing in the field sways and twirls in the warm wind, grass moving around her, slow pull back
+image|People and portraits/Hair and clothes in the wind||Hair floats like underwater|the hair of the person in the photo floats slowly as if underwater, drifting in soft waves around their face, static camera
+image|People and portraits/Hair and clothes in the wind||Flag waves behind subject|a flag behind the person in the image waves in the wind while their hair moves lightly, static camera
+image|People and portraits/Hair and clothes in the wind||Wind tousles child's hair|the wind tousles the fine hair of the child in the picture, who laughs and squints, static camera
+image|People and portraits/Hair and clothes in the wind||Kimono sleeves sway|the wide sleeves of the kimono in the photo sway gently in the breeze, cherry petals drifting past, static camera
+image|People and portraits/Hair and clothes in the wind||Hair ribbons twist|the colorful ribbons tied in the person's hair flutter and twist in the wind, sunny day, slow push in
+image|People and portraits/Hair and clothes in the wind||Jacket whips in storm|the open jacket of the person in the image whips in a stormy wind, dark clouds behind, static camera
+image|People and portraits/Gestures and hands||Friendly wave hello|the person in the photo raises a hand and waves hello to the camera with a smile, static camera
+image|People and portraits/Gestures and hands||Hair tucked behind ear|the person in the picture brushes their hair back behind their ear with one hand, soft light, static camera
+image|People and portraits/Gestures and hands||Blowing a kiss|the person in the image blows a kiss toward the camera, then smiles, warm light, static camera
+image|People and portraits/Gestures and hands||Thumbs up and nod|the person in the photo gives a thumbs up and nods, bright daylight, static camera
+image|People and portraits/Gestures and hands||Palms reveal a flower|the hands in the picture slowly open to reveal a small flower resting in the palms, soft light, slow push in
+image|People and portraits/Gestures and hands||Finger to the lips|the person in the portrait raises a finger to their lips as if saying hush, static camera
+image|People and portraits/Gestures and hands||Sip of coffee|the person in the photo lifts the coffee cup to their lips and takes a sip, steam rising, static camera
+image|People and portraits/Gestures and hands||Fingers on piano keys|the hands in the image move gracefully over the piano keys, pressing them gently, close-up, static camera
+image|People and portraits/Gestures and hands||Raised glass toast|the person in the picture raises their glass in a toast toward the camera, smiling, warm evening light, static camera
+image|People and portraits/Gestures and hands||Joyful hand clapping|the person in the photo claps their hands joyfully a few times, laughing, static camera
+image|People and portraits/Gestures and hands||Glasses pushed up|the person in the image pushes their glasses up their nose with one finger, then looks at the camera, static camera
+image|People and portraits/Gestures and hands||Pointing into the distance|the person in the photo points toward something in the distance, gaze following the hand, slow pan in that direction
+image|People and portraits/Gestures and hands||Hands knead dough|the hands in the picture knead the dough on the floury table, pressing and folding it, static camera
+image|People and portraits/Gestures and hands||Pen writes on paper|the hand in the image writes slowly on the paper with a pen, ink lines appearing, close-up, static camera
+image|People and portraits/Gestures and hands||Hands warmed by fire|the hands in the photo rub together and stretch toward the warmth of a fire, flickering orange light, static camera
+image|People and portraits/Gestures and hands||Polite hat tip|the man in the picture tips his hat politely toward the camera with a slight nod, static camera
+image|People and portraits/Gestures and hands||Open hand reaches out|the person in the image slowly reaches out a hand toward the camera, palm open, soft light, slow push in
+image|People and portraits/Gestures and hands||Amused shrug|the person in the photo shrugs their shoulders and opens their hands, amused expression, static camera
+image|People and portraits/Gestures and hands||Joined hands squeeze|the two hands holding each other in the picture squeeze gently, thumbs moving, warm light, static camera
+image|People and portraits/Gestures and hands||Hand on the heart|the person in the portrait places a hand on their heart and closes their eyes for a moment, static camera
+image|People and portraits/Subtle life||Gentle breathing portrait|the person in the photo stays still, chest rising and falling with gentle breathing, eyes blinking now and then, static camera
+image|People and portraits/Subtle life||Living photograph effect|the portrait comes subtly alive, slight blinks, tiny head movements and soft breathing, like a living photograph, static camera
+image|People and portraits/Subtle life||Candlelight on the face|the face of the person in the picture is lit by a candle whose flame flickers, shadows dancing softly, static camera
+image|People and portraits/Subtle life||Steam from a teacup|steam rises slowly from the teacup in front of the person in the image while they sit still, cozy light, static camera
+image|People and portraits/Subtle life||Sleeping baby breathes|the sleeping baby in the photo breathes softly, small fingers twitching, warm light, very slow push in
+image|People and portraits/Subtle life||Leaf shadows on face|shadows of leaves sway across the face of the person in the picture, dappled sunlight, static camera
+image|People and portraits/Subtle life||Eyelashes catch light|the person in the close-up portrait blinks slowly, eyelashes catching the light, static camera
+image|People and portraits/Subtle life||Earrings sway softly|the earrings of the woman in the photo sway slightly as she breathes, soft glow, static camera
+image|People and portraits/Subtle life||Clouds reflected in eyes|small reflections move in the eyes of the person in the image as clouds pass, static camera
+image|People and portraits/Subtle life||Smoke curls from a pipe|smoke curls slowly from the pipe of the old man in the picture, he blinks calmly, static camera
+image|People and portraits/Subtle life||Pensive by rainy window|the person sitting by the rainy window in the photo barely moves, raindrops sliding down the glass, static camera
+image|People and portraits/Subtle life||Fireflies around a sitter|tiny fireflies drift around the person sitting in the image at dusk, their face softly glowing, static camera
+image|People and portraits/Subtle life||Dust in the sunbeam|dust particles float in a sunbeam beside the person in the photo, who blinks slowly, static camera
+image|People and portraits/Subtle life||Deep slow breath|the person in the portrait takes a deep slow breath, nostrils flaring slightly, eyes calm, static camera
+image|People and portraits/Subtle life||Sunlight drifts across face|soft sunlight slowly moves across the face of the person in the picture as time passes, static camera
+image|People and portraits/Subtle life||Cat purrs on a lap|the cat on the person's lap in the photo purrs, ears twitching, while the person strokes it slowly, static camera
+image|People and portraits/Subtle life||Breath vapor in winter|faint breath vapor rises from the mouth of the person in the image in the cold winter air, snow falling softly, static camera
+image|People and portraits/Subtle life||Lips part while breathing|the lips of the person in the portrait part slightly as they breathe, eyes calm and steady, static camera
+image|People and portraits/Subtle life||Neon glow pulses|neon light pulses gently on the face of the person in the photo at night, colors shifting, static camera
+image|People and portraits/Subtle life||Old man in rocking chair|the elderly man in the picture rocks slowly in his rocking chair, eyes half closed, warm porch light, static camera
+image|People and portraits/Dancing and movement||Twirl in place|the person in the photo spins around once in place, clothes flaring out, then stops and smiles, static camera
+image|People and portraits/Dancing and movement||Ballet arm sweep|the ballet dancer in the picture slowly sweeps her arms up above her head, graceful, stage light, static camera
+image|People and portraits/Dancing and movement||Swaying to the music|the person in the image sways gently from side to side as if listening to music, eyes closed, warm light, static camera
+image|People and portraits/Dancing and movement||Couple slow dance|the couple in the photo slow dance in each other's arms, turning gently, soft evening light, slow orbit
+image|People and portraits/Dancing and movement||Hip hop bounce|the dancer in the picture starts a rhythmic hip hop move, shoulders and arms bouncing to the beat, static camera
+image|People and portraits/Dancing and movement||Jump for joy|the person in the image jumps in the air with arms raised in joy, then lands, bright day, static camera
+image|People and portraits/Dancing and movement||Walking toward the camera|the person in the photo starts walking slowly toward the camera, hair moving with each step, static camera
+image|People and portraits/Dancing and movement||Flamenco skirt flick|the flamenco dancer in the picture flicks her red skirt and stamps her feet, dramatic light, static camera
+image|People and portraits/Dancing and movement||Tai chi in the mist|the person in the image performs slow tai chi movements, arms flowing smoothly, misty morning, static camera
+image|People and portraits/Dancing and movement||Child runs across grass|the child in the photo runs away across the grass, then turns back laughing, slow pan following
+image|People and portraits/Dancing and movement||Head bob with headphones|the person wearing headphones in the picture bobs their head to the beat, smiling, static camera
+image|People and portraits/Dancing and movement||Old photo waltz|the couple in the old photo begins a waltz, turning gracefully across the floor, slow tracking shot
+image|People and portraits/Dancing and movement||Morning stretch and yawn|the person in the image stretches both arms up above their head and yawns, morning light, static camera
+image|People and portraits/Dancing and movement||Skater glides and turns|the skater in the photo glides forward smoothly and turns, slow tracking shot
+image|People and portraits/Dancing and movement||Painted dancers move|the dancers in the painting begin to move slowly, their skirts swirling, colors staying painterly, static camera
+image|People and portraits/Dancing and movement||Martial arts high kick|the martial artist in the picture performs a high kick and returns to stance, dust rising, static camera
+image|People and portraits/Dancing and movement||Park swing ride|the person on the swing in the photo swings forward and back, hair flowing, sunny park, static camera
+image|People and portraits/Dancing and movement||Bow after a performance|the performer in the image bows deeply to the audience, then straightens up smiling, stage spotlight, static camera
+image|People and portraits/Dancing and movement||Dancing in the rain|the person in the photo dances and spins in the rain, splashes around their feet, slow pull back
+image|People and portraits/Dancing and movement||Yoga pose transition|the person in the picture moves smoothly from one yoga pose into another, calm breathing, soft light, static camera
+image|Camera movements/Push in||Push in to the eyes|slow camera push in from the full portrait to a close-up of the eyes of the person in the photo, subject still
+image|Camera movements/Push in||Push into a landscape|gentle camera push in toward the center of the landscape, clouds drifting slowly, trees swaying lightly
+image|Camera movements/Push in||Through the open doorway|the camera slowly pushes in through the open doorway in the image, light glowing inside
+image|Camera movements/Push in||Dolly toward the house|smooth dolly forward toward the house in the picture, windows glowing, smoke rising from the chimney
+image|Camera movements/Push in||Painting detail push in|slow push in on the central detail of the painting, brush strokes becoming visible, subtle shimmer of light
+image|Camera movements/Push in||City street comes alive|the camera pushes in along the city street in the photo, cars and people beginning to move
+image|Camera movements/Push in||Forward on forest path|the camera moves slowly forward along the forest path in the image, leaves stirring, light beams through the trees
+image|Camera movements/Push in||Dramatic rush to a face|fast dramatic push in on the face of the person in the picture, who looks up at the camera
+image|Camera movements/Push in||Approach the misty peak|slow push in toward the mountain peak in the photo, mist rolling at its base
+image|Camera movements/Push in||Studio product push in|smooth push in on the object in the center of the image, soft studio light glinting on its surface
+image|Camera movements/Push in||Into the lit tunnel|the camera pushes forward into the tunnel in the picture, lights passing overhead
+image|Camera movements/Push in||Toward the dinner candles|slow push in over the dinner table in the photo toward the candles, flames flickering
+image|Camera movements/Push in||Lit window at night|the camera pushes in toward the lit window of the building at night, curtains moving slightly
+image|Camera movements/Push in||Closer to a sleeping cat|very slow push in on the sleeping cat in the image, its sides rising with each breath
+image|Camera movements/Push in||Flower and arriving bee|gentle push in on the flower in the photo, petals trembling, a bee arriving
+image|Camera movements/Push in||Into the waking crowd|the camera pushes slowly into the crowd in the picture, people starting to move and talk
+image|Camera movements/Push in||Down the long corridor|the camera moves forward down the long corridor in the image, light flickering at the end
+image|Camera movements/Push in||Old map by candlelight|slow push in on the old map in the photo, candlelight flickering on the paper
+image|Camera movements/Push in||Toward the boat on the lake|the camera pushes in toward the small boat on the lake in the picture, water rippling
+image|Camera movements/Push in||Open book page lifts|slow push in on the open book in the image, a page lifting slightly in the breeze
+image|Camera movements/Pull back||Pull back from the eyes|the camera starts on the eyes of the person in the photo and slowly pulls back to reveal the whole face and shoulders
+image|Camera movements/Pull back||Vast landscape reveal|slow pull back from the person in the picture to reveal the vast landscape around them, clouds moving
+image|Camera movements/Pull back||From flower to garden|the camera pulls back from the flower in the image to reveal the whole garden, leaves swaying
+image|Camera movements/Pull back||Back through the window|the camera pulls back through the window in the photo, revealing the room inside, curtains moving
+image|Camera movements/Pull back||Rising aerial reveal|the camera pulls back and rises above the scene in the picture, revealing the surrounding streets from above
+image|Camera movements/Pull back||Painting on museum wall|slow pull back from the painting, revealing its frame hanging on a museum wall, soft light
+image|Camera movements/Pull back||Lone tree in waving grass|the camera slowly pulls back from the lone tree in the image, grass waving in the wind around it
+image|Camera movements/Pull back||From plate to restaurant|slow pull back from the plate on the table in the photo to reveal the whole restaurant, people moving
+image|Camera movements/Pull back||Beach walker and waves|the camera pulls back from the person on the beach in the picture, waves rolling onto the sand
+image|Camera movements/Pull back||Car and the sunset road|the camera pulls back from the car in the image, revealing the long road behind it at sunset
+image|Camera movements/Pull back||City to above the clouds|the camera pulls back from the city in the photo, rising higher until the clouds appear below
+image|Camera movements/Pull back||Singer to the audience|slow pull back from the singer on stage in the picture, revealing the audience and the lights
+image|Camera movements/Pull back||Craftsman at his bench|the camera pulls back from the working hands in the image to reveal the craftsman at his bench
+image|Camera movements/Pull back||Lighthouse and crashing waves|the camera pulls back from the lighthouse in the photo, waves crashing on the rocks, beam turning
+image|Camera movements/Pull back||Backward through stone arch|the camera moves backward through the stone arch in the picture, sunlight on the walls
+image|Camera movements/Pull back||Snowman to snowy village|slow pull back from the snowman in the image, revealing the snowy village, snow falling
+image|Camera movements/Pull back||Mug to fireplace room|the camera pulls back from the steaming mug in the photo, revealing a cozy room by the fireplace
+image|Camera movements/Pull back||Bride among her guests|slow pull back from the bride in the picture to reveal the wedding guests, petals in the air
+image|Camera movements/Pull back||Ancient ruins in gold light|the camera pulls back from the ancient ruins in the image, dust drifting in the golden light
+image|Camera movements/Pull back||Toy to playing child|the camera pulls back from the toy on the floor in the photo, revealing a child playing nearby
+image|Camera movements/Pans and tilts||Pan across the skyline|slow pan from left to right across the city skyline in the photo, lights twinkling, clouds drifting
+image|Camera movements/Pans and tilts||Tilt up the tower|the camera tilts slowly up the tall tower in the picture from its base to its top, sky moving behind
+image|Camera movements/Pans and tilts||Sky down to a person|the camera tilts down from the sky to the person standing in the image, birds flying across
+image|Camera movements/Pans and tilts||Pan along the shoreline|slow pan right along the shoreline in the photo, waves rolling in, sunset colors
+image|Camera movements/Pans and tilts||Mountain range panorama|slow panoramic pan across the mountain range in the picture, mist moving in the valleys
+image|Camera movements/Pans and tilts||Tilt up the waterfall|the camera tilts up along the waterfall in the image, water pouring and spray rising
+image|Camera movements/Pans and tilts||Pan across a group photo|slow pan across the group of people in the photo, each person moving slightly and smiling
+image|Camera movements/Pans and tilts||Treetop down to roots|the camera tilts down from the treetop to the roots of the big tree in the picture, leaves rustling
+image|Camera movements/Pans and tilts||Street market pan|slow pan left across the street market in the image, people walking and stalls swaying
+image|Camera movements/Pans and tilts||Tilt up to the stars|the camera tilts up from the dark landscape in the photo to the starry sky, stars twinkling
+image|Camera movements/Pans and tilts||Fresco in candlelight|slow pan across the wide fresco in the picture, soft candlelight flickering on its colors
+image|Camera movements/Pans and tilts||Quick whip pan|quick whip pan from the person in the image to the side of the scene, motion blur, then settle
+image|Camera movements/Pans and tilts||Face down to a letter|the camera tilts down slowly from the face of the person in the photo to their hands holding a letter
+image|Camera movements/Pans and tilts||Library shelves pan|slow pan along the shelves of the library in the picture, dust floating in the light
+image|Camera movements/Pans and tilts||Up the spiral staircase|the camera tilts up along the spiral staircase in the image, light coming from above
+image|Camera movements/Pans and tilts||Wheat field pan|slow pan across the wheat field in the photo, wheat waving in the wind, golden light
+image|Camera movements/Pans and tilts||Pan following a bird|the camera pans to follow a bird flying across the scene in the picture, clouds drifting
+image|Camera movements/Pans and tilts||Cathedral facade tilt down|slow tilt down the facade of the cathedral in the image, pigeons taking off from its ledges
+image|Camera movements/Pans and tilts||Harbor boats pan|slow pan across the harbor in the photo, boats rocking gently on the water
+image|Camera movements/Pans and tilts||River up to the bridge|the camera tilts up from the flowing river in the picture to the bridge above, traffic moving
+image|Camera movements/Orbit||Orbit around the portrait|slow camera orbit around the person in the photo, their hair moving slightly, background parallax
+image|Camera movements/Orbit||Statue in sliding sunlight|the camera orbits slowly around the statue in the picture, sunlight sliding over the stone
+image|Camera movements/Orbit||Half orbit of a car|smooth half orbit around the car in the image, reflections moving across its body
+image|Camera movements/Orbit||Dancer holding a pose|the camera orbits around the dancer in the photo while she holds her pose, skirt moving lightly
+image|Camera movements/Orbit||Tree in drifting fog|slow orbit around the lone tree in the picture, fog drifting through the branches
+image|Camera movements/Orbit||Sculpture on a pedestal|the camera circles the sculpture in the image on its pedestal, soft gallery light
+image|Camera movements/Orbit||Embracing couple orbit|slow orbit around the couple embracing in the photo, city lights blurring behind them
+image|Camera movements/Orbit||Circling the set table|the camera orbits around the set table in the picture, candles flickering
+image|Camera movements/Orbit||Chess board orbit|slow orbit around the chess board in the image, a piece moving forward
+image|Camera movements/Orbit||Aerial lighthouse orbit|aerial orbit around the lighthouse in the photo, waves breaking around the rocks
+image|Camera movements/Orbit||Birthday cake orbit|the camera slowly circles the birthday cake in the picture, candle flames dancing
+image|Camera movements/Orbit||Musician playing strings|slow orbit around the musician playing in the image, fingers moving on the strings
+image|Camera movements/Orbit||Aerial castle orbit|aerial orbit around the castle in the photo, clouds moving over the towers
+image|Camera movements/Orbit||Perfume bottle orbit|smooth orbit around the bottle in the picture, light refracting through the glass
+image|Camera movements/Orbit||Sleeping dog orbit|slow orbit around the sleeping dog in the image, its ears twitching
+image|Camera movements/Orbit||Low angle warrior orbit|low angle orbit around the warrior in the photo, cape moving in the wind, dramatic sky
+image|Camera movements/Orbit||Bouquet of flowers orbit|slow orbit around the bouquet of flowers in the picture, petals trembling
+image|Camera movements/Orbit||Gleaming motorbike orbit|the camera circles the motorbike in the image, chrome gleaming in the sunlight
+image|Camera movements/Orbit||Snow globe orbit|slow orbit around the snow globe in the photo, snowflakes swirling inside
+image|Camera movements/Orbit||Mountain summit orbit|aerial orbit around the mountain summit in the picture, snow blowing off the ridge
+image|Camera movements/Aerial and drone||Drone rises over coastline|the drone view slowly rises above the rocky coastline in the image, waves breaking white on the shore, bright afternoon light, steady upward camera
+image|Camera movements/Aerial and drone||Forest canopy flyover|aerial shot gliding forward over the dense green forest canopy, mist drifting between the treetops, soft morning light, smooth forward drone movement
+image|Camera movements/Aerial and drone||Orbit around lighthouse|the camera orbits slowly around the lighthouse on the cliff, the sea sparkling below, seagulls circling, golden hour light
+image|Camera movements/Aerial and drone||City skyline pullback|aerial view of the city pulls back and rises, revealing more buildings and streets, traffic moving below, dusk lights turning on
+image|Camera movements/Aerial and drone||Mountain ridge reveal|the drone flies over the snowy mountain ridge and tilts down to reveal the valley beyond, clouds drifting, crisp clear light
+image|Camera movements/Aerial and drone||Desert dunes low glide|aerial camera glides low over the sand dunes, wind lifting fine sand from the crests, warm sunset light, slow forward movement
+image|Camera movements/Aerial and drone||Top-down beach waves|top-down drone shot above the beach, turquoise waves rolling onto the sand and retreating, the camera slowly rises straight up
+image|Camera movements/Aerial and drone||River bend tracking|the drone follows the winding river through the valley, sunlight glinting on the water, slow forward tracking shot
+image|Camera movements/Aerial and drone||Tropical island orbit|slow aerial orbit around the small tropical island, palm trees swaying, clear water all around, bright midday sun
+image|Camera movements/Aerial and drone||Castle approach from above|the drone slowly approaches the old castle on the hill, flags fluttering on the towers, light clouds passing, gentle descent
+image|Camera movements/Aerial and drone||Farmland patchwork rise|aerial view over patchwork fields, the camera rises slowly as cloud shadows sweep across the farmland, soft daylight
+image|Camera movements/Aerial and drone||Highway night flyover|drone flying over the highway at night, car headlights streaming in lines, city glow in the distance, smooth forward motion
+image|Camera movements/Aerial and drone||Waterfall drone descent|the drone descends slowly along the tall waterfall, spray rising from the pool below, lush green cliffs, soft light
+image|Camera movements/Aerial and drone||Harbor boats from above|top-down view of the harbor, small boats gently rocking on the water, ripples spreading, the camera drifts sideways
+image|Camera movements/Aerial and drone||Volcano crater circle|aerial camera circles the rim of the volcanic crater, thin smoke rising from the center, dramatic clouds, slow orbit
+image|Camera movements/Aerial and drone||Autumn hills sideways sweep|the drone sweeps sideways over hills covered in red and orange autumn trees, low sun casting long shadows
+image|Camera movements/Aerial and drone||Flight under the bridge|the drone flies forward under the large bridge and out the other side, water flowing below, bright day, smooth motion
+image|Camera movements/Aerial and drone||Snowy village descent|the camera descends slowly toward the snowy village, smoke curling from chimneys, warm lights in windows, blue evening light
+image|Camera movements/Aerial and drone||Hiker on summit orbit|aerial orbit around the hiker standing on the mountain summit, jacket fluttering in the wind, a sea of clouds below
+image|Camera movements/Aerial and drone||Rice terraces tilt up|the drone tilts up from the green rice terraces to reveal the misty mountains behind, water reflecting the sky
+image|Camera movements/Dolly zoom and focus||Vertigo dolly zoom portrait|dolly zoom on the person in the photo, the face stays the same size while the background stretches away behind them, tense atmosphere
+image|Camera movements/Dolly zoom and focus||Rack focus to landscape|the focus shifts slowly from the flower in the foreground to the landscape behind it, soft natural light, static camera
+image|Camera movements/Dolly zoom and focus||Slow push into the eyes|the camera slowly pushes in toward the eyes of the person in the portrait, they blink once, shallow depth of field
+image|Camera movements/Dolly zoom and focus||Corridor dolly zoom|dolly zoom down the long corridor, the walls seem to stretch while the end of the hallway stays fixed, cold lighting
+image|Camera movements/Dolly zoom and focus||Focus pull on steaming cup|rack focus from the blurred face to the hands holding a cup in the foreground, steam rising, warm indoor light
+image|Camera movements/Dolly zoom and focus||Street rushing closer|reverse dolly zoom on the person standing in the street, the buildings behind seem to rush closer, the subject stays still
+image|Camera movements/Dolly zoom and focus||Pull back from detail|the camera slowly pulls back from a close detail to reveal the whole scene of the image, soft even light
+image|Camera movements/Dolly zoom and focus||Bokeh lights sharpen|blurry city lights in the image slowly come into sharp focus, revealing a street at night, static camera
+image|Camera movements/Dolly zoom and focus||Push in on brush strokes|slow push in on the center of the painting, brush strokes becoming visible, a subtle light shimmer across the canvas
+image|Camera movements/Dolly zoom and focus||Dolly zoom on lone tree|dolly zoom on the lone tree in the field, the hills behind it swell and stretch, clouds drifting, eerie mood
+image|Camera movements/Dolly zoom and focus||Focus shift between faces|the focus moves from the person in front to the person behind them, who looks up and smiles, static camera
+image|Camera movements/Dolly zoom and focus||Macro focus on wings|macro shot of the insect on the leaf, the focus slowly breathing in and out across its wings, gentle light
+image|Camera movements/Dolly zoom and focus||Sideways parallax dolly|the camera dollies sideways past the subject, parallax separating foreground and background, soft afternoon light
+image|Camera movements/Dolly zoom and focus||Crash zoom on surprised face|quick zoom in on the face of the person in the image, their eyes widening in surprise, dramatic lighting
+image|Camera movements/Dolly zoom and focus||Blur to sharp opening|the image starts completely out of focus and slowly sharpens into the scene, soft morning light, static camera
+image|Camera movements/Dolly zoom and focus||Dolly through doorway|the camera dollies forward through the open doorway into the room, curtains moving gently, warm light inside
+image|Camera movements/Dolly zoom and focus||Raindrops then street focus|focus shifts from raindrops on the window glass to the blurred street outside, cars passing, gray light
+image|Camera movements/Dolly zoom and focus||Zoom out from lone boat|slow zoom out from the boat in the middle of the sea to show the wide horizon, calm water, golden light
+image|Camera movements/Dolly zoom and focus||Spiral staircase dolly zoom|dolly zoom looking down the spiral staircase, the steps twisting and stretching away, dizzy feeling
+image|Camera movements/Dolly zoom and focus||Glasses to book focus|rack focus from the glasses on the table to the book behind them, pages lifting slightly in a breeze, warm lamp light
+image|Nature and weather/Wind and plants||Wheat field in breeze|golden wheat in the field sways in waves under a steady breeze, clouds moving slowly, static camera
+image|Nature and weather/Wind and plants||Willow branches over pond|long willow branches sway gently over the pond, leaves fluttering, soft afternoon light, slow pan right
+image|Nature and weather/Wind and plants||Sunflowers nodding|the sunflowers in the image nod in the wind, petals trembling, bright summer sky, gentle push in
+image|Nature and weather/Wind and plants||Palm fronds in gusts|palm fronds whip and bend in strong gusts of wind, clouds racing overhead, static camera
+image|Nature and weather/Wind and plants||Dandelion seeds drifting|dandelion seeds detach and float away on the breeze, backlit by the sun, shallow focus, static camera
+image|Nature and weather/Wind and plants||Rippling meadow grass|tall meadow grass ripples in the wind like water, wildflowers bobbing, warm evening light, slow sideways track
+image|Nature and weather/Wind and plants||Autumn leaves spinning down|orange leaves fall and spin from the tree, a few swirling across the ground, soft light, static camera
+image|Nature and weather/Wind and plants||Cherry blossom petals|pink cherry blossom petals drift down from the branches in a light breeze, soft spring light, slow tilt down
+image|Nature and weather/Wind and plants||Lavender rows with bees|rows of lavender sway in the breeze, bees flying between the flowers, golden hour, slow forward dolly
+image|Nature and weather/Wind and plants||Swaying bamboo grove|bamboo stalks in the grove sway and lean in the wind, leaves rustling, dappled light, slow upward tilt
+image|Nature and weather/Wind and plants||Pines bending in storm|pine trees bend in strong storm wind, branches shaking, dark clouds rolling, static camera
+image|Nature and weather/Wind and plants||Plant by open window|the leaves of the potted plant on the windowsill move gently in the air from the open window, the curtain fluttering
+image|Nature and weather/Wind and plants||Lakeside reeds swaying|reeds by the lake sway softly, their tops brushing together, ripples on the water, misty morning light
+image|Nature and weather/Wind and plants||Trembling red poppies|red poppies in the field tremble in the wind, petals fluttering, cloudy sky, slow push in
+image|Nature and weather/Wind and plants||Ivy on the old wall|ivy leaves covering the old wall flutter in a breeze, sunlight flickering across them, static camera
+image|Nature and weather/Wind and plants||Maple canopy from below|maple leaves shimmer and turn in the wind, light flickering through the canopy, the camera looks up and slowly rotates
+image|Nature and weather/Wind and plants||Garden flowers and butterfly|flowers in the garden bob gently in the breeze, a butterfly landing on one of them, bright day, static camera
+image|Nature and weather/Wind and plants||Cornfield rows rustling|tall corn plants rustle and sway in the wind, leaves flapping, late afternoon sun, slow tracking shot along the rows
+image|Nature and weather/Wind and plants||Oak against sunset|the big oak tree on the hill sways slowly against a sunset sky, leaves fluttering, static wide shot
+image|Nature and weather/Wind and plants||Forest ferns rocking|ferns on the forest floor rock gently in a light draft, sunbeams passing through, slow forward camera
+image|Nature and weather/Water and waves||Waves crash on rocks|waves crash against the dark rocks, white spray bursting into the air, overcast sky, static camera
+image|Nature and weather/Water and waves||Gentle lapping shoreline|gentle waves lap onto the sandy shore and slide back, foam glistening, sunset light, static low angle
+image|Nature and weather/Water and waves||Breaking surf wave|a large wave curls and breaks toward the beach, foam rushing forward, bright day, slow pan left
+image|Nature and weather/Water and waves||Ripples on calm lake|the calm lake surface ripples softly, reflections of the trees wavering, quiet morning, static camera
+image|Nature and weather/Water and waves||Pool water caustics|light patterns dance on the bottom of the swimming pool as the water moves gently, bright sun, top-down static camera
+image|Nature and weather/Water and waves||Ocean swell at dusk|deep blue ocean swells rise and fall slowly, the last light shimmering on the surface, the camera floating slightly
+image|Nature and weather/Water and waves||Waves between pier pillars|waves wash between the wooden pier pillars, water rising and falling, cloudy light, slow push forward
+image|Nature and weather/Water and waves||Tide pool shimmer|water in the tide pool shimmers as small waves spill in, seaweed swaying, clear light, static camera
+image|Nature and weather/Water and waves||Heaving stormy sea|the stormy sea heaves with tall gray waves, spray blown off the crests, dark clouds, static camera
+image|Nature and weather/Water and waves||Small boat rocking|the small boat in the image rocks gently on the water, ripples spreading around it, soft light, static camera
+image|Nature and weather/Water and waves||Underwater sun rays|underwater view with sun rays shifting through the surface, bubbles rising slowly, the camera drifting upward
+image|Nature and weather/Water and waves||Rings on puddle reflection|drops fall into the puddle, rings spreading across the reflection of the buildings, static close shot
+image|Nature and weather/Water and waves||Inside the wave tunnel|the camera rides inside the curling wave, the water forming a glassy tunnel with light shining through, smooth forward motion
+image|Nature and weather/Water and waves||Dancing fountain jets|the water jets of the fountain rise and fall, droplets sparkling in the sun, static camera
+image|Nature and weather/Water and waves||Moonlit sea glitter|the moon reflects on the gently moving sea, silver light glittering on small waves, static camera
+image|Nature and weather/Water and waves||Foam on black sand|white foam spreads across the black sand beach and recedes, leaving shiny wet patterns, slow tilt down
+image|Nature and weather/Water and waves||Spray at lighthouse base|waves crash at the base of the lighthouse, spray rising high, wind blowing, static wide shot
+image|Nature and weather/Water and waves||Canal reflections swaying|the canal water ripples, reflections of the old houses swaying, a light breeze, slow sideways drift
+image|Nature and weather/Water and waves||Pebbles washed by waves|small waves roll over the pebbles and pull back, the pebbles glistening, close shot, static camera
+image|Nature and weather/Water and waves||Sea cave surge|water surges into the sea cave and falls back, light reflecting on the rock walls, slow push in
+image|Nature and weather/Rivers and waterfalls||Waterfall into pool|the waterfall plunges into the pool below, mist rising, green moss on the rocks, static camera
+image|Nature and weather/Rivers and waterfalls||Rushing mountain stream|clear water rushes over the stones of the mountain stream, sunlight sparkling, slow push forward
+image|Nature and weather/Rivers and waterfalls||Wide river through valley|the wide river flows slowly through the valley, light reflecting on the surface, slow pan right
+image|Nature and weather/Rivers and waterfalls||Silky white falls|the waterfall flows in silky white streams down the rocks, ferns trembling in the spray, soft light, static camera
+image|Nature and weather/Rivers and waterfalls||Churning river rapids|the river rapids churn white around the boulders, water splashing, bright day, low static camera
+image|Nature and weather/Rivers and waterfalls||Creek under footbridge|the creek flows under the small wooden footbridge, leaves floating on the water, dappled light, static camera
+image|Nature and weather/Rivers and waterfalls||Forest cascades|a series of small cascades tumble down the forest slope, water glistening, slow upward tilt
+image|Nature and weather/Rivers and waterfalls||Ice floes drifting|chunks of ice drift slowly down the river, water flowing between them, cold blue light, static camera
+image|Nature and weather/Rivers and waterfalls||Rainbow in waterfall spray|a rainbow shimmers in the spray of the waterfall, water thundering down, sunlight, slow push in
+image|Nature and weather/Rivers and waterfalls||Leaves on lazy river|autumn leaves drift slowly on the lazy river, reflections of the trees moving, static camera
+image|Nature and weather/Rivers and waterfalls||Windblown cliff waterfall|the tall waterfall falls from the cliff edge, wind pushing the water sideways, clouds moving, slow tilt down
+image|Nature and weather/Rivers and waterfalls||Jungle waterfall mist|the jungle waterfall pours into a turquoise pool, mist drifting, tropical plants swaying, static camera
+image|Nature and weather/Rivers and waterfalls||River toward setting sun|the river flows gently toward the setting sun, golden light dancing on the water, slow forward dolly
+image|Nature and weather/Rivers and waterfalls||Brook over mossy stones|a small brook trickles over mossy stones, water glinting, close low angle, static camera
+image|Nature and weather/Rivers and waterfalls||Thawing frozen waterfall|water drips and trickles from the icicles of the frozen waterfall, slowly melting, cold light, static camera
+image|Nature and weather/Rivers and waterfalls||Shallow gravel riverbed|the river water spreads over the shallow gravel bed, ripples catching the light, slow pan left
+image|Nature and weather/Rivers and waterfalls||Limestone terrace pools|water spills down the stepped limestone terraces, pools shimmering, soft light, slow upward camera
+image|Nature and weather/Rivers and waterfalls||City river at night|the river at night flows under the city lights, reflections stretching and wobbling, static camera
+image|Nature and weather/Rivers and waterfalls||Turning mill wheel|the old mill wheel turns slowly, water pouring from its paddles into the stream, static camera
+image|Nature and weather/Rivers and waterfalls||Canyon river from rim|the river winds fast between the canyon walls, the camera slowly tilting down from the rim
+image|Nature and weather/Clouds and sky||Clouds racing over hills|clouds race across the sky over the hills in a timelapse, shadows sweeping the land, static camera
+image|Nature and weather/Clouds and sky||Glowing sunset clouds|clouds glow orange and pink as the sun sets, slowly drifting, static wide shot
+image|Nature and weather/Clouds and sky||Storm clouds building|dark storm clouds swell and roll toward the camera, the light dimming, static camera
+image|Nature and weather/Clouds and sky||Cumulus in blue sky|white cumulus clouds drift slowly across the blue sky, static low angle camera
+image|Nature and weather/Clouds and sky||Milky Way rotating|the stars of the night sky rotate slowly with the Milky Way, a faint glow on the horizon, static camera
+image|Nature and weather/Clouds and sky||Sea of clouds at dawn|a sea of clouds flows between the mountain peaks at dawn, soft pink light, slow pan right
+image|Nature and weather/Clouds and sky||Lightning inside clouds|lightning flickers inside the dark clouds, brief flashes lighting the landscape, static camera
+image|Nature and weather/Clouds and sky||Sunbeams sweeping field|sunbeams break through gaps in the clouds and sweep across the field, slow tilt down
+image|Nature and weather/Clouds and sky||Aurora ribbons dancing|green aurora ribbons ripple and dance across the night sky, stars twinkling, static camera
+image|Nature and weather/Clouds and sky||Contrail across blue sky|a plane draws a white contrail across the clear blue sky, the trail slowly spreading, static camera
+image|Nature and weather/Clouds and sky||Clouds over city skyline|clouds stream fast over the city skyline, the light changing on the buildings, timelapse, static camera
+image|Nature and weather/Clouds and sky||Heavy evening clouds|rounded heavy clouds hang in the evening sky, slowly shifting, warm light underneath, static camera
+image|Nature and weather/Clouds and sky||Moon behind thin clouds|the full moon slides behind thin clouds, its glow fading and returning, static camera
+image|Nature and weather/Clouds and sky||Sky through branches|clouds pass across the sky seen through the tree branches, leaves moving slightly, camera looking up
+image|Nature and weather/Clouds and sky||Twilight color fade|the sky fades from blue to deep orange then purple, the clouds darkening, static camera
+image|Nature and weather/Clouds and sky||Cloud shadows on slopes|cloud shadows glide across the mountainsides, sunlight shifting, timelapse, static camera
+image|Nature and weather/Clouds and sky||Rainbow after the storm|a rainbow appears in the sky as the storm clouds clear, the light growing brighter, slow push in
+image|Nature and weather/Clouds and sky||Clouds mirrored in lake|clouds drift in the sky and in their reflection on the still lake, static camera
+image|Nature and weather/Clouds and sky||Shooting star crossing|a shooting star crosses the starry sky above the landscape, stars twinkling, static camera
+image|Nature and weather/Clouds and sky||Funnel cloud forming|a funnel cloud slowly forms under the dark storm base, swirling, wind on the field, static camera
+image|Nature and weather/Rain and snow||Rain running down window|raindrops run down the window glass, the blurred street lights glowing behind, static camera
+image|Nature and weather/Rain and snow||Snow on pine forest|snow falls softly on the pine forest, flakes drifting, quiet blue light, slow push forward
+image|Nature and weather/Rain and snow||Neon street downpour|heavy rain splashes on the pavement, reflections of neon signs shimmering in the puddles, static camera
+image|Nature and weather/Rain and snow||Snowflakes on upturned face|snowflakes fall on the face of the person in the photo, who looks up and smiles, soft light, static camera
+image|Nature and weather/Rain and snow||Blizzard across plain|a blizzard sweeps across the snowy plain, snow blown sideways, low visibility, static camera
+image|Nature and weather/Rain and snow||Rain rings on lake|raindrops pattern the lake surface with countless rings, gray light, static camera
+image|Nature and weather/Rain and snow||Snowfall around cabin|snow falls slowly around the wooden cabin, smoke rising from the chimney, warm window light, slow push in
+image|Nature and weather/Rain and snow||Rain dripping from leaves|rain drips from the green leaves, drops falling in a slow rhythm, close shot, static camera
+image|Nature and weather/Rain and snow||Standing under umbrella|the person with the umbrella stands still as rain falls around them, drops bouncing off the umbrella, static camera
+image|Nature and weather/Rain and snow||Snow under streetlights|snow falls under the streetlights of the quiet city street at night, flakes glowing, static camera
+image|Nature and weather/Rain and snow||Summer garden downpour|a sudden summer downpour soaks the garden, flowers bending under the drops, static camera
+image|Nature and weather/Rain and snow||Powder blown off roof|wind blows powdery snow off the roof edge, sparkling in the sun, static camera
+image|Nature and weather/Rain and snow||Windshield wipers in rain|rain falls on the car windshield, the wipers sweeping it clear, the road ahead blurred, static camera
+image|Nature and weather/Rain and snow||Flurries around peak|snow flurries swirl around the mountain peak, clouds passing, slow pan left
+image|Nature and weather/Rain and snow||Splashing puddles|rain hits the puddles hard, splashes jumping up, gray daylight, low static camera
+image|Nature and weather/Rain and snow||Snow globe effect|large snowflakes float slowly down over the whole scene of the image, magical soft light, static camera
+image|Nature and weather/Rain and snow||Rain curtain over fields|a curtain of rain moves across the fields under dark clouds, the light dimming, static wide camera
+image|Nature and weather/Rain and snow||Snow piling on branches|snow gently piles on the bare branches, a little falling off now and then, static camera
+image|Nature and weather/Rain and snow||Rain on tin roof|rain bounces on the corrugated tin roof, water streaming off the edge, static camera
+image|Nature and weather/Rain and snow||Hailstones bouncing|small hailstones bounce on the grass and the path, white pellets gathering, static camera
+image|Nature and weather/Fog and mist||Fog rolling over hills|fog rolls slowly over the green hills, filling the valleys, soft morning light, static camera
+image|Nature and weather/Fog and mist||Misty forest sunbeams|mist drifts between the tall trees of the forest, sunbeams piercing through, slow forward camera
+image|Nature and weather/Fog and mist||Fog lifting off lake|thin fog floats over the still lake surface, slowly lifting, pale dawn light, static camera
+image|Nature and weather/Fog and mist||Bridge fading in fog|the bridge fades in and out of the thick fog drifting past, static camera
+image|Nature and weather/Fog and mist||Harbor fog drifting|fog drifts across the harbor, boats appearing and vanishing in the mist, gray light, slow pan right
+image|Nature and weather/Fog and mist||Hot spring steam|steam rises and curls from the hot spring in the cold air, soft light, static camera
+image|Nature and weather/Fog and mist||Mist veiling peaks|mist swirls around the mountain peaks, revealing and hiding them, slow push in
+image|Nature and weather/Fog and mist||Foggy street lamp halo|fog drifts around the glowing street lamp at night, its halo shifting, static camera
+image|Nature and weather/Fog and mist||Golden valley fog|fog fills the valley and glows gold as the sun rises, slowly moving, static wide camera
+image|Nature and weather/Fog and mist||Walking into the fog|the person in the image walks slowly away into the thick fog until they fade, static camera
+image|Nature and weather/Fog and mist||Mist low over river|mist drifts low over the river, the water flowing beneath, cool blue morning, slow sideways camera
+image|Nature and weather/Fog and mist||Fog between towers|fog flows between the city towers, their tops disappearing in it, static camera
+image|Nature and weather/Fog and mist||Mist creeping on moor|mist creeps over the moorland, the heather barely moving, gloomy light, static camera
+image|Nature and weather/Fog and mist||Fog clearing reveal|the fog slowly clears to reveal the landscape of the image, the light growing brighter, static camera
+image|Nature and weather/Fog and mist||Breath in cold air|the person in the photo breathes out a cloud of mist in the cold air, static close camera
+image|Nature and weather/Fog and mist||Vineyard morning mist|morning mist hangs over the rows of the vineyard, slowly lifting, soft light, slow forward camera
+image|Nature and weather/Fog and mist||Pier vanishing in fog|the wooden pier stretches into fog that drifts slowly past, water lapping, static camera
+image|Nature and weather/Fog and mist||Billowing waterfall mist|a cloud of mist billows from the base of the waterfall, drifting toward the camera, static camera
+image|Nature and weather/Fog and mist||Graveyard ground fog|low fog crawls between the old gravestones, moonlight, static camera
+image|Nature and weather/Fog and mist||Fog bank over cliffs|a fog bank rolls in from the ocean over the cliffs, slow and heavy, static wide camera
+image|Nature and weather/Light of the day||Sunrise over horizon|the sun rises slowly over the horizon, the sky brightening from orange to yellow, static camera
+image|Nature and weather/Light of the day||Sun sinking below horizon|the sun sinks below the horizon, the light turning red then dim, static camera
+image|Nature and weather/Light of the day||Sun patches across floor|sunlight patches move slowly across the floor of the room as the day passes, timelapse, static camera
+image|Nature and weather/Light of the day||Golden light on face|warm golden light slowly washes across the face of the person in the photo, static camera
+image|Nature and weather/Light of the day||City day to night|the city goes from day to night, the sky darkening and windows lighting up, timelapse, static camera
+image|Nature and weather/Light of the day||Light through blinds|stripes of light from the blinds slide slowly across the wall, dust floating, static camera
+image|Nature and weather/Light of the day||Leaf shadows on wall|shadows of leaves flicker on the white wall, sunlight shifting, static camera
+image|Nature and weather/Light of the day||Blue hour lamps on|at blue hour the street lamps turn on one by one, the sky deep blue, static camera
+image|Nature and weather/Light of the day||Sun flare through trees|the sun flares through the trees as the camera slowly moves sideways, light flickering
+image|Nature and weather/Light of the day||Alpenglow on peaks|the mountain peaks glow pink in the last light, shadows climbing up, static camera
+image|Nature and weather/Light of the day||Lighthouse beam at dusk|the lighthouse beam sweeps across the dusky sky and sea, static camera
+image|Nature and weather/Light of the day||Candlelight flicker|candlelight flickers on the scene of the image, warm shadows dancing, static camera
+image|Nature and weather/Light of the day||Morning light in bedroom|morning sunlight spreads slowly into the bedroom, the curtains glowing, static camera
+image|Nature and weather/Light of the day||Lengthening square shadows|shadows of the buildings lengthen across the square from noon to evening, timelapse, static camera
+image|Nature and weather/Light of the day||Dappled forest floor light|dappled sunlight moves across the forest floor as branches sway, slow push forward
+image|Nature and weather/Light of the day||Desert dawn warming|the desert slowly warms from cold blue dawn to bright morning light, shadows shortening, static camera
+image|Nature and weather/Light of the day||Eclipse darkening|the light dims as the sun is eclipsed, the landscape darkening to twilight then brightening again, static camera
+image|Nature and weather/Light of the day||Night falls on village|night falls on the village, the sky dimming and warm windows lighting up, static wide camera
+image|Nature and weather/Light of the day||Cathedral sun rays|beams of sunlight shine through the cathedral windows, slowly shifting, dust glowing, static camera
+image|Nature and weather/Light of the day||Sunset on glass facade|the sunset reflects on the glass facade of the building, colors shifting, slow tilt up
+image|Animals/Pets||Cat blinks awake|the cat in the picture slowly opens its eyes and blinks, its whiskers twitching, gentle camera push in
+image|Animals/Pets||Dog tilts head|the dog in the photo tilts its head to the side, ears perking up, static camera
+image|Animals/Pets||Puppy wagging tail|the puppy wags its tail happily and pants, tongue out, soft daylight, static camera
+image|Animals/Pets||Cat stretching on sofa|the cat stretches its front paws on the sofa and yawns, warm indoor light, static camera
+image|Animals/Pets||Dog running to camera|the dog runs across the grass toward the camera, ears flapping, bright day, the camera slowly pulling back
+image|Animals/Pets||Kitten batting yarn|the kitten bats at a ball of yarn with its paws, static close camera
+image|Animals/Pets||Goldfish circling bowl|the goldfish swims slowly around the bowl, fins flowing, light rippling, static camera
+image|Animals/Pets||Parrot ruffles feathers|the parrot on its perch ruffles its feathers and turns its head, static camera
+image|Animals/Pets||Rabbit nose twitch|the rabbit twitches its nose and moves its ears, soft light, slow push in
+image|Animals/Pets||Wet dog shaking|the wet dog shakes off water, droplets flying in all directions, sunlight, static camera
+image|Animals/Pets||Cat watching a bird|the cat sitting by the window follows a bird outside with its eyes, its tail swishing, static camera
+image|Animals/Pets||Hamster nibbling seed|the hamster holds a seed in its paws and nibbles it, cheeks moving, close static camera
+image|Animals/Pets||Sleeping dog breathing|the sleeping dog breathes slowly, its belly rising and falling, an ear twitching, static camera
+image|Animals/Pets||Dog leaps for ball|the dog leaps to catch a ball in its mouth in the park, bright light, slow motion, static camera
+image|Animals/Pets||Cat kneading on lap|the cat curled on a lap kneads with its paws, eyes half closed, warm light, static camera
+image|Animals/Pets||Guinea pig sniffing around|the guinea pig sniffs around and steps forward, whiskers moving, static camera
+image|Animals/Pets||Turtle slow walk|the turtle slowly walks forward, its head stretching out, sunny garden, low static camera
+image|Animals/Pets||Dog head out car window|the dog puts its head out of the car window, ears and fur blowing in the wind, side tracking camera
+image|Animals/Pets||Kitten pounce|the kitten crouches, wiggles and pounces forward, playful mood, static camera
+image|Animals/Pets||Puppy yawning sleepily|the puppy yawns widely and lays its head down on its paws, soft afternoon light, static camera
+image|Animals/Birds||Heron takes flight|the heron standing in the shallow water spreads its wings and slowly lifts off, ripples spreading below, morning mist, camera tilts up to follow
+image|Animals/Birds||Robin sings on branch|the small robin on the branch puffs its chest and sings, its beak opening and closing, leaves swaying gently, static camera
+image|Animals/Birds||Owl turns its head|the owl in the picture slowly turns its head toward the camera and blinks its large eyes, dark forest background, slow push in
+image|Animals/Birds||Colorful parrot settles|the colorful parrot ruffles its feathers and shakes its head, then settles back on its perch, bright daylight, static camera
+image|Animals/Birds||Eagle soars over valley|the eagle glides with outstretched wings over the valley, feathers trembling in the wind, clouds drifting, camera tracks alongside
+image|Animals/Birds||Swan glides on lake|the white swan glides slowly across the calm lake, leaving a soft wake behind it, golden evening light, gentle pan right
+image|Animals/Birds||Hummingbird hovers at flower|the hummingbird hovers in front of the flower, wings blurring, then dips its beak into the blossom, static close-up
+image|Animals/Birds||Flock leaves the wire|the birds sitting on the wire take off one after another and scatter into the sky, overcast light, static camera
+image|Animals/Birds||Peacock fans its tail|the peacock slowly raises and spreads its tail feathers into a shimmering fan, feathers quivering, slow camera push in
+image|Animals/Birds||Seagulls over the pier|the seagulls hover and circle above the pier against the wind, waves rolling below, bright sky, camera pans slowly left
+image|Animals/Birds||Penguin waddles forward|the penguin waddles toward the camera across the snow, flapping its little wings for balance, cold blue light, static camera
+image|Animals/Birds||Flamingos wade in lagoon|the pink flamingos walk slowly through the shallow lagoon, their reflections rippling, warm sunset light, slow lateral tracking
+image|Animals/Birds||Duck shakes off water|the duck on the pond dips its head underwater, then rises and shakes the water off its feathers, droplets sparkling, static camera
+image|Animals/Birds||Crow caws on fence|the black crow perched on the fence opens its beak to caw and flicks its tail, grey sky behind, slight camera zoom in
+image|Animals/Birds||Woodpecker taps the trunk|the woodpecker clinging to the tree trunk taps rapidly with its beak, small wood chips flying, dappled forest light, static camera
+image|Animals/Birds||Pigeons peck in square|the pigeons in the square peck at crumbs on the ground and bob their heads, one flutters away, slow pan left
+image|Animals/Birds||Kingfisher dives in river|the kingfisher on the branch dives into the river and splashes back up with a fish, water droplets flying, static camera
+image|Animals/Birds||Sparrows bathe in puddle|the sparrows splash and flutter in the puddle, spraying tiny droplets, soft afternoon light, low static camera
+image|Animals/Birds||Stork lands on nest|the stork descends with spread wings and lands on its nest on the rooftop, folding its wings, blue sky, camera tilts down
+image|Animals/Birds||Starling murmuration at dusk|the flock of starlings swirls and twists in the dusk sky like a moving cloud, orange horizon, slow wide pan
+image|Animals/Wild animals||Lion yawns in savanna|the lion lying in the golden grass opens its mouth in a big yawn and shakes its mane, warm evening light, slow push in
+image|Animals/Wild animals||Elephant flaps its ears|the elephant slowly flaps its large ears and swings its trunk, dust drifting in the air, static camera
+image|Animals/Wild animals||Deer lifts its head|the deer grazing in the clearing lifts its head, ears twitching, and looks toward the camera, morning mist, static camera
+image|Animals/Wild animals||Tiger walks through grass|the tiger walks slowly through the tall grass toward the camera, muscles rolling under its striped fur, camera slowly pulls back
+image|Animals/Wild animals||Giraffe eats from tree|the giraffe stretches its long neck and pulls leaves from the acacia tree with its tongue, bright savanna sun, slow tilt up
+image|Animals/Wild animals||Fox trots through snow|the red fox trots across the snowy field, leaving footprints, its bushy tail swaying, camera pans to follow
+image|Animals/Wild animals||Wolf howls at night|the wolf on the rock raises its head and howls, its breath steaming in the cold air, moonlight, slow camera push in
+image|Animals/Wild animals||Bear catches salmon|the brown bear standing in the rushing river snaps at a jumping salmon, water splashing around it, static camera
+image|Animals/Wild animals||Zebras graze and swish|the zebras graze side by side, swishing their tails and shifting their weight, heat haze over the plain, slow pan right
+image|Animals/Wild animals||Monkey swings between branches|the monkey grabs a branch and swings to the next tree, leaves shaking, jungle light filtering through, camera follows
+image|Animals/Wild animals||Horse gallops across meadow|the wild horse gallops across the meadow, its mane flowing in the wind, grass bending, camera tracks alongside
+image|Animals/Wild animals||Squirrel nibbles a nut|the squirrel holding a nut in its paws nibbles quickly and glances around, tail twitching, soft forest light, static close-up
+image|Animals/Wild animals||Cheetah sprints forward|the cheetah crouches then bursts into a sprint across the plain, dust kicked up behind it, fast camera pan
+image|Animals/Wild animals||Rabbit twitches its nose|the rabbit sitting in the grass twitches its nose and ears, then hops away, soft morning light, static camera
+image|Animals/Wild animals||Kangaroo hops away|the kangaroo stands up on its hind legs, looks around and bounds away across the dry field, warm light, camera pans right
+image|Animals/Wild animals||Gorilla beats its chest|the gorilla sitting in the forest rises and beats its chest, then sits back calmly, misty green light, static camera
+image|Animals/Wild animals||Bison in falling snow|the bison stands in the falling snow, slowly lowering its head to push the snow aside, breath steaming, static camera
+image|Animals/Wild animals||Hippo surfaces in river|the hippo rises from the muddy river, water streaming off its back, and opens its huge mouth, slow push in
+image|Animals/Wild animals||Panda chews bamboo|the panda sitting among the bamboo chews a stalk slowly, leaves moving in the breeze, soft diffuse light, static camera
+image|Animals/Wild animals||Moose crosses misty lake|the moose wades slowly across the misty lake, water rippling around its legs, early morning light, slow lateral tracking
+image|Animals/Underwater||Sea turtle swims past|the sea turtle glides through the blue water, its flippers beating slowly, sunbeams dancing from above, camera follows gently
+image|Animals/Underwater||Jellyfish pulse in dark|the jellyfish pulses gently in the dark water, its long tentacles trailing and swaying, soft glow, static camera
+image|Animals/Underwater||Clownfish in anemone|the clownfish darts in and out of the swaying anemone tentacles, small particles drifting, static close-up
+image|Animals/Underwater||School of fish turns|the school of silver fish swirls and changes direction together, scales flashing in the light, slow camera push in
+image|Animals/Underwater||Manta ray glides overhead|the manta ray glides overhead with slow wing beats, its shadow passing, rays of light from the surface, camera tilts up
+image|Animals/Underwater||Shark circles the reef|the shark swims slowly around the reef, its tail sweeping side to side, blue haze, camera pans to follow
+image|Animals/Underwater||Octopus crawls on rocks|the octopus on the rocks unfurls its arms and crawls forward, its skin shifting color, static camera
+image|Animals/Underwater||Dolphins leap in waves|the dolphins swim near the surface and leap out of the water one after another, spray glittering, camera tracks alongside
+image|Animals/Underwater||Whale tail rises|the whale raises its huge tail out of the sea and slowly slides back under, water pouring off, wide static shot
+image|Animals/Underwater||Seahorse sways in seagrass|the seahorse clings to the seagrass with its tail and sways with the current, its tiny fin fluttering, static close-up
+image|Animals/Underwater||Coral reef in current|the corals and sea fans sway gently in the current as small fish dart between them, sunlight flickering, slow pan right
+image|Animals/Underwater||Diver blows bubbles|the diver in the photo floats in place, kicking slowly while bubbles rise toward the surface, clear blue water, static camera
+image|Animals/Underwater||Seal twirls underwater|the seal twists and rolls playfully through the water, bubbles trailing behind it, light rippling, camera follows
+image|Animals/Underwater||Goldfish in the bowl|the goldfish swims slowly around its bowl, fins rippling, a few bubbles rising, soft window light, static camera
+image|Animals/Underwater||Crab scuttles on seabed|the crab scuttles sideways across the sandy seabed, kicking up small clouds of sand, static low camera
+image|Animals/Underwater||Koi under pond surface|the koi fish swim lazily under the surface of the pond, ripples and fallen petals drifting above, overhead static camera
+image|Animals/Underwater||Moray eel peeks out|the moray eel slowly pushes its head out of its rocky hole, opening and closing its mouth, slow push in
+image|Animals/Underwater||Kelp forest sways|the tall kelp sways back and forth in the current, sunlight streaming down between the fronds, camera rises slowly
+image|Animals/Underwater||Stingray hides in sand|the stingray glides low over the sand and settles, flapping its edges to cover itself, static camera
+image|Animals/Underwater||Glowing plankton at night|the dark water lights up with blue glowing plankton swirling around a slowly moving hand, static camera
+image|Animals/Insects and small creatures||Butterfly opens its wings|the butterfly on the flower slowly opens and closes its wings, petals trembling in the breeze, macro static camera
+image|Animals/Insects and small creatures||Bee gathers pollen|the bee crawls over the flower gathering pollen, then lifts off with buzzing wings, warm sunlight, macro static camera
+image|Animals/Insects and small creatures||Ladybug walks on leaf|the ladybug walks along the edge of the leaf, then opens its shell and flies away, soft green background, macro shot
+image|Animals/Insects and small creatures||Spider weaves its web|the spider moves along its web adding a new thread, dew drops glistening, morning light, slow push in
+image|Animals/Insects and small creatures||Snail crawls on stone|the snail glides slowly across the wet stone, its eye stalks waving, raindrops falling around it, macro static camera
+image|Animals/Insects and small creatures||Dragonfly on reed|the dragonfly perched on the reed flicks its wings and darts off over the pond, shimmering light, static camera
+image|Animals/Insects and small creatures||Ants carry a leaf|the ants march in a line carrying pieces of leaf across the ground, macro view, slow lateral tracking
+image|Animals/Insects and small creatures||Frog jumps into pond|the frog on the lily pad puffs its throat, then leaps into the pond with a splash, ripples spreading, static camera
+image|Animals/Insects and small creatures||Caterpillar munches leaf|the caterpillar chews along the edge of the leaf, its body rippling as it moves, soft daylight, macro static camera
+image|Animals/Insects and small creatures||Lizard basks on rock|the lizard on the warm rock blinks and turns its head, then darts away, bright sun, static close-up
+image|Animals/Insects and small creatures||Fireflies in the meadow|the fireflies blink and drift slowly above the dark meadow, tiny lights glowing, warm dusk, slow push in
+image|Animals/Insects and small creatures||Mantis raises its legs|the praying mantis slowly turns its triangular head toward the camera and raises its front legs, macro static camera
+image|Animals/Insects and small creatures||Beetle climbs a twig|the shiny beetle climbs up the twig, its legs moving carefully, iridescent shell catching the light, macro tilt up
+image|Animals/Insects and small creatures||Moth near the lamp|the moth flutters around the glowing lamp, its wings beating quickly, warm light at night, static camera
+image|Animals/Insects and small creatures||Grasshopper leaps away|the grasshopper on the grass blade crouches and jumps away, the blade springing back, sunny meadow, macro static camera
+image|Animals/Insects and small creatures||Mouse sniffs around|the little mouse sitting on the floor sniffs the air, whiskers twitching, and scurries off, soft light, low static camera
+image|Animals/Insects and small creatures||Hamster stuffs its cheeks|the hamster grabs seeds with its paws and stuffs its cheeks, nose twitching, cozy light, static close-up
+image|Animals/Insects and small creatures||Chameleon shifts color|the chameleon on the branch slowly rolls its eyes and its skin shifts from green to orange, macro slow push in
+image|Animals/Insects and small creatures||Bumblebee in lavender|the bumblebee bounces from one lavender stem to another, the flowers swaying under its weight, sunny garden, macro shot
+image|Animals/Insects and small creatures||Hedgehog curls up|the hedgehog in the leaves sniffs around, then curls up into a spiky ball, autumn light, static low camera
+image|City and places/Street life||Busy crosswalk crowd|the people at the crosswalk start walking across the street in both directions, coats moving, daylight, static high camera
+image|City and places/Street life||Street musician plays guitar|the street musician in the photo strums his guitar and nods to the rhythm, passersby walking by, slow push in
+image|City and places/Street life||Market stall vendor|the vendor at the market stall arranges fruit and smiles at customers, awnings fluttering, warm light, static camera
+image|City and places/Street life||Cafe terrace afternoon|the people at the cafe terrace sip their drinks and chat, a waiter walks between tables, sunny afternoon, slow pan right
+image|City and places/Street life||Cyclist rides down lane|the cyclist pedals down the narrow street and passes the camera, shadows of trees sliding over the road, static camera
+image|City and places/Street life||Children chase pigeons|the children run across the square chasing pigeons that fly up around them, bright day, camera pans to follow
+image|City and places/Street life||Umbrellas on wet sidewalk|the people with umbrellas hurry along the wet sidewalk as rain falls, reflections shimmering, static camera
+image|City and places/Street life||Old man reads newspaper|the old man on the bench reads his newspaper and slowly turns a page, leaves falling around him, static camera
+image|City and places/Street life||Skateboarder rolls by|the skateboarder rolls along the street and kicks to gain speed, wheels spinning, sunny day, camera tracks alongside
+image|City and places/Street life||Laundry over the alley|the laundry hung between the buildings sways in the breeze above the narrow alley, light shifting, slow tilt up
+image|City and places/Street life||Street food grill smoke|the cook at the street food stall flips skewers on the grill as smoke rises into the evening air, static camera
+image|City and places/Street life||Dog walker on sidewalk|the person walks a dog along the tree-lined sidewalk, the dog sniffing the ground, morning light, camera follows from behind
+image|City and places/Street life||Tourists take photos|the tourists in the square raise their phones to take photos and point around, bright sun, slow pan left
+image|City and places/Street life||First snow on quiet street|snow begins to fall gently on the quiet street, people walking with their collars up, soft light, static camera
+image|City and places/Street life||Flower seller wraps bouquet|the flower seller wraps a bouquet in paper and hands it over, flowers trembling in the breeze, static camera
+image|City and places/Street life||Commuters exit station|the commuters stream out of the subway station entrance and spread across the sidewalk, morning light, static high camera
+image|City and places/Street life||Shop shutter opens|the shopkeeper pulls up the metal shutter of the shop and steps outside, early morning light, static camera
+image|City and places/Street life||Pedestrian street timelapse|the crowd flows along the pedestrian street in fast motion, clouds racing overhead, timelapse, static camera
+image|City and places/Street life||Balloon seller in park|the balloon seller holds a bunch of colorful balloons that bob and sway in the wind, kids passing by, slow push in
+image|City and places/Street life||Street dancer performs|the street dancer spins and moves to the music as a small crowd claps around, afternoon light, slow orbit
+image|City and places/Traffic and lights||Traffic light turns green|the traffic light switches from red to green and the waiting cars start moving forward, dusk, static camera
+image|City and places/Traffic and lights||Highway light trails|the cars on the highway leave long streaks of red and white light, timelapse, static camera at night
+image|City and places/Traffic and lights||Tram passes intersection|the tram glides through the intersection, its wires swaying slightly, pedestrians waiting, static camera
+image|City and places/Traffic and lights||Taxi drives through rain|the yellow taxi drives along the rain-soaked avenue, splashing water, headlights reflecting, camera pans to follow
+image|City and places/Traffic and lights||Roundabout from above|the cars circle the roundabout and exit on different roads, aerial view, slow camera rotation
+image|City and places/Traffic and lights||Train crosses bridge|the train crosses the bridge from left to right, its windows flickering, evening light, static wide shot
+image|City and places/Traffic and lights||Motorbike weaves through traffic|the motorbike weaves between slow cars on the busy street, engine blurring, camera tracks alongside
+image|City and places/Traffic and lights||Bus pulls up at stop|the bus pulls up at the stop and opens its doors as people step out, overcast light, static camera
+image|City and places/Traffic and lights||Traffic jam at sunset|the cars in the traffic jam inch forward slowly, brake lights glowing, warm sunset haze, slow push in
+image|City and places/Traffic and lights||Neon reflections on asphalt|the neon signs flicker and their colors ripple in the wet asphalt as a car passes, night, static low camera
+image|City and places/Traffic and lights||Subway train arrives|the subway train rushes into the station and slows to a stop, lights flashing past, static camera on platform
+image|City and places/Traffic and lights||Headlights on mountain road|the headlights of cars wind slowly along the mountain road at dusk, timelapse, static wide shot
+image|City and places/Traffic and lights||Bridge traffic at night|the traffic flows across the illuminated bridge, lights reflecting in the river below, slow pan right
+image|City and places/Traffic and lights||Bike lane rush hour|the cyclists ride in a steady stream along the bike lane, wheels spinning, morning light, static camera
+image|City and places/Traffic and lights||Airplane lands on runway|the airplane descends over the runway lights and touches down, smoke puffing from its wheels, camera pans to follow
+image|City and places/Traffic and lights||Level crossing barrier|the level crossing barrier lowers with flashing red lights as a train approaches, dusk, static camera
+image|City and places/Traffic and lights||Boats in harbor channel|the boats move slowly through the harbor channel, wakes spreading, city lights coming on, static wide shot
+image|City and places/Traffic and lights||Pedestrian signal blinks|the pedestrian signal blinks green as people hurry across the road, cars waiting, static camera
+image|City and places/Traffic and lights||Dashboard during night drive|the dashboard glows as streetlights slide over the windshield during a night drive, raindrops on the glass, static camera inside
+image|City and places/Traffic and lights||Cable car climbs|the cable car climbs slowly along its cable above the city, swaying slightly, clouds drifting, camera tilts up
+image|City and places/Night city||Skyline lights flicker on|the city skyline at dusk lights up window by window as the sky darkens, timelapse, static wide shot
+image|City and places/Night city||Rainy neon alley|the rain falls in the narrow alley lit by neon signs, puddles rippling with colored reflections, slow push in
+image|City and places/Night city||Fireworks over the city|fireworks burst above the city skyline, colorful sparks falling and reflecting in the river, static camera
+image|City and places/Night city||Moon rises over rooftops|the full moon rises slowly above the rooftops, chimneys silhouetted, thin clouds drifting, static camera
+image|City and places/Night city||Lit bridge over dark river|the lights of the bridge shimmer on the dark river as gentle waves pass, slow pan left
+image|City and places/Night city||Night market crowd|the people stroll between the glowing stalls of the night market, lanterns swaying overhead, camera moves forward
+image|City and places/Night city||Silhouette behind window|a light turns on in one window of the dark building and a silhouette moves behind the curtain, static camera
+image|City and places/Night city||Fog in streetlights|the fog drifts slowly through the halos of the streetlights on the empty street, cold blue night, static camera
+image|City and places/Night city||Rooftop over city lights|the person on the rooftop looks over the glittering city lights, hair moving in the wind, slow orbit around them
+image|City and places/Night city||Lanterns float upward|the paper lanterns rise slowly into the night sky above the city, glowing warm orange, camera tilts up
+image|City and places/Night city||Clouds race above towers|the clouds race over the lit skyscrapers in the night sky, timelapse, static low angle
+image|City and places/Night city||Empty street at midnight|the empty street at midnight stays still as a single car drives by, its headlights sweeping the walls, static camera
+image|City and places/Night city||Neon sign buzzes|the neon sign flickers and buzzes on the brick wall, light pulsing on the wet sidewalk, slow push in
+image|City and places/Night city||Harbor lights at night|the harbor lights reflect on the black water as boats rock gently, distant city glow, static wide shot
+image|City and places/Night city||Christmas lights street|the garlands of lights over the shopping street twinkle as people walk below, light snow falling, slow forward move
+image|City and places/Night city||Ferris wheel spins at night|the illuminated ferris wheel turns slowly, its colored lights changing, night sky behind, static camera
+image|City and places/Night city||Snowy street under lamps|snow falls softly under the warm streetlights of the quiet street, footsteps in the snow, static camera
+image|City and places/Night city||Stars over the town|the stars turn slowly in the sky above the small town, house lights glowing, timelapse, static camera
+image|City and places/Night city||Lightning over skyline|lightning flashes across the dark clouds above the city skyline, briefly lighting the towers, static wide shot
+image|City and places/Night city||Late night diner|the late night diner glows behind its large windows as a customer sips coffee, cars passing outside, slow push in
+image|City and places/Interiors||Curtains in the breeze|the white curtains billow gently in the breeze from the open window, sunlight shifting across the floor, static camera
+image|City and places/Interiors||Fireplace crackles|the fire in the fireplace crackles and flickers, casting moving warm light on the room, slow push in
+image|City and places/Interiors||Dust in sunbeam|dust particles float slowly in the beam of sunlight crossing the quiet room, static camera
+image|City and places/Interiors||Candle flame on table|the candle on the table flickers gently, its light dancing on the walls, dark cozy room, static close-up
+image|City and places/Interiors||Rain on the window|raindrops run down the window of the cozy room, blurred lights outside, static camera
+image|City and places/Interiors||Old library walk|the camera moves slowly between the tall shelves of the old library, warm light from the lamps, dust in the air
+image|City and places/Interiors||Kitchen steam rises|steam rises from the pot on the stove in the sunny kitchen, light flickering through it, static camera
+image|City and places/Interiors||Ceiling fan turns|the ceiling fan turns slowly above the room, its shadow sweeping across the walls, warm afternoon light, static camera
+image|City and places/Interiors||Stained glass light shifts|the colored light from the stained glass windows moves slowly across the church floor, dust floating, slow tilt down
+image|City and places/Interiors||Person reads by window|the person in the photo sits by the window reading and turns a page, soft daylight, static camera
+image|City and places/Interiors||Clock pendulum swings|the pendulum of the old clock swings steadily, its hands ticking forward, quiet room, slow push in
+image|City and places/Interiors||Office at dusk|the empty office darkens as the city lights come on outside the windows, timelapse, static camera
+image|City and places/Interiors||Houseplants sway indoors|the houseplants sway slightly near the open window, leaf shadows moving on the wall, static camera
+image|City and places/Interiors||Museum hall walk|the camera glides slowly through the museum hall past paintings on the walls, soft overhead light
+image|City and places/Interiors||Bathroom mirror fogs|the bathroom mirror slowly fogs up with steam from the shower, soft light, static camera
+image|City and places/Interiors||Train compartment view|the landscape slides past the window of the train compartment, light flickering on the seats, static camera
+image|City and places/Interiors||Workshop wood shavings|the craftsman in the workshop planes a piece of wood, shavings curling and falling, warm light, static camera
+image|City and places/Interiors||Bedroom morning light|the morning light slowly brightens the bedroom as the sun rises, shadows shortening, timelapse, static camera
+image|City and places/Interiors||Waiter pours wine|the waiter in the restaurant pours wine into a glass at the table, candles glowing, slow push in
+image|City and places/Interiors||Spiral staircase climb|the camera rises slowly up the spiral staircase, light coming from the top window, soft shadows on the steps
+image|City and places/Monuments and buildings||Clouds over cathedral|the clouds drift quickly over the cathedral towers, light and shadow moving on the stone facade, timelapse, static camera
+image|City and places/Monuments and buildings||Iron tower sparkles|the iron tower in the photo glitters with twinkling lights against the night sky, slow push in
+image|City and places/Monuments and buildings||Castle in the mist|the mist drifts slowly around the old castle on the hill, sunlight breaking through, slow push in
+image|City and places/Monuments and buildings||Flag on the dome|the flag on top of the dome waves in the wind, clouds passing behind, static camera
+image|City and places/Monuments and buildings||Ancient temple sunrise|the sun rises behind the ancient temple, warm light spreading over the columns, timelapse, slow tilt up
+image|City and places/Monuments and buildings||Glass skyscraper reflections|the camera tilts up slowly along the glass skyscraper as clouds reflect and move on its facade
+image|City and places/Monuments and buildings||Lighthouse beam sweeps|the lighthouse beam sweeps across the dark sea as waves crash on the rocks below, static camera
+image|City and places/Monuments and buildings||Fountain in the plaza|the water of the fountain in the plaza sprays and falls back, droplets sparkling in the sun, static camera
+image|City and places/Monuments and buildings||Windmill blades turn|the blades of the old windmill turn slowly in the wind, grass waving in the field, static camera
+image|City and places/Monuments and buildings||Pyramid in desert wind|sand blows across the desert at the foot of the pyramid, heat haze shimmering, slow pan right
+image|City and places/Monuments and buildings||Stone bridge flyover|the camera flies slowly toward the stone bridge over the river, water flowing beneath, soft morning light
+image|City and places/Monuments and buildings||Ivy on the ruins|the ivy on the stone ruins sways in the breeze, birds flying past, golden light, slow lateral tracking
+image|City and places/Monuments and buildings||Clock tower pigeons|the hands of the clock tower move and pigeons take off from the ledge, blue sky, slow push in
+image|City and places/Monuments and buildings||Palace gardens orbit|the camera orbits slowly around the palace and its gardens, fountains sparkling, sunny day
+image|City and places/Monuments and buildings||Shadows cross the statue|the shadows move across the stone statue as the sun crosses the sky, timelapse, static camera
+image|City and places/Monuments and buildings||Village church snowfall|snow falls gently on the village church and its bell tower, soft winter light, static camera
+image|City and places/Monuments and buildings||Pagoda lanterns sway|the lanterns hanging from the pagoda roofs sway in the wind, cherry petals drifting, slow tilt up
+image|City and places/Monuments and buildings||Stone arch at sunset|the sun sets behind the stone arch, people walking through it, long shadows, static camera
+image|City and places/Monuments and buildings||Shutters of old house|the shutters of the old house open slowly and the curtains move in the window, morning light, static camera
+image|City and places/Monuments and buildings||Stadium lights come on|the floodlights of the stadium switch on one by one as dusk falls, static wide shot
+image|Objects and still life/Food and drinks||Coffee steam swirls|steam swirls slowly above the cup of hot coffee on the table, soft morning light, static close-up
+image|Objects and still life/Food and drinks||Milk blooms in coffee|milk is poured into the coffee and blooms into swirling patterns, macro, static camera
+image|Objects and still life/Food and drinks||Pizza cheese pull|a slice is lifted from the pizza, stretching melted cheese, steam rising, slow push in
+image|Objects and still life/Food and drinks||Ice cubes in soda|the ice cubes clink in the glass as bubbles rise through the soda, condensation on the glass, macro static camera
+image|Objects and still life/Food and drinks||Honey drips from spoon|honey drips slowly from the wooden spoon into the jar, golden light, macro static camera
+image|Objects and still life/Food and drinks||Syrup on pancakes|syrup pours over the stack of pancakes and runs down the sides, butter melting, slow push in
+image|Objects and still life/Food and drinks||Wine swirls in glass|the red wine swirls inside the glass and settles, light glinting, dark background, static close-up
+image|Objects and still life/Food and drinks||Soup simmers in pot|the soup simmers in the pot, bubbles rising and steam drifting, warm kitchen light, static camera
+image|Objects and still life/Food and drinks||Sunlight over fruit bowl|the sunlight moves slowly across the fruit bowl on the table, shadows shifting, timelapse, static camera
+image|Objects and still life/Food and drinks||Chocolate melts in bowl|the chocolate pieces slowly melt into a glossy pool in the warm bowl, macro, static camera
+image|Objects and still life/Food and drinks||Breaking fresh bread|hands break the fresh loaf of bread apart, crumbs falling, steam escaping, warm light, static camera
+image|Objects and still life/Food and drinks||Tea leaves unfurl|the tea leaves unfurl slowly in the glass teapot as the water turns amber, soft light, static close-up
+image|Objects and still life/Food and drinks||Champagne toast bubbles|champagne glasses clink and bubbles rise quickly, a few drops splashing, festive light, slow motion
+image|Objects and still life/Food and drinks||Sizzling steak in pan|the steak sizzles in the hot pan as butter foams around it, smoke rising, static close-up
+image|Objects and still life/Food and drinks||Birthday candles blown out|the candles on the birthday cake flicker, then are blown out, smoke curling up, static camera
+image|Objects and still life/Food and drinks||Strawberries splash in milk|the strawberries fall into the bowl of milk with a splash, droplets flying, slow motion, static camera
+image|Objects and still life/Food and drinks||Orange juice pours|fresh orange juice pours into the glass, bubbles forming, sunny kitchen, macro static camera
+image|Objects and still life/Food and drinks||Noodles lifted with chopsticks|chopsticks lift noodles from the steaming bowl of broth, drops falling back, slow push in
+image|Objects and still life/Food and drinks||Sugar snow on dessert|powdered sugar falls slowly like snow onto the dessert, soft studio light, macro static camera
+image|Objects and still life/Food and drinks||Beer foam rises|the beer pours into the glass and the foam rises to the rim, bubbles streaming, warm bar light, static camera
+image|Objects and still life/Candles and fire||Candle flame flickers softly|the candle flame in the picture flickers gently in a light draft, warm glow dancing on the wall, static camera
+image|Objects and still life/Candles and fire||Wax drips down candle|a drop of melted wax slowly rolls down the side of the candle while the flame wavers, close-up, static camera
+image|Objects and still life/Candles and fire||Fireplace logs crackle|the logs in the fireplace burn brightly, flames licking upward and sparks rising, warm orange light, slow camera push in
+image|Objects and still life/Candles and fire||Campfire sparks at night|the campfire crackles in the dark, sparks drifting up into the night sky, smoke curling, static camera
+image|Objects and still life/Candles and fire||Candles go out one by one|the birthday candles flicker and then go out one by one, thin smoke trails rising, static camera
+image|Objects and still life/Candles and fire||Oil lamp glow|the flame of the oil lamp sways softly behind the glass, light pulsing on the table, slow camera orbit
+image|Objects and still life/Candles and fire||Match strikes and ignites|the match bursts into flame with a puff of smoke, the small fire steadying, macro shot, static camera
+image|Objects and still life/Candles and fire||Candlelit dinner table|the candles on the dinner table flicker softly, shadows moving across plates and glasses, slow dolly along the table
+image|Objects and still life/Candles and fire||Bonfire on the beach|the beach bonfire roars in the wind, flames bending sideways, embers flying toward the sea, static wide shot
+image|Objects and still life/Candles and fire||Lantern swings gently|the hanging lantern swings slowly back and forth, its flame casting moving shadows, static camera
+image|Objects and still life/Candles and fire||Church votive candles|rows of votive candles flicker in the dim church, tiny flames trembling, slow camera pan to the right
+image|Objects and still life/Candles and fire||Incense smoke curls|the incense stick glows at its tip while a thin ribbon of smoke curls upward, soft light, static camera
+image|Objects and still life/Candles and fire||Gas burner blue flames|the blue flames of the gas burner flicker steadily, heat shimmering above them, close-up, static camera
+image|Objects and still life/Candles and fire||Torch on stone wall|the torch on the old stone wall burns and flickers, light dancing over the rough stones, slow camera push in
+image|Objects and still life/Candles and fire||Candle burns down timelapse|timelapse of the candle burning down, wax melting and the flame shrinking, static camera
+image|Objects and still life/Candles and fire||Embers glow and pulse|the glowing embers pulse red and orange as ash drifts away, close-up, slow camera tilt down
+image|Objects and still life/Candles and fire||Flame bent by wind|a sudden breath of wind bends the candle flame sideways before it straightens again, static camera
+image|Objects and still life/Candles and fire||Fire pit at dusk|the fire pit burns at dusk, flames rising and falling, smoke drifting across the purple sky, slow camera pull back
+image|Objects and still life/Candles and fire||Chandelier candles glow|the candles of the old chandelier flicker overhead, warm light swaying in the dark hall, slow camera tilt up
+image|Objects and still life/Candles and fire||Sparkler burns down|the sparkler fizzes and throws bright sparks as it burns down the wire, dark background, static camera
+image|Objects and still life/Product showcase||Perfume bottle turntable|the perfume bottle rotates slowly on a turntable, light gliding over the glass, soft studio light, static camera
+image|Objects and still life/Product showcase||Sneaker slow orbit|the sneaker stays still while the camera orbits slowly around it, clean studio background, soft shadows
+image|Objects and still life/Product showcase||Wristwatch hands tick|the hands of the wristwatch tick forward as light sweeps across the dial, macro shot, slow camera push in
+image|Objects and still life/Product showcase||Smartphone screen lights up|the smartphone screen lights up and glows, reflections sliding across its edges, slow camera orbit to the left
+image|Objects and still life/Product showcase||Coffee cup steam rises|steam rises gently from the cup of coffee on the table, morning light, slow camera push in
+image|Objects and still life/Product showcase||Cream jar lid lifts|the lid of the cream jar lifts slowly, revealing the smooth cream, soft pastel light, static camera
+image|Objects and still life/Product showcase||Floating headphones spin|the headphones float and spin slowly in the air, light reflecting on their surface, static camera
+image|Objects and still life/Product showcase||Splash around soda can|water droplets splash around the soda can in slow motion, condensation glistening, static camera
+image|Objects and still life/Product showcase||Diamond ring sparkle|the diamond ring sparkles as light glints across its facets, macro shot, slow camera orbit
+image|Objects and still life/Product showcase||Lipstick twists up|the lipstick slowly twists up out of its tube, glossy surface catching the light, static camera
+image|Objects and still life/Product showcase||Car headlights turn on|the car headlights switch on and glow in the dark showroom, slow camera dolly along the side of the car
+image|Objects and still life/Product showcase||Bottle with ice cubes|ice cubes drop around the bottle and condensation drips down the glass, cool blue light, static camera
+image|Objects and still life/Product showcase||Handbag light sweep|a soft beam of light sweeps across the leather handbag, highlighting its texture, slow camera push in
+image|Objects and still life/Product showcase||Laptop lid opens|the laptop lid opens slowly and the screen glows, clean desk, soft light, static camera
+image|Objects and still life/Product showcase||Chocolate bar snaps|the chocolate bar snaps in two, small crumbs falling, warm light, slow motion, static camera
+image|Objects and still life/Product showcase||Sunglasses cloud reflections|clouds drift across the reflections in the sunglasses lenses, bright summer light, slow camera orbit
+image|Objects and still life/Product showcase||Water drops on fruit|water drops roll down the fresh fruit, glistening in the light, slow motion, gentle camera push in
+image|Objects and still life/Product showcase||Gift box lid lifts|the lid of the gift box lifts off, revealing the product inside, soft light, slow camera tilt down
+image|Objects and still life/Product showcase||Serum dropper drip|a drop of serum falls from the dropper into the bottle, ripple on the surface, macro shot, static camera
+image|Objects and still life/Product showcase||Wine pours into glass|red wine pours into the glass and swirls, light shining through it, slow motion, static camera
+image|Objects and still life/Machines and mechanisms||Clock gears turning|the brass gears of the clock turn slowly and mesh together, warm light, macro shot, static camera
+image|Objects and still life/Machines and mechanisms||Steam engine pistons|the pistons of the steam engine move back and forth while steam puffs out, slow camera pan
+image|Objects and still life/Machines and mechanisms||Windmill blades spin|the blades of the windmill turn steadily in the wind, clouds drifting behind, static wide shot
+image|Objects and still life/Machines and mechanisms||Old typewriter keys|the keys of the old typewriter press down one by one and the carriage slides, close-up, static camera
+image|Objects and still life/Machines and mechanisms||Vinyl record spins|the vinyl record spins on the turntable while the needle rides the groove, warm light, slow camera push in
+image|Objects and still life/Machines and mechanisms||Factory robot arm|the robot arm in the factory swings and lifts a part with smooth precise motion, static camera
+image|Objects and still life/Machines and mechanisms||Bicycle wheel spins|the bicycle wheel spins freely, spokes blurring, sunlight flashing on the rim, static camera
+image|Objects and still life/Machines and mechanisms||Music box cylinder|the cylinder of the music box turns and its pins pluck the metal comb, macro shot, static camera
+image|Objects and still life/Machines and mechanisms||Sewing machine needle|the needle of the sewing machine moves up and down quickly through the fabric, close-up, static camera
+image|Objects and still life/Machines and mechanisms||Car engine running|the car engine runs, belts spinning and parts vibrating slightly, slow camera push in
+image|Objects and still life/Machines and mechanisms||Water wheel turning|the old water wheel turns slowly as water pours over its paddles, mossy stones, static camera
+image|Objects and still life/Machines and mechanisms||Film projector reels|the reels of the film projector turn and a beam of light flickers through the dust, static camera
+image|Objects and still life/Machines and mechanisms||Pocket watch balance wheel|the pocket watch ticks, its tiny balance wheel swinging back and forth, macro shot, static camera
+image|Objects and still life/Machines and mechanisms||Train wheels rolling|the steel wheels of the train roll along the rails, connecting rods pumping, low angle tracking shot
+image|Objects and still life/Machines and mechanisms||Conveyor belt moving|boxes move steadily along the conveyor belt in the warehouse, static camera
+image|Objects and still life/Machines and mechanisms||Ceiling fan rotating|the ceiling fan turns slowly, its shadow sweeping across the ceiling, slow camera tilt down
+image|Objects and still life/Machines and mechanisms||Printing press rolling|the printing press rolls and sheets of paper slide out one after another, slow camera pan
+image|Objects and still life/Machines and mechanisms||Wind-up toy robot walks|the wind-up toy robot walks forward with jerky steps, arms swinging, low angle, static camera
+image|Objects and still life/Machines and mechanisms||Lighthouse lamp rotates|the great lamp of the lighthouse rotates, its beam sweeping across the dark sea, static camera
+image|Objects and still life/Machines and mechanisms||Elevator pulleys hoist|the elevator cables and pulleys turn as the car rises, metal shaft, slow camera tilt up
+image|Objects and still life/Fabrics and materials||Silk ripples in breeze|the silk fabric ripples and flows in a gentle breeze, light shimmering on its folds, static camera
+image|Objects and still life/Fabrics and materials||Curtain blown by wind|the white curtain billows slowly in the wind from the open window, soft daylight, static camera
+image|Objects and still life/Fabrics and materials||Flag waving in sky|the flag waves steadily in the wind against the blue sky, slow camera tilt up
+image|Objects and still life/Fabrics and materials||Velvet folds light sweep|light slowly sweeps across the folds of the velvet, deepening its color, macro shot, static camera
+image|Objects and still life/Fabrics and materials||Fine sand pouring|fine sand pours down in a thin stream and forms a small pile, warm light, static camera
+image|Objects and still life/Fabrics and materials||Honey dripping from spoon|thick golden honey drips slowly from the spoon, catching the light, macro shot, static camera
+image|Objects and still life/Fabrics and materials||Paper edges burning|the edges of the paper curl and burn into glowing ash, close-up, static camera
+image|Objects and still life/Fabrics and materials||Ice melting drops|the ice slowly melts, water drops sliding down and falling, cool light, macro shot, static camera
+image|Objects and still life/Fabrics and materials||Wool yarn unwinding|the ball of wool yarn slowly unwinds and rolls across the table, soft light, static camera
+image|Objects and still life/Fabrics and materials||Liquid paint marbling|swirls of colored paint slowly mix together, forming marbled patterns, top view, static camera
+image|Objects and still life/Fabrics and materials||Leather grain close-up|the camera glides slowly over the leather surface, light revealing its grain, macro shot
+image|Objects and still life/Fabrics and materials||Lace veil floats|the lace veil floats and drifts slowly in the air, soft backlight, static camera
+image|Objects and still life/Fabrics and materials||Bubble wrap pops|the bubbles of the plastic wrap pop one after another under a finger, close-up, static camera
+image|Objects and still life/Fabrics and materials||Wood grain reveal|light moves across the wooden surface, revealing the grain, slow camera pan to the right
+image|Objects and still life/Fabrics and materials||Molten metal pours|glowing molten metal pours into a mold, sparks flying, dark workshop, static camera
+image|Objects and still life/Fabrics and materials||Glass rainbow refraction|rainbow light refracts through the glass and slowly shifts across the surface, static camera
+image|Objects and still life/Fabrics and materials||Tablecloth pulled away|the tablecloth is pulled away swiftly and the objects on it stay still, slow motion, static camera
+image|Objects and still life/Fabrics and materials||Ink drop in water|a drop of ink falls into the water and blooms into soft clouds, macro shot, static camera
+image|Objects and still life/Fabrics and materials||Linen sheets drying|the linen sheets on the clothesline sway in the wind, bright sunlight, slow camera pan
+image|Objects and still life/Fabrics and materials||Crumpled paper unfolds|the crumpled sheet of paper slowly unfolds by itself, creases flattening, top view, static camera
+image|Art and old photos/Paintings come to life||Portrait painting blinks|the person in the portrait painting slowly blinks and turns their eyes toward the viewer, static camera
+image|Art and old photos/Paintings come to life||Painted starry sky swirls|the swirling stars and clouds of the painted night sky begin to turn slowly, brush strokes moving, static camera
+image|Art and old photos/Paintings come to life||Painted sea waves|the waves of the painted sea roll and crash, brush strokes coming alive, slow camera push in
+image|Art and old photos/Paintings come to life||Landscape painting clouds|the clouds in the landscape painting drift slowly across the sky while the trees sway, static camera
+image|Art and old photos/Paintings come to life||Water lilies pond ripples|the pond of the impressionist painting ripples gently, water lilies bobbing, slow camera pan
+image|Art and old photos/Paintings come to life||Painted lady smiles wider|the woman in the old portrait smiles a little more and tilts her head, soft light, static camera
+image|Art and old photos/Paintings come to life||Painted dancers twirl|the dancers in the painting start to twirl slowly, their dresses flowing, static camera
+image|Art and old photos/Paintings come to life||Still life fruit painting|light shifts slowly across the painted still life of fruit, a fly lands on an apple, static camera
+image|Art and old photos/Paintings come to life||Painted windmill turns|the windmill in the painted countryside starts turning, clouds moving behind it, slow camera push in
+image|Art and old photos/Paintings come to life||Oil painting ship sails|the ship in the oil painting sails forward on rolling waves, sails filling with wind, static camera
+image|Art and old photos/Paintings come to life||Painted candle flickers|the candle in the old painting flickers, its warm light moving over the faces, static camera
+image|Art and old photos/Paintings come to life||Abstract colors flow|the shapes and colors of the abstract painting slowly flow and morph into each other, static camera
+image|Art and old photos/Paintings come to life||Painted horse gallops|the horse in the painting begins to gallop, its mane flying, dust rising, static camera
+image|Art and old photos/Paintings come to life||Watercolor pigments bleed|the watercolor pigments slowly bleed and spread across the paper, soft edges blooming, static camera
+image|Art and old photos/Paintings come to life||Painted street rain|rain begins to fall in the painted street, reflections shimmering on the cobblestones, static camera
+image|Art and old photos/Paintings come to life||Nobleman portrait breathes|the nobleman in the classical portrait breathes gently, his chest rising, his eyes following the viewer, static camera
+image|Art and old photos/Paintings come to life||Painted garden flowers sway|the flowers of the painted garden sway in a light breeze, petals drifting, slow camera pan to the left
+image|Art and old photos/Paintings come to life||Painted sunset glows|the sun in the painting sinks slowly and the sky glows deeper orange, static camera
+image|Art and old photos/Paintings come to life||Fresco angels flutter|the angels of the ceiling fresco flutter their wings softly, clouds drifting around them, slow camera tilt up
+image|Art and old photos/Paintings come to life||Camera enters painting|the camera slowly pushes into the painting as its scene gains depth, trees and hills separating
+image|Art and old photos/Old photos||Grandparents smile together|the elderly couple in the old photo turn to each other and smile warmly, static camera
+image|Art and old photos/Old photos||Black and white portrait blinks|the person in the old black and white portrait slowly blinks and breathes, slight head movement, static camera
+image|Art and old photos/Old photos||Vintage wedding couple|the bride and groom in the vintage wedding photo smile and lean closer together, static camera
+image|Art and old photos/Old photos||Child laughs in photo|the child in the old photograph laughs and tilts their head, soft grain, static camera
+image|Art and old photos/Old photos||Vintage street comes alive|people in the old street photo start walking and a carriage rolls by, slow camera push in
+image|Art and old photos/Old photos||Young soldier salutes|the young soldier in the old portrait slowly raises his hand in a salute, sepia tones, static camera
+image|Art and old photos/Old photos||Family group photo moves|the family in the old group photo shift slightly, smile and look at each other, static camera
+image|Art and old photos/Old photos||Sepia face turns|the woman in the sepia photo turns her face toward the camera and smiles gently, static camera
+image|Art and old photos/Old photos||Old harbor boats bob|the boats in the old harbor photo bob gently on the water, gulls flying overhead, static camera
+image|Art and old photos/Old photos||Vintage car drives off|the vintage car in the old photograph starts and drives slowly down the street, static camera
+image|Art and old photos/Old photos||Hat tipped in greeting|the man in the old photo tips his hat in greeting and nods, film grain, static camera
+image|Art and old photos/Old photos||Hair in the wind sepia|the woman's hair in the old photo moves softly in the wind as she looks into the distance, static camera
+image|Art and old photos/Old photos||School class photo|the children in the old class photo fidget and grin, one waves, static camera
+image|Art and old photos/Old photos||Factory workers break|the workers in the old factory photo wipe their brows and laugh together, slow camera pan
+image|Art and old photos/Old photos||Old seaside photo waves|the waves roll onto the beach in the old seaside photo, bathers walking along the shore, static camera
+image|Art and old photos/Old photos||Mother rocks baby|the mother in the old photo gently rocks her baby and looks down lovingly, static camera
+image|Art and old photos/Old photos||Vintage violinist plays|the musician in the vintage photo starts playing the violin, bow moving slowly, static camera
+image|Art and old photos/Old photos||Old photo couple dances|the couple in the old photo begin to dance slowly, the dress swirling, static camera
+image|Art and old photos/Old photos||Old photograph gains depth|the old photograph gains depth as the camera slowly pushes in, foreground and background separating
+image|Art and old photos/Drawings and illustrations||Pencil sketch comes alive|the lines of the pencil sketch start moving and the figure slowly turns its head, static camera
+image|Art and old photos/Drawings and illustrations||Cartoon character waves|the cartoon character waves happily and bounces up and down, static camera
+image|Art and old photos/Drawings and illustrations||Ink dragon uncoils|the ink drawing of a dragon uncoils slowly, its tail moving and smoke rising from its nostrils, static camera
+image|Art and old photos/Drawings and illustrations||Child drawing chimney smoke|the smoke from the chimney of the child's drawing of a house curls up and the sun spins, static camera
+image|Art and old photos/Drawings and illustrations||Anime girl hair flows|the anime girl's hair and skirt flow in the wind as she looks up at the sky, slow camera push in
+image|Art and old photos/Drawings and illustrations||Comic hero leaps|the hero in the comic panel leaps forward, speed lines streaking behind, static camera
+image|Art and old photos/Drawings and illustrations||Storybook forest fireflies|the trees in the storybook illustration sway and fireflies drift between them, slow camera pan
+image|Art and old photos/Drawings and illustrations||Chalk stick figure walks|the chalk drawing on the blackboard comes to life, the stick figure walking across the board, static camera
+image|Art and old photos/Drawings and illustrations||Watercolor bird takes off|the bird in the watercolor illustration flaps its wings and takes off, paint trails behind it, static camera
+image|Art and old photos/Drawings and illustrations||Architectural sketch draws itself|the lines of the architectural sketch draw themselves and fill with soft color, static camera
+image|Art and old photos/Drawings and illustrations||Doodle flowers bloom|the doodled flowers open their petals and sway, ink lines wiggling, static camera
+image|Art and old photos/Drawings and illustrations||Manga eyes sparkle|the manga character's eyes widen and sparkle as they smile, static camera
+image|Art and old photos/Drawings and illustrations||Fantasy map sea ripples|the sea on the fantasy map starts to ripple and a small ship sails across it, slow camera push in
+image|Art and old photos/Drawings and illustrations||Line art cat stretches|the line drawing of a cat stretches, yawns and curls its tail, static camera
+image|Art and old photos/Drawings and illustrations||Concept art castle flags|clouds drift past the castle in the concept art, flags fluttering on the towers, slow camera push in
+image|Art and old photos/Drawings and illustrations||Pixel art character walks|the pixel art character walks in place, the background scrolling slowly, static camera
+image|Art and old photos/Drawings and illustrations||Fashion sketch twirls|the model in the fashion sketch twirls and the drawn dress flares out, static camera
+image|Art and old photos/Drawings and illustrations||Charcoal portrait breathes|the charcoal portrait gently breathes and blinks, smudged lines shifting softly, static camera
+image|Art and old photos/Drawings and illustrations||Botanical plate leaves unfurl|the leaves of the botanical illustration unfurl slowly and sway, aged paper, static camera
+image|Art and old photos/Drawings and illustrations||Paper cutout layers drift|the paper cutout illustration separates into layers that drift gently, slow parallax camera move
+image|Art and old photos/Statues and sculptures||Marble statue opens eyes|the marble statue slowly opens its eyes and turns its head, dust falling from its face, static camera
+image|Art and old photos/Statues and sculptures||Bronze statue turns head|the bronze statue turns its head slightly, light gliding across the metal, slow camera orbit
+image|Art and old photos/Statues and sculptures||Museum sculpture orbit|the camera orbits slowly around the marble sculpture in the museum, soft gallery light
+image|Art and old photos/Statues and sculptures||Stone gargoyle wakes|the stone gargoyle on the cathedral shifts its wings and looks down, clouds drifting, low angle, static camera
+image|Art and old photos/Statues and sculptures||Stone angel spreads wings|the stone angel slowly spreads its wings, moss and dust falling away, static camera
+image|Art and old photos/Statues and sculptures||Seated statue looks up|the seated statue lifts its head from its hand and looks around, static camera
+image|Art and old photos/Statues and sculptures||Garden statue in rain|rain falls on the garden statue, water streaming down the stone, slow camera push in
+image|Art and old photos/Statues and sculptures||Ice sculpture melts|the ice sculpture slowly melts, drops of water falling from its edges, cool light, static camera
+image|Art and old photos/Statues and sculptures||Statue cracks with light|cracks spread across the stone statue and pieces flake off, revealing light inside, static camera
+image|Art and old photos/Statues and sculptures||Clay figure takes shape|the clay figure slowly takes shape as invisible hands smooth its surface, close-up, static camera
+image|Art and old photos/Statues and sculptures||Ancient bust smiles|the ancient stone bust smiles slightly and blinks, warm sunset light, static camera
+image|Art and old photos/Statues and sculptures||Statue shadows timelapse|shadows move across the statue in the square as the sun travels, timelapse, static camera
+image|Art and old photos/Statues and sculptures||Equestrian statue horse moves|the horse of the equestrian statue raises a hoof and shakes its mane, low angle, static camera
+image|Art and old photos/Statues and sculptures||Wooden carving stretches|the carved wooden figure stretches its arms and moves stiffly, close-up, static camera
+image|Art and old photos/Statues and sculptures||Giant statue racing clouds|clouds race behind the giant statue while birds circle around it, slow camera tilt up
+image|Art and old photos/Statues and sculptures||Sand sculpture crumbles|the sand sculpture slowly crumbles in the wind, grains blowing away, static camera
+image|Art and old photos/Statues and sculptures||Golden temple statue|incense smoke drifts past the golden temple statue as candles flicker at its feet, slow camera push in
+image|Art and old photos/Statues and sculptures||Statue sheds a tear|the stone statue sheds a slow tear that runs down its cheek, close-up, static camera
+image|Art and old photos/Statues and sculptures||Fountain statue water|water pours from the fountain statue into the basin, ripples spreading, slow camera orbit
+image|Art and old photos/Statues and sculptures||Polished metal sculpture rotates|light plays across the polished metal sculpture as it slowly rotates, gallery, static camera
+image|Effects and magic/Particles and sparkles||Golden glitter falls|golden glitter falls slowly around the subject of the picture, sparkling in the light, static camera
+image|Effects and magic/Particles and sparkles||Fairy dust trail|a trail of sparkling fairy dust swirls around the scene and fades, soft glow, slow camera push in
+image|Effects and magic/Particles and sparkles||Fireflies appear at dusk|fireflies slowly appear and float around the scene, tiny lights blinking, dusk, static camera
+image|Effects and magic/Particles and sparkles||Snowflakes start falling|soft snowflakes start falling across the image, drifting gently, static camera
+image|Effects and magic/Particles and sparkles||Bokeh lights drift|out-of-focus lights drift and twinkle in the background, the subject staying still, static camera
+image|Effects and magic/Particles and sparkles||Sparkling dust in light|dust particles float slowly in the beam of sunlight crossing the room, static camera
+image|Effects and magic/Particles and sparkles||Magic orbs float up|small glowing orbs rise slowly from the ground and float upward, mystical mood, static camera
+image|Effects and magic/Particles and sparkles||Confetti burst|colorful confetti bursts into the air and rains down over the scene, slow motion, static camera
+image|Effects and magic/Particles and sparkles||Shooting star crosses sky|the stars in the night sky twinkle and a shooting star streaks across, static camera
+image|Effects and magic/Particles and sparkles||Pink petals drift down|pink flower petals drift down across the scene in the breeze, soft light, static camera
+image|Effects and magic/Particles and sparkles||Sparkles around hands|bright sparkles gather around the hands of the person in the picture, glowing softly, slow camera push in
+image|Effects and magic/Particles and sparkles||Golden particles rise|golden particles rise slowly from the subject and dissolve into the air, warm light, static camera
+image|Effects and magic/Particles and sparkles||Soap bubbles float by|soap bubbles float slowly across the scene, rainbow colors shimmering, static camera
+image|Effects and magic/Particles and sparkles||Pollen over meadow|pollen drifts lazily through the air above the meadow, backlit by the sun, static camera
+image|Effects and magic/Particles and sparkles||Light streaks spiral|streaks of colored light swirl around the subject in a spiral and fade, static camera
+image|Effects and magic/Particles and sparkles||Diamond sparkles shimmer|tiny diamond-like sparkles shimmer across the surface of the image, twinkling randomly, static camera
+image|Effects and magic/Particles and sparkles||Subject dissolves into particles|the subject of the picture slowly dissolves into glowing particles that drift away, static camera
+image|Effects and magic/Particles and sparkles||Particles form the subject|scattered glowing particles gather and form the subject of the image, slow camera pull back
+image|Effects and magic/Particles and sparkles||Embers float upward|glowing embers float upward through the dark scene, flickering, static camera
+image|Effects and magic/Particles and sparkles||Rain of light|thin streaks of light fall like rain over the scene, shimmering softly, slow camera push in
+image|Effects and magic/Smoke and fire effects||Smoke rises from ground|thick white smoke rises slowly from the ground and drifts around the subject, static camera
+image|Effects and magic/Smoke and fire effects||Low fog rolls in|a low fog rolls in slowly across the scene, softening the background, static camera
+image|Effects and magic/Smoke and fire effects||Flames engulf background|flames rise behind the subject and engulf the background, orange glow on the face, static camera
+image|Effects and magic/Smoke and fire effects||Colored smoke bombs|bursts of purple and orange smoke billow around the scene, drifting in the wind, static camera
+image|Effects and magic/Smoke and fire effects||Image edges catch fire|the edges of the image catch fire and burn inward, curling and glowing, static camera
+image|Effects and magic/Smoke and fire effects||Dragon breath fire|a stream of fire bursts across the frame from the left, lighting the scene, static camera
+image|Effects and magic/Smoke and fire effects||Mist rises from water|mist rises slowly from the surface of the water, early morning light, slow camera push in
+image|Effects and magic/Smoke and fire effects||Ring of fire ignites|a ring of fire ignites around the subject and burns steadily, dark night, static camera
+image|Effects and magic/Smoke and fire effects||Smoke wisps from hands|thin wisps of smoke curl up from the hands of the person in the photo, soft light, static camera
+image|Effects and magic/Smoke and fire effects||Street steam vents|steam bursts from the vents in the street and drifts upward, night city lights, static camera
+image|Effects and magic/Smoke and fire effects||Volcano smoke plume|a plume of smoke rises from the volcano and spreads into the sky, slow camera pull back
+image|Effects and magic/Smoke and fire effects||Ghostly smoke figure|a ghostly figure of smoke forms beside the subject and drifts away, static camera
+image|Effects and magic/Smoke and fire effects||Flaming sword ignites|the blade of the sword bursts into flames that flicker along its edge, dark background, static camera
+image|Effects and magic/Smoke and fire effects||Smoke reveal transition|a cloud of smoke sweeps across the frame and clears, revealing the scene, static camera
+image|Effects and magic/Smoke and fire effects||Fireball explodes behind|a fireball explodes in the background and smoke billows outward, slow motion, static camera
+image|Effects and magic/Smoke and fire effects||Blue flames in palm|blue magical flames dance in the palm of the hand in the picture, glowing softly, slow camera push in
+image|Effects and magic/Smoke and fire effects||Burning forest edge|the trees at the edge of the forest burn, smoke drifting across the orange sky, slow camera pan
+image|Effects and magic/Smoke and fire effects||Dry ice fog stage|dry ice fog spreads across the stage floor around the performer, colored lights, static camera
+image|Effects and magic/Smoke and fire effects||Perfect smoke ring|a perfect smoke ring rises slowly and widens before fading, dark background, static camera
+image|Effects and magic/Smoke and fire effects||Heat haze shimmer|heat haze shimmers above the hot ground, distorting the background, static camera
+image|Effects and magic/Glow and light rays||Sun rays through window|sunbeams stream through the window of the room, dust motes drift and sparkle slowly in the light, static camera
+image|Effects and magic/Glow and light rays||Golden halo around figure|a soft golden halo slowly brightens around the person in the image, light rays spreading outward, slow camera push in
+image|Effects and magic/Glow and light rays||Neon sign flickers on|the neon sign in the picture flickers and lights up, its glow pulsing on the wet street, static camera
+image|Effects and magic/Glow and light rays||God rays in forest mist|shafts of sunlight pierce the misty forest canopy and slowly shift as the fog drifts, gentle camera tilt up
+image|Effects and magic/Glow and light rays||Breathing candle glow|the candle flame flickers softly and its warm glow breathes on the surrounding objects, very slow push in
+image|Effects and magic/Glow and light rays||Lens flare sweeps across|a bright lens flare sweeps slowly across the scene as the sun peeks from behind the subject, slow pan right
+image|Effects and magic/Glow and light rays||Painted eyes start glowing|the eyes of the figure in the painting begin to glow with a soft blue light, static camera
+image|Effects and magic/Glow and light rays||Fireflies light the dusk|tiny fireflies blink on one by one across the dusky meadow and drift slowly upward, slow dolly forward
+image|Effects and magic/Glow and light rays||Stained glass light shift|colored light from the stained glass window slides slowly across the stone floor, dust floating, static camera
+image|Effects and magic/Glow and light rays||Aurora glow overhead|green aurora ribbons ripple and glow in the night sky above the scene, slow upward tilt
+image|Effects and magic/Glow and light rays||Rays burst from clouds|rays of light burst through a gap in the clouds and sweep across the landscape, slow camera pan left
+image|Effects and magic/Glow and light rays||Glowing outline pulse|a thin glowing outline traces the edges of the main subject and pulses gently, dark background, static camera
+image|Effects and magic/Glow and light rays||Morning light floods room|warm morning light slowly floods the room from one side, shadows shortening, slow push in
+image|Effects and magic/Glow and light rays||Swaying lantern in darkness|the lantern held in the image glows brighter and sways slightly, casting moving shadows, static camera
+image|Effects and magic/Glow and light rays||Underwater sun shafts|sun shafts dance through the clear water from the surface, particles drifting, slow camera drift forward
+image|Effects and magic/Glow and light rays||Spotlight finds the performer|a white spotlight slowly sweeps across the stage and settles on the performer, haze in the air, static camera
+image|Effects and magic/Glow and light rays||Glittering gold particles rise|golden glittering particles rise slowly from the bottom of the image and twinkle, slow camera push in
+image|Effects and magic/Glow and light rays||Backlit hair glow|the person's hair glows in the backlight and moves gently in the breeze, warm sunset light, static camera
+image|Effects and magic/Glow and light rays||Moonlight through branches|cool moonlight filters through swaying branches, shifting patterns on the ground, slow pan right
+image|Effects and magic/Glow and light rays||Magic orb in hands|a small glowing orb appears in the subject's hands and pulses with soft light, slow push in
+image|Effects and magic/Transformations||Painted figure comes alive|the painted figure slowly comes to life, blinking and breathing as the brushstrokes soften, static camera
+image|Effects and magic/Transformations||Day fades into night|the scene gradually turns from daylight to night, lights switching on in the windows, static camera
+image|Effects and magic/Transformations||Summer turns to winter|snow slowly covers the landscape as the green trees turn white, static camera
+image|Effects and magic/Transformations||Flower bud blooms open|the closed flower bud in the image slowly opens into full bloom, petals unfolding, slow push in
+image|Effects and magic/Transformations||Stone statue turns to flesh|the stone statue slowly gains color and warmth, its eyes opening and its head turning, static camera
+image|Effects and magic/Transformations||Melting ice transformation|the ice sculpture slowly melts, water dripping and pooling below, soft light, static camera
+image|Effects and magic/Transformations||Green leaves turn red|the green leaves of the tree slowly turn orange and red and begin to fall, gentle camera pan up
+image|Effects and magic/Transformations||Paper butterfly becomes real|a paper cutout butterfly folds its wings and turns into a real butterfly that flies away, static camera
+image|Effects and magic/Transformations||Portrait ages gently|the face in the portrait slowly ages, wrinkles forming and hair turning gray, static camera
+image|Effects and magic/Transformations||Ruins rebuild themselves|the ancient ruins slowly rebuild, stones rising back into place, slow orbit
+image|Effects and magic/Transformations||Sand castle crumbles away|the sand castle slowly crumbles into grains blown away by the wind, static camera
+image|Effects and magic/Transformations||Clay figure reshapes|the clay figure gently reshapes itself into a sitting pose, fingerprint texture visible, static camera
+image|Effects and magic/Transformations||Desert turns green|green grass and flowers slowly spread across the dry desert in the image, slow dolly forward
+image|Effects and magic/Transformations||Smoke becomes a bird|the swirl of smoke slowly gathers into the shape of a bird that flies off, dark background, static camera
+image|Effects and magic/Transformations||Photo dissolves into watercolor|the photograph slowly dissolves into a soft watercolor painting, paint bleeding at the edges, static camera
+image|Effects and magic/Transformations||Candle burns to a stub|the tall candle burns down to a stub, wax dripping, flame flickering, time lapse, static camera
+image|Effects and magic/Transformations||Empty street fills up|the empty street in the image gradually fills with walking people and cars, time lapse, static camera
+image|Effects and magic/Transformations||Shattered vase turns to petals|the glass vase shatters slowly and its shards turn into floating flower petals, slow motion, static camera
+image|Effects and magic/Dreamy and surreal||Room objects float away|the objects in the room slowly lift off and float in the air, gently rotating, slow camera orbit
+image|Effects and magic/Dreamy and surreal||Melting clock drips|the clock in the image slowly melts and drips over the edge of the table, static camera
+image|Effects and magic/Dreamy and surreal||Fish swimming through air|translucent fish swim slowly through the air around the person, soft blue light, slow push in
+image|Effects and magic/Dreamy and surreal||Clouds inside the room|soft white clouds drift slowly through the room in the picture, warm light, static camera
+image|Effects and magic/Dreamy and surreal||Staircase into the sky|the staircase stretches upward into the clouds as the camera slowly tilts up
+image|Effects and magic/Dreamy and surreal||Rain falling upward|raindrops slowly rise upward from the ground into the sky, the subject stands still, static camera
+image|Effects and magic/Dreamy and surreal||Giant moon drifts closer|a giant moon slowly drifts closer behind the subject, its glow growing, static camera
+image|Effects and magic/Dreamy and surreal||Petal spiral around figure|pink petals swirl slowly around the figure in a spiral, hair floating, slow orbit
+image|Effects and magic/Dreamy and surreal||Ocean in a teacup|tiny waves roll inside the teacup and a small boat sails across it, slow push in
+image|Effects and magic/Dreamy and surreal||Door to a starry world|the door in the image slowly opens onto a glowing starry landscape, light spilling out, slow dolly forward
+image|Effects and magic/Dreamy and surreal||Breathing trees|the trees in the scene expand and contract gently as if breathing, mist drifting, static camera
+image|Effects and magic/Dreamy and surreal||Floating islands drift|the floating islands drift slowly in the sky, waterfalls spilling from their edges, slow pan right
+image|Effects and magic/Dreamy and surreal||Mirror reflection moves alone|the reflection in the mirror slowly turns its head while the person stays still, static camera
+image|Effects and magic/Dreamy and surreal||Hair flowing like water|the person's long hair slowly flows like water, rippling and sparkling, static camera
+image|Effects and magic/Dreamy and surreal||Whale swims over town|a giant whale swims slowly across the sky above the town, clouds parting, slow pan left
+image|Effects and magic/Dreamy and surreal||Floor ripples underfoot|the floor ripples like water under the subject's feet with each small step, static camera
+image|Effects and magic/Dreamy and surreal||Dream bubbles rise|soap bubbles with tiny scenes inside rise slowly from the subject, soft pastel light, slow tilt up
+image|Effects and magic/Dreamy and surreal||Sea spills from painting|the sea inside the painting spills out of the frame onto the floor, slow push in
+image|Effects and magic/Dreamy and surreal||Stars across the face|stars twinkle and drift slowly across the skin of the person's face, eyes closed, static camera
+image|Effects and magic/Dreamy and surreal||Endless corridor stretches|the corridor in the image slowly stretches into infinity as the camera glides forward
+image|3D depth showcases/Parallax layers||Layered mountain ridges|the mountain ridges slide past each other in layers as the camera trucks slowly to the right, haze between them
+image|3D depth showcases/Parallax layers||Foreground grass parallax|tall grass in the foreground sways and shifts against the distant hills as the camera slides left
+image|3D depth showcases/Parallax layers||City skyline layers|nearby buildings pass faster than the distant skyline as the camera trucks slowly to the left, evening light
+image|3D depth showcases/Parallax layers||Portrait background separation|the person stays sharp while the background drifts behind them as the camera arcs slowly around
+image|3D depth showcases/Parallax layers||Forest trunks parallax|tree trunks in the foreground slide past the deeper forest as the camera moves slowly sideways, light mist
+image|3D depth showcases/Parallax layers||Window frame parallax|the window frame slides across the view of the garden outside as the camera moves slowly to the right
+image|3D depth showcases/Parallax layers||Desk objects layers|objects on the desk shift against each other as the camera slowly arcs left, shallow depth of field
+image|3D depth showcases/Parallax layers||Hanging lanterns parallax|rows of hanging lanterns slide at different speeds as the camera trucks slowly under them, warm glow
+image|3D depth showcases/Parallax layers||Rocky shore layers|rocks in the foreground move faster than the waves and the far cliffs as the camera slides right
+image|3D depth showcases/Parallax layers||Flower bed before house|flowers in the foreground pass in front of the house as the camera trucks slowly left, sunny day
+image|3D depth showcases/Parallax layers||Street lamps layers|street lamps in the foreground glide past the shop fronts as the camera moves slowly sideways at dusk
+image|3D depth showcases/Parallax layers||Painting splits into layers|the elements of the painting separate into layers and drift apart gently as the camera slowly arcs right
+image|3D depth showcases/Parallax layers||Fence posts parallax|fence posts pass quickly in the foreground while the fields beyond move slowly, camera trucks right
+image|3D depth showcases/Parallax layers||Reeds before the lake|reeds in the foreground sway and slide in front of the calm lake as the camera moves slowly left
+image|3D depth showcases/Parallax layers||Market stalls parallax|stalls and hanging goods slide past each other as the camera trucks slowly through the market
+image|3D depth showcases/Parallax layers||Blurred leaves frame view|out of focus leaves in the foreground slide across the scene as the camera slowly moves right
+image|3D depth showcases/Parallax layers||Classroom rows parallax|rows of desks shift against each other as the camera slowly slides along the room
+image|3D depth showcases/Parallax layers||Bookshelf layers glide|books on the nearby shelf glide past the reading room beyond as the camera trucks slowly left
+image|3D depth showcases/Parallax layers||Snowy pines parallax|snowy pine trees in the foreground pass in front of distant peaks, light snowfall, camera slides right
+image|3D depth showcases/Parallax layers||Cliff above cloud sea|the cliff edge slides past the sea of clouds below as the camera moves slowly sideways, sunrise light
+image|3D depth showcases/Out of the screen||Hand reaches toward viewer|the person in the image slowly reaches a hand toward the camera, palm forward, static camera
+image|3D depth showcases/Out of the screen||Butterfly flies at camera|a butterfly takes off from the flower and flies straight toward the camera, static camera
+image|3D depth showcases/Out of the screen||Bubbles float toward viewer|soap bubbles float slowly out toward the camera and drift past the lens, static camera
+image|3D depth showcases/Out of the screen||Dog sniffs the lens|the dog in the photo leans its nose toward the camera and sniffs, static camera
+image|3D depth showcases/Out of the screen||Petals blow at camera|flower petals blow toward the camera and pass close to the lens, slow push in
+image|3D depth showcases/Out of the screen||Bird swoops over lens|a bird swoops from the background straight toward the camera and flies over it, static camera
+image|3D depth showcases/Out of the screen||Ball thrown at viewer|the child in the image throws a ball straight toward the camera, static camera
+image|3D depth showcases/Out of the screen||Fire sparks fly forward|sparks burst from the fire and fly toward the camera, dark background, static camera
+image|3D depth showcases/Out of the screen||Knight points his sword|the knight slowly raises his sword and points it straight at the camera, static camera
+image|3D depth showcases/Out of the screen||Snowflakes toward the lens|snowflakes fall and drift toward the camera, some passing very close to the lens, static camera
+image|3D depth showcases/Out of the screen||Cat paws at camera|the cat in the picture reaches its paw toward the camera playfully, static camera
+image|3D depth showcases/Out of the screen||Pool splash toward camera|water splashes up from the pool and droplets fly toward the camera, slow motion, static camera
+image|3D depth showcases/Out of the screen||Flower offered to viewer|the person slowly holds a flower out toward the camera with a smile, static camera
+image|3D depth showcases/Out of the screen||Confetti bursts outward|colorful confetti bursts toward the camera and floats past the lens, static camera
+image|3D depth showcases/Out of the screen||Leaves spin past lens|autumn leaves blow off the tree toward the camera and spin past the lens, static camera
+image|3D depth showcases/Out of the screen||Paper plane launch|a paper plane is launched from the scene and glides straight toward the camera, static camera
+image|3D depth showcases/Out of the screen||Dragon head lunges|the dragon in the illustration lunges its head toward the camera and roars, static camera
+image|3D depth showcases/Out of the screen||Dandelion seeds drift out|dandelion seeds lift off and drift slowly toward the camera, backlit, static camera
+image|3D depth showcases/Out of the screen||Horse gallops at camera|the horse gallops toward the camera kicking up dust, low angle, static camera
+image|3D depth showcases/Out of the screen||Finger points at viewer|the person in the image points a finger directly at the camera and leans forward, static camera
+image|3D depth showcases/Floating elements||Dust motes in sunbeam|dust motes float slowly in a sunbeam in front of the subject, soft light, slow push in
+image|3D depth showcases/Floating elements||Balloons at many depths|colorful balloons float slowly upward at different depths around the scene, slow tilt up
+image|3D depth showcases/Floating elements||Snow drifting in layers|snowflakes drift at several depths in front of and behind the subject, slow push in
+image|3D depth showcases/Floating elements||White feathers float down|white feathers float slowly down through the air around the person, static camera
+image|3D depth showcases/Floating elements||Glowing jellyfish drift|glowing jellyfish drift slowly at different depths in the dark water, static camera
+image|3D depth showcases/Floating elements||Pollen over the meadow|pollen and small seeds float through the sunlit meadow, slowly drifting past, slow dolly forward
+image|3D depth showcases/Floating elements||Sky lanterns rising|paper lanterns rise slowly into the night sky at different depths, warm glow, slow tilt up
+image|3D depth showcases/Floating elements||Hovering rocks bob|small rocks hover and bob gently in the air above the ground, slow camera orbit
+image|3D depth showcases/Floating elements||Bubbles around the diver|bubbles rise around the diver at different depths, light shafts from above, static camera
+image|3D depth showcases/Floating elements||Blossoms before the temple|cherry blossom petals drift through the air in front of the temple, slow pan right
+image|3D depth showcases/Floating elements||Campfire embers float up|glowing embers float upward from the campfire into the dark, static camera
+image|3D depth showcases/Floating elements||Raindrops frozen in air|raindrops hang suspended in the air around the subject and drift very slowly, slow orbit
+image|3D depth showcases/Floating elements||Books circle the reader|books float and slowly circle around the reader in the library, slow camera orbit
+image|3D depth showcases/Floating elements||Tiny stars float close|tiny glowing stars float at different depths around the person, dreamy light, slow push in
+image|3D depth showcases/Floating elements||Ash over empty street|gray ash falls slowly at different depths over the empty street, muted light, static camera
+image|3D depth showcases/Floating elements||Fruit hovers over table|pieces of fruit hover and rotate slowly above the table, soft studio light, slow orbit
+image|3D depth showcases/Floating elements||Leaves suspended midair|autumn leaves hang and turn slowly in the air across the path, slow dolly forward
+image|3D depth showcases/Floating elements||Sparkles around the dancer|small sparkles float and twinkle at different depths around the dancer, static camera
+image|3D depth showcases/Floating elements||Mist particles in light beams|fine mist particles float through light beams between the trees, slow push in
+image|3D depth showcases/Floating elements||Hovering paper cranes|origami paper cranes hover and drift slowly in the air around the room, slow orbit
+image|3D depth showcases/Depth fly-through||Flight through narrow canyon|the camera flies slowly forward through the narrow canyon, rock walls passing on both sides
+image|3D depth showcases/Depth fly-through||Glide down forest path|the camera glides forward along the forest path between the trees, soft morning light
+image|3D depth showcases/Depth fly-through||Fly into the painting|the camera slowly flies into the painted landscape, the scene opening up in depth
+image|3D depth showcases/Depth fly-through||Corridor lights overhead|the camera moves steadily forward down the long corridor, lights passing overhead
+image|3D depth showcases/Depth fly-through||Through the stone archway|the camera passes slowly through the stone archway into the courtyard beyond
+image|3D depth showcases/Depth fly-through||Low over old rooftops|the camera flies forward low over the rooftops of the old town toward the horizon
+image|3D depth showcases/Depth fly-through||Deep into the cave|the camera moves slowly forward into the cave, the light fading behind, stalactites passing above
+image|3D depth showcases/Depth fly-through||Through the cloud layer|the camera flies forward through the clouds and emerges above the landscape
+image|3D depth showcases/Depth fly-through||Low along the river|the camera glides low over the river between its banks, water flowing beneath
+image|3D depth showcases/Depth fly-through||Tunnel of arching trees|the camera moves forward through a tunnel of arching trees, leaves swaying
+image|3D depth showcases/Depth fly-through||Down the evening street|the camera glides forward down the middle of the street between the buildings, evening lights
+image|3D depth showcases/Depth fly-through||In through the window|the camera slowly moves forward through the open window into the room
+image|3D depth showcases/Depth fly-through||Into the flower heart|the camera slowly pushes into the heart of the flower, petals surrounding the view
+image|3D depth showcases/Depth fly-through||Glide over coral reef|the camera glides forward over the coral reef, small fish parting ahead
+image|3D depth showcases/Depth fly-through||Starfield flight|the camera flies forward through the starfield, stars streaming past toward the edges
+image|3D depth showcases/Depth fly-through||Through the bamboo grove|the camera moves slowly forward through the tall bamboo grove, stalks swaying
+image|3D depth showcases/Depth fly-through||Snowy mountain pass flight|the camera flies forward through the mountain pass, snowy peaks on both sides
+image|3D depth showcases/Depth fly-through||Library aisle glide|the camera glides down the aisle between tall bookshelves, warm lamp light
+image|3D depth showcases/Depth fly-through||Toward the bright doorway|the camera moves forward through the dark hall toward the bright doorway at the end
+image|3D depth showcases/Depth fly-through||Approaching the waterfall|the camera flies forward toward the waterfall, spray rising, the falls growing larger
+image|Landscapes/Mountains and valleys||Clouds roll over peaks|clouds roll slowly over the mountain peaks and spill into the valley, slow pan right
+image|Landscapes/Mountains and valleys||Valley fog lifts|the morning fog slowly lifts from the valley revealing the river, static camera
+image|Landscapes/Mountains and valleys||Alpenglow fades on summit|the summit turns pink in the alpenglow as the light slowly fades, static camera
+image|Landscapes/Mountains and valleys||Cloud shadows cross valley|cloud shadows sweep slowly across the green valley, time lapse, static camera
+image|Landscapes/Mountains and valleys||Snow plume off ridge|wind blows snow off the mountain ridge in a long plume, blue sky, slow push in
+image|Landscapes/Mountains and valleys||Eagle glides over valley|an eagle glides slowly across the valley in front of the mountains, slow pan left
+image|Landscapes/Mountains and valleys||Rippling mountain lake|the mountain lake ripples gently, the reflected peaks wavering, slow tilt up
+image|Landscapes/Mountains and valleys||Hiker above the clouds|the hiker walks slowly along the ridge as clouds drift below, static camera
+image|Landscapes/Mountains and valleys||Sun rises behind mountains|the sun rises behind the mountains and light spreads across the slopes, static camera
+image|Landscapes/Mountains and valleys||Valley waterfall mist|the waterfall pours down the cliff into the valley, mist rising, slow push in
+image|Landscapes/Mountains and valleys||Stars wheel over peaks|stars wheel slowly over the dark mountain peaks, time lapse, static camera
+image|Landscapes/Mountains and valleys||Alpine meadow in wind|the grass of the alpine meadow waves in the wind below the peaks, slow pan right
+image|Landscapes/Mountains and valleys||Storm over the range|dark storm clouds gather over the mountain range and lightning flickers, static camera
+image|Landscapes/Mountains and valleys||Aerial toward far mountains|the camera flies slowly over the green valley toward the distant mountains
+image|Landscapes/Mountains and valleys||River winds through valley|the river sparkles as it flows through the winding valley, slow aerial pan left
+image|Landscapes/Mountains and valleys||Snow on mountain village|snow falls gently over the mountain village and pine slopes, static camera
+image|Landscapes/Mountains and valleys||Sunset climbs the cliffs|warm sunset light slowly climbs up the cliffs as the valley sinks into shadow, static camera
+image|Landscapes/Mountains and valleys||Mist over the glacier|mist drifts slowly over the glacier between the peaks, slow push in
+image|Landscapes/Mountains and valleys||Golden autumn valley|the autumn trees in the valley sway gently in the wind, golden light, slow pan right
+image|Landscapes/Mountains and valleys||Rainbow after valley rain|a rainbow slowly appears over the valley after the rain, clouds clearing, static camera
+image|Landscapes/Sea and beaches||Waves wash sandy shore|gentle waves wash onto the sandy beach and slide back, foam glistening, static camera
+image|Landscapes/Sea and beaches||Palms in sea breeze|the palm fronds sway in the sea breeze, waves rolling behind, slow pan right
+image|Landscapes/Sea and beaches||Sun sinks into the sea|the sun sinks slowly into the sea, its reflection shimmering on the water, static camera
+image|Landscapes/Sea and beaches||Slow motion sea spray|waves crash against the rocks and spray rises into the air, slow motion, static camera
+image|Landscapes/Sea and beaches||Sailboat on the horizon|a sailboat drifts slowly across the horizon on the calm sea, static camera
+image|Landscapes/Sea and beaches||Lighthouse over rolling waves|the lighthouse beam sweeps across the sea at dusk, waves rolling below, static camera
+image|Landscapes/Sea and beaches||Seagulls over breakers|seagulls glide over the beach and the breaking waves, slow pan left
+image|Landscapes/Sea and beaches||Footprints washed away|a wave rolls up the sand and washes away the footprints, static camera
+image|Landscapes/Sea and beaches||Turquoise lagoon ripples|the turquoise water of the lagoon ripples gently over the white sand, slow aerial push in
+image|Landscapes/Sea and beaches||Surfer rides a curl|the surfer rides along the curling wave, spray behind, camera tracks right
+image|Landscapes/Sea and beaches||Moonlit sea shimmer|moonlight shimmers on the gently moving sea, clouds drifting, static camera
+image|Landscapes/Sea and beaches||Beach umbrella flutters|the beach umbrella flutters in the wind, waves glittering in the sun, static camera
+image|Landscapes/Sea and beaches||Child at the water edge|the child runs along the water's edge as the waves reach their feet, static camera
+image|Landscapes/Sea and beaches||Fog rolls over coast|fog rolls slowly over the coast and the cliffs, waves breaking below, slow push in
+image|Landscapes/Sea and beaches||Tide pool with crabs|water moves gently in the tide pool, reflecting the sky, small crabs moving, static camera
+image|Landscapes/Sea and beaches||Fishing boats bobbing|fishing boats bob gently in the harbor, ropes swaying, slow pan right
+image|Landscapes/Sea and beaches||Aerial over foam lines|the camera flies slowly over the waves toward the beach, foam lines curling
+image|Landscapes/Sea and beaches||Storm over rough ocean|dark clouds move over the rough ocean, waves heaving, static camera
+image|Landscapes/Sea and beaches||Dune grass in wind|the dune grass bends in the wind, sand blowing over the crest, sea behind, static camera
+image|Landscapes/Sea and beaches||Dolphins leap offshore|dolphins leap out of the sparkling sea offshore, slow pan left
+image|Landscapes/Forests and fields||Golden wheat field waves|the golden wheat field waves in the wind under a blue sky, slow pan right
+image|Landscapes/Forests and fields||Sunbeams through canopy|sunbeams slant through the forest canopy as leaves flutter gently, slow push in
+image|Landscapes/Forests and fields||Lavender rows sway|the lavender rows sway softly in the breeze, bees flying, slow dolly forward
+image|Landscapes/Forests and fields||Deer in the clearing|the deer in the clearing lifts its head and looks around, ears twitching, static camera
+image|Landscapes/Forests and fields||Autumn leaves in forest|autumn leaves fall slowly through the forest, golden light, slow tilt down
+image|Landscapes/Forests and fields||Sunflowers nod in wind|the sunflowers nod gently in the wind, clouds drifting behind, static camera
+image|Landscapes/Forests and fields||Morning mist in woods|morning mist drifts slowly between the tree trunks, birds flying, static camera
+image|Landscapes/Forests and fields||Stream over mossy stones|the stream flows over mossy stones through the forest, slow push in
+image|Landscapes/Forests and fields||Poppy field breeze|red poppies sway in the field as the breeze passes, slow pan left
+image|Landscapes/Forests and fields||Rain on forest leaves|rain falls on the forest leaves, drops dripping from the branches, static camera
+image|Landscapes/Forests and fields||Snow bends pine branches|snow falls softly on the pine forest, branches bending slightly, slow push in
+image|Landscapes/Forests and fields||Haystacks at sunset|the light warms the field of haystacks as the sun goes down, birds passing, static camera
+image|Landscapes/Forests and fields||Tall grass under fast clouds|tall grass ripples across the field while clouds move fast above, time lapse, static camera
+image|Landscapes/Forests and fields||Birch leaves rustle|the birch leaves rustle and shimmer in the wind, white trunks still, slow tilt up
+image|Landscapes/Forests and fields||Walk through flower meadow|the camera walks slowly along the path through the flowering meadow
+image|Landscapes/Forests and fields||Fox trots into grass|the fox in the field turns its head and trots away through the grass, static camera
+image|Landscapes/Forests and fields||Rice terraces shimmer|water shimmers on the green rice terraces, wind rippling the plants, slow aerial pan right
+image|Landscapes/Forests and fields||Bluebell forest floor|bluebells sway on the forest floor, light shifting through the leaves, slow dolly forward
+image|Landscapes/Forests and fields||Tractor dust trail|a tractor moves slowly across the distant field leaving a dust trail, static camera
+image|Landscapes/Forests and fields||Fireflies in the glade|fireflies drift and blink in the dark forest glade, slow push in
+

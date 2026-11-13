@@ -99,7 +99,7 @@ public class SubtitlesGUI extends ProcessorGUI implements ShapesEditor.Listener 
 			aKey = 0;
 		}
 		lkf.setSelection(aKey);
-		boolean aOnKey = sub.getTime(aKey)+((Clip)sub.targetMedia).getKeysOriginMS() == aTime;
+		boolean aOnKey = sub.isKeyAt(aKey, aTime);
 		lkf.setAddMode(!aOnKey);
 	}
 

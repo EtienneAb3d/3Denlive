@@ -226,12 +226,12 @@ public class Objects3D extends Processor {
 
 	@Override
 	public int addKeyGT(long aTime) {
-		if(aTime < getClip().getStartTimeMS() || aTime <= getClip().getKeysOriginMS() || aTime > getClip().getStartTimeMS() + getClip().getDurationMS()) {
+		if(aTime < getClip().getStartTimeMS() || keyTime(aTime) <= 0 || aTime > getClip().getStartTimeMS() + getClip().getDurationMS()) {
 			//Can't insert outside
 			return -1;
 		}
 		synchronized (keys) {
-			long aT = aTime-getClip().getKeysOriginMS();
+			long aT = keyTime(aTime);
 			int aExact = keyAt(aT);
 			if(aExact >= 0) {
 				return aExact;
@@ -262,7 +262,7 @@ public class Objects3D extends Processor {
 
 	@Override
 	public int getPrevKeyGT(long aTime) {
-		long aT = aTime - getClip().getKeysOriginMS();
+		long aT = keyTime(aTime);
 		for(int k = keys.size() - 1;k >= 0;k--) {
 			if(keys.elementAt(k).time <= aT) {
 				return k;
@@ -273,7 +273,7 @@ public class Objects3D extends Processor {
 
 	@Override
 	public int getNextKeyGT(long aTime) {
-		long aT = aTime - getClip().getKeysOriginMS();
+		long aT = keyTime(aTime);
 		for(int k = 0;k < keys.size();k++) {
 			if(keys.elementAt(k).time > aT) {
 				return k;
@@ -285,7 +285,7 @@ public class Objects3D extends Processor {
 	@Override
 	public boolean setDisplayKeyGT(long aTime) {
 		try {
-			displayKey = interpolate(aTime-getClip().getKeysOriginMS());
+			displayKey = interpolate(keyTime(aTime));
 		}
 		catch(Throwable t) {
 			displayKey = null;
@@ -338,7 +338,7 @@ public class Objects3D extends Processor {
 	 * Model of the media at aTimePos (time of the montage)
 	 */
 	public Model3D modelAt(long aTimePos) {
-		return withPoses(interpolate(aTimePos-getClip().getKeysOriginMS()));
+		return withPoses(interpolate(keyTime(aTimePos)));
 	}
 
 	Model3D withPoses(Key aK) {
@@ -381,7 +381,7 @@ public class Objects3D extends Processor {
 	}
 
 	boolean isIdentityAt(long aTimePos) {
-		Key aK = interpolate(aTimePos-getClip().getKeysOriginMS());
+		Key aK = interpolate(keyTime(aTimePos));
 		for(Pose aP : aK.poses.values()) {
 			if(!aP.isIdentity()) {
 				return false;
@@ -409,7 +409,7 @@ public class Objects3D extends Processor {
 				aH = aBIL.getHeight();
 			}
 			Model3D aM = modelAt(aTime);
-			long aMediaTime = Math.max(0, aTime-getClip().getStartTimeMS()+getClip().getShiftTimeMS());
+			long aMediaTime = Math.max(0, getClip().mediaTimeMS(aTime));
 			double aSpin = aM.spin*aMediaTime/1000.0;
 			Renderer3D.Options aOpt = new Renderer3D.Options();
 			aOpt.ss = aW*(long)aH <= 2200000 ? 2 : 1;

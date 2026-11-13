@@ -83,6 +83,10 @@ public abstract class LabelScale extends Widget {
 			public void change(int aValue) {
 				aThis.change(aValue);
 			}
+			@Override
+			public void changeEnd() {
+				aThis.changeEnd();
+			}
 		};
 //		aS.setLayoutData(new GridData(GridData.FILL_BOTH));
 //		aS.setBackground(tde.gui.colors.WHITE);
@@ -152,4 +156,12 @@ public abstract class LabelScale extends Widget {
 	}
 
 	public abstract void change(int aValue);
+
+	/** End of a drag of the slider */
+	public void changeEnd() {}
+
+	/** True while the slider is dragged: change() is called again until changeEnd() */
+	public boolean isDragging() {
+		return sb != null && sb.isDragging();
+	}
 }

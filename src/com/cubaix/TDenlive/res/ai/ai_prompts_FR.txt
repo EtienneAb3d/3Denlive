@@ -3002,3 +3002,1058 @@ sfx|Tubular bells|Cloches tubulaires|des cloches tubulaires qui carillonnent len
 sfx|Glockenspiel melody|Mélodie au glockenspiel|un glockenspiel qui joue une mélodie légère et scintillante
 sfx|Clock tower chime|Carillon du beffroi|la grande horloge d'un beffroi qui sonne l'heure sur la place d'une ville
 sfx|Triangle ding|Ding de triangle|un triangle d'orchestre frappé une fois qui résonne
+
+image|Animate this image|Animer cette image|tout ce qui est dans l'image prend doucement vie avec des mouvements naturels et subtils, caméra fixe
+image|Living photo|Photo vivante|la scène de la photo se met à bouger naturellement, comme si l'instant continuait, lumière douce, caméra fixe
+image|Subtle motion everywhere|Mouvement subtil partout|un mouvement naturel et subtil partout dans l'image : feuilles, cheveux, eau et lumière bougent légèrement, caméra fixe
+image|Gentle breeze over the scene|Brise légère sur la scène|une brise légère traverse la scène, tout ce qui est léger se balance doucement, caméra fixe
+image|Cinemagraph loop|Boucle cinemagraph|un seul élément de l'image bouge en boucle fluide pendant que le reste reste immobile, caméra fixe
+image|Characters move naturally|Les personnages bougent naturellement|les personnes ou les animaux de l'image bougent naturellement, respirent, clignent des yeux et remuent légèrement, caméra fixe
+image|Slow motion moment|Moment au ralenti|l'instant saisi dans l'image se déroule au ralenti, caméra fixe
+image|Realistic animation|Animation réaliste|animation réaliste de l'image, mouvements naturels, détails cohérents, mouvement fluide, caméra fixe
+image|What happens next|Ce qui se passe ensuite|la scène continue naturellement à partir de cette image, montrant ce qui se passe dans les secondes suivantes, caméra fixe
+image|The action continues|L'action continue|l'action montrée dans l'image continue de façon fluide et naturelle, la caméra suit le sujet
+image|Main subject starts moving|Le sujet principal se met en mouvement|le sujet principal de l'image se met en mouvement et s'éloigne de la caméra, caméra fixe
+image|Subject turns to camera|Le sujet se tourne vers la caméra|le sujet principal de l'image se tourne lentement vers la caméra, lent travelling avant
+image|Something enters the frame|Quelque chose entre dans le champ|quelque chose entre dans le champ par le côté et traverse la scène, caméra fixe
+image|Life goes on around|La vie continue autour|l'arrière-plan de l'image s'anime de passants, d'oiseaux ou de véhicules, caméra fixe
+image|The scene calms down|La scène s'apaise|le mouvement dans l'image s'apaise lentement jusqu'à ce que tout soit immobile et paisible, caméra fixe
+image|Happy ending|Fin heureuse|la scène continue vers un moment heureux, sourires et lumière chaude, lent travelling avant
+image|Time passes|Le temps passe|le temps passe vite sur la scène comme en accéléré : la lumière, les ombres, les nuages et les personnes changent, caméra fixe
+image|Years go by|Les années passent|les années passent sur le lieu de l'image : il vieillit, s'use et change lentement, caméra fixe
+image|Back in time|Retour dans le passé|la scène remonte lentement le temps et retrouve l'aspect qu'elle avait il y a des décennies, caméra fixe
+image|Day turns to night|Le jour devient nuit|la scène de l'image passe lentement du jour à la nuit, les lumières s'allument, caméra fixe
+image|Scene goes from summer to winter|L'été devient hiver|la scène passe lentement de l'été à l'hiver, la neige recouvre tout, caméra fixe
+image|Plants grow and bloom|Les plantes poussent et fleurissent|accéléré des plantes de l'image qui poussent et fleurissent, caméra fixe
+image|Ruin restored|La ruine restaurée|le vieux lieu usé de l'image est lentement restauré jusqu'à paraître neuf, caméra fixe
+image|Empty then full|Vide puis plein|le lieu vide de l'image se remplit lentement de monde et de vie, caméra fixe
+image|Storm then sunshine|L'orage puis le soleil|de sombres nuages d'orage au-dessus de la scène se dissipent et un soleil éclatant revient, caméra fixe
+image|Sketch becomes real|L'esquisse devient réelle|l'image commence comme une esquisse au crayon et devient lentement une scène réaliste en couleur, caméra fixe
+image|Photo turns into a painting|La photo devient une peinture|l'image se transforme lentement en peinture à l'huile, des coups de pinceau apparaissent sur la scène, caméra fixe
+image|Painting turns into a photo|La peinture devient une photo|l'image peinte devient lentement une photo réaliste, avec une lumière et des détails naturels, caméra fixe
+image|Turns into a cartoon|Devient un dessin animé|la scène se transforme lentement en dessin animé coloré, caméra fixe
+image|Turns into a watercolor|Devient une aquarelle|l'image se fond lentement en une douce aquarelle, les couleurs diffusant légèrement, caméra fixe
+image|Emerges from darkness|Surgit de l'obscurité|la scène sort lentement de l'obscurité totale à mesure que la lumière la révèle, caméra fixe
+image|Turns into a miniature model|Devient une maquette miniature|la scène se transforme lentement en maquette miniature aux couleurs de jouet avec un flou de bascule, caméra fixe
+image|Slow push in on the subject|Lent travelling avant sur le sujet|l'image reste immobile pendant que la caméra avance lentement vers le sujet principal
+image|Slow pull back reveal|Lent travelling arrière révélateur|la caméra recule lentement depuis l'image, révélant une plus grande partie de la scène
+image|Gentle pan across the scene|Doux panoramique sur la scène|la caméra balaie lentement la scène de gauche à droite, mouvement naturel subtil
+image|Slow orbit around the subject|Lent orbite autour du sujet|la caméra tourne lentement autour du sujet principal de l'image, mouvement fluide
+image|Cinematic crane up|Mouvement de grue cinématique|la caméra s'élève lentement au-dessus de la scène comme un plan à la grue, cinématique
+image|Handheld documentary feel|Caméra à l'épaule documentaire|léger mouvement de caméra à l'épaule sur la scène, ambiance documentaire naturelle
+image|Ken Burns effect|Effet Ken Burns|lent zoom et doux panoramique sur l'image fixe, effet Ken Burns
+image|Rack focus to background|Bascule de mise au point vers le fond|la mise au point passe lentement du premier plan à l'arrière-plan de l'image, caméra fixe
+image|Moving sunlight and shadows|Soleil et ombres en mouvement|la lumière du soleil et les ombres glissent lentement sur la scène au passage des nuages, caméra fixe
+image|Golden hour glow|Lueur de l'heure dorée|la lumière de l'image devient lentement chaude et dorée comme au coucher du soleil, caméra fixe
+image|Drifting mist|Brume qui dérive|une brume légère dérive lentement à travers la scène, lumière douce et diffuse, caméra fixe
+image|Floating dust in light|Poussière flottant dans la lumière|de minuscules particules de poussière flottent dans la lumière à travers la scène, caméra fixe
+image|Light rain begins|Une pluie légère commence|une pluie légère commence à tomber sur la scène, des reflets apparaissent, caméra fixe
+image|Snow starts falling|La neige commence à tomber|de doux flocons de neige commencent à tomber sur la scène, caméra fixe
+image|Flickering warm light|Lumière chaude vacillante|une lumière chaude et vacillante, comme des bougies ou un feu, joue sur la scène, caméra fixe
+image|Dreamy soft glow|Douce lueur onirique|une douce lueur onirique et de légers reflets lumineux se répandent sur la scène, caméra fixe
+image|Parallax depth effect|Effet de profondeur en parallaxe|la caméra se déplace légèrement de côté, le premier plan et l'arrière-plan de l'image se décalant en parallaxe
+image|Foreground stands out|Le premier plan ressort|la caméra avance lentement, le premier plan de l'image se détachant devant l'arrière-plan
+image|Subject pops out|Le sujet jaillit|le sujet principal de l'image semble sortir du cadre vers l'avant, lent travelling avant
+image|Gentle dolly forward in depth|Doux travelling avant en profondeur|la caméra avance doucement dans la profondeur de la scène, forte sensation de profondeur
+image|Floating particles in front|Particules flottant au premier plan|de petites particules flottent tout près de la caméra devant la scène, lent travelling avant
+image|Layered depth drift|Dérive des plans en profondeur|les plans de l'image dérivent à des vitesses différentes pendant que la caméra se déplace lentement, forte profondeur
+image|Dolly zoom on the subject|Travelling compensé sur le sujet|travelling compensé sur le sujet principal, l'arrière-plan s'étirant derrière lui
+image|Walking into the picture|Entrer dans l'image|la caméra avance comme si elle entrait dans l'image, la scène s'ouvrant autour d'elle
+image|Shy smile appears|Un sourire timide apparaît|la personne de la photo a d'abord le visage neutre, puis un sourire timide se dessine lentement sur ses lèvres, douce lumière de fenêtre, caméra fixe
+image|Burst of laughter|Éclat de rire|la personne de l'image éclate soudain de rire, les épaules secouées et les yeux plissés, chaude lumière du jour, caméra fixe
+image|Surprised raised eyebrows|Sourcils levés de surprise|la personne de l'image lève les sourcils de surprise et entrouvre la bouche, puis se détend, caméra fixe
+image|Thoughtful frown fades|Le froncement pensif s'efface|la personne de la photo fronce les sourcils, pensive, puis son visage s'adoucit en une expression calme, douce lumière latérale, lent travelling avant
+image|Wink at the viewer|Clin d'œil au spectateur|la personne du portrait regarde la caméra et fait un clin d'œil espiègle, un petit sourire au coin des lèvres, caméra fixe
+image|Tears welling up|Les larmes montent|la personne de la photo cligne lentement des yeux tandis que les larmes lui montent aux yeux, les lèvres tremblant légèrement, lumière douce et tamisée, très lent travelling avant
+image|Grandmother warm smile|Sourire chaleureux de grand-mère|la femme âgée de l'image sourit chaleureusement, ses rides se creusant autour des yeux, lumière dorée d'après-midi, caméra fixe
+image|Child giggles and scrunches|L'enfant glousse et plisse le nez|l'enfant de la photo glousse et plisse le nez, les joues relevées, lumière du jour éclatante, caméra fixe
+image|Sigh of relief|Soupir de soulagement|la personne de l'image ferme les yeux et pousse un long soupir de soulagement, les épaules s'abaissant, lumière douce, caméra fixe
+image|Stern look softens|Le regard sévère s'adoucit|l'homme du portrait garde un air sévère, puis son regard s'adoucit et il esquisse un léger sourire, caméra fixe
+image|Playful pout then laugh|Moue boudeuse puis rire|la personne de la photo fait une moue boudeuse et espiègle, puis éclate de rire, lumière vive, caméra fixe
+image|Proud chin lifted|Menton levé avec fierté|la personne de l'image relève le menton avec une expression fière et assurée et un léger sourire, lumière latérale dramatique, lent travelling avant
+image|Startled blink then smile|Clignement surpris puis sourire|la personne de l'image cligne rapidement des yeux comme si elle sursautait, puis sourit, soulagée, caméra fixe
+image|Dreamy half smile|Demi-sourire rêveur|la personne de la photo regarde au loin avec un demi-sourire rêveur, les paupières s'abaissant lentement, lumière chaude et vaporeuse, caméra fixe
+image|Painted face comes alive|Le visage peint s'anime|le visage du tableau s'anime, les yeux clignent et les lèvres forment un doux sourire, les coups de pinceau restent visibles, caméra fixe
+image|Skeptical raised brow|Sourcil sceptique|la personne du portrait hausse un sourcil d'un air sceptique et penche légèrement la tête, caméra fixe
+image|Wide joyful grin|Large sourire joyeux|la personne de la photo fait un large sourire joyeux qui découvre ses dents, les yeux pétillants, lumière ensoleillée, lent travelling avant
+image|Nervous lip bite|Lèvre mordillée nerveusement|la personne de l'image se mordille nerveusement la lèvre inférieure et baisse les yeux, douce lumière intérieure, caméra fixe
+image|Silently mouthed words|Mots articulés en silence|la personne de l'image articule silencieusement quelques mots, comme si elle chuchotait au spectateur, gros plan, caméra fixe
+image|Anger slowly fades|La colère s'apaise lentement|la personne de la photo commence par un regard furieux, puis inspire et son visage se détend lentement, lumière sombre et contrastée, caméra fixe
+image|Head turns toward camera|La tête se tourne vers la caméra|la personne de la photo tourne lentement la tête vers la caméra et sourit, lumière douce, caméra fixe
+image|Glance over the shoulder|Regard par-dessus l'épaule|la personne de l'image jette un regard par-dessus son épaule vers le spectateur, les cheveux bougeant légèrement, caméra fixe
+image|Eyes follow someone|Les yeux suivent quelqu'un|les yeux de la personne du portrait se déplacent lentement de gauche à droite comme s'ils suivaient quelqu'un, la tête immobile, caméra fixe
+image|Gaze lifts to the sky|Le regard s'élève vers le ciel|la personne de l'image lève lentement les yeux vers le ciel, la lumière tombant sur son visage, lent panoramique vertical vers le haut
+image|Curious head tilt|Tête penchée avec curiosité|la personne de la photo penche la tête sur le côté avec curiosité, les yeux fixés sur la caméra, caméra fixe
+image|Slow nod of agreement|Lent hochement d'approbation|la personne de l'image hoche lentement la tête deux fois en signe d'accord, l'expression calme, douce lumière du jour, caméra fixe
+image|Eyes rise from the ground|Les yeux se relèvent du sol|la personne de la photo regarde le sol, puis relève les yeux vers la caméra, caméra fixe
+image|Profile turns to face|Du profil à la face|la personne vue de profil se tourne lentement face à la caméra, une lumière latérale balayant ses traits, caméra fixe
+image|Glance toward the window|Regard vers la fenêtre|la personne de l'image tourne son regard vers une fenêtre, la lumière du jour sur sa joue, lent travelling avant
+image|Amused head shake|Hochement de tête amusé|la personne du portrait secoue doucement la tête avec un petit sourire amusé, caméra fixe
+image|Head tips back peacefully|La tête bascule paisiblement en arrière|la personne de la photo ferme lentement les yeux et incline légèrement la tête en arrière, l'expression paisible, caméra fixe
+image|Searching the crowd|Recherche dans la foule|la personne de l'image regarde à gauche, puis à droite, comme si elle cherchait quelqu'un dans une foule, caméra fixe
+image|Statue turns its head|La statue tourne la tête|la statue de pierre de la photo tourne lentement la tête vers la caméra, de la poussière tombant de son cou, caméra fixe
+image|Sidelong glance away|Regard en coin puis détourné|la personne de l'image jette un regard en coin vers la caméra sans bouger la tête, puis détourne les yeux, caméra fixe
+image|Old portrait looks up|Le vieux portrait lève les yeux|la personne du vieux portrait en noir et blanc lève lentement les yeux et regarde droit vers le spectateur, grain de pellicule, caméra fixe
+image|Sleeper opens their eyes|Le dormeur ouvre les yeux|la personne endormie de la photo ouvre lentement les yeux et regarde vers la caméra, douce lumière du matin, caméra fixe
+image|Chin rests on hand|Menton posé sur la main|la personne de l'image tourne la tête et pose le menton sur sa main, regardant de côté d'un air pensif, caméra fixe
+image|Turning to the horizon|Tourné vers l'horizon|la personne de la photo se détourne de la caméra et regarde vers l'horizon, le vent dans les cheveux, lent travelling arrière
+image|Walker looks back|Le marcheur se retourne|la personne qui s'éloigne dans l'image se retourne brièvement, puis regarde de nouveau devant elle, caméra fixe
+image|Upward glance and blink|Regard vers le haut et clignement|la personne du portrait lève les yeux, cligne lentement et baisse de nouveau le regard, lumière douce, très lent travelling avant
+image|Long hair in the breeze|Longs cheveux dans la brise|les longs cheveux de la personne de la photo flottent doucement dans la brise, des mèches traversant son visage, lumière dorée de fin de journée, caméra fixe
+image|Scarf flutters in the wind|L'écharpe flotte au vent|l'écharpe autour du cou de la personne flotte au vent tandis qu'elle reste immobile, ciel nuageux, caméra fixe
+image|Dress billows on the beach|La robe gonfle sur la plage|la longue robe de la femme de l'image se gonfle dans le vent marin, le tissu ondulant, lumière du couchant, lent panoramique vers la droite
+image|Curls bounce in gusts|Les boucles rebondissent dans les rafales|les cheveux bouclés de la personne de l'image rebondissent et se soulèvent sous de fortes rafales de vent, caméra fixe
+image|Bridal veil floats|Le voile de la mariée flotte|le voile de la mariée sur la photo se soulève et flotte au vent derrière elle, doux contre-jour, lent travelling avant
+image|Coat flaps on a cliff|Manteau battant sur une falaise|le manteau de la personne debout sur la falaise claque dans le vent violent, les nuages filant derrière, caméra fixe
+image|Backlit hair strands|Mèches en contre-jour|des mèches de cheveux flottent devant le visage de la personne et accrochent le contre-jour, faible profondeur de champ, caméra fixe
+image|Cape sweeps behind|La cape balaie l'air|la longue cape du personnage de l'image balaie l'air et ondule derrière lui dans le vent, ciel dramatique, lent panoramique vertical vers le haut
+image|Cyclist shirt ripples|La chemise du cycliste ondule|la chemise du cycliste de la photo ondule au vent pendant qu'il roule, l'arrière-plan doucement flou, plan de suivi
+image|Ponytail swings sideways|La queue de cheval se balance|la queue de cheval de la personne de l'image se balance d'un côté à l'autre dans la brise, lumière du jour éclatante, caméra fixe
+image|Straw hat held in wind|Chapeau de paille retenu au vent|le bord du chapeau de paille tremble dans le vent et la personne le retient d'une main, lumière d'été, caméra fixe
+image|Sari waves gracefully|Le sari ondoie avec grâce|le sari fluide de la femme de la photo ondoie gracieusement dans le vent, le tissu coloré chatoyant, caméra fixe
+image|Windswept old man|Vieil homme dans le vent|la barbe et les cheveux du vieil homme de l'image sont ébouriffés par un vent froid, il plisse les yeux, caméra fixe
+image|Skirt sways in the field|La jupe ondule dans le champ|la jupe de la fillette debout dans le champ ondule et tournoie dans le vent chaud, l'herbe bougeant autour d'elle, lent travelling arrière
+image|Hair floats like underwater|Cheveux flottant comme sous l'eau|les cheveux de la personne de la photo flottent lentement comme sous l'eau, ondulant doucement autour de son visage, caméra fixe
+image|Flag waves behind subject|Un drapeau flotte derrière le sujet|un drapeau derrière la personne de l'image flotte au vent tandis que ses cheveux bougent légèrement, caméra fixe
+image|Wind tousles child's hair|Le vent ébouriffe les cheveux de l'enfant|le vent ébouriffe les cheveux fins de l'enfant de l'image, qui rit et plisse les yeux, caméra fixe
+image|Kimono sleeves sway|Les manches du kimono se balancent|les larges manches du kimono sur la photo se balancent doucement dans la brise, des pétales de cerisier passant devant, caméra fixe
+image|Hair ribbons twist|Les rubans des cheveux s'enroulent|les rubans colorés noués dans les cheveux de la personne flottent et s'enroulent au vent, journée ensoleillée, lent travelling avant
+image|Jacket whips in storm|La veste claque dans la tempête|la veste ouverte de la personne de l'image claque dans un vent de tempête, nuages sombres derrière, caméra fixe
+image|Friendly wave hello|Salut amical de la main|la personne de la photo lève la main et salue la caméra avec un sourire, caméra fixe
+image|Hair tucked behind ear|Cheveux glissés derrière l'oreille|la personne de l'image ramène ses cheveux derrière son oreille d'une main, lumière douce, caméra fixe
+image|Blowing a kiss|Baiser envoyé|la personne de l'image envoie un baiser vers la caméra, puis sourit, lumière chaude, caméra fixe
+image|Thumbs up and nod|Pouce levé et hochement de tête|la personne de la photo lève le pouce et hoche la tête, lumière du jour éclatante, caméra fixe
+image|Palms reveal a flower|Les paumes révèlent une fleur|les mains de l'image s'ouvrent lentement pour révéler une petite fleur posée dans les paumes, lumière douce, lent travelling avant
+image|Finger to the lips|Doigt sur les lèvres|la personne du portrait pose un doigt sur ses lèvres comme pour dire chut, caméra fixe
+image|Sip of coffee|Une gorgée de café|la personne de la photo porte la tasse de café à ses lèvres et en boit une gorgée, la vapeur s'élevant, caméra fixe
+image|Fingers on piano keys|Doigts sur les touches du piano|les mains de l'image se déplacent avec grâce sur les touches du piano en les enfonçant doucement, gros plan, caméra fixe
+image|Raised glass toast|Toast le verre levé|la personne de l'image lève son verre pour porter un toast vers la caméra en souriant, chaude lumière du soir, caméra fixe
+image|Joyful hand clapping|Applaudissements joyeux|la personne de la photo applaudit joyeusement plusieurs fois en riant, caméra fixe
+image|Glasses pushed up|Lunettes remontées|la personne de l'image remonte ses lunettes sur son nez d'un doigt, puis regarde la caméra, caméra fixe
+image|Pointing into the distance|Montrer au loin|la personne de la photo montre quelque chose au loin, le regard suivant la main, lent panoramique dans cette direction
+image|Hands knead dough|Mains qui pétrissent la pâte|les mains de l'image pétrissent la pâte sur la table farinée, la pressant et la repliant, caméra fixe
+image|Pen writes on paper|Le stylo écrit sur le papier|la main de l'image écrit lentement sur le papier avec un stylo, des traits d'encre apparaissant, gros plan, caméra fixe
+image|Hands warmed by fire|Mains réchauffées au feu|les mains de la photo se frottent et se tendent vers la chaleur d'un feu, lumière orangée vacillante, caméra fixe
+image|Polite hat tip|Coup de chapeau poli|l'homme de l'image soulève poliment son chapeau vers la caméra avec un léger signe de tête, caméra fixe
+image|Open hand reaches out|Main ouverte tendue|la personne de l'image tend lentement la main vers la caméra, paume ouverte, lumière douce, lent travelling avant
+image|Amused shrug|Haussement d'épaules amusé|la personne de la photo hausse les épaules et ouvre les mains, l'air amusé, caméra fixe
+image|Joined hands squeeze|Mains jointes qui se serrent|les deux mains qui se tiennent sur l'image se serrent doucement, les pouces bougeant, lumière chaude, caméra fixe
+image|Hand on the heart|Main sur le cœur|la personne du portrait pose une main sur son cœur et ferme les yeux un instant, caméra fixe
+image|Gentle breathing portrait|Portrait qui respire doucement|la personne de la photo reste immobile, la poitrine se soulevant et s'abaissant au rythme d'une respiration douce, les yeux clignant de temps en temps, caméra fixe
+image|Living photograph effect|Effet de photo vivante|le portrait s'anime subtilement, légers clignements, infimes mouvements de tête et respiration douce, comme une photo vivante, caméra fixe
+image|Candlelight on the face|Lueur de bougie sur le visage|le visage de la personne de l'image est éclairé par une bougie dont la flamme vacille, les ombres dansant doucement, caméra fixe
+image|Steam from a teacup|Vapeur d'une tasse de thé|la vapeur s'élève lentement de la tasse de thé devant la personne de l'image, qui reste immobile, lumière douillette, caméra fixe
+image|Sleeping baby breathes|Le bébé endormi respire|le bébé endormi de la photo respire doucement, ses petits doigts frémissant, lumière chaude, très lent travelling avant
+image|Leaf shadows on face|Ombres de feuilles sur le visage|des ombres de feuilles se balancent sur le visage de la personne de l'image, lumière tachetée du soleil, caméra fixe
+image|Eyelashes catch light|Les cils accrochent la lumière|la personne du portrait en gros plan cligne lentement des yeux, les cils accrochant la lumière, caméra fixe
+image|Earrings sway softly|Les boucles d'oreilles se balancent|les boucles d'oreilles de la femme de la photo se balancent légèrement au rythme de sa respiration, douce lueur, caméra fixe
+image|Clouds reflected in eyes|Nuages reflétés dans les yeux|de petits reflets bougent dans les yeux de la personne de l'image au passage des nuages, caméra fixe
+image|Smoke curls from a pipe|La fumée de la pipe s'enroule|la fumée s'enroule lentement depuis la pipe du vieil homme de l'image, il cligne des yeux calmement, caméra fixe
+image|Pensive by rainy window|Pensif près d'une fenêtre pluvieuse|la personne assise près de la fenêtre pluvieuse de la photo bouge à peine, des gouttes de pluie glissant sur la vitre, caméra fixe
+image|Fireflies around a sitter|Lucioles autour d'une personne assise|de minuscules lucioles flottent autour de la personne assise de l'image au crépuscule, son visage doucement éclairé, caméra fixe
+image|Dust in the sunbeam|Poussière dans un rayon de soleil|des particules de poussière flottent dans un rayon de soleil à côté de la personne de la photo, qui cligne lentement des yeux, caméra fixe
+image|Deep slow breath|Respiration lente et profonde|la personne du portrait prend une inspiration lente et profonde, les narines se dilatant légèrement, le regard calme, caméra fixe
+image|Sunlight drifts across face|La lumière glisse sur le visage|une douce lumière du soleil glisse lentement sur le visage de la personne de l'image au fil du temps, caméra fixe
+image|Cat purrs on a lap|Un chat ronronne sur les genoux|le chat sur les genoux de la personne de la photo ronronne, les oreilles frémissantes, tandis que la personne le caresse lentement, caméra fixe
+image|Breath vapor in winter|Buée de l'haleine en hiver|une légère buée s'échappe de la bouche de la personne de l'image dans l'air froid de l'hiver, la neige tombant doucement, caméra fixe
+image|Lips part while breathing|Lèvres entrouvertes par le souffle|les lèvres de la personne du portrait s'entrouvrent légèrement au rythme de sa respiration, le regard calme et posé, caméra fixe
+image|Neon glow pulses|Lueur de néon pulsante|une lumière de néon pulse doucement sur le visage de la personne de la photo la nuit, les couleurs changeant, caméra fixe
+image|Old man in rocking chair|Vieil homme dans un fauteuil à bascule|le vieil homme de l'image se balance lentement dans son fauteuil à bascule, les yeux mi-clos, chaude lumière de véranda, caméra fixe
+image|Twirl in place|Pirouette sur place|la personne de la photo fait un tour complet sur elle-même, les vêtements s'évasant, puis s'arrête et sourit, caméra fixe
+image|Ballet arm sweep|Mouvement de bras de ballet|la danseuse de ballet de l'image lève lentement les bras au-dessus de sa tête avec grâce, éclairage de scène, caméra fixe
+image|Swaying to the music|Balancement au rythme de la musique|la personne de l'image se balance doucement d'un côté à l'autre comme si elle écoutait de la musique, les yeux fermés, lumière chaude, caméra fixe
+image|Couple slow dance|Slow en couple|le couple de la photo danse un slow enlacé, tournant doucement, douce lumière du soir, lent mouvement orbital
+image|Hip hop bounce|Rebond hip-hop|le danseur de l'image entame un mouvement hip-hop rythmé, les épaules et les bras rebondissant en cadence, caméra fixe
+image|Jump for joy|Saut de joie|la personne de l'image saute en l'air, les bras levés de joie, puis retombe, grand jour, caméra fixe
+image|Walking toward the camera|Marche vers la caméra|la personne de la photo se met à marcher lentement vers la caméra, les cheveux bougeant à chaque pas, caméra fixe
+image|Flamenco skirt flick|Coup de jupe de flamenco|la danseuse de flamenco de l'image fait virevolter sa jupe rouge et frappe des pieds, lumière dramatique, caméra fixe
+image|Tai chi in the mist|Tai-chi dans la brume|la personne de l'image exécute de lents mouvements de tai-chi, les bras ondulant avec fluidité, matin brumeux, caméra fixe
+image|Child runs across grass|L'enfant court dans l'herbe|l'enfant de la photo s'éloigne en courant dans l'herbe, puis se retourne en riant, lent panoramique qui le suit
+image|Head bob with headphones|Hochement de tête au casque|la personne de l'image qui porte un casque hoche la tête en rythme en souriant, caméra fixe
+image|Old photo waltz|Valse d'une vieille photo|le couple de la vieille photo commence une valse, tournant gracieusement sur la piste, lent plan de suivi
+image|Morning stretch and yawn|Étirement et bâillement du matin|la personne de l'image étire les deux bras au-dessus de sa tête et bâille, lumière du matin, caméra fixe
+image|Skater glides and turns|Le patineur glisse et tourne|le patineur de la photo glisse en avant avec fluidité et tourne, lent plan de suivi
+image|Painted dancers move|Les danseuses peintes s'animent|les danseuses du tableau commencent à bouger lentement, leurs jupes tournoyant, les couleurs gardant leur aspect pictural, caméra fixe
+image|Martial arts high kick|Coup de pied haut d'arts martiaux|l'artiste martial de l'image exécute un coup de pied haut et revient en garde, la poussière s'élevant, caméra fixe
+image|Park swing ride|Balançoire au parc|la personne sur la balançoire de la photo se balance d'avant en arrière, les cheveux au vent, parc ensoleillé, caméra fixe
+image|Bow after a performance|Salut après le spectacle|l'artiste de l'image salue profondément le public, puis se redresse en souriant, projecteur de scène, caméra fixe
+image|Dancing in the rain|Danser sous la pluie|la personne de la photo danse et tournoie sous la pluie, des éclaboussures autour de ses pieds, lent travelling arrière
+image|Yoga pose transition|Enchaînement de postures de yoga|la personne de l'image passe en douceur d'une posture de yoga à une autre, respiration calme, lumière douce, caméra fixe
+image|Push in to the eyes|Travelling avant jusqu'aux yeux|lent travelling avant du portrait entier jusqu'à un gros plan sur les yeux de la personne de la photo, le sujet immobile
+image|Push into a landscape|Avancée dans un paysage|doux travelling avant vers le centre du paysage, les nuages dérivant lentement, les arbres se balançant légèrement
+image|Through the open doorway|Par la porte ouverte|la caméra avance lentement à travers la porte ouverte de l'image, une lumière brillant à l'intérieur
+image|Dolly toward the house|Travelling vers la maison|travelling fluide vers la maison de l'image, les fenêtres éclairées, de la fumée s'élevant de la cheminée
+image|Painting detail push in|Avancée sur un détail du tableau|lent travelling avant sur le détail central du tableau, les coups de pinceau devenant visibles, léger miroitement de lumière
+image|City street comes alive|La rue s'anime|la caméra avance le long de la rue de la photo, les voitures et les passants se mettant à bouger
+image|Forward on forest path|En avant sur le sentier forestier|la caméra avance lentement sur le sentier forestier de l'image, les feuilles frémissant, des rayons de lumière à travers les arbres
+image|Dramatic rush to a face|Avancée dramatique vers un visage|travelling avant rapide et dramatique sur le visage de la personne de l'image, qui lève les yeux vers la caméra
+image|Approach the misty peak|Approche du sommet brumeux|lent travelling avant vers le sommet de la montagne de la photo, la brume roulant à sa base
+image|Studio product push in|Avancée sur un produit en studio|travelling avant fluide sur l'objet au centre de l'image, une douce lumière de studio brillant sur sa surface
+image|Into the lit tunnel|Dans le tunnel éclairé|la caméra s'enfonce dans le tunnel de l'image, les lumières défilant au-dessus
+image|Toward the dinner candles|Vers les bougies du dîner|lent travelling avant au-dessus de la table du dîner de la photo vers les bougies, les flammes vacillant
+image|Lit window at night|Fenêtre éclairée la nuit|la caméra avance vers la fenêtre éclairée de l'immeuble la nuit, les rideaux bougeant légèrement
+image|Closer to a sleeping cat|Plus près du chat endormi|très lent travelling avant sur le chat endormi de l'image, ses flancs se soulevant à chaque respiration
+image|Flower and arriving bee|Fleur et abeille qui arrive|doux travelling avant sur la fleur de la photo, les pétales tremblant, une abeille arrivant
+image|Into the waking crowd|Dans la foule qui s'éveille|la caméra s'avance lentement dans la foule de l'image, les gens se mettant à bouger et à parler
+image|Down the long corridor|Le long du couloir|la caméra avance dans le long couloir de l'image, une lumière vacillant au bout
+image|Old map by candlelight|Vieille carte à la bougie|lent travelling avant sur la vieille carte de la photo, la lueur d'une bougie vacillant sur le papier
+image|Toward the boat on the lake|Vers la barque sur le lac|la caméra avance vers la petite barque sur le lac de l'image, l'eau ondulant
+image|Open book page lifts|La page du livre se soulève|lent travelling avant sur le livre ouvert de l'image, une page se soulevant légèrement dans la brise
+image|Pull back from the eyes|Recul depuis les yeux|la caméra part des yeux de la personne de la photo et recule lentement pour révéler tout le visage et les épaules
+image|Vast landscape reveal|Révélation d'un vaste paysage|lent travelling arrière depuis la personne de l'image pour révéler le vaste paysage qui l'entoure, les nuages en mouvement
+image|From flower to garden|De la fleur au jardin|la caméra recule depuis la fleur de l'image pour révéler tout le jardin, les feuilles se balançant
+image|Back through the window|Recul à travers la fenêtre|la caméra recule à travers la fenêtre de la photo, révélant la pièce à l'intérieur, les rideaux bougeant
+image|Rising aerial reveal|Révélation aérienne ascendante|la caméra recule et s'élève au-dessus de la scène de l'image, révélant d'en haut les rues alentour
+image|Painting on museum wall|Tableau sur le mur du musée|lent travelling arrière depuis le tableau, révélant son cadre accroché au mur d'un musée, lumière douce
+image|Lone tree in waving grass|Arbre isolé dans l'herbe ondulante|la caméra recule lentement depuis l'arbre isolé de l'image, l'herbe ondulant au vent autour de lui
+image|From plate to restaurant|De l'assiette au restaurant|lent travelling arrière depuis l'assiette sur la table de la photo pour révéler tout le restaurant, les gens en mouvement
+image|Beach walker and waves|Promeneur et vagues sur la plage|la caméra recule depuis la personne sur la plage de l'image, les vagues déferlant sur le sable
+image|Car and the sunset road|La voiture et la route au couchant|la caméra recule depuis la voiture de l'image, révélant la longue route derrière elle au coucher du soleil
+image|City to above the clouds|De la ville au-dessus des nuages|la caméra recule depuis la ville de la photo, s'élevant jusqu'à ce que les nuages apparaissent en dessous
+image|Singer to the audience|Du chanteur au public|lent travelling arrière depuis le chanteur sur scène de l'image, révélant le public et les lumières
+image|Craftsman at his bench|L'artisan à son établi|la caméra recule depuis les mains au travail de l'image pour révéler l'artisan à son établi
+image|Lighthouse and crashing waves|Phare et vagues déferlantes|la caméra recule depuis le phare de la photo, les vagues se brisant sur les rochers, le faisceau tournant
+image|Backward through stone arch|Recul sous l'arche de pierre|la caméra recule sous l'arche de pierre de l'image, le soleil éclairant les murs
+image|Snowman to snowy village|Du bonhomme de neige au village enneigé|lent travelling arrière depuis le bonhomme de neige de l'image, révélant le village enneigé, la neige tombant
+image|Mug to fireplace room|De la tasse à la pièce avec cheminée|la caméra recule depuis la tasse fumante de la photo, révélant une pièce douillette près de la cheminée
+image|Bride among her guests|La mariée parmi ses invités|lent travelling arrière depuis la mariée de l'image pour révéler les invités du mariage, des pétales dans l'air
+image|Ancient ruins in gold light|Ruines antiques dans la lumière dorée|la caméra recule depuis les ruines antiques de l'image, la poussière flottant dans la lumière dorée
+image|Toy to playing child|Du jouet à l'enfant qui joue|la caméra recule depuis le jouet posé par terre sur la photo, révélant un enfant qui joue à côté
+image|Pan across the skyline|Panoramique sur les gratte-ciel|lent panoramique de gauche à droite sur la silhouette de la ville de la photo, les lumières scintillant, les nuages dérivant
+image|Tilt up the tower|Panoramique vertical le long de la tour|la caméra remonte lentement la haute tour de l'image de sa base à son sommet, le ciel défilant derrière
+image|Sky down to a person|Du ciel à une personne|la caméra descend du ciel jusqu'à la personne debout dans l'image, des oiseaux traversant le cadre
+image|Pan along the shoreline|Panoramique le long du rivage|lent panoramique vers la droite le long du rivage de la photo, les vagues arrivant, couleurs du couchant
+image|Mountain range panorama|Panorama de la chaîne de montagnes|lent panoramique sur la chaîne de montagnes de l'image, la brume circulant dans les vallées
+image|Tilt up the waterfall|Remontée le long de la cascade|la caméra remonte le long de la cascade de l'image, l'eau se déversant et les embruns s'élevant
+image|Pan across a group photo|Panoramique sur une photo de groupe|lent panoramique sur le groupe de personnes de la photo, chacune bougeant légèrement et souriant
+image|Treetop down to roots|De la cime aux racines|la caméra descend de la cime jusqu'aux racines du grand arbre de l'image, les feuilles bruissant
+image|Street market pan|Panoramique sur le marché|lent panoramique vers la gauche sur le marché de rue de l'image, les gens marchant et les étals se balançant
+image|Tilt up to the stars|Remontée vers les étoiles|la caméra remonte du paysage sombre de la photo jusqu'au ciel étoilé, les étoiles scintillant
+image|Fresco in candlelight|Fresque à la lueur des bougies|lent panoramique sur la grande fresque de l'image, la douce lueur des bougies vacillant sur ses couleurs
+image|Quick whip pan|Panoramique filé rapide|panoramique filé rapide de la personne de l'image vers le côté de la scène, flou de mouvement, puis stabilisation
+image|Face down to a letter|Du visage à une lettre|la caméra descend lentement du visage de la personne de la photo jusqu'à ses mains qui tiennent une lettre
+image|Library shelves pan|Panoramique sur les rayonnages|lent panoramique le long des rayonnages de la bibliothèque de l'image, la poussière flottant dans la lumière
+image|Up the spiral staircase|Le long de l'escalier en colimaçon|la caméra remonte le long de l'escalier en colimaçon de l'image, la lumière venant d'en haut
+image|Wheat field pan|Panoramique sur le champ de blé|lent panoramique sur le champ de blé de la photo, les épis ondulant au vent, lumière dorée
+image|Pan following a bird|Panoramique qui suit un oiseau|la caméra pivote pour suivre un oiseau qui traverse la scène de l'image, les nuages dérivant
+image|Cathedral facade tilt down|Descente le long de la cathédrale|lente descente le long de la façade de la cathédrale de l'image, des pigeons s'envolant de ses corniches
+image|Harbor boats pan|Panoramique sur les bateaux du port|lent panoramique sur le port de la photo, les bateaux tanguant doucement sur l'eau
+image|River up to the bridge|De la rivière au pont|la caméra remonte de la rivière qui coule dans l'image jusqu'au pont au-dessus, la circulation en mouvement
+image|Orbit around the portrait|Orbite autour du portrait|lent mouvement orbital de la caméra autour de la personne de la photo, ses cheveux bougeant légèrement, parallaxe de l'arrière-plan
+image|Statue in sliding sunlight|Statue sous la lumière qui glisse|la caméra tourne lentement autour de la statue de l'image, la lumière du soleil glissant sur la pierre
+image|Half orbit of a car|Demi-orbite autour d'une voiture|demi-orbite fluide autour de la voiture de l'image, les reflets glissant sur sa carrosserie
+image|Dancer holding a pose|Danseuse qui tient la pose|la caméra tourne autour de la danseuse de la photo pendant qu'elle tient la pose, sa jupe bougeant légèrement
+image|Tree in drifting fog|Arbre dans le brouillard|lent mouvement orbital autour de l'arbre isolé de l'image, le brouillard passant entre les branches
+image|Sculpture on a pedestal|Sculpture sur un socle|la caméra tourne autour de la sculpture de l'image posée sur son socle, douce lumière de galerie
+image|Embracing couple orbit|Orbite autour d'un couple enlacé|lent mouvement orbital autour du couple enlacé de la photo, les lumières de la ville floues derrière eux
+image|Circling the set table|Autour de la table dressée|la caméra tourne autour de la table dressée de l'image, les bougies vacillant
+image|Chess board orbit|Orbite autour de l'échiquier|lent mouvement orbital autour de l'échiquier de l'image, une pièce avançant
+image|Aerial lighthouse orbit|Orbite aérienne autour du phare|orbite aérienne autour du phare de la photo, les vagues se brisant autour des rochers
+image|Birthday cake orbit|Orbite autour du gâteau d'anniversaire|la caméra tourne lentement autour du gâteau d'anniversaire de l'image, les flammes des bougies dansant
+image|Musician playing strings|Musicien jouant des cordes|lent mouvement orbital autour du musicien qui joue dans l'image, les doigts bougeant sur les cordes
+image|Aerial castle orbit|Orbite aérienne autour du château|orbite aérienne autour du château de la photo, les nuages passant au-dessus des tours
+image|Perfume bottle orbit|Orbite autour d'un flacon de parfum|orbite fluide autour du flacon de l'image, la lumière se réfractant à travers le verre
+image|Sleeping dog orbit|Orbite autour d'un chien endormi|lent mouvement orbital autour du chien endormi de l'image, ses oreilles frémissant
+image|Low angle warrior orbit|Orbite en contre-plongée autour du guerrier|orbite en contre-plongée autour du guerrier de la photo, la cape flottant au vent, ciel dramatique
+image|Bouquet of flowers orbit|Orbite autour d'un bouquet|lent mouvement orbital autour du bouquet de fleurs de l'image, les pétales tremblant
+image|Gleaming motorbike orbit|Orbite autour d'une moto rutilante|la caméra tourne autour de la moto de l'image, le chrome brillant au soleil
+image|Snow globe orbit|Orbite autour d'une boule à neige|lent mouvement orbital autour de la boule à neige de la photo, les flocons tourbillonnant à l'intérieur
+image|Mountain summit orbit|Orbite autour du sommet|orbite aérienne autour du sommet de la montagne de l'image, la neige soufflée depuis la crête
+image|Drone rises over coastline|Le drone s'élève sur la côte|le drone s'élève lentement au-dessus de la côte rocheuse de l'image, les vagues se brisent en écume blanche sur le rivage, lumière vive d'après-midi, caméra montant régulièrement
+image|Forest canopy flyover|Survol de la canopée|plan aérien glissant vers l'avant au-dessus de la canopée dense et verte, la brume flotte entre les cimes, douce lumière du matin, mouvement de drone fluide vers l'avant
+image|Orbit around lighthouse|Orbite autour du phare|la caméra tourne lentement autour du phare sur la falaise, la mer scintille en contrebas, des mouettes tournoient, lumière de l'heure dorée
+image|City skyline pullback|Recul au-dessus de la ville|la vue aérienne de la ville recule et s'élève, révélant davantage de bâtiments et de rues, la circulation s'écoule en bas, les lumières du crépuscule s'allument
+image|Mountain ridge reveal|Révélation derrière la crête|le drone survole la crête enneigée et bascule vers le bas pour révéler la vallée au-delà, les nuages dérivent, lumière nette et claire
+image|Desert dunes low glide|Rase-mottes sur les dunes|la caméra aérienne glisse à basse altitude au-dessus des dunes, le vent soulève un sable fin des crêtes, chaude lumière du couchant, lent mouvement vers l'avant
+image|Top-down beach waves|Vagues vues d'en haut|plan de drone à la verticale de la plage, des vagues turquoise roulent sur le sable et se retirent, la caméra monte lentement à la verticale
+image|River bend tracking|Suivi des méandres|le drone suit la rivière sinueuse à travers la vallée, le soleil scintille sur l'eau, lent travelling vers l'avant
+image|Tropical island orbit|Orbite autour de l'île tropicale|lente orbite aérienne autour de la petite île tropicale, les palmiers se balancent, eau claire tout autour, soleil éclatant de midi
+image|Castle approach from above|Approche aérienne du château|le drone s'approche lentement du vieux château sur la colline, des drapeaux flottent sur les tours, de légers nuages passent, descente douce
+image|Farmland patchwork rise|Envol sur la mosaïque de champs|vue aérienne d'une mosaïque de champs, la caméra s'élève lentement tandis que l'ombre des nuages balaie les terres agricoles, douce lumière du jour
+image|Highway night flyover|Survol nocturne de l'autoroute|le drone survole l'autoroute la nuit, les phares des voitures défilent en lignes, la lueur de la ville au loin, mouvement fluide vers l'avant
+image|Waterfall drone descent|Descente le long de la cascade|le drone descend lentement le long de la haute cascade, les embruns montent du bassin en contrebas, falaises verdoyantes, lumière douce
+image|Harbor boats from above|Bateaux du port vus d'en haut|vue verticale du port, de petits bateaux se balancent doucement sur l'eau, des rides s'étendent, la caméra dérive sur le côté
+image|Volcano crater circle|Tour du cratère|la caméra aérienne fait le tour du bord du cratère volcanique, une fine fumée s'élève du centre, nuages spectaculaires, lente orbite
+image|Autumn hills sideways sweep|Balayage des collines d'automne|le drone balaie latéralement des collines couvertes d'arbres d'automne rouges et orangés, le soleil bas projette de longues ombres
+image|Flight under the bridge|Passage sous le pont|le drone avance sous le grand pont et ressort de l'autre côté, l'eau coule en dessous, grand jour, mouvement fluide
+image|Snowy village descent|Descente vers le village enneigé|la caméra descend lentement vers le village enneigé, la fumée s'enroule au-dessus des cheminées, lumières chaudes aux fenêtres, lumière bleue du soir
+image|Hiker on summit orbit|Orbite autour du randonneur|orbite aérienne autour du randonneur debout au sommet de la montagne, sa veste flotte au vent, une mer de nuages en contrebas
+image|Rice terraces tilt up|Rizières puis montagnes|le drone bascule vers le haut depuis les rizières en terrasses vertes pour révéler les montagnes brumeuses derrière, l'eau reflète le ciel
+image|Vertigo dolly zoom portrait|Effet Vertigo sur un portrait|travelling compensé sur la personne de la photo, le visage garde la même taille tandis que l'arrière-plan s'étire derrière elle, atmosphère tendue
+image|Rack focus to landscape|Bascule de mise au point vers le paysage|la mise au point passe lentement de la fleur au premier plan au paysage derrière elle, douce lumière naturelle, caméra fixe
+image|Slow push into the eyes|Lente avancée vers les yeux|la caméra avance lentement vers les yeux de la personne du portrait, elle cligne une fois des yeux, faible profondeur de champ
+image|Corridor dolly zoom|Travelling compensé dans le couloir|travelling compensé dans le long couloir, les murs semblent s'étirer tandis que le fond du couloir reste fixe, éclairage froid
+image|Focus pull on steaming cup|Mise au point sur la tasse fumante|la mise au point passe du visage flou aux mains tenant une tasse au premier plan, la vapeur s'élève, chaude lumière intérieure
+image|Street rushing closer|La rue qui se rapproche|travelling compensé inversé sur la personne debout dans la rue, les bâtiments derrière semblent foncer vers elle, le sujet reste immobile
+image|Pull back from detail|Recul depuis un détail|la caméra recule lentement depuis un détail en gros plan pour révéler toute la scène de l'image, lumière douce et uniforme
+image|Bokeh lights sharpen|Le bokeh devient net|les lumières floues de la ville dans l'image deviennent lentement nettes, révélant une rue de nuit, caméra fixe
+image|Push in on brush strokes|Avancée sur les coups de pinceau|lente avancée vers le centre du tableau, les coups de pinceau deviennent visibles, un léger miroitement de lumière parcourt la toile
+image|Dolly zoom on lone tree|Travelling compensé sur l'arbre isolé|travelling compensé sur l'arbre isolé dans le champ, les collines derrière lui gonflent et s'étirent, les nuages dérivent, ambiance étrange
+image|Focus shift between faces|Mise au point d'un visage à l'autre|la mise au point passe de la personne au premier plan à celle derrière elle, qui lève les yeux et sourit, caméra fixe
+image|Macro focus on wings|Mise au point macro sur les ailes|plan macro de l'insecte sur la feuille, la mise au point va et vient lentement sur ses ailes, lumière douce
+image|Sideways parallax dolly|Travelling latéral en parallaxe|la caméra se déplace latéralement devant le sujet, la parallaxe sépare le premier plan de l'arrière-plan, douce lumière d'après-midi
+image|Crash zoom on surprised face|Zoom brusque sur un visage surpris|zoom rapide sur le visage de la personne de l'image, ses yeux s'écarquillent de surprise, éclairage dramatique
+image|Blur to sharp opening|Du flou au net|l'image commence complètement floue et devient lentement nette sur la scène, douce lumière du matin, caméra fixe
+image|Dolly through doorway|Travelling à travers la porte|la caméra avance à travers la porte ouverte dans la pièce, les rideaux bougent doucement, lumière chaude à l'intérieur
+image|Raindrops then street focus|Des gouttes à la rue|la mise au point passe des gouttes de pluie sur la vitre à la rue floue dehors, des voitures passent, lumière grise
+image|Zoom out from lone boat|Zoom arrière depuis le bateau|lent zoom arrière depuis le bateau au milieu de la mer pour montrer le vaste horizon, eau calme, lumière dorée
+image|Spiral staircase dolly zoom|Travelling compensé dans l'escalier|travelling compensé en plongée dans l'escalier en colimaçon, les marches se tordent et s'étirent au loin, sensation de vertige
+image|Glasses to book focus|Des lunettes au livre|la mise au point passe des lunettes sur la table au livre derrière elles, les pages se soulèvent légèrement dans un souffle d'air, chaude lumière de lampe
+image|Wheat field in breeze|Champ de blé dans la brise|le blé doré du champ ondule en vagues sous une brise régulière, les nuages avancent lentement, caméra fixe
+image|Willow branches over pond|Saule au-dessus de l'étang|les longues branches du saule se balancent doucement au-dessus de l'étang, les feuilles frémissent, douce lumière d'après-midi, lent panoramique vers la droite
+image|Sunflowers nodding|Tournesols qui s'inclinent|les tournesols de l'image s'inclinent dans le vent, leurs pétales tremblent, ciel d'été lumineux, douce avancée de la caméra
+image|Palm fronds in gusts|Palmes dans les rafales|les palmes fouettent l'air et ploient sous de fortes rafales de vent, les nuages filent au-dessus, caméra fixe
+image|Dandelion seeds drifting|Graines de pissenlit au vent|les graines de pissenlit se détachent et s'envolent dans la brise, à contre-jour du soleil, faible profondeur de champ, caméra fixe
+image|Rippling meadow grass|Herbes ondulantes de la prairie|les hautes herbes de la prairie ondulent dans le vent comme de l'eau, les fleurs sauvages se balancent, chaude lumière du soir, lent travelling latéral
+image|Autumn leaves spinning down|Feuilles d'automne tourbillonnantes|des feuilles orangées tombent de l'arbre en tournoyant, quelques-unes tourbillonnent au sol, lumière douce, caméra fixe
+image|Cherry blossom petals|Pétales de cerisier|des pétales roses de cerisier tombent des branches dans une brise légère, douce lumière de printemps, lente bascule vers le bas
+image|Lavender rows with bees|Rangs de lavande et abeilles|les rangs de lavande se balancent dans la brise, des abeilles volent entre les fleurs, heure dorée, lent travelling avant
+image|Swaying bamboo grove|Bambouseraie qui se balance|les tiges de la bambouseraie se balancent et ploient dans le vent, les feuilles bruissent, lumière tachetée, lente bascule vers le haut
+image|Pines bending in storm|Pins pliés par la tempête|les pins ploient sous le fort vent de tempête, les branches s'agitent, de sombres nuages roulent, caméra fixe
+image|Plant by open window|Plante près de la fenêtre ouverte|les feuilles de la plante en pot sur le rebord bougent doucement avec l'air de la fenêtre ouverte, le rideau flotte
+image|Lakeside reeds swaying|Roseaux au bord du lac|les roseaux au bord du lac se balancent doucement, leurs sommets se frôlent, des rides sur l'eau, lumière brumeuse du matin
+image|Trembling red poppies|Coquelicots frémissants|les coquelicots rouges du champ tremblent dans le vent, leurs pétales frémissent, ciel nuageux, lente avancée de la caméra
+image|Ivy on the old wall|Lierre sur le vieux mur|les feuilles de lierre qui couvrent le vieux mur frémissent dans la brise, le soleil y scintille, caméra fixe
+image|Maple canopy from below|Érable vu d'en dessous|les feuilles d'érable miroitent et se retournent dans le vent, la lumière scintille à travers le feuillage, la caméra regarde vers le haut et tourne lentement
+image|Garden flowers and butterfly|Fleurs du jardin et papillon|les fleurs du jardin se balancent doucement dans la brise, un papillon se pose sur l'une d'elles, grand jour, caméra fixe
+image|Cornfield rows rustling|Rangs de maïs bruissants|les hauts plants de maïs bruissent et se balancent dans le vent, les feuilles claquent, soleil de fin d'après-midi, lent travelling le long des rangs
+image|Oak against sunset|Chêne sur fond de couchant|le grand chêne sur la colline se balance lentement devant un ciel de couchant, les feuilles frémissent, plan large fixe
+image|Forest ferns rocking|Fougères de la forêt qui oscillent|les fougères du sous-bois oscillent doucement dans un léger courant d'air, des rayons de soleil les traversent, lente avancée de la caméra
+image|Waves crash on rocks|Vagues sur les rochers|les vagues s'écrasent contre les rochers sombres, des gerbes d'écume blanche jaillissent, ciel couvert, caméra fixe
+image|Gentle lapping shoreline|Clapotis sur le rivage|de douces vagues viennent lécher la plage de sable et se retirent, l'écume brille, lumière du couchant, caméra fixe en contre-plongée
+image|Breaking surf wave|Rouleau qui déferle|une grosse vague s'enroule et déferle vers la plage, l'écume se précipite en avant, grand jour, lent panoramique vers la gauche
+image|Ripples on calm lake|Rides sur le lac calme|la surface calme du lac se ride doucement, les reflets des arbres ondulent, matin paisible, caméra fixe
+image|Pool water caustics|Reflets au fond de la piscine|des motifs de lumière dansent au fond de la piscine tandis que l'eau bouge doucement, soleil éclatant, caméra fixe à la verticale
+image|Ocean swell at dusk|Houle au crépuscule|la houle d'un bleu profond monte et descend lentement, la dernière lumière miroite à la surface, la caméra flotte légèrement
+image|Waves between pier pillars|Vagues entre les piliers du ponton|les vagues passent entre les piliers en bois du ponton, l'eau monte et descend, lumière nuageuse, lente avancée de la caméra
+image|Tide pool shimmer|Miroitement de la flaque de marée|l'eau de la flaque de marée miroite quand de petites vagues s'y déversent, les algues ondulent, lumière claire, caméra fixe
+image|Heaving stormy sea|Mer démontée|la mer démontée se soulève en hautes vagues grises, les embruns arrachés aux crêtes, nuages sombres, caméra fixe
+image|Small boat rocking|Petit bateau qui tangue|le petit bateau de l'image tangue doucement sur l'eau, des rides s'étendent autour de lui, lumière douce, caméra fixe
+image|Underwater sun rays|Rayons de soleil sous l'eau|vue sous-marine avec des rayons de soleil qui bougent à travers la surface, des bulles montent lentement, la caméra dérive vers le haut
+image|Rings on puddle reflection|Ronds dans le reflet de la flaque|des gouttes tombent dans la flaque, des ronds s'étendent sur le reflet des bâtiments, gros plan fixe
+image|Inside the wave tunnel|Dans le tube de la vague|la caméra glisse à l'intérieur de la vague qui s'enroule, l'eau forme un tunnel vitreux traversé par la lumière, mouvement fluide vers l'avant
+image|Dancing fountain jets|Jets de fontaine dansants|les jets d'eau de la fontaine montent et retombent, les gouttelettes scintillent au soleil, caméra fixe
+image|Moonlit sea glitter|Mer scintillante sous la lune|la lune se reflète sur la mer légèrement agitée, une lumière argentée scintille sur les petites vagues, caméra fixe
+image|Foam on black sand|Écume sur le sable noir|l'écume blanche s'étale sur la plage de sable noir et se retire, laissant des motifs humides et brillants, lente bascule vers le bas
+image|Spray at lighthouse base|Embruns au pied du phare|les vagues s'écrasent au pied du phare, les embruns montent haut, le vent souffle, plan large fixe
+image|Canal reflections swaying|Reflets ondulants du canal|l'eau du canal se ride, les reflets des vieilles maisons ondulent, une brise légère, lente dérive latérale
+image|Pebbles washed by waves|Galets lavés par les vagues|de petites vagues roulent sur les galets et se retirent, les galets brillent, gros plan, caméra fixe
+image|Sea cave surge|Ressac dans la grotte marine|l'eau s'engouffre dans la grotte marine puis reflue, la lumière se reflète sur les parois rocheuses, lente avancée de la caméra
+image|Waterfall into pool|Cascade dans le bassin|la cascade plonge dans le bassin en contrebas, la brume s'élève, mousse verte sur les rochers, caméra fixe
+image|Rushing mountain stream|Torrent de montagne|une eau claire dévale les pierres du torrent de montagne, le soleil scintille, lente avancée de la caméra
+image|Wide river through valley|Large rivière dans la vallée|la large rivière coule lentement à travers la vallée, la lumière se reflète à la surface, lent panoramique vers la droite
+image|Silky white falls|Cascade soyeuse|la cascade coule en filets blancs et soyeux le long des rochers, les fougères tremblent dans les embruns, lumière douce, caméra fixe
+image|Churning river rapids|Rapides bouillonnants|les rapides de la rivière bouillonnent en écume blanche autour des rochers, l'eau éclabousse, grand jour, caméra fixe basse
+image|Creek under footbridge|Ruisseau sous la passerelle|le ruisseau coule sous la petite passerelle en bois, des feuilles flottent sur l'eau, lumière tachetée, caméra fixe
+image|Forest cascades|Cascades en forêt|une série de petites cascades dévale la pente de la forêt, l'eau brille, lente bascule vers le haut
+image|Ice floes drifting|Glaces à la dérive|des blocs de glace dérivent lentement sur la rivière, l'eau coule entre eux, froide lumière bleue, caméra fixe
+image|Rainbow in waterfall spray|Arc-en-ciel dans les embruns|un arc-en-ciel miroite dans les embruns de la cascade, l'eau tombe avec fracas, soleil, lente avancée de la caméra
+image|Leaves on lazy river|Feuilles sur la rivière paresseuse|des feuilles d'automne dérivent lentement sur la rivière paresseuse, les reflets des arbres bougent, caméra fixe
+image|Windblown cliff waterfall|Cascade de falaise dans le vent|la haute cascade tombe du bord de la falaise, le vent pousse l'eau sur le côté, les nuages avancent, lente bascule vers le bas
+image|Jungle waterfall mist|Brume de cascade dans la jungle|la cascade de la jungle se déverse dans un bassin turquoise, la brume dérive, les plantes tropicales se balancent, caméra fixe
+image|River toward setting sun|Rivière vers le soleil couchant|la rivière coule doucement vers le soleil couchant, une lumière dorée danse sur l'eau, lent travelling avant
+image|Brook over mossy stones|Ruisselet sur pierres moussues|un petit ruisseau s'écoule sur des pierres moussues, l'eau scintille, gros plan en contre-plongée, caméra fixe
+image|Thawing frozen waterfall|Cascade gelée qui fond|l'eau goutte et ruisselle des stalactites de la cascade gelée qui fond lentement, lumière froide, caméra fixe
+image|Shallow gravel riverbed|Lit de gravier peu profond|l'eau de la rivière s'étale sur le lit de gravier peu profond, les rides captent la lumière, lent panoramique vers la gauche
+image|Limestone terrace pools|Vasques en terrasses calcaires|l'eau se déverse le long des terrasses calcaires en gradins, les vasques miroitent, lumière douce, lente montée de la caméra
+image|City river at night|Fleuve urbain la nuit|le fleuve coule la nuit sous les lumières de la ville, les reflets s'étirent et vacillent, caméra fixe
+image|Turning mill wheel|Roue de moulin qui tourne|la vieille roue du moulin tourne lentement, l'eau s'écoule de ses pales dans le ruisseau, caméra fixe
+image|Canyon river from rim|Rivière du canyon vue du bord|la rivière serpente rapidement entre les parois du canyon, la caméra bascule lentement vers le bas depuis le bord
+image|Clouds racing over hills|Nuages filant sur les collines|les nuages filent dans le ciel au-dessus des collines en accéléré, leurs ombres balaient le paysage, caméra fixe
+image|Glowing sunset clouds|Nuages embrasés du couchant|les nuages s'embrasent d'orange et de rose au coucher du soleil en dérivant lentement, plan large fixe
+image|Storm clouds building|Nuages d'orage qui grossissent|de sombres nuages d'orage gonflent et roulent vers la caméra, la lumière baisse, caméra fixe
+image|Cumulus in blue sky|Cumulus dans le ciel bleu|des cumulus blancs dérivent lentement dans le ciel bleu, caméra fixe en contre-plongée
+image|Milky Way rotating|Rotation de la Voie lactée|les étoiles du ciel nocturne tournent lentement avec la Voie lactée, une faible lueur à l'horizon, caméra fixe
+image|Sea of clouds at dawn|Mer de nuages à l'aube|une mer de nuages s'écoule entre les sommets à l'aube, douce lumière rose, lent panoramique vers la droite
+image|Lightning inside clouds|Éclairs dans les nuages|des éclairs scintillent à l'intérieur des nuages sombres, de brefs flashs illuminent le paysage, caméra fixe
+image|Sunbeams sweeping field|Rayons balayant le champ|des rayons de soleil percent entre les nuages et balaient le champ, lente bascule vers le bas
+image|Aurora ribbons dancing|Rubans d'aurore dansants|des rubans verts d'aurore boréale ondulent et dansent dans le ciel nocturne, les étoiles scintillent, caméra fixe
+image|Contrail across blue sky|Traînée d'avion dans le ciel bleu|un avion trace une traînée blanche dans le ciel bleu dégagé, la traînée s'élargit lentement, caméra fixe
+image|Clouds over city skyline|Nuages au-dessus des gratte-ciel|les nuages défilent vite au-dessus des toits de la ville, la lumière change sur les bâtiments, accéléré, caméra fixe
+image|Heavy evening clouds|Lourds nuages du soir|de lourds nuages arrondis pèsent dans le ciel du soir, se déplaçant lentement, lumière chaude en dessous, caméra fixe
+image|Moon behind thin clouds|Lune derrière des nuages fins|la pleine lune glisse derrière des nuages fins, sa lueur faiblit puis revient, caméra fixe
+image|Sky through branches|Ciel à travers les branches|les nuages passent dans le ciel vu à travers les branches des arbres, les feuilles bougent légèrement, caméra tournée vers le haut
+image|Twilight color fade|Couleurs du crépuscule|le ciel passe du bleu à l'orange profond puis au violet, les nuages s'assombrissent, caméra fixe
+image|Cloud shadows on slopes|Ombres de nuages sur les pentes|les ombres des nuages glissent sur les flancs des montagnes, la lumière du soleil change, accéléré, caméra fixe
+image|Rainbow after the storm|Arc-en-ciel après l'orage|un arc-en-ciel apparaît dans le ciel tandis que les nuages d'orage se dissipent, la lumière devient plus vive, lente avancée de la caméra
+image|Clouds mirrored in lake|Nuages reflétés dans le lac|les nuages dérivent dans le ciel et dans leur reflet sur le lac immobile, caméra fixe
+image|Shooting star crossing|Passage d'une étoile filante|une étoile filante traverse le ciel étoilé au-dessus du paysage, les étoiles scintillent, caméra fixe
+image|Funnel cloud forming|Formation d'une tornade|un nuage en entonnoir se forme lentement sous la base sombre de l'orage en tourbillonnant, le vent souffle sur le champ, caméra fixe
+image|Rain running down window|Pluie ruisselant sur la vitre|les gouttes de pluie ruissellent sur la vitre, les lumières floues de la rue brillent derrière, caméra fixe
+image|Snow on pine forest|Neige sur la forêt de pins|la neige tombe doucement sur la forêt de pins, les flocons dérivent, lumière bleue paisible, lente avancée de la caméra
+image|Neon street downpour|Averse dans une rue aux néons|une forte pluie éclabousse le trottoir, les reflets des enseignes au néon miroitent dans les flaques, caméra fixe
+image|Snowflakes on upturned face|Flocons sur un visage levé|des flocons tombent sur le visage de la personne de la photo, qui lève les yeux et sourit, lumière douce, caméra fixe
+image|Blizzard across plain|Blizzard sur la plaine|un blizzard balaie la plaine enneigée, la neige soufflée à l'horizontale, faible visibilité, caméra fixe
+image|Rain rings on lake|Ronds de pluie sur le lac|les gouttes de pluie couvrent la surface du lac d'innombrables ronds, lumière grise, caméra fixe
+image|Snowfall around cabin|Neige autour du chalet|la neige tombe lentement autour du chalet en bois, la fumée monte de la cheminée, lumière chaude aux fenêtres, lente avancée de la caméra
+image|Rain dripping from leaves|Pluie gouttant des feuilles|la pluie goutte des feuilles vertes, les gouttes tombent à un rythme lent, gros plan, caméra fixe
+image|Standing under umbrella|Immobile sous le parapluie|la personne au parapluie reste immobile tandis que la pluie tombe autour d'elle, les gouttes rebondissent sur le parapluie, caméra fixe
+image|Snow under streetlights|Neige sous les réverbères|la neige tombe sous les réverbères de la rue calme la nuit, les flocons brillent, caméra fixe
+image|Summer garden downpour|Averse d'été sur le jardin|une soudaine averse d'été trempe le jardin, les fleurs ploient sous les gouttes, caméra fixe
+image|Powder blown off roof|Poudreuse soufflée du toit|le vent souffle la neige poudreuse du bord du toit, elle scintille au soleil, caméra fixe
+image|Windshield wipers in rain|Essuie-glaces sous la pluie|la pluie tombe sur le pare-brise de la voiture, les essuie-glaces le balaient, la route devant est floue, caméra fixe
+image|Flurries around peak|Rafales de neige autour du sommet|des rafales de neige tourbillonnent autour du sommet, les nuages passent, lent panoramique vers la gauche
+image|Splashing puddles|Flaques qui éclaboussent|la pluie frappe fort les flaques, les éclaboussures jaillissent, lumière grise du jour, caméra fixe basse
+image|Snow globe effect|Effet boule à neige|de gros flocons descendent lentement sur toute la scène de l'image, douce lumière magique, caméra fixe
+image|Rain curtain over fields|Rideau de pluie sur les champs|un rideau de pluie traverse les champs sous des nuages sombres, la lumière baisse, plan large fixe
+image|Snow piling on branches|Neige sur les branches|la neige s'accumule doucement sur les branches nues, un peu tombe de temps en temps, caméra fixe
+image|Rain on tin roof|Pluie sur le toit en tôle|la pluie rebondit sur le toit en tôle ondulée, l'eau ruisselle du bord, caméra fixe
+image|Hailstones bouncing|Grêlons qui rebondissent|de petits grêlons rebondissent sur l'herbe et le chemin, les billes blanches s'accumulent, caméra fixe
+image|Fog rolling over hills|Brouillard sur les collines|le brouillard roule lentement sur les collines vertes et remplit les vallées, douce lumière du matin, caméra fixe
+image|Misty forest sunbeams|Rayons dans la forêt brumeuse|la brume flotte entre les grands arbres de la forêt, des rayons de soleil la transpercent, lente avancée de la caméra
+image|Fog lifting off lake|Brouillard qui se lève sur le lac|un fin brouillard flotte sur la surface immobile du lac et se lève lentement, pâle lumière de l'aube, caméra fixe
+image|Bridge fading in fog|Pont qui disparaît dans le brouillard|le pont apparaît et disparaît dans l'épais brouillard qui défile, caméra fixe
+image|Harbor fog drifting|Brouillard sur le port|le brouillard dérive sur le port, des bateaux apparaissent et disparaissent dans la brume, lumière grise, lent panoramique vers la droite
+image|Hot spring steam|Vapeur de la source chaude|la vapeur monte et s'enroule au-dessus de la source chaude dans l'air froid, lumière douce, caméra fixe
+image|Mist veiling peaks|Brume voilant les sommets|la brume tourbillonne autour des sommets, les révélant puis les cachant, lente avancée de la caméra
+image|Foggy street lamp halo|Halo du réverbère dans le brouillard|le brouillard dérive autour du réverbère allumé la nuit, son halo bouge, caméra fixe
+image|Golden valley fog|Brouillard doré dans la vallée|le brouillard remplit la vallée et devient doré au lever du soleil en bougeant lentement, plan large fixe
+image|Walking into the fog|Marcher dans le brouillard|la personne de l'image s'éloigne lentement dans l'épais brouillard jusqu'à disparaître, caméra fixe
+image|Mist low over river|Brume rasant la rivière|la brume dérive au ras de la rivière, l'eau coule en dessous, matin bleu et frais, lent mouvement latéral de la caméra
+image|Fog between towers|Brouillard entre les tours|le brouillard s'écoule entre les tours de la ville, leurs sommets y disparaissent, caméra fixe
+image|Mist creeping on moor|Brume rampant sur la lande|la brume rampe sur la lande, la bruyère bouge à peine, lumière sombre, caméra fixe
+image|Fog clearing reveal|Le brouillard se dissipe|le brouillard se dissipe lentement et révèle le paysage de l'image, la lumière devient plus vive, caméra fixe
+image|Breath in cold air|Souffle dans l'air froid|la personne de la photo expire un nuage de buée dans l'air froid, gros plan fixe
+image|Vineyard morning mist|Brume matinale sur la vigne|la brume du matin flotte sur les rangs de la vigne et se lève lentement, lumière douce, lente avancée de la caméra
+image|Pier vanishing in fog|Ponton disparaissant dans le brouillard|le ponton en bois s'avance dans le brouillard qui défile lentement, l'eau clapote, caméra fixe
+image|Billowing waterfall mist|Nuage de brume de la cascade|un nuage de brume s'élève en volutes du pied de la cascade et dérive vers la caméra, caméra fixe
+image|Graveyard ground fog|Brouillard au ras du cimetière|un brouillard bas rampe entre les vieilles tombes, clair de lune, caméra fixe
+image|Fog bank over cliffs|Banc de brouillard sur les falaises|un banc de brouillard arrive de l'océan sur les falaises, lent et épais, plan large fixe
+image|Sunrise over horizon|Lever de soleil sur l'horizon|le soleil se lève lentement sur l'horizon, le ciel s'éclaircit de l'orange au jaune, caméra fixe
+image|Sun sinking below horizon|Le soleil passe sous l'horizon|le soleil descend sous l'horizon, la lumière devient rouge puis faiblit, caméra fixe
+image|Sun patches across floor|Taches de soleil sur le sol|des taches de soleil se déplacent lentement sur le sol de la pièce au fil de la journée, accéléré, caméra fixe
+image|Golden light on face|Lumière dorée sur un visage|une chaude lumière dorée glisse lentement sur le visage de la personne de la photo, caméra fixe
+image|City day to night|La ville du jour à la nuit|la ville passe du jour à la nuit, le ciel s'assombrit et les fenêtres s'allument, accéléré, caméra fixe
+image|Light through blinds|Lumière à travers les stores|des bandes de lumière venues des stores glissent lentement sur le mur, de la poussière flotte, caméra fixe
+image|Leaf shadows on wall|Ombres de feuilles sur le mur|des ombres de feuilles vacillent sur le mur blanc, la lumière du soleil bouge, caméra fixe
+image|Blue hour lamps on|Réverbères à l'heure bleue|à l'heure bleue, les réverbères s'allument un à un, le ciel est d'un bleu profond, caméra fixe
+image|Sun flare through trees|Reflet du soleil entre les arbres|le soleil scintille entre les arbres tandis que la caméra se déplace lentement sur le côté, la lumière vacille
+image|Alpenglow on peaks|Alpenglow sur les sommets|les sommets rougeoient de rose dans la dernière lumière, les ombres montent, caméra fixe
+image|Lighthouse beam at dusk|Faisceau du phare au crépuscule|le faisceau du phare balaie le ciel et la mer au crépuscule, caméra fixe
+image|Candlelight flicker|Lueur vacillante de bougie|la lueur d'une bougie vacille sur la scène de l'image, des ombres chaudes dansent, caméra fixe
+image|Morning light in bedroom|Lumière du matin dans la chambre|la lumière du matin se répand lentement dans la chambre, les rideaux s'illuminent, caméra fixe
+image|Lengthening square shadows|Ombres qui s'allongent sur la place|les ombres des bâtiments s'allongent sur la place de midi au soir, accéléré, caméra fixe
+image|Dappled forest floor light|Lumière tachetée du sous-bois|une lumière tachetée se déplace sur le sol de la forêt tandis que les branches se balancent, lente avancée de la caméra
+image|Desert dawn warming|Le désert se réchauffe à l'aube|le désert passe lentement de l'aube bleue et froide à la lumière vive du matin, les ombres raccourcissent, caméra fixe
+image|Eclipse darkening|Obscurité de l'éclipse|la lumière baisse pendant l'éclipse du soleil, le paysage s'assombrit jusqu'au crépuscule puis s'éclaire à nouveau, caméra fixe
+image|Night falls on village|La nuit tombe sur le village|la nuit tombe sur le village, le ciel s'assombrit et des fenêtres chaleureuses s'allument, plan large fixe
+image|Cathedral sun rays|Rayons de soleil dans la cathédrale|des faisceaux de soleil traversent les vitraux de la cathédrale en se déplaçant lentement, la poussière brille, caméra fixe
+image|Sunset on glass facade|Couchant sur une façade vitrée|le coucher de soleil se reflète sur la façade vitrée du bâtiment, les couleurs changent, lente bascule vers le haut
+image|Cat blinks awake|Le chat se réveille|le chat de l'image ouvre lentement les yeux et cligne, ses moustaches frémissent, douce avancée de la caméra
+image|Dog tilts head|Le chien penche la tête|le chien de la photo penche la tête sur le côté et dresse les oreilles, caméra fixe
+image|Puppy wagging tail|Chiot qui remue la queue|le chiot remue joyeusement la queue et halète, la langue pendante, douce lumière du jour, caméra fixe
+image|Cat stretching on sofa|Chat qui s'étire sur le canapé|le chat étire ses pattes avant sur le canapé et bâille, chaude lumière intérieure, caméra fixe
+image|Dog running to camera|Chien courant vers la caméra|le chien court sur l'herbe vers la caméra, les oreilles au vent, grand jour, la caméra recule lentement
+image|Kitten batting yarn|Chaton et pelote de laine|le chaton donne des coups de patte à une pelote de laine, gros plan fixe
+image|Goldfish circling bowl|Poisson rouge dans son bocal|le poisson rouge nage lentement autour du bocal, ses nageoires ondulent, la lumière ondoie, caméra fixe
+image|Parrot ruffles feathers|Le perroquet ébouriffe ses plumes|le perroquet sur son perchoir ébouriffe ses plumes et tourne la tête, caméra fixe
+image|Rabbit nose twitch|Le lapin remue le nez|le lapin remue le nez et bouge les oreilles, lumière douce, lente avancée de la caméra
+image|Wet dog shaking|Chien mouillé qui s'ébroue|le chien mouillé s'ébroue, des gouttelettes volent dans toutes les directions, soleil, caméra fixe
+image|Cat watching a bird|Chat qui guette un oiseau|le chat assis près de la fenêtre suit des yeux un oiseau dehors, sa queue fouette l'air, caméra fixe
+image|Hamster nibbling seed|Hamster grignotant une graine|le hamster tient une graine entre ses pattes et la grignote, ses joues bougent, gros plan fixe
+image|Sleeping dog breathing|Chien endormi qui respire|le chien endormi respire lentement, son ventre monte et descend, une oreille frémit, caméra fixe
+image|Dog leaps for ball|Le chien saute sur la balle|le chien bondit pour attraper une balle dans sa gueule au parc, lumière vive, ralenti, caméra fixe
+image|Cat kneading on lap|Chat qui pétrit sur les genoux|le chat lové sur des genoux pétrit avec ses pattes, les yeux mi-clos, lumière chaude, caméra fixe
+image|Guinea pig sniffing around|Cochon d'Inde qui renifle|le cochon d'Inde renifle autour de lui et avance, ses moustaches bougent, caméra fixe
+image|Turtle slow walk|Tortue qui marche lentement|la tortue avance lentement en tendant la tête, jardin ensoleillé, caméra fixe basse
+image|Dog head out car window|Chien à la fenêtre de la voiture|le chien passe la tête par la fenêtre de la voiture, oreilles et poils au vent, travelling latéral
+image|Kitten pounce|Le chaton bondit|le chaton se tapit, se trémousse et bondit en avant, ambiance joueuse, caméra fixe
+image|Puppy yawning sleepily|Chiot qui bâille de sommeil|le chiot bâille largement et pose la tête sur ses pattes, douce lumière d'après-midi, caméra fixe
+image|Heron takes flight|Le héron s'envole|le héron debout dans l'eau peu profonde déploie ses ailes et s'élève lentement, des rides s'étendent en dessous, brume matinale, la caméra s'incline vers le haut pour le suivre
+image|Robin sings on branch|Le rouge-gorge chante sur la branche|le petit rouge-gorge sur la branche gonfle sa poitrine et chante, son bec s'ouvrant et se fermant, les feuilles se balançant doucement, caméra fixe
+image|Owl turns its head|La chouette tourne la tête|la chouette de l'image tourne lentement la tête vers la caméra et cligne de ses grands yeux, fond de forêt sombre, lent travelling avant
+image|Colorful parrot settles|Le perroquet coloré se pose|le perroquet coloré ébouriffe ses plumes et secoue la tête, puis se pose de nouveau sur son perchoir, plein jour lumineux, caméra fixe
+image|Eagle soars over valley|L'aigle plane sur la vallée|l'aigle plane ailes déployées au-dessus de la vallée, ses plumes frémissant dans le vent, des nuages dérivent, la caméra le suit latéralement
+image|Swan glides on lake|Le cygne glisse sur le lac|le cygne blanc glisse lentement sur le lac calme, laissant un léger sillage derrière lui, lumière dorée du soir, doux panoramique vers la droite
+image|Hummingbird hovers at flower|Le colibri butine en vol|le colibri fait du surplace devant la fleur, ailes floues, puis plonge son bec dans la corolle, gros plan fixe
+image|Flock leaves the wire|Les oiseaux quittent le fil|les oiseaux posés sur le fil s'envolent l'un après l'autre et se dispersent dans le ciel, ciel couvert, caméra fixe
+image|Peacock fans its tail|Le paon fait la roue|le paon relève lentement sa queue et la déploie en un éventail chatoyant, les plumes frémissant, lent travelling avant
+image|Seagulls over the pier|Les mouettes au-dessus de la jetée|les mouettes planent et tournoient au-dessus de la jetée face au vent, les vagues roulant en dessous, ciel lumineux, lent panoramique vers la gauche
+image|Penguin waddles forward|Le manchot se dandine|le manchot se dandine vers la caméra sur la neige, battant de ses petites ailes pour garder l'équilibre, lumière bleue et froide, caméra fixe
+image|Flamingos wade in lagoon|Les flamants dans la lagune|les flamants roses marchent lentement dans la lagune peu profonde, leurs reflets ondulant, chaude lumière du couchant, lent travelling latéral
+image|Duck shakes off water|Le canard s'ébroue|le canard sur l'étang plonge la tête sous l'eau, puis se redresse et secoue l'eau de ses plumes, gouttelettes scintillantes, caméra fixe
+image|Crow caws on fence|Le corbeau croasse sur la clôture|le corbeau noir perché sur la clôture ouvre le bec pour croasser et agite la queue, ciel gris derrière, léger zoom avant
+image|Woodpecker taps the trunk|Le pic frappe le tronc|le pic accroché au tronc de l'arbre frappe rapidement de son bec, de petits copeaux volant, lumière tachetée de la forêt, caméra fixe
+image|Pigeons peck in square|Les pigeons picorent sur la place|les pigeons sur la place picorent des miettes au sol en hochant la tête, l'un s'envole, lent panoramique vers la gauche
+image|Kingfisher dives in river|Le martin-pêcheur plonge|le martin-pêcheur sur la branche plonge dans la rivière et ressort en éclaboussant avec un poisson, gouttes d'eau projetées, caméra fixe
+image|Sparrows bathe in puddle|Les moineaux se baignent dans la flaque|les moineaux s'ébattent et battent des ailes dans la flaque, projetant de minuscules gouttelettes, douce lumière d'après-midi, caméra fixe basse
+image|Stork lands on nest|La cigogne se pose sur son nid|la cigogne descend ailes déployées et se pose sur son nid au sommet du toit, repliant ses ailes, ciel bleu, la caméra s'incline vers le bas
+image|Starling murmuration at dusk|Nuée d'étourneaux au crépuscule|la nuée d'étourneaux tourbillonne et se tord dans le ciel du crépuscule comme un nuage mouvant, horizon orangé, lent panoramique large
+image|Lion yawns in savanna|Le lion bâille dans la savane|le lion couché dans l'herbe dorée ouvre la gueule en un grand bâillement et secoue sa crinière, chaude lumière du soir, lent travelling avant
+image|Elephant flaps its ears|L'éléphant agite ses oreilles|l'éléphant agite lentement ses grandes oreilles et balance sa trompe, de la poussière flottant dans l'air, caméra fixe
+image|Deer lifts its head|Le cerf lève la tête|le cerf qui broute dans la clairière lève la tête, les oreilles frémissantes, et regarde vers la caméra, brume matinale, caméra fixe
+image|Tiger walks through grass|Le tigre marche dans les herbes|le tigre avance lentement dans les hautes herbes vers la caméra, les muscles roulant sous son pelage rayé, la caméra recule lentement
+image|Giraffe eats from tree|La girafe mange dans l'arbre|la girafe tend son long cou et arrache des feuilles de l'acacia avec sa langue, soleil éclatant de la savane, lent mouvement vers le haut
+image|Fox trots through snow|Le renard trotte dans la neige|le renard roux trotte à travers le champ enneigé, laissant des empreintes, sa queue touffue se balançant, la caméra le suit en panoramique
+image|Wolf howls at night|Le loup hurle dans la nuit|le loup sur le rocher lève la tête et hurle, son souffle fumant dans l'air froid, clair de lune, lent travelling avant
+image|Bear catches salmon|L'ours attrape un saumon|l'ours brun debout dans la rivière tumultueuse happe un saumon qui saute, l'eau éclaboussant autour de lui, caméra fixe
+image|Zebras graze and swish|Les zèbres broutent|les zèbres broutent côte à côte, agitant la queue et changeant d'appui, brume de chaleur sur la plaine, lent panoramique vers la droite
+image|Monkey swings between branches|Le singe se balance de branche en branche|le singe attrape une branche et se balance jusqu'à l'arbre suivant, les feuilles s'agitant, lumière filtrant à travers la jungle, la caméra le suit
+image|Horse gallops across meadow|Le cheval galope dans la prairie|le cheval sauvage galope à travers la prairie, sa crinière flottant au vent, l'herbe se couchant, la caméra le suit latéralement
+image|Squirrel nibbles a nut|L'écureuil grignote une noisette|l'écureuil tenant une noisette entre ses pattes la grignote vite et jette des regards autour de lui, la queue frémissante, douce lumière de forêt, gros plan fixe
+image|Cheetah sprints forward|Le guépard s'élance|le guépard se ramasse puis s'élance en un sprint à travers la plaine, soulevant de la poussière derrière lui, panoramique rapide
+image|Rabbit twitches its nose|Le lapin remue le nez|le lapin assis dans l'herbe remue le nez et les oreilles, puis s'éloigne en bondissant, douce lumière du matin, caméra fixe
+image|Kangaroo hops away|Le kangourou s'éloigne en bondissant|le kangourou se dresse sur ses pattes arrière, regarde autour de lui et s'éloigne en bondissant à travers le champ sec, lumière chaude, panoramique vers la droite
+image|Gorilla beats its chest|Le gorille se frappe la poitrine|le gorille assis dans la forêt se lève et se frappe la poitrine, puis se rassoit calmement, lumière verte et brumeuse, caméra fixe
+image|Bison in falling snow|Le bison sous la neige|le bison se tient sous la neige qui tombe, baissant lentement la tête pour repousser la neige, le souffle fumant, caméra fixe
+image|Hippo surfaces in river|L'hippopotame émerge de la rivière|l'hippopotame émerge de la rivière boueuse, l'eau ruisselant sur son dos, et ouvre son énorme gueule, lent travelling avant
+image|Panda chews bamboo|Le panda mâche du bambou|le panda assis parmi les bambous mâche lentement une tige, les feuilles bougeant dans la brise, lumière douce et diffuse, caméra fixe
+image|Moose crosses misty lake|L'élan traverse le lac brumeux|l'élan traverse lentement à gué le lac brumeux, l'eau ondulant autour de ses pattes, lumière du petit matin, lent travelling latéral
+image|Sea turtle swims past|La tortue de mer passe|la tortue de mer glisse dans l'eau bleue, ses nageoires battant lentement, des rayons de soleil dansant d'en haut, la caméra la suit doucement
+image|Jellyfish pulse in dark|La méduse palpite dans l'obscurité|la méduse palpite doucement dans l'eau sombre, ses longs tentacules traînant et ondulant, douce lueur, caméra fixe
+image|Clownfish in anemone|Le poisson-clown dans l'anémone|le poisson-clown entre et sort des tentacules ondulants de l'anémone, de petites particules flottant, gros plan fixe
+image|School of fish turns|Le banc de poissons tourne|le banc de poissons argentés tourbillonne et change de direction d'un seul mouvement, les écailles scintillant dans la lumière, lent travelling avant
+image|Manta ray glides overhead|La raie manta passe au-dessus|la raie manta glisse au-dessus avec de lents battements d'ailes, son ombre passant, rayons de lumière venant de la surface, la caméra s'incline vers le haut
+image|Shark circles the reef|Le requin tourne autour du récif|le requin nage lentement autour du récif, sa queue balayant de gauche à droite, brume bleue, la caméra le suit en panoramique
+image|Octopus crawls on rocks|La pieuvre rampe sur les rochers|la pieuvre sur les rochers déploie ses bras et avance en rampant, sa peau changeant de couleur, caméra fixe
+image|Dolphins leap in waves|Les dauphins sautent dans les vagues|les dauphins nagent près de la surface et sautent hors de l'eau l'un après l'autre, les embruns scintillant, la caméra les suit latéralement
+image|Whale tail rises|La queue de la baleine se dresse|la baleine dresse son immense queue hors de la mer puis replonge lentement, l'eau ruisselant, plan large fixe
+image|Seahorse sways in seagrass|L'hippocampe dans les herbiers|l'hippocampe s'accroche aux herbes marines avec sa queue et ondule avec le courant, sa minuscule nageoire frémissant, gros plan fixe
+image|Coral reef in current|Le récif corallien dans le courant|les coraux et les gorgones ondulent doucement dans le courant tandis que de petits poissons filent entre eux, la lumière du soleil vacillant, lent panoramique vers la droite
+image|Diver blows bubbles|Le plongeur fait des bulles|le plongeur de la photo flotte sur place, battant lentement des palmes tandis que des bulles montent vers la surface, eau bleue et claire, caméra fixe
+image|Seal twirls underwater|Le phoque virevolte sous l'eau|le phoque se tord et roule avec espièglerie dans l'eau, des bulles traînant derrière lui, lumière ondulante, la caméra le suit
+image|Goldfish in the bowl|Le poisson rouge dans son bocal|le poisson rouge tourne lentement dans son bocal, ses nageoires ondulant, quelques bulles montant, douce lumière de fenêtre, caméra fixe
+image|Crab scuttles on seabed|Le crabe file sur le fond marin|le crabe file de côté sur le fond sablonneux, soulevant de petits nuages de sable, caméra fixe basse
+image|Koi under pond surface|Les carpes koï sous la surface|les carpes koï nagent paresseusement sous la surface de l'étang, des rides et des pétales tombés dérivant au-dessus, caméra fixe en plongée
+image|Moray eel peeks out|La murène sort la tête|la murène sort lentement la tête de son trou dans la roche, ouvrant et fermant la gueule, lent travelling avant
+image|Kelp forest sways|La forêt de varech ondule|le grand varech ondule d'avant en arrière dans le courant, la lumière du soleil descendant entre les frondes, la caméra s'élève lentement
+image|Stingray hides in sand|La raie se cache dans le sable|la raie glisse au ras du sable et se pose, agitant ses bords pour se recouvrir, caméra fixe
+image|Glowing plankton at night|Plancton lumineux la nuit|l'eau sombre s'illumine de plancton bleu luminescent qui tourbillonne autour d'une main qui bouge lentement, caméra fixe
+image|Butterfly opens its wings|Le papillon ouvre ses ailes|le papillon sur la fleur ouvre et ferme lentement ses ailes, les pétales frémissant dans la brise, caméra macro fixe
+image|Bee gathers pollen|L'abeille récolte le pollen|l'abeille parcourt la fleur en récoltant le pollen, puis s'envole dans un bourdonnement d'ailes, chaude lumière du soleil, caméra macro fixe
+image|Ladybug walks on leaf|La coccinelle marche sur la feuille|la coccinelle marche le long du bord de la feuille, puis ouvre ses élytres et s'envole, doux fond vert, plan macro
+image|Spider weaves its web|L'araignée tisse sa toile|l'araignée se déplace sur sa toile en ajoutant un nouveau fil, gouttes de rosée scintillantes, lumière du matin, lent travelling avant
+image|Snail crawls on stone|L'escargot rampe sur la pierre|l'escargot glisse lentement sur la pierre mouillée, ses cornes oscillant, des gouttes de pluie tombant autour de lui, caméra macro fixe
+image|Dragonfly on reed|La libellule sur le roseau|la libellule posée sur le roseau agite ses ailes et file au-dessus de l'étang, lumière chatoyante, caméra fixe
+image|Ants carry a leaf|Les fourmis portent une feuille|les fourmis défilent en file en transportant des morceaux de feuille sur le sol, vue macro, lent travelling latéral
+image|Frog jumps into pond|La grenouille saute dans l'étang|la grenouille sur le nénuphar gonfle sa gorge, puis bondit dans l'étang en éclaboussant, des rides s'étendant, caméra fixe
+image|Caterpillar munches leaf|La chenille grignote une feuille|la chenille mâche le bord de la feuille, son corps ondulant à mesure qu'elle avance, douce lumière du jour, caméra macro fixe
+image|Lizard basks on rock|Le lézard au soleil sur le rocher|le lézard sur le rocher chaud cligne des yeux et tourne la tête, puis file, soleil éclatant, gros plan fixe
+image|Fireflies in the meadow|Les lucioles dans la prairie|les lucioles clignotent et dérivent lentement au-dessus de la prairie sombre, petites lumières brillantes, crépuscule chaud, lent travelling avant
+image|Mantis raises its legs|La mante lève ses pattes|la mante religieuse tourne lentement sa tête triangulaire vers la caméra et lève ses pattes avant, caméra macro fixe
+image|Beetle climbs a twig|Le scarabée grimpe sur une brindille|le scarabée brillant grimpe le long de la brindille, ses pattes bougeant avec précaution, sa carapace irisée accrochant la lumière, macro avec mouvement vers le haut
+image|Moth near the lamp|Le papillon de nuit près de la lampe|le papillon de nuit voltige autour de la lampe allumée, ses ailes battant rapidement, lumière chaude dans la nuit, caméra fixe
+image|Grasshopper leaps away|La sauterelle s'élance|la sauterelle sur le brin d'herbe se ramasse et saute, le brin se redressant, prairie ensoleillée, caméra macro fixe
+image|Mouse sniffs around|La souris renifle|la petite souris assise sur le sol renifle l'air, les moustaches frémissantes, puis détale, lumière douce, caméra fixe basse
+image|Hamster stuffs its cheeks|Le hamster remplit ses joues|le hamster attrape des graines avec ses pattes et en remplit ses joues, le nez frémissant, lumière douillette, gros plan fixe
+image|Chameleon shifts color|Le caméléon change de couleur|le caméléon sur la branche roule lentement les yeux et sa peau passe du vert à l'orange, lent travelling avant en macro
+image|Bumblebee in lavender|Le bourdon dans la lavande|le bourdon saute d'une tige de lavande à l'autre, les fleurs ployant sous son poids, jardin ensoleillé, plan macro
+image|Hedgehog curls up|Le hérisson se met en boule|le hérisson dans les feuilles renifle autour de lui, puis se roule en une boule piquante, lumière d'automne, caméra fixe basse
+image|Busy crosswalk crowd|Foule au passage piéton|les gens au passage piéton se mettent à traverser la rue dans les deux sens, les manteaux en mouvement, lumière du jour, caméra fixe en hauteur
+image|Street musician plays guitar|Le musicien de rue joue de la guitare|le musicien de rue de la photo gratte sa guitare et hoche la tête en rythme, des passants marchant devant lui, lent travelling avant
+image|Market stall vendor|Le marchand à son étal|le marchand à son étal de marché arrange les fruits et sourit aux clients, les auvents flottant, lumière chaude, caméra fixe
+image|Cafe terrace afternoon|Terrasse de café l'après-midi|les gens à la terrasse du café sirotent leurs boissons et bavardent, un serveur passe entre les tables, après-midi ensoleillé, lent panoramique vers la droite
+image|Cyclist rides down lane|Le cycliste descend la ruelle|le cycliste pédale dans la rue étroite et passe devant la caméra, les ombres des arbres glissant sur la chaussée, caméra fixe
+image|Children chase pigeons|Les enfants poursuivent les pigeons|les enfants courent sur la place en poursuivant des pigeons qui s'envolent autour d'eux, jour lumineux, la caméra les suit en panoramique
+image|Umbrellas on wet sidewalk|Parapluies sur le trottoir mouillé|les gens munis de parapluies se pressent sur le trottoir mouillé sous la pluie, reflets miroitants, caméra fixe
+image|Old man reads newspaper|Le vieil homme lit son journal|le vieil homme sur le banc lit son journal et tourne lentement une page, des feuilles tombant autour de lui, caméra fixe
+image|Skateboarder rolls by|Le skateur passe|le skateur roule dans la rue et pousse du pied pour prendre de la vitesse, les roues tournant, journée ensoleillée, la caméra le suit latéralement
+image|Laundry over the alley|Le linge au-dessus de la ruelle|le linge suspendu entre les immeubles se balance dans la brise au-dessus de la ruelle étroite, la lumière changeant, lent mouvement vers le haut
+image|Street food grill smoke|Fumée du grill de rue|le cuisinier du stand de cuisine de rue retourne des brochettes sur le grill tandis que la fumée monte dans l'air du soir, caméra fixe
+image|Dog walker on sidewalk|Promenade du chien sur le trottoir|une personne promène un chien sur le trottoir bordé d'arbres, le chien reniflant le sol, lumière du matin, la caméra les suit de dos
+image|Tourists take photos|Les touristes prennent des photos|les touristes sur la place lèvent leur téléphone pour prendre des photos et montrent les alentours, plein soleil, lent panoramique vers la gauche
+image|First snow on quiet street|Premiers flocons dans une rue calme|la neige commence à tomber doucement sur la rue calme, des gens marchant le col relevé, lumière douce, caméra fixe
+image|Flower seller wraps bouquet|La fleuriste emballe un bouquet|la fleuriste emballe un bouquet dans du papier et le tend, les fleurs frémissant dans la brise, caméra fixe
+image|Commuters exit station|Les voyageurs sortent de la station|les voyageurs sortent en flot de la bouche de métro et se dispersent sur le trottoir, lumière du matin, caméra fixe en hauteur
+image|Shop shutter opens|Le rideau de la boutique s'ouvre|le commerçant relève le rideau métallique de la boutique et sort sur le trottoir, lumière du petit matin, caméra fixe
+image|Pedestrian street timelapse|Rue piétonne en accéléré|la foule s'écoule en accéléré dans la rue piétonne, les nuages filant au-dessus, timelapse, caméra fixe
+image|Balloon seller in park|Le vendeur de ballons au parc|le vendeur de ballons tient une grappe de ballons colorés qui dansent et se balancent dans le vent, des enfants passant, lent travelling avant
+image|Street dancer performs|Le danseur de rue se produit|le danseur de rue tourne et bouge en rythme tandis qu'un petit public applaudit autour de lui, lumière d'après-midi, lent mouvement circulaire
+image|Traffic light turns green|Le feu passe au vert|le feu passe du rouge au vert et les voitures qui attendaient se mettent à avancer, crépuscule, caméra fixe
+image|Highway light trails|Traînées lumineuses sur l'autoroute|les voitures sur l'autoroute laissent de longues traînées de lumière rouge et blanche, timelapse, caméra fixe de nuit
+image|Tram passes intersection|Le tramway traverse le carrefour|le tramway glisse à travers le carrefour, ses câbles oscillant légèrement, des piétons attendant, caméra fixe
+image|Taxi drives through rain|Le taxi roule sous la pluie|le taxi jaune roule sur l'avenue détrempée, projetant de l'eau, les phares se reflétant, la caméra le suit en panoramique
+image|Roundabout from above|Le rond-point vu d'en haut|les voitures tournent autour du rond-point et sortent sur différentes routes, vue aérienne, lente rotation de la caméra
+image|Train crosses bridge|Le train traverse le pont|le train traverse le pont de gauche à droite, ses fenêtres scintillant, lumière du soir, plan large fixe
+image|Motorbike weaves through traffic|La moto se faufile dans la circulation|la moto se faufile entre les voitures lentes dans la rue animée, le moteur flou, la caméra la suit latéralement
+image|Bus pulls up at stop|Le bus s'arrête à l'arrêt|le bus s'arrête à l'arrêt et ouvre ses portes pour laisser descendre les passagers, ciel couvert, caméra fixe
+image|Traffic jam at sunset|Embouteillage au coucher du soleil|les voitures de l'embouteillage avancent lentement, les feux stop allumés, chaude brume du couchant, lent travelling avant
+image|Neon reflections on asphalt|Reflets de néons sur l'asphalte|les enseignes au néon clignotent et leurs couleurs ondulent sur l'asphalte mouillé au passage d'une voiture, nuit, caméra fixe basse
+image|Subway train arrives|La rame de métro arrive|la rame de métro entre à toute vitesse dans la station et ralentit jusqu'à l'arrêt, les lumières défilant, caméra fixe sur le quai
+image|Headlights on mountain road|Phares sur la route de montagne|les phares des voitures serpentent lentement le long de la route de montagne au crépuscule, timelapse, plan large fixe
+image|Bridge traffic at night|Circulation sur le pont la nuit|la circulation s'écoule sur le pont illuminé, les lumières se reflétant dans la rivière en contrebas, lent panoramique vers la droite
+image|Bike lane rush hour|Piste cyclable à l'heure de pointe|les cyclistes roulent en un flot régulier sur la piste cyclable, les roues tournant, lumière du matin, caméra fixe
+image|Airplane lands on runway|L'avion atterrit sur la piste|l'avion descend au-dessus des feux de la piste et touche le sol, de la fumée s'échappant de ses roues, la caméra le suit en panoramique
+image|Level crossing barrier|La barrière du passage à niveau|la barrière du passage à niveau s'abaisse avec ses feux rouges clignotants à l'approche d'un train, crépuscule, caméra fixe
+image|Boats in harbor channel|Bateaux dans le chenal du port|les bateaux avancent lentement dans le chenal du port, leurs sillages s'étalant, les lumières de la ville s'allumant, plan large fixe
+image|Pedestrian signal blinks|Le feu piéton clignote|le feu piéton clignote au vert tandis que les gens se hâtent de traverser, les voitures attendant, caméra fixe
+image|Dashboard during night drive|Tableau de bord en conduite de nuit|le tableau de bord luit tandis que les lampadaires glissent sur le pare-brise pendant une conduite de nuit, gouttes de pluie sur la vitre, caméra fixe à l'intérieur
+image|Cable car climbs|Le téléphérique monte|la cabine du téléphérique monte lentement le long de son câble au-dessus de la ville, en se balançant légèrement, des nuages dérivant, la caméra s'incline vers le haut
+image|Skyline lights flicker on|La ville s'illumine|les gratte-ciel de la ville au crépuscule s'éclairent fenêtre après fenêtre à mesure que le ciel s'assombrit, timelapse, plan large fixe
+image|Rainy neon alley|Ruelle aux néons sous la pluie|la pluie tombe dans la ruelle étroite éclairée par des enseignes au néon, les flaques ondulant de reflets colorés, lent travelling avant
+image|Fireworks over the city|Feu d'artifice sur la ville|un feu d'artifice éclate au-dessus des toits de la ville, des étincelles colorées retombant et se reflétant dans le fleuve, caméra fixe
+image|Moon rises over rooftops|La lune se lève sur les toits|la pleine lune se lève lentement au-dessus des toits, les cheminées en silhouette, de fins nuages dérivant, caméra fixe
+image|Lit bridge over dark river|Pont illuminé sur le fleuve sombre|les lumières du pont miroitent sur le fleuve sombre au passage de vagues légères, lent panoramique vers la gauche
+image|Night market crowd|Foule au marché de nuit|les gens flânent entre les étals illuminés du marché de nuit, des lanternes se balançant au-dessus, la caméra avance
+image|Silhouette behind window|Silhouette derrière la fenêtre|une lumière s'allume à une fenêtre de l'immeuble sombre et une silhouette bouge derrière le rideau, caméra fixe
+image|Fog in streetlights|Brouillard sous les lampadaires|le brouillard dérive lentement dans les halos des lampadaires de la rue déserte, nuit bleue et froide, caméra fixe
+image|Rooftop over city lights|Sur le toit face aux lumières de la ville|la personne sur le toit contemple les lumières scintillantes de la ville, les cheveux bougeant dans le vent, lent mouvement circulaire autour d'elle
+image|Lanterns float upward|Les lanternes s'envolent|les lanternes en papier s'élèvent lentement dans le ciel nocturne au-dessus de la ville, d'un orange chaud et lumineux, la caméra s'incline vers le haut
+image|Clouds race above towers|Les nuages filent au-dessus des tours|les nuages filent au-dessus des gratte-ciel éclairés dans le ciel nocturne, timelapse, contre-plongée fixe
+image|Empty street at midnight|Rue déserte à minuit|la rue déserte à minuit reste immobile tandis qu'une seule voiture passe, ses phares balayant les murs, caméra fixe
+image|Neon sign buzzes|L'enseigne au néon grésille|l'enseigne au néon clignote et grésille sur le mur de briques, sa lumière pulsant sur le trottoir mouillé, lent travelling avant
+image|Harbor lights at night|Lumières du port la nuit|les lumières du port se reflètent sur l'eau noire tandis que les bateaux tanguent doucement, lueur lointaine de la ville, plan large fixe
+image|Christmas lights street|Rue illuminée pour Noël|les guirlandes lumineuses au-dessus de la rue commerçante scintillent tandis que les gens marchent en dessous, une neige légère tombant, lent mouvement vers l'avant
+image|Ferris wheel spins at night|La grande roue tourne la nuit|la grande roue illuminée tourne lentement, ses lumières colorées changeant, ciel nocturne derrière, caméra fixe
+image|Snowy street under lamps|Rue enneigée sous les lampadaires|la neige tombe doucement sous les lampadaires chaleureux de la rue calme, des pas dans la neige, caméra fixe
+image|Stars over the town|Les étoiles au-dessus du village|les étoiles tournent lentement dans le ciel au-dessus de la petite ville, les fenêtres des maisons éclairées, timelapse, caméra fixe
+image|Lightning over skyline|Éclairs au-dessus de la ville|des éclairs zèbrent les nuages sombres au-dessus des gratte-ciel, illuminant brièvement les tours, plan large fixe
+image|Late night diner|Le diner tard le soir|le diner ouvert tard brille derrière ses grandes vitres tandis qu'un client sirote un café, des voitures passant dehors, lent travelling avant
+image|Curtains in the breeze|Les rideaux dans la brise|les rideaux blancs se gonflent doucement dans la brise de la fenêtre ouverte, la lumière du soleil se déplaçant sur le sol, caméra fixe
+image|Fireplace crackles|Le feu crépite dans la cheminée|le feu crépite et vacille dans la cheminée, projetant une lumière chaude et mouvante dans la pièce, lent travelling avant
+image|Dust in sunbeam|Poussière dans un rayon de soleil|des particules de poussière flottent lentement dans le rayon de soleil qui traverse la pièce silencieuse, caméra fixe
+image|Candle flame on table|Flamme de bougie sur la table|la bougie sur la table vacille doucement, sa lumière dansant sur les murs, pièce sombre et douillette, gros plan fixe
+image|Rain on the window|La pluie sur la vitre|des gouttes de pluie coulent sur la vitre de la pièce douillette, lumières floues à l'extérieur, caméra fixe
+image|Old library walk|Promenade dans la vieille bibliothèque|la caméra avance lentement entre les hautes étagères de la vieille bibliothèque, lumière chaude des lampes, poussière dans l'air
+image|Kitchen steam rises|La vapeur monte dans la cuisine|la vapeur monte de la casserole sur la cuisinière dans la cuisine ensoleillée, la lumière vacillant à travers, caméra fixe
+image|Ceiling fan turns|Le ventilateur de plafond tourne|le ventilateur de plafond tourne lentement au-dessus de la pièce, son ombre balayant les murs, chaude lumière d'après-midi, caméra fixe
+image|Stained glass light shifts|La lumière des vitraux se déplace|la lumière colorée des vitraux se déplace lentement sur le sol de l'église, de la poussière flottant, lent mouvement vers le bas
+image|Person reads by window|Lecture près de la fenêtre|la personne de la photo, assise près de la fenêtre, lit et tourne une page, douce lumière du jour, caméra fixe
+image|Clock pendulum swings|Le balancier de l'horloge|le balancier de la vieille horloge oscille régulièrement, ses aiguilles avançant, pièce silencieuse, lent travelling avant
+image|Office at dusk|Le bureau au crépuscule|le bureau vide s'assombrit tandis que les lumières de la ville s'allument derrière les fenêtres, timelapse, caméra fixe
+image|Houseplants sway indoors|Plantes d'intérieur qui ondulent|les plantes d'intérieur ondulent légèrement près de la fenêtre ouverte, les ombres des feuilles bougeant sur le mur, caméra fixe
+image|Museum hall walk|Traversée d'une salle de musée|la caméra glisse lentement à travers la salle du musée, devant les tableaux accrochés aux murs, douce lumière zénithale
+image|Bathroom mirror fogs|Le miroir de la salle de bain s'embue|le miroir de la salle de bain s'embue lentement avec la vapeur de la douche, lumière douce, caméra fixe
+image|Train compartment view|Vue depuis le compartiment|le paysage défile derrière la fenêtre du compartiment du train, la lumière vacillant sur les sièges, caméra fixe
+image|Workshop wood shavings|Copeaux de bois à l'atelier|l'artisan dans son atelier rabote une pièce de bois, les copeaux s'enroulant et tombant, lumière chaude, caméra fixe
+image|Bedroom morning light|Lumière du matin dans la chambre|la lumière du matin éclaire peu à peu la chambre à mesure que le soleil se lève, les ombres raccourcissant, timelapse, caméra fixe
+image|Waiter pours wine|Le serveur verse le vin|le serveur du restaurant verse du vin dans un verre à table, les bougies brillant, lent travelling avant
+image|Spiral staircase climb|Montée de l'escalier en colimaçon|la caméra monte lentement l'escalier en colimaçon, la lumière venant de la fenêtre du haut, ombres douces sur les marches
+image|Clouds over cathedral|Nuages au-dessus de la cathédrale|les nuages filent au-dessus des tours de la cathédrale, ombre et lumière se déplaçant sur la façade de pierre, timelapse, caméra fixe
+image|Iron tower sparkles|La tour de fer scintille|la tour de fer de la photo scintille de lumières clignotantes sur le ciel nocturne, lent travelling avant
+image|Castle in the mist|Le château dans la brume|la brume dérive lentement autour du vieux château sur la colline, le soleil perçant à travers, lent travelling avant
+image|Flag on the dome|Le drapeau sur le dôme|le drapeau au sommet du dôme flotte au vent, des nuages passant derrière, caméra fixe
+image|Ancient temple sunrise|Lever de soleil sur le temple antique|le soleil se lève derrière le temple antique, une lumière chaude se répandant sur les colonnes, timelapse, lent mouvement vers le haut
+image|Glass skyscraper reflections|Reflets sur le gratte-ciel de verre|la caméra s'incline lentement vers le haut le long du gratte-ciel de verre tandis que les nuages se reflètent et bougent sur sa façade
+image|Lighthouse beam sweeps|Le faisceau du phare balaie la mer|le faisceau du phare balaie la mer sombre tandis que les vagues se brisent sur les rochers en contrebas, caméra fixe
+image|Fountain in the plaza|La fontaine sur la place|l'eau de la fontaine de la place jaillit et retombe, les gouttelettes scintillant au soleil, caméra fixe
+image|Windmill blades turn|Les ailes du moulin tournent|les ailes du vieux moulin tournent lentement dans le vent, l'herbe ondulant dans le champ, caméra fixe
+image|Pyramid in desert wind|La pyramide dans le vent du désert|le sable souffle à travers le désert au pied de la pyramide, la brume de chaleur miroitant, lent panoramique vers la droite
+image|Stone bridge flyover|Survol du pont de pierre|la caméra vole lentement vers le pont de pierre au-dessus de la rivière, l'eau s'écoulant en dessous, douce lumière du matin
+image|Ivy on the ruins|Le lierre sur les ruines|le lierre sur les ruines de pierre ondule dans la brise, des oiseaux passant en vol, lumière dorée, lent travelling latéral
+image|Clock tower pigeons|Les pigeons de la tour de l'horloge|les aiguilles de la tour de l'horloge avancent et des pigeons s'envolent du rebord, ciel bleu, lent travelling avant
+image|Palace gardens orbit|Tour du palais et de ses jardins|la caméra tourne lentement autour du palais et de ses jardins, les fontaines scintillant, journée ensoleillée
+image|Shadows cross the statue|Les ombres passent sur la statue|les ombres glissent sur la statue de pierre tandis que le soleil traverse le ciel, timelapse, caméra fixe
+image|Village church snowfall|Neige sur l'église du village|la neige tombe doucement sur l'église du village et son clocher, douce lumière d'hiver, caméra fixe
+image|Pagoda lanterns sway|Les lanternes de la pagode se balancent|les lanternes suspendues aux toits de la pagode se balancent dans le vent, des pétales de cerisier dérivant, lent mouvement vers le haut
+image|Stone arch at sunset|L'arche de pierre au couchant|le soleil se couche derrière l'arche de pierre, des gens passant dessous, longues ombres, caméra fixe
+image|Shutters of old house|Les volets de la vieille maison|les volets de la vieille maison s'ouvrent lentement et les rideaux bougent à la fenêtre, lumière du matin, caméra fixe
+image|Stadium lights come on|Les projecteurs du stade s'allument|les projecteurs du stade s'allument un à un à la tombée de la nuit, plan large fixe
+image|Coffee steam swirls|La vapeur du café tourbillonne|la vapeur tourbillonne lentement au-dessus de la tasse de café chaud sur la table, douce lumière du matin, gros plan fixe
+image|Milk blooms in coffee|Le lait s'épanouit dans le café|du lait est versé dans le café et s'épanouit en motifs tourbillonnants, macro, caméra fixe
+image|Pizza cheese pull|Le fromage de la pizza file|une part est soulevée de la pizza, étirant le fromage fondu, de la vapeur montant, lent travelling avant
+image|Ice cubes in soda|Glaçons dans le soda|les glaçons tintent dans le verre tandis que des bulles montent dans le soda, condensation sur le verre, caméra macro fixe
+image|Honey drips from spoon|Le miel coule de la cuillère|le miel coule lentement de la cuillère en bois dans le pot, lumière dorée, caméra macro fixe
+image|Syrup on pancakes|Sirop sur les pancakes|le sirop est versé sur la pile de pancakes et coule le long des bords, le beurre fondant, lent travelling avant
+image|Wine swirls in glass|Le vin tourne dans le verre|le vin rouge tournoie dans le verre puis se calme, la lumière scintillant, fond sombre, gros plan fixe
+image|Soup simmers in pot|La soupe mijote|la soupe mijote dans la marmite, des bulles montant et de la vapeur s'élevant, chaude lumière de cuisine, caméra fixe
+image|Sunlight over fruit bowl|Le soleil sur la coupe de fruits|la lumière du soleil se déplace lentement sur la coupe de fruits posée sur la table, les ombres changeant, timelapse, caméra fixe
+image|Chocolate melts in bowl|Le chocolat fond dans le bol|les morceaux de chocolat fondent lentement en une flaque brillante dans le bol chaud, macro, caméra fixe
+image|Breaking fresh bread|On rompt le pain frais|des mains rompent la miche de pain frais, des miettes tombant, de la vapeur s'échappant, lumière chaude, caméra fixe
+image|Tea leaves unfurl|Les feuilles de thé se déploient|les feuilles de thé se déploient lentement dans la théière en verre tandis que l'eau devient ambrée, lumière douce, gros plan fixe
+image|Champagne toast bubbles|Toast au champagne|les coupes de champagne trinquent et les bulles montent vite, quelques gouttes éclaboussant, lumière festive, ralenti
+image|Sizzling steak in pan|Le steak grésille dans la poêle|le steak grésille dans la poêle chaude tandis que le beurre mousse autour, de la fumée montant, gros plan fixe
+image|Birthday candles blown out|On souffle les bougies d'anniversaire|les bougies du gâteau d'anniversaire vacillent, puis sont soufflées, la fumée s'élevant en volutes, caméra fixe
+image|Strawberries splash in milk|Les fraises éclaboussent le lait|les fraises tombent dans le bol de lait en éclaboussant, des gouttelettes volant, ralenti, caméra fixe
+image|Orange juice pours|Le jus d'orange coule|du jus d'orange frais est versé dans le verre, des bulles se formant, cuisine ensoleillée, caméra macro fixe
+image|Noodles lifted with chopsticks|Nouilles soulevées avec des baguettes|des baguettes soulèvent des nouilles du bol de bouillon fumant, des gouttes retombant, lent travelling avant
+image|Sugar snow on dessert|Neige de sucre sur le dessert|le sucre glace tombe lentement comme de la neige sur le dessert, douce lumière de studio, caméra macro fixe
+image|Beer foam rises|La mousse de la bière monte|la bière est versée dans le verre et la mousse monte jusqu'au bord, les bulles filant, chaude lumière de bar, caméra fixe
+image|Candle flame flickers softly|La flamme vacille doucement|la flamme de la bougie de l'image vacille doucement dans un léger courant d'air, une lueur chaude danse sur le mur, caméra fixe
+image|Wax drips down candle|La cire coule sur la bougie|une goutte de cire fondue glisse lentement le long de la bougie tandis que la flamme tremble, gros plan, caméra fixe
+image|Fireplace logs crackle|Les bûches crépitent|les bûches brûlent vivement dans la cheminée, les flammes montent et des étincelles s'élèvent, lumière orange chaude, lent travelling avant
+image|Campfire sparks at night|Étincelles du feu de camp la nuit|le feu de camp crépite dans l'obscurité, des étincelles montent dans le ciel nocturne, la fumée s'enroule, caméra fixe
+image|Candles go out one by one|Les bougies s'éteignent une à une|les bougies d'anniversaire vacillent puis s'éteignent une à une, de fins filets de fumée s'élèvent, caméra fixe
+image|Oil lamp glow|Lueur de la lampe à huile|la flamme de la lampe à huile oscille doucement derrière le verre, la lumière palpite sur la table, lent mouvement orbital de la caméra
+image|Match strikes and ignites|L'allumette s'enflamme|l'allumette s'embrase dans une bouffée de fumée, la petite flamme se stabilise, plan macro, caméra fixe
+image|Candlelit dinner table|Dîner aux chandelles|les bougies de la table du dîner vacillent doucement, les ombres glissent sur les assiettes et les verres, lent travelling le long de la table
+image|Bonfire on the beach|Feu de joie sur la plage|le feu de joie sur la plage ronfle dans le vent, les flammes se couchent, des braises s'envolent vers la mer, plan large fixe
+image|Lantern swings gently|La lanterne se balance|la lanterne suspendue se balance lentement d'avant en arrière, sa flamme projette des ombres mouvantes, caméra fixe
+image|Church votive candles|Cierges dans l'église|des rangées de cierges vacillent dans la pénombre de l'église, les petites flammes tremblent, lent panoramique vers la droite
+image|Incense smoke curls|Volutes d'encens|le bâton d'encens rougeoie à son extrémité tandis qu'un mince ruban de fumée s'enroule vers le haut, lumière douce, caméra fixe
+image|Gas burner blue flames|Flammes bleues du brûleur|les flammes bleues du brûleur à gaz vacillent régulièrement, la chaleur ondule au-dessus, gros plan, caméra fixe
+image|Torch on stone wall|Torche sur un mur de pierre|la torche fixée au vieux mur de pierre brûle et vacille, la lumière danse sur les pierres rugueuses, lent travelling avant
+image|Candle burns down timelapse|Bougie qui se consume en accéléré|accéléré de la bougie qui se consume, la cire fond et la flamme rapetisse, caméra fixe
+image|Embers glow and pulse|Les braises palpitent|les braises rougeoyantes palpitent de rouge et d'orange tandis que la cendre s'envole, gros plan, lent mouvement de caméra vers le bas
+image|Flame bent by wind|Flamme courbée par le vent|un souffle de vent soudain couche la flamme de la bougie avant qu'elle ne se redresse, caméra fixe
+image|Fire pit at dusk|Brasero au crépuscule|le brasero brûle au crépuscule, les flammes montent et retombent, la fumée dérive dans le ciel violet, lent travelling arrière
+image|Chandelier candles glow|Bougies du lustre|les bougies du vieux lustre vacillent au-dessus, une lumière chaude oscille dans la salle sombre, lent mouvement de caméra vers le haut
+image|Sparkler burns down|Le cierge magique se consume|le cierge magique grésille et projette de vives étincelles en se consumant le long du fil, fond sombre, caméra fixe
+image|Perfume bottle turntable|Flacon de parfum sur plateau tournant|le flacon de parfum tourne lentement sur un plateau, la lumière glisse sur le verre, éclairage de studio doux, caméra fixe
+image|Sneaker slow orbit|Orbite autour d'une basket|la basket reste immobile tandis que la caméra tourne lentement autour, fond de studio épuré, ombres douces
+image|Wristwatch hands tick|Les aiguilles de la montre avancent|les aiguilles de la montre avancent tandis que la lumière balaie le cadran, plan macro, lent travelling avant
+image|Smartphone screen lights up|L'écran du smartphone s'allume|l'écran du smartphone s'allume et brille, des reflets glissent sur ses bords, lent mouvement orbital vers la gauche
+image|Coffee cup steam rises|Vapeur d'une tasse de café|la vapeur s'élève doucement de la tasse de café posée sur la table, lumière du matin, lent travelling avant
+image|Cream jar lid lifts|Le couvercle du pot de crème se soulève|le couvercle du pot de crème se soulève lentement et révèle la crème onctueuse, douce lumière pastel, caméra fixe
+image|Floating headphones spin|Casque audio en lévitation|le casque audio flotte et tourne lentement dans les airs, la lumière se reflète sur sa surface, caméra fixe
+image|Splash around soda can|Éclaboussures autour d'une canette|des gouttes d'eau éclaboussent la canette de soda au ralenti, la condensation scintille, caméra fixe
+image|Diamond ring sparkle|Éclat de la bague en diamant|la bague en diamant scintille tandis que la lumière court sur ses facettes, plan macro, lent mouvement orbital
+image|Lipstick twists up|Le rouge à lèvres sort du tube|le rouge à lèvres sort lentement de son tube en tournant, sa surface brillante accroche la lumière, caméra fixe
+image|Car headlights turn on|Les phares de la voiture s'allument|les phares de la voiture s'allument et brillent dans le showroom sombre, lent travelling le long de la voiture
+image|Bottle with ice cubes|Bouteille et glaçons|des glaçons tombent autour de la bouteille et la condensation ruisselle sur le verre, lumière bleue froide, caméra fixe
+image|Handbag light sweep|Lumière sur le sac à main|un doux faisceau de lumière balaie le sac à main en cuir et souligne sa texture, lent travelling avant
+image|Laptop lid opens|L'ordinateur portable s'ouvre|l'écran de l'ordinateur portable s'ouvre lentement et s'illumine, bureau épuré, lumière douce, caméra fixe
+image|Chocolate bar snaps|La tablette de chocolat se brise|la tablette de chocolat se casse en deux, de petites miettes tombent, lumière chaude, ralenti, caméra fixe
+image|Sunglasses cloud reflections|Nuages dans les lunettes de soleil|des nuages défilent dans les reflets des verres des lunettes de soleil, lumière d'été éclatante, lent mouvement orbital
+image|Water drops on fruit|Gouttes d'eau sur les fruits|des gouttes d'eau roulent sur les fruits frais et scintillent dans la lumière, ralenti, léger travelling avant
+image|Gift box lid lifts|Le couvercle du coffret se soulève|le couvercle du coffret cadeau se soulève et révèle le produit à l'intérieur, lumière douce, lent mouvement de caméra vers le bas
+image|Serum dropper drip|Goutte de sérum|une goutte de sérum tombe de la pipette dans le flacon, une onde se forme à la surface, plan macro, caméra fixe
+image|Wine pours into glass|Le vin coule dans le verre|le vin rouge est versé dans le verre et tourbillonne, la lumière le traverse, ralenti, caméra fixe
+image|Clock gears turning|Engrenages d'horloge|les engrenages en laiton de l'horloge tournent lentement et s'emboîtent, lumière chaude, plan macro, caméra fixe
+image|Steam engine pistons|Pistons de la machine à vapeur|les pistons de la machine à vapeur vont et viennent tandis que la vapeur s'échappe par bouffées, lent panoramique
+image|Windmill blades spin|Les ailes du moulin tournent|les ailes du moulin à vent tournent régulièrement dans le vent, les nuages défilent derrière, plan large fixe
+image|Old typewriter keys|Touches de la vieille machine à écrire|les touches de la vieille machine à écrire s'enfoncent une à une et le chariot glisse, gros plan, caméra fixe
+image|Vinyl record spins|Le disque vinyle tourne|le disque vinyle tourne sur la platine tandis que le diamant suit le sillon, lumière chaude, lent travelling avant
+image|Factory robot arm|Bras robotisé d'usine|le bras robotisé de l'usine pivote et soulève une pièce d'un mouvement fluide et précis, caméra fixe
+image|Bicycle wheel spins|La roue de vélo tourne|la roue de vélo tourne librement, les rayons se brouillent, le soleil étincelle sur la jante, caméra fixe
+image|Music box cylinder|Cylindre de la boîte à musique|le cylindre de la boîte à musique tourne et ses picots pincent le peigne métallique, plan macro, caméra fixe
+image|Sewing machine needle|Aiguille de la machine à coudre|l'aiguille de la machine à coudre monte et descend rapidement à travers le tissu, gros plan, caméra fixe
+image|Car engine running|Moteur de voiture en marche|le moteur de la voiture tourne, les courroies défilent et les pièces vibrent légèrement, lent travelling avant
+image|Water wheel turning|La roue à aubes tourne|la vieille roue à aubes tourne lentement tandis que l'eau se déverse sur ses pales, pierres moussues, caméra fixe
+image|Film projector reels|Bobines du projecteur|les bobines du projecteur de cinéma tournent et un faisceau de lumière scintille à travers la poussière, caméra fixe
+image|Pocket watch balance wheel|Balancier de la montre à gousset|la montre à gousset fait tic-tac, son minuscule balancier oscille d'avant en arrière, plan macro, caméra fixe
+image|Train wheels rolling|Roues du train en marche|les roues d'acier du train roulent sur les rails, les bielles vont et viennent, travelling en contre-plongée
+image|Conveyor belt moving|Tapis roulant en mouvement|des cartons avancent régulièrement sur le tapis roulant de l'entrepôt, caméra fixe
+image|Ceiling fan rotating|Ventilateur de plafond|le ventilateur de plafond tourne lentement, son ombre balaie le plafond, lent mouvement de caméra vers le bas
+image|Printing press rolling|Presse d'imprimerie en marche|la presse d'imprimerie tourne et les feuilles de papier sortent l'une après l'autre, lent panoramique
+image|Wind-up toy robot walks|Le robot mécanique marche|le petit robot mécanique à remontoir avance à pas saccadés en balançant les bras, contre-plongée, caméra fixe
+image|Lighthouse lamp rotates|La lanterne du phare tourne|la grande lanterne du phare tourne, son faisceau balaie la mer sombre, caméra fixe
+image|Elevator pulleys hoist|Poulies de l'ascenseur|les câbles et les poulies de l'ascenseur tournent tandis que la cabine monte, cage métallique, lent mouvement de caméra vers le haut
+image|Silk ripples in breeze|Soie ondulant dans la brise|le tissu de soie ondule et flotte dans une douce brise, la lumière chatoie sur ses plis, caméra fixe
+image|Curtain blown by wind|Rideau soulevé par le vent|le rideau blanc se gonfle lentement dans le vent qui entre par la fenêtre ouverte, douce lumière du jour, caméra fixe
+image|Flag waving in sky|Drapeau flottant dans le ciel|le drapeau flotte régulièrement dans le vent sur le ciel bleu, lent mouvement de caméra vers le haut
+image|Velvet folds light sweep|Lumière sur les plis du velours|la lumière balaie lentement les plis du velours et approfondit sa couleur, plan macro, caméra fixe
+image|Fine sand pouring|Sable fin qui s'écoule|du sable fin s'écoule en un mince filet et forme un petit tas, lumière chaude, caméra fixe
+image|Honey dripping from spoon|Miel coulant de la cuillère|un miel doré et épais coule lentement de la cuillère en accrochant la lumière, plan macro, caméra fixe
+image|Paper edges burning|Bords du papier qui brûlent|les bords du papier s'enroulent et brûlent en une cendre rougeoyante, gros plan, caméra fixe
+image|Ice melting drops|Glace qui fond goutte à goutte|la glace fond lentement, des gouttes d'eau glissent et tombent, lumière froide, plan macro, caméra fixe
+image|Wool yarn unwinding|La pelote de laine se déroule|la pelote de laine se déroule lentement et roule sur la table, lumière douce, caméra fixe
+image|Liquid paint marbling|Peinture liquide marbrée|des volutes de peinture colorée se mélangent lentement et forment des motifs marbrés, vue de dessus, caméra fixe
+image|Leather grain close-up|Grain du cuir en gros plan|la caméra glisse lentement sur la surface du cuir, la lumière révèle son grain, plan macro
+image|Lace veil floats|Voile de dentelle flottant|le voile de dentelle flotte et dérive lentement dans les airs, doux contre-jour, caméra fixe
+image|Bubble wrap pops|Papier bulle qui éclate|les bulles du papier bulle éclatent l'une après l'autre sous un doigt, gros plan, caméra fixe
+image|Wood grain reveal|Veinures du bois|la lumière glisse sur la surface du bois et révèle ses veinures, lent panoramique vers la droite
+image|Molten metal pours|Coulée de métal en fusion|du métal en fusion incandescent est versé dans un moule, des étincelles jaillissent, atelier sombre, caméra fixe
+image|Glass rainbow refraction|Arc-en-ciel à travers le verre|une lumière irisée traverse le verre et se déplace lentement sur la surface, caméra fixe
+image|Tablecloth pulled away|Nappe tirée d'un coup|la nappe est tirée d'un coup sec et les objets posés dessus restent immobiles, ralenti, caméra fixe
+image|Ink drop in water|Goutte d'encre dans l'eau|une goutte d'encre tombe dans l'eau et s'épanouit en nuages doux, plan macro, caméra fixe
+image|Linen sheets drying|Draps de lin au séchage|les draps de lin sur la corde à linge se balancent dans le vent, grand soleil, lent panoramique
+image|Crumpled paper unfolds|Le papier froissé se déplie|la feuille de papier froissée se déplie lentement toute seule, les plis s'aplatissent, vue de dessus, caméra fixe
+image|Portrait painting blinks|Le portrait peint cligne des yeux|la personne du portrait peint cligne lentement des yeux et tourne son regard vers le spectateur, caméra fixe
+image|Painted starry sky swirls|Le ciel étoilé peint tourbillonne|les étoiles et les nuages tourbillonnants du ciel nocturne peint se mettent à tourner lentement, les coups de pinceau bougent, caméra fixe
+image|Painted sea waves|Vagues de la mer peinte|les vagues de la mer peinte roulent et se brisent, les coups de pinceau prennent vie, lent travelling avant
+image|Landscape painting clouds|Nuages du paysage peint|les nuages du paysage peint dérivent lentement dans le ciel tandis que les arbres se balancent, caméra fixe
+image|Water lilies pond ripples|L'étang aux nymphéas frissonne|l'étang du tableau impressionniste ondule doucement, les nymphéas se balancent, lent panoramique
+image|Painted lady smiles wider|La dame peinte sourit davantage|la femme du vieux portrait sourit un peu plus et incline la tête, lumière douce, caméra fixe
+image|Painted dancers twirl|Les danseuses peintes tournoient|les danseuses du tableau se mettent à tournoyer lentement, leurs robes flottent, caméra fixe
+image|Still life fruit painting|Nature morte aux fruits|la lumière glisse lentement sur la nature morte peinte aux fruits, une mouche se pose sur une pomme, caméra fixe
+image|Painted windmill turns|Le moulin peint tourne|le moulin de la campagne peinte se met à tourner, les nuages défilent derrière lui, lent travelling avant
+image|Oil painting ship sails|Le navire du tableau navigue|le navire de la peinture à l'huile avance sur la houle, ses voiles se gonflent de vent, caméra fixe
+image|Painted candle flickers|La bougie peinte vacille|la bougie du vieux tableau vacille, sa lumière chaude bouge sur les visages, caméra fixe
+image|Abstract colors flow|Couleurs abstraites en mouvement|les formes et les couleurs du tableau abstrait coulent lentement et se transforment les unes dans les autres, caméra fixe
+image|Painted horse gallops|Le cheval peint galope|le cheval du tableau se met à galoper, sa crinière vole, la poussière s'élève, caméra fixe
+image|Watercolor pigments bleed|Les pigments de l'aquarelle diffusent|les pigments de l'aquarelle diffusent lentement et s'étalent sur le papier, les bords s'épanouissent doucement, caméra fixe
+image|Painted street rain|Pluie sur la rue peinte|la pluie commence à tomber sur la rue peinte, les reflets scintillent sur les pavés, caméra fixe
+image|Nobleman portrait breathes|Le portrait du noble respire|le noble du portrait classique respire doucement, sa poitrine se soulève, ses yeux suivent le spectateur, caméra fixe
+image|Painted garden flowers sway|Fleurs du jardin peint|les fleurs du jardin peint se balancent dans une légère brise, des pétales s'envolent, lent panoramique vers la gauche
+image|Painted sunset glows|Coucher de soleil peint|le soleil du tableau descend lentement et le ciel prend un orange plus profond, caméra fixe
+image|Fresco angels flutter|Les anges de la fresque battent des ailes|les anges de la fresque du plafond battent doucement des ailes, les nuages dérivent autour d'eux, lent mouvement de caméra vers le haut
+image|Camera enters painting|La caméra entre dans le tableau|la caméra avance lentement dans le tableau dont la scène prend de la profondeur, les arbres et les collines se séparent
+image|Grandparents smile together|Les grands-parents se sourient|le couple âgé de la vieille photo se tourne l'un vers l'autre et se sourit chaleureusement, caméra fixe
+image|Black and white portrait blinks|Le portrait noir et blanc cligne des yeux|la personne du vieux portrait en noir et blanc cligne lentement des yeux et respire, léger mouvement de tête, caméra fixe
+image|Vintage wedding couple|Couple de mariés d'antan|les mariés de la photo de mariage ancienne sourient et se rapprochent l'un de l'autre, caméra fixe
+image|Child laughs in photo|L'enfant rit sur la photo|l'enfant de la vieille photographie rit et penche la tête, grain doux, caméra fixe
+image|Vintage street comes alive|La rue d'antan s'anime|les passants de la vieille photo de rue se mettent à marcher et une calèche passe, lent travelling avant
+image|Young soldier salutes|Le jeune soldat salue|le jeune soldat du vieux portrait lève lentement la main pour saluer, tons sépia, caméra fixe
+image|Family group photo moves|La photo de famille s'anime|la famille de la vieille photo de groupe bouge légèrement, sourit et échange des regards, caméra fixe
+image|Sepia face turns|Le visage sépia se tourne|la femme de la photo sépia tourne son visage vers la caméra et sourit doucement, caméra fixe
+image|Old harbor boats bob|Bateaux du vieux port|les bateaux de la photo du vieux port se balancent doucement sur l'eau, des mouettes volent au-dessus, caméra fixe
+image|Vintage car drives off|La voiture ancienne démarre|la voiture ancienne de la vieille photographie démarre et descend lentement la rue, caméra fixe
+image|Hat tipped in greeting|Coup de chapeau|l'homme de la vieille photo soulève son chapeau pour saluer et hoche la tête, grain de film, caméra fixe
+image|Hair in the wind sepia|Cheveux au vent en sépia|les cheveux de la femme de la vieille photo bougent doucement dans le vent tandis qu'elle regarde au loin, caméra fixe
+image|School class photo|Photo de classe|les enfants de la vieille photo de classe gigotent et sourient, l'un d'eux fait un signe de la main, caméra fixe
+image|Factory workers break|Pause des ouvriers|les ouvriers de la vieille photo d'usine s'essuient le front et rient ensemble, lent panoramique
+image|Old seaside photo waves|Vagues de la vieille photo de plage|les vagues déferlent sur la plage de la vieille photo de bord de mer, des baigneurs marchent sur le rivage, caméra fixe
+image|Mother rocks baby|La mère berce son bébé|la mère de la vieille photo berce doucement son bébé et le regarde avec tendresse, caméra fixe
+image|Vintage violinist plays|Le violoniste d'antan joue|le musicien de la photo ancienne se met à jouer du violon, l'archet bouge lentement, caméra fixe
+image|Old photo couple dances|Le couple de la vieille photo danse|le couple de la vieille photo se met à danser lentement, la robe tournoie, caméra fixe
+image|Old photograph gains depth|La vieille photo prend du relief|la vieille photographie prend de la profondeur tandis que la caméra avance lentement, le premier plan et l'arrière-plan se séparent
+image|Pencil sketch comes alive|Le croquis au crayon s'anime|les traits du croquis au crayon se mettent à bouger et le personnage tourne lentement la tête, caméra fixe
+image|Cartoon character waves|Le personnage de dessin animé salue|le personnage de dessin animé fait joyeusement signe de la main et sautille, caméra fixe
+image|Ink dragon uncoils|Le dragon à l'encre se déroule|le dragon dessiné à l'encre se déroule lentement, sa queue bouge et de la fumée sort de ses naseaux, caméra fixe
+image|Child drawing chimney smoke|Fumée du dessin d'enfant|la fumée de la cheminée du dessin d'enfant représentant une maison s'enroule vers le haut et le soleil tourne, caméra fixe
+image|Anime girl hair flows|Cheveux au vent d'une héroïne d'anime|les cheveux et la jupe de la jeune fille d'anime flottent au vent tandis qu'elle lève les yeux vers le ciel, lent travelling avant
+image|Comic hero leaps|Le héros de BD bondit|le héros de la case de bande dessinée bondit en avant, des lignes de vitesse filent derrière lui, caméra fixe
+image|Storybook forest fireflies|Lucioles de la forêt du conte|les arbres de l'illustration du livre de contes se balancent et des lucioles flottent entre eux, lent panoramique
+image|Chalk stick figure walks|Le bonhomme à la craie marche|le dessin à la craie sur le tableau noir prend vie, le bonhomme bâton traverse le tableau en marchant, caméra fixe
+image|Watercolor bird takes off|L'oiseau à l'aquarelle s'envole|l'oiseau de l'illustration à l'aquarelle bat des ailes et s'envole, laissant des traînées de peinture, caméra fixe
+image|Architectural sketch draws itself|Le croquis d'architecte se dessine|les traits du croquis d'architecte se dessinent tout seuls et se remplissent de couleurs douces, caméra fixe
+image|Doodle flowers bloom|Les fleurs griffonnées éclosent|les fleurs griffonnées ouvrent leurs pétales et se balancent, les traits d'encre ondulent, caméra fixe
+image|Manga eyes sparkle|Yeux de manga étincelants|les yeux du personnage de manga s'écarquillent et pétillent tandis qu'il sourit, caméra fixe
+image|Fantasy map sea ripples|La mer de la carte fantastique ondule|la mer de la carte fantastique se met à onduler et un petit navire la traverse, lent travelling avant
+image|Line art cat stretches|Le chat au trait s'étire|le chat dessiné au trait s'étire, bâille et enroule sa queue, caméra fixe
+image|Concept art castle flags|Drapeaux du château de concept art|les nuages passent devant le château du concept art, les drapeaux flottent sur les tours, lent travelling avant
+image|Pixel art character walks|Le personnage en pixel art marche|le personnage en pixel art marche sur place, le décor défile lentement, caméra fixe
+image|Fashion sketch twirls|Le croquis de mode tournoie|le mannequin du croquis de mode tournoie et la robe dessinée s'évase, caméra fixe
+image|Charcoal portrait breathes|Le portrait au fusain respire|le portrait au fusain respire doucement et cligne des yeux, les traits estompés bougent légèrement, caméra fixe
+image|Botanical plate leaves unfurl|Les feuilles de la planche botanique se déploient|les feuilles de l'illustration botanique se déploient lentement et se balancent, papier vieilli, caméra fixe
+image|Paper cutout layers drift|Couches de papier découpé|l'illustration en papier découpé se sépare en couches qui dérivent doucement, lent mouvement de caméra en parallaxe
+image|Marble statue opens eyes|La statue de marbre ouvre les yeux|la statue de marbre ouvre lentement les yeux et tourne la tête, de la poussière tombe de son visage, caméra fixe
+image|Bronze statue turns head|La statue de bronze tourne la tête|la statue de bronze tourne légèrement la tête, la lumière glisse sur le métal, lent mouvement orbital
+image|Museum sculpture orbit|Orbite autour d'une sculpture de musée|la caméra tourne lentement autour de la sculpture de marbre du musée, douce lumière de galerie
+image|Stone gargoyle wakes|La gargouille se réveille|la gargouille de pierre de la cathédrale remue ses ailes et regarde en bas, les nuages dérivent, contre-plongée, caméra fixe
+image|Stone angel spreads wings|L'ange de pierre déploie ses ailes|l'ange de pierre déploie lentement ses ailes, la mousse et la poussière tombent, caméra fixe
+image|Seated statue looks up|La statue assise relève la tête|la statue assise relève la tête de sa main et regarde autour d'elle, caméra fixe
+image|Garden statue in rain|Statue de jardin sous la pluie|la pluie tombe sur la statue du jardin, l'eau ruisselle sur la pierre, lent travelling avant
+image|Ice sculpture melts|La sculpture de glace fond|la sculpture de glace fond lentement, des gouttes d'eau tombent de ses bords, lumière froide, caméra fixe
+image|Statue cracks with light|La statue se fissure de lumière|des fissures parcourent la statue de pierre et des éclats tombent, révélant une lumière intérieure, caméra fixe
+image|Clay figure takes shape|La figurine d'argile prend forme|la figurine d'argile prend lentement forme tandis que des mains invisibles lissent sa surface, gros plan, caméra fixe
+image|Ancient bust smiles|Le buste antique sourit|le buste de pierre antique sourit légèrement et cligne des yeux, chaude lumière du couchant, caméra fixe
+image|Statue shadows timelapse|Ombres sur la statue en accéléré|les ombres se déplacent sur la statue de la place au fil de la course du soleil, accéléré, caméra fixe
+image|Equestrian statue horse moves|Le cheval de la statue équestre bouge|le cheval de la statue équestre lève un sabot et secoue sa crinière, contre-plongée, caméra fixe
+image|Wooden carving stretches|La sculpture en bois s'étire|la figurine sculptée dans le bois étire les bras et bouge avec raideur, gros plan, caméra fixe
+image|Giant statue racing clouds|Nuages filant derrière la statue géante|les nuages filent derrière la statue géante tandis que des oiseaux tournent autour, lent mouvement de caméra vers le haut
+image|Sand sculpture crumbles|La sculpture de sable s'effrite|la sculpture de sable s'effrite lentement dans le vent, les grains s'envolent, caméra fixe
+image|Golden temple statue|Statue dorée du temple|la fumée d'encens passe devant la statue dorée du temple tandis que des bougies vacillent à ses pieds, lent travelling avant
+image|Statue sheds a tear|La statue verse une larme|la statue de pierre verse une larme qui coule lentement sur sa joue, gros plan, caméra fixe
+image|Fountain statue water|Eau de la statue-fontaine|l'eau jaillit de la statue de la fontaine dans le bassin, des ondes se propagent, lent mouvement orbital
+image|Polished metal sculpture rotates|La sculpture en métal poli tourne|la lumière joue sur la sculpture en métal poli qui tourne lentement, galerie, caméra fixe
+image|Golden glitter falls|Pluie de paillettes dorées|des paillettes dorées tombent lentement autour du sujet de l'image en scintillant dans la lumière, caméra fixe
+image|Fairy dust trail|Traînée de poussière de fée|une traînée de poussière de fée scintillante tourbillonne autour de la scène puis s'estompe, douce lueur, lent travelling avant
+image|Fireflies appear at dusk|Les lucioles apparaissent au crépuscule|des lucioles apparaissent lentement et flottent autour de la scène, petites lumières clignotantes, crépuscule, caméra fixe
+image|Snowflakes start falling|La neige commence à tomber|de doux flocons de neige commencent à tomber sur l'image en dérivant doucement, caméra fixe
+image|Bokeh lights drift|Lumières bokeh flottantes|des lumières floues dérivent et scintillent à l'arrière-plan, le sujet reste immobile, caméra fixe
+image|Sparkling dust in light|Poussière scintillante dans la lumière|des particules de poussière flottent lentement dans le rayon de soleil qui traverse la pièce, caméra fixe
+image|Magic orbs float up|Des orbes magiques s'élèvent|de petits orbes lumineux s'élèvent lentement du sol et flottent vers le haut, ambiance mystique, caméra fixe
+image|Confetti burst|Explosion de confettis|des confettis colorés jaillissent dans les airs et retombent en pluie sur la scène, ralenti, caméra fixe
+image|Shooting star crosses sky|Une étoile filante traverse le ciel|les étoiles du ciel nocturne scintillent et une étoile filante le traverse, caméra fixe
+image|Pink petals drift down|Pétales roses qui tombent|des pétales de fleurs roses descendent sur la scène portés par la brise, lumière douce, caméra fixe
+image|Sparkles around hands|Étincelles autour des mains|de vives étincelles se rassemblent autour des mains de la personne de l'image et brillent doucement, lent travelling avant
+image|Golden particles rise|Des particules dorées s'élèvent|des particules dorées s'élèvent lentement du sujet et se dissipent dans l'air, lumière chaude, caméra fixe
+image|Soap bubbles float by|Des bulles de savon passent|des bulles de savon flottent lentement à travers la scène, leurs couleurs irisées chatoient, caméra fixe
+image|Pollen over meadow|Pollen au-dessus de la prairie|le pollen flotte paresseusement dans l'air au-dessus de la prairie, à contre-jour, caméra fixe
+image|Light streaks spiral|Spirale de traînées lumineuses|des traînées de lumière colorée tourbillonnent en spirale autour du sujet puis s'estompent, caméra fixe
+image|Diamond sparkles shimmer|Scintillements de diamant|de minuscules éclats semblables à des diamants scintillent au hasard sur la surface de l'image, caméra fixe
+image|Subject dissolves into particles|Le sujet se dissout en particules|le sujet de l'image se dissout lentement en particules lumineuses qui s'envolent, caméra fixe
+image|Particles form the subject|Les particules forment le sujet|des particules lumineuses éparses se rassemblent et forment le sujet de l'image, lent travelling arrière
+image|Embers float upward|Les braises s'envolent|des braises rougeoyantes s'élèvent en vacillant à travers la scène sombre, caméra fixe
+image|Rain of light|Pluie de lumière|de fines traînées de lumière tombent comme une pluie sur la scène en scintillant doucement, lent travelling avant
+image|Smoke rises from ground|La fumée monte du sol|une épaisse fumée blanche s'élève lentement du sol et dérive autour du sujet, caméra fixe
+image|Low fog rolls in|Le brouillard bas arrive|un brouillard bas envahit lentement la scène et adoucit l'arrière-plan, caméra fixe
+image|Flames engulf background|Les flammes envahissent l'arrière-plan|des flammes s'élèvent derrière le sujet et envahissent l'arrière-plan, une lueur orange éclaire le visage, caméra fixe
+image|Colored smoke bombs|Fumigènes colorés|des nuages de fumée violette et orange se déploient autour de la scène et dérivent dans le vent, caméra fixe
+image|Image edges catch fire|Les bords de l'image s'enflamment|les bords de l'image prennent feu et brûlent vers l'intérieur en s'enroulant et en rougeoyant, caméra fixe
+image|Dragon breath fire|Souffle de feu du dragon|un jet de feu traverse l'image depuis la gauche et illumine la scène, caméra fixe
+image|Mist rises from water|La brume monte de l'eau|la brume s'élève lentement de la surface de l'eau, lumière du petit matin, lent travelling avant
+image|Ring of fire ignites|Un cercle de feu s'embrase|un cercle de feu s'embrase autour du sujet et brûle régulièrement, nuit noire, caméra fixe
+image|Smoke wisps from hands|Volutes de fumée des mains|de fines volutes de fumée s'élèvent des mains de la personne de la photo, lumière douce, caméra fixe
+image|Street steam vents|Vapeur des bouches de rue|de la vapeur jaillit des bouches d'aération de la rue et monte, lumières de la ville la nuit, caméra fixe
+image|Volcano smoke plume|Panache de fumée du volcan|un panache de fumée s'élève du volcan et s'étend dans le ciel, lent travelling arrière
+image|Ghostly smoke figure|Silhouette fantomatique de fumée|une silhouette fantomatique de fumée se forme à côté du sujet puis s'éloigne en dérivant, caméra fixe
+image|Flaming sword ignites|L'épée s'enflamme|la lame de l'épée s'embrase et des flammes courent le long de son tranchant, fond sombre, caméra fixe
+image|Smoke reveal transition|Transition de fumée révélatrice|un nuage de fumée balaie l'image puis se dissipe en révélant la scène, caméra fixe
+image|Fireball explodes behind|Une boule de feu explose derrière|une boule de feu explose à l'arrière-plan et la fumée se répand vers l'extérieur, ralenti, caméra fixe
+image|Blue flames in palm|Flammes bleues dans la paume|des flammes magiques bleues dansent dans la paume de la main de l'image et brillent doucement, lent travelling avant
+image|Burning forest edge|Lisière de forêt en feu|les arbres de la lisière de la forêt brûlent, la fumée dérive dans le ciel orange, lent panoramique
+image|Dry ice fog stage|Fumée de glace carbonique sur scène|une fumée de glace carbonique se répand sur le sol de la scène autour de l'artiste, lumières colorées, caméra fixe
+image|Perfect smoke ring|Rond de fumée parfait|un rond de fumée parfait s'élève lentement et s'élargit avant de disparaître, fond sombre, caméra fixe
+image|Heat haze shimmer|Mirage de chaleur|une brume de chaleur ondule au-dessus du sol brûlant et déforme l'arrière-plan, caméra fixe
+image|Sun rays through window|Rayons de soleil par la fenêtre|des rayons de soleil entrent par la fenêtre de la pièce, des grains de poussière dérivent et scintillent lentement dans la lumière, caméra fixe
+image|Golden halo around figure|Halo doré autour du personnage|un doux halo doré s'intensifie lentement autour de la personne de l'image, des rayons de lumière se déploient vers l'extérieur, lent travelling avant
+image|Neon sign flickers on|L'enseigne au néon s'allume|l'enseigne au néon de l'image clignote puis s'allume, sa lueur palpitant sur la rue mouillée, caméra fixe
+image|God rays in forest mist|Rayons divins dans la brume|des faisceaux de soleil percent la canopée brumeuse de la forêt et se déplacent lentement au gré du brouillard, douce inclinaison de la caméra vers le haut
+image|Breathing candle glow|Lueur vivante de bougie|la flamme de la bougie vacille doucement et sa lueur chaude respire sur les objets alentour, très lent travelling avant
+image|Lens flare sweeps across|Reflet d'objectif balayant l'image|un reflet d'objectif lumineux balaie lentement la scène tandis que le soleil apparaît derrière le sujet, lent panoramique vers la droite
+image|Painted eyes start glowing|Les yeux peints s'illuminent|les yeux du personnage du tableau se mettent à briller d'une douce lumière bleue, caméra fixe
+image|Fireflies light the dusk|Lucioles au crépuscule|de minuscules lucioles s'allument une à une dans la prairie au crépuscule et montent lentement, lent travelling avant
+image|Stained glass light shift|Lumière mouvante du vitrail|la lumière colorée du vitrail glisse lentement sur le sol de pierre, de la poussière flotte, caméra fixe
+image|Aurora glow overhead|Aurore boréale dans le ciel|des rubans verts d'aurore boréale ondulent et brillent dans le ciel nocturne au-dessus de la scène, lente inclinaison vers le haut
+image|Rays burst from clouds|Rayons perçant les nuages|des rayons de lumière jaillissent d'une trouée dans les nuages et balaient le paysage, lent panoramique vers la gauche
+image|Glowing outline pulse|Contour lumineux pulsant|un fin contour lumineux suit les bords du sujet principal et pulse doucement, fond sombre, caméra fixe
+image|Morning light floods room|La lumière du matin envahit la pièce|une chaude lumière matinale inonde lentement la pièce par un côté, les ombres raccourcissent, lent travelling avant
+image|Swaying lantern in darkness|Lanterne oscillant dans le noir|la lanterne tenue dans l'image brille plus fort et oscille légèrement, projetant des ombres mouvantes, caméra fixe
+image|Underwater sun shafts|Rayons de soleil sous l'eau|des rayons de soleil dansent dans l'eau claire depuis la surface, des particules dérivent, lente avancée de la caméra
+image|Spotlight finds the performer|Le projecteur trouve l'artiste|un projecteur blanc balaie lentement la scène et s'arrête sur l'artiste, brume dans l'air, caméra fixe
+image|Glittering gold particles rise|Paillettes dorées qui s'élèvent|des particules dorées scintillantes montent lentement du bas de l'image et étincellent, lent travelling avant
+image|Backlit hair glow|Cheveux lumineux en contre-jour|les cheveux de la personne brillent en contre-jour et bougent doucement dans la brise, chaude lumière de coucher de soleil, caméra fixe
+image|Moonlight through branches|Clair de lune entre les branches|une lumière lunaire froide filtre à travers les branches qui se balancent, des motifs mouvants au sol, lent panoramique vers la droite
+image|Magic orb in hands|Orbe magique entre les mains|une petite orbe lumineuse apparaît entre les mains du sujet et pulse d'une douce lumière, lent travelling avant
+image|Painted figure comes alive|Le personnage peint prend vie|le personnage peint prend lentement vie, cligne des yeux et respire tandis que les coups de pinceau s'adoucissent, caméra fixe
+image|Day fades into night|Le jour devient nuit|la scène passe progressivement du jour à la nuit, les lumières s'allument aux fenêtres, caméra fixe
+image|Summer turns to winter|L'été devient hiver|la neige recouvre lentement le paysage tandis que les arbres verts deviennent blancs, caméra fixe
+image|Flower bud blooms open|Le bouton de fleur s'épanouit|le bouton de fleur fermé de l'image s'ouvre lentement en pleine floraison, les pétales se dépliant, lent travelling avant
+image|Stone statue turns to flesh|La statue de pierre devient chair|la statue de pierre prend lentement couleur et chaleur, ses yeux s'ouvrent et sa tête tourne, caméra fixe
+image|Melting ice transformation|Transformation de glace qui fond|la sculpture de glace fond lentement, l'eau goutte et forme une flaque en dessous, lumière douce, caméra fixe
+image|Green leaves turn red|Les feuilles vertes rougissent|les feuilles vertes de l'arbre virent lentement à l'orange et au rouge et commencent à tomber, doux panoramique vers le haut
+image|Paper butterfly becomes real|Le papillon de papier devient réel|un papillon découpé dans du papier replie ses ailes et devient un vrai papillon qui s'envole, caméra fixe
+image|Portrait ages gently|Le portrait vieillit doucement|le visage du portrait vieillit lentement, des rides se forment et les cheveux grisonnent, caméra fixe
+image|Ruins rebuild themselves|Les ruines se reconstruisent|les ruines antiques se reconstruisent lentement, les pierres remontant à leur place, lent travelling circulaire
+image|Sand castle crumbles away|Le château de sable s'effrite|le château de sable s'effrite lentement en grains emportés par le vent, caméra fixe
+image|Clay figure reshapes|La figurine d'argile se remodèle|la figurine d'argile se remodèle doucement en position assise, la texture des empreintes visible, caméra fixe
+image|Desert turns green|Le désert verdit|de l'herbe verte et des fleurs se répandent lentement sur le désert aride de l'image, lent travelling avant
+image|Smoke becomes a bird|La fumée devient oiseau|la volute de fumée se rassemble lentement en forme d'oiseau qui s'envole, fond sombre, caméra fixe
+image|Photo dissolves into watercolor|La photo devient aquarelle|la photographie se fond lentement en une douce aquarelle, la peinture bavant sur les bords, caméra fixe
+image|Candle burns to a stub|La bougie se consume|la grande bougie se consume jusqu'au bout, la cire coule, la flamme vacille, accéléré, caméra fixe
+image|Empty street fills up|La rue vide se remplit|la rue vide de l'image se remplit peu à peu de passants et de voitures, accéléré, caméra fixe
+image|Shattered vase turns to petals|Le vase brisé devient pétales|le vase de verre se brise lentement et ses éclats se changent en pétales de fleurs flottants, ralenti, caméra fixe
+image|Room objects float away|Les objets de la pièce s'envolent|les objets de la pièce se soulèvent lentement et flottent dans l'air en tournant doucement, lent travelling circulaire
+image|Melting clock drips|L'horloge qui fond|l'horloge de l'image fond lentement et dégouline par-dessus le bord de la table, caméra fixe
+image|Fish swimming through air|Poissons nageant dans l'air|des poissons translucides nagent lentement dans l'air autour de la personne, douce lumière bleue, lent travelling avant
+image|Clouds inside the room|Nuages dans la pièce|de doux nuages blancs dérivent lentement à travers la pièce de l'image, lumière chaude, caméra fixe
+image|Staircase into the sky|Escalier vers le ciel|l'escalier s'élève jusque dans les nuages tandis que la caméra s'incline lentement vers le haut
+image|Rain falling upward|Pluie qui monte|les gouttes de pluie montent lentement du sol vers le ciel, le sujet reste immobile, caméra fixe
+image|Giant moon drifts closer|La lune géante s'approche|une lune géante se rapproche lentement derrière le sujet, sa lueur grandissant, caméra fixe
+image|Petal spiral around figure|Spirale de pétales autour du personnage|des pétales roses tourbillonnent lentement en spirale autour du personnage, les cheveux flottant, lent travelling circulaire
+image|Ocean in a teacup|Océan dans une tasse|de petites vagues roulent dans la tasse de thé et un petit bateau la traverse, lent travelling avant
+image|Door to a starry world|Porte vers un monde étoilé|la porte de l'image s'ouvre lentement sur un paysage étoilé lumineux, la lumière se déversant, lent travelling avant
+image|Breathing trees|Arbres qui respirent|les arbres de la scène se gonflent et se contractent doucement comme s'ils respiraient, la brume dérive, caméra fixe
+image|Floating islands drift|Îles flottantes à la dérive|les îles flottantes dérivent lentement dans le ciel, des cascades tombant de leurs bords, lent panoramique vers la droite
+image|Mirror reflection moves alone|Le reflet bouge seul|le reflet dans le miroir tourne lentement la tête tandis que la personne reste immobile, caméra fixe
+image|Hair flowing like water|Cheveux coulant comme de l'eau|les longs cheveux de la personne s'écoulent lentement comme de l'eau, ondulant et scintillant, caméra fixe
+image|Whale swims over town|Baleine nageant au-dessus de la ville|une baleine géante nage lentement dans le ciel au-dessus de la ville, les nuages s'écartent, lent panoramique vers la gauche
+image|Floor ripples underfoot|Le sol ondule sous les pas|le sol ondule comme de l'eau sous les pieds du sujet à chaque petit pas, caméra fixe
+image|Dream bubbles rise|Bulles de rêve qui s'élèvent|des bulles de savon contenant de petites scènes s'élèvent lentement du sujet, douce lumière pastel, lente inclinaison vers le haut
+image|Sea spills from painting|La mer déborde du tableau|la mer du tableau déborde du cadre et se répand sur le sol, lent travelling avant
+image|Stars across the face|Étoiles sur le visage|des étoiles scintillent et glissent lentement sur la peau du visage de la personne, les yeux fermés, caméra fixe
+image|Endless corridor stretches|Couloir sans fin|le couloir de l'image s'étire lentement à l'infini tandis que la caméra glisse vers l'avant
+image|Layered mountain ridges|Crêtes de montagnes en plans|les crêtes montagneuses glissent les unes devant les autres en plans successifs tandis que la caméra se déplace lentement vers la droite, brume entre elles
+image|Foreground grass parallax|Herbes au premier plan en parallaxe|les hautes herbes du premier plan ondulent et se décalent devant les collines lointaines tandis que la caméra glisse vers la gauche
+image|City skyline layers|Plans de la ligne d'horizon urbaine|les immeubles proches défilent plus vite que l'horizon lointain tandis que la caméra se déplace lentement vers la gauche, lumière du soir
+image|Portrait background separation|Portrait détaché de l'arrière-plan|la personne reste nette tandis que l'arrière-plan glisse derrière elle pendant que la caméra tourne lentement autour
+image|Forest trunks parallax|Troncs d'arbres en parallaxe|les troncs du premier plan défilent devant la forêt profonde tandis que la caméra se déplace lentement de côté, légère brume
+image|Window frame parallax|Cadre de fenêtre en parallaxe|le cadre de la fenêtre glisse devant la vue du jardin extérieur tandis que la caméra se déplace lentement vers la droite
+image|Desk objects layers|Plans des objets du bureau|les objets posés sur le bureau se décalent les uns par rapport aux autres tandis que la caméra décrit un lent arc vers la gauche, faible profondeur de champ
+image|Hanging lanterns parallax|Lanternes suspendues en parallaxe|des rangées de lanternes suspendues défilent à des vitesses différentes tandis que la caméra passe lentement dessous, lueur chaude
+image|Rocky shore layers|Plans du rivage rocheux|les rochers du premier plan bougent plus vite que les vagues et les falaises lointaines tandis que la caméra glisse vers la droite
+image|Flower bed before house|Massif de fleurs devant la maison|les fleurs du premier plan passent devant la maison tandis que la caméra se déplace lentement vers la gauche, journée ensoleillée
+image|Street lamps layers|Plans des réverbères|les réverbères du premier plan glissent devant les vitrines tandis que la caméra se déplace lentement de côté au crépuscule
+image|Painting splits into layers|Le tableau se sépare en plans|les éléments du tableau se séparent en plans et s'écartent doucement tandis que la caméra décrit un lent arc vers la droite
+image|Fence posts parallax|Piquets de clôture en parallaxe|les piquets de clôture défilent vite au premier plan tandis que les champs au-delà bougent lentement, la caméra se déplace vers la droite
+image|Reeds before the lake|Roseaux devant le lac|les roseaux du premier plan ondulent et glissent devant le lac calme tandis que la caméra se déplace lentement vers la gauche
+image|Market stalls parallax|Étals de marché en parallaxe|les étals et les marchandises suspendues glissent les uns devant les autres tandis que la caméra traverse lentement le marché
+image|Blurred leaves frame view|Feuilles floues encadrant la vue|des feuilles floues au premier plan glissent à travers la scène tandis que la caméra se déplace lentement vers la droite
+image|Classroom rows parallax|Rangées de classe en parallaxe|les rangées de pupitres se décalent les unes par rapport aux autres tandis que la caméra glisse lentement le long de la salle
+image|Bookshelf layers glide|Plans de la bibliothèque|les livres de l'étagère proche glissent devant la salle de lecture au-delà tandis que la caméra se déplace lentement vers la gauche
+image|Snowy pines parallax|Sapins enneigés en parallaxe|les sapins enneigés du premier plan passent devant des sommets lointains, légère chute de neige, la caméra glisse vers la droite
+image|Cliff above cloud sea|Falaise au-dessus d'une mer de nuages|le bord de la falaise glisse devant la mer de nuages en contrebas tandis que la caméra se déplace lentement de côté, lumière du lever du soleil
+image|Hand reaches toward viewer|Main tendue vers le spectateur|la personne de l'image tend lentement la main vers la caméra, paume en avant, caméra fixe
+image|Butterfly flies at camera|Papillon volant vers la caméra|un papillon s'envole de la fleur et vole droit vers la caméra, caméra fixe
+image|Bubbles float toward viewer|Bulles flottant vers le spectateur|des bulles de savon flottent lentement vers la caméra et passent devant l'objectif, caméra fixe
+image|Dog sniffs the lens|Le chien renifle l'objectif|le chien de la photo avance son museau vers la caméra et renifle, caméra fixe
+image|Petals blow at camera|Pétales soufflés vers la caméra|des pétales de fleurs sont soufflés vers la caméra et passent tout près de l'objectif, lent travelling avant
+image|Bird swoops over lens|Oiseau fondant sur l'objectif|un oiseau fond depuis l'arrière-plan droit vers la caméra et passe au-dessus, caméra fixe
+image|Ball thrown at viewer|Ballon lancé vers le spectateur|l'enfant de l'image lance un ballon droit vers la caméra, caméra fixe
+image|Fire sparks fly forward|Étincelles jaillissant du feu|des étincelles jaillissent du feu et volent vers la caméra, fond sombre, caméra fixe
+image|Knight points his sword|Le chevalier pointe son épée|le chevalier lève lentement son épée et la pointe droit vers la caméra, caméra fixe
+image|Snowflakes toward the lens|Flocons vers l'objectif|des flocons de neige tombent et dérivent vers la caméra, certains passant tout près de l'objectif, caméra fixe
+image|Cat paws at camera|Le chat tend la patte|le chat de l'image tend la patte vers la caméra d'un air joueur, caméra fixe
+image|Pool splash toward camera|Éclaboussure de piscine vers la caméra|l'eau de la piscine jaillit et des gouttelettes volent vers la caméra, ralenti, caméra fixe
+image|Flower offered to viewer|Fleur offerte au spectateur|la personne tend lentement une fleur vers la caméra en souriant, caméra fixe
+image|Confetti bursts outward|Explosion de confettis|des confettis colorés explosent vers la caméra et flottent devant l'objectif, caméra fixe
+image|Leaves spin past lens|Feuilles tourbillonnant devant l'objectif|des feuilles d'automne s'envolent de l'arbre vers la caméra et tourbillonnent devant l'objectif, caméra fixe
+image|Paper plane launch|Lancer d'avion en papier|un avion en papier est lancé depuis la scène et plane droit vers la caméra, caméra fixe
+image|Dragon head lunges|Le dragon avance la tête|le dragon de l'illustration projette sa tête vers la caméra et rugit, caméra fixe
+image|Dandelion seeds drift out|Graines de pissenlit qui s'envolent|des graines de pissenlit s'envolent et dérivent lentement vers la caméra, en contre-jour, caméra fixe
+image|Horse gallops at camera|Cheval galopant vers la caméra|le cheval galope vers la caméra en soulevant la poussière, contre-plongée, caméra fixe
+image|Finger points at viewer|Doigt pointé vers le spectateur|la personne de l'image pointe un doigt droit vers la caméra et se penche en avant, caméra fixe
+image|Dust motes in sunbeam|Poussière dans un rayon de soleil|des grains de poussière flottent lentement dans un rayon de soleil devant le sujet, lumière douce, lent travelling avant
+image|Balloons at many depths|Ballons à différentes profondeurs|des ballons colorés montent lentement à différentes profondeurs autour de la scène, lente inclinaison vers le haut
+image|Snow drifting in layers|Neige en plans successifs|des flocons de neige dérivent à plusieurs profondeurs devant et derrière le sujet, lent travelling avant
+image|White feathers float down|Plumes blanches qui descendent|des plumes blanches descendent lentement dans l'air autour de la personne, caméra fixe
+image|Glowing jellyfish drift|Méduses lumineuses à la dérive|des méduses lumineuses dérivent lentement à différentes profondeurs dans l'eau sombre, caméra fixe
+image|Pollen over the meadow|Pollen sur la prairie|du pollen et de petites graines flottent dans la prairie ensoleillée en dérivant lentement, lent travelling avant
+image|Sky lanterns rising|Lanternes célestes qui s'élèvent|des lanternes en papier s'élèvent lentement dans le ciel nocturne à différentes profondeurs, lueur chaude, lente inclinaison vers le haut
+image|Hovering rocks bob|Rochers en lévitation|de petits rochers flottent et oscillent doucement dans l'air au-dessus du sol, lent travelling circulaire
+image|Bubbles around the diver|Bulles autour du plongeur|des bulles montent autour du plongeur à différentes profondeurs, rayons de lumière venant d'en haut, caméra fixe
+image|Blossoms before the temple|Fleurs de cerisier devant le temple|des pétales de cerisier dérivent dans l'air devant le temple, lent panoramique vers la droite
+image|Campfire embers float up|Braises du feu de camp qui montent|des braises incandescentes montent du feu de camp dans l'obscurité, caméra fixe
+image|Raindrops frozen in air|Gouttes de pluie figées dans l'air|des gouttes de pluie restent suspendues dans l'air autour du sujet et dérivent très lentement, lent travelling circulaire
+image|Books circle the reader|Livres tournant autour du lecteur|des livres flottent et tournent lentement autour du lecteur dans la bibliothèque, lent travelling circulaire
+image|Tiny stars float close|Petites étoiles flottant tout près|de minuscules étoiles lumineuses flottent à différentes profondeurs autour de la personne, lumière onirique, lent travelling avant
+image|Ash over empty street|Cendres sur la rue déserte|des cendres grises tombent lentement à différentes profondeurs sur la rue déserte, lumière terne, caméra fixe
+image|Fruit hovers over table|Fruits flottant au-dessus de la table|des morceaux de fruits flottent et tournent lentement au-dessus de la table, douce lumière de studio, lent travelling circulaire
+image|Leaves suspended midair|Feuilles suspendues dans l'air|des feuilles d'automne restent suspendues et tournent lentement dans l'air au-dessus du chemin, lent travelling avant
+image|Sparkles around the dancer|Étincelles autour de la danseuse|de petites étincelles flottent et scintillent à différentes profondeurs autour de la danseuse, caméra fixe
+image|Mist particles in light beams|Brume dans les rayons de lumière|de fines particules de brume flottent dans les rayons de lumière entre les arbres, lent travelling avant
+image|Hovering paper cranes|Grues en papier en suspension|des grues en origami flottent et dérivent lentement dans l'air de la pièce, lent travelling circulaire
+image|Flight through narrow canyon|Vol dans un canyon étroit|la caméra vole lentement vers l'avant dans le canyon étroit, les parois rocheuses défilant des deux côtés
+image|Glide down forest path|Glissade sur le sentier forestier|la caméra glisse vers l'avant le long du sentier forestier entre les arbres, douce lumière du matin
+image|Fly into the painting|Vol dans le tableau|la caméra s'envole lentement dans le paysage peint, la scène s'ouvrant en profondeur
+image|Corridor lights overhead|Couloir sous les lumières|la caméra avance régulièrement dans le long couloir, les lumières défilant au-dessus
+image|Through the stone archway|À travers l'arche de pierre|la caméra passe lentement sous l'arche de pierre vers la cour au-delà
+image|Low over old rooftops|Au ras des vieux toits|la caméra vole vers l'avant au ras des toits de la vieille ville vers l'horizon
+image|Deep into the cave|Au fond de la grotte|la caméra avance lentement dans la grotte, la lumière faiblissant derrière, les stalactites défilant au-dessus
+image|Through the cloud layer|À travers la couche de nuages|la caméra vole vers l'avant à travers les nuages et ressort au-dessus du paysage
+image|Low along the river|Au ras de la rivière|la caméra glisse au ras de la rivière entre ses berges, l'eau coulant dessous
+image|Tunnel of arching trees|Tunnel d'arbres en voûte|la caméra avance dans un tunnel d'arbres en voûte, les feuilles se balançant
+image|Down the evening street|Dans la rue le soir|la caméra glisse vers l'avant au milieu de la rue entre les bâtiments, lumières du soir
+image|In through the window|Entrée par la fenêtre|la caméra avance lentement à travers la fenêtre ouverte et entre dans la pièce
+image|Into the flower heart|Au cœur de la fleur|la caméra avance lentement au cœur de la fleur, les pétales entourant la vue
+image|Glide over coral reef|Survol du récif corallien|la caméra glisse vers l'avant au-dessus du récif corallien, de petits poissons s'écartant devant
+image|Starfield flight|Vol dans un champ d'étoiles|la caméra vole vers l'avant dans le champ d'étoiles, les étoiles filant vers les bords
+image|Through the bamboo grove|À travers la bambouseraie|la caméra avance lentement dans la haute bambouseraie, les tiges se balançant
+image|Snowy mountain pass flight|Vol dans un col enneigé|la caméra vole vers l'avant à travers le col de montagne, des sommets enneigés des deux côtés
+image|Library aisle glide|Glissade dans l'allée de bibliothèque|la caméra glisse dans l'allée entre de hautes étagères de livres, chaude lumière de lampe
+image|Toward the bright doorway|Vers la porte lumineuse|la caméra avance dans le hall sombre vers la porte lumineuse au bout
+image|Approaching the waterfall|Approche de la cascade|la caméra vole vers la cascade, les embruns s'élevant, la chute grandissant
+image|Clouds roll over peaks|Nuages roulant sur les sommets|les nuages roulent lentement sur les sommets et se déversent dans la vallée, lent panoramique vers la droite
+image|Valley fog lifts|Le brouillard de la vallée se lève|le brouillard matinal se lève lentement sur la vallée et révèle la rivière, caméra fixe
+image|Alpenglow fades on summit|Alpenglow sur le sommet|le sommet rosit dans la lumière de l'alpenglow tandis que la lumière décline lentement, caméra fixe
+image|Cloud shadows cross valley|Ombres de nuages sur la vallée|les ombres des nuages balaient lentement la vallée verte, accéléré, caméra fixe
+image|Snow plume off ridge|Panache de neige sur la crête|le vent arrache à la crête un long panache de neige, ciel bleu, lent travelling avant
+image|Eagle glides over valley|Aigle planant sur la vallée|un aigle plane lentement au-dessus de la vallée devant les montagnes, lent panoramique vers la gauche
+image|Rippling mountain lake|Lac de montagne ondulant|le lac de montagne ondule doucement, le reflet des sommets vacillant, lente inclinaison vers le haut
+image|Hiker above the clouds|Randonneur au-dessus des nuages|le randonneur marche lentement sur la crête tandis que les nuages dérivent en dessous, caméra fixe
+image|Sun rises behind mountains|Le soleil se lève derrière les montagnes|le soleil se lève derrière les montagnes et la lumière s'étend sur les pentes, caméra fixe
+image|Valley waterfall mist|Brume de la cascade dans la vallée|la cascade dévale la falaise jusque dans la vallée, la brume s'élevant, lent travelling avant
+image|Stars wheel over peaks|Étoiles tournant au-dessus des sommets|les étoiles tournent lentement au-dessus des sommets sombres, accéléré, caméra fixe
+image|Alpine meadow in wind|Alpage dans le vent|l'herbe de l'alpage ondule dans le vent sous les sommets, lent panoramique vers la droite
+image|Storm over the range|Orage sur le massif|de sombres nuages d'orage s'amassent sur le massif montagneux et des éclairs scintillent, caméra fixe
+image|Aerial toward far mountains|Vue aérienne vers les montagnes lointaines|la caméra vole lentement au-dessus de la vallée verte vers les montagnes lointaines
+image|River winds through valley|Rivière sinueuse dans la vallée|la rivière scintille en serpentant dans la vallée, lent panoramique aérien vers la gauche
+image|Snow on mountain village|Neige sur le village de montagne|la neige tombe doucement sur le village de montagne et les pentes de sapins, caméra fixe
+image|Sunset climbs the cliffs|Le couchant gravit les falaises|la chaude lumière du couchant remonte lentement les falaises tandis que la vallée s'enfonce dans l'ombre, caméra fixe
+image|Mist over the glacier|Brume sur le glacier|la brume dérive lentement sur le glacier entre les sommets, lent travelling avant
+image|Golden autumn valley|Vallée dorée d'automne|les arbres d'automne de la vallée se balancent doucement dans le vent, lumière dorée, lent panoramique vers la droite
+image|Rainbow after valley rain|Arc-en-ciel après la pluie|un arc-en-ciel apparaît lentement au-dessus de la vallée après la pluie, les nuages se dissipant, caméra fixe
+image|Waves wash sandy shore|Vagues sur la plage de sable|de douces vagues viennent sur la plage de sable et se retirent, l'écume brillante, caméra fixe
+image|Palms in sea breeze|Palmiers dans la brise marine|les palmes se balancent dans la brise marine, les vagues roulant derrière, lent panoramique vers la droite
+image|Sun sinks into the sea|Le soleil plonge dans la mer|le soleil s'enfonce lentement dans la mer, son reflet miroitant sur l'eau, caméra fixe
+image|Slow motion sea spray|Embruns au ralenti|les vagues se brisent contre les rochers et les embruns s'élèvent dans l'air, ralenti, caméra fixe
+image|Sailboat on the horizon|Voilier à l'horizon|un voilier dérive lentement à l'horizon sur la mer calme, caméra fixe
+image|Lighthouse over rolling waves|Phare au-dessus des vagues|le faisceau du phare balaie la mer au crépuscule, les vagues roulant en dessous, caméra fixe
+image|Seagulls over breakers|Mouettes au-dessus des vagues|des mouettes planent au-dessus de la plage et des vagues qui déferlent, lent panoramique vers la gauche
+image|Footprints washed away|Empreintes effacées par la vague|une vague remonte sur le sable et efface les empreintes de pas, caméra fixe
+image|Turquoise lagoon ripples|Lagon turquoise ondulant|l'eau turquoise du lagon ondule doucement sur le sable blanc, lent travelling avant aérien
+image|Surfer rides a curl|Surfeur dans le rouleau|le surfeur glisse le long de la vague qui s'enroule, les embruns derrière lui, la caméra le suit vers la droite
+image|Moonlit sea shimmer|Mer miroitant sous la lune|le clair de lune miroite sur la mer qui bouge doucement, les nuages dérivent, caméra fixe
+image|Beach umbrella flutters|Parasol qui claque au vent|le parasol de plage claque au vent, les vagues scintillant au soleil, caméra fixe
+image|Child at the water edge|Enfant au bord de l'eau|l'enfant court au bord de l'eau tandis que les vagues atteignent ses pieds, caméra fixe
+image|Fog rolls over coast|Brouillard sur la côte|le brouillard roule lentement sur la côte et les falaises, les vagues se brisant en dessous, lent travelling avant
+image|Tide pool with crabs|Flaque de marée et crabes|l'eau bouge doucement dans la flaque de marée en reflétant le ciel, de petits crabes se déplacent, caméra fixe
+image|Fishing boats bobbing|Bateaux de pêche qui tanguent|les bateaux de pêche tanguent doucement dans le port, les cordages se balançant, lent panoramique vers la droite
+image|Aerial over foam lines|Survol des lignes d'écume|la caméra vole lentement au-dessus des vagues vers la plage, les lignes d'écume s'enroulant
+image|Storm over rough ocean|Tempête sur l'océan agité|de sombres nuages passent au-dessus de l'océan agité, la houle se soulevant, caméra fixe
+image|Dune grass in wind|Herbes des dunes dans le vent|les herbes des dunes se courbent dans le vent, le sable volant par-dessus la crête, la mer derrière, caméra fixe
+image|Dolphins leap offshore|Dauphins sautant au large|des dauphins sautent hors de la mer scintillante au large, lent panoramique vers la gauche
+image|Golden wheat field waves|Champ de blé doré ondulant|le champ de blé doré ondule dans le vent sous un ciel bleu, lent panoramique vers la droite
+image|Sunbeams through canopy|Rayons à travers la canopée|des rayons de soleil traversent en biais la canopée tandis que les feuilles frémissent doucement, lent travelling avant
+image|Lavender rows sway|Rangs de lavande qui ondulent|les rangs de lavande ondulent doucement dans la brise, des abeilles volent, lent travelling avant
+image|Deer in the clearing|Cerf dans la clairière|le cerf de la clairière lève la tête et regarde autour de lui, les oreilles frémissantes, caméra fixe
+image|Autumn leaves in forest|Feuilles d'automne en forêt|des feuilles d'automne tombent lentement dans la forêt, lumière dorée, lente inclinaison vers le bas
+image|Sunflowers nod in wind|Tournesols dans le vent|les tournesols s'inclinent doucement dans le vent, les nuages dérivent derrière, caméra fixe
+image|Morning mist in woods|Brume matinale dans les bois|la brume matinale dérive lentement entre les troncs, des oiseaux volent, caméra fixe
+image|Stream over mossy stones|Ruisseau sur les pierres moussues|le ruisseau coule sur des pierres moussues à travers la forêt, lent travelling avant
+image|Poppy field breeze|Brise sur le champ de coquelicots|les coquelicots rouges ondulent dans le champ au passage de la brise, lent panoramique vers la gauche
+image|Rain on forest leaves|Pluie sur les feuilles de la forêt|la pluie tombe sur les feuilles de la forêt, des gouttes tombant des branches, caméra fixe
+image|Snow bends pine branches|La neige fait ployer les pins|la neige tombe doucement sur la forêt de pins, les branches ployant légèrement, lent travelling avant
+image|Haystacks at sunset|Meules de foin au couchant|la lumière réchauffe le champ de meules de foin tandis que le soleil se couche, des oiseaux passent, caméra fixe
+image|Tall grass under fast clouds|Hautes herbes sous des nuages rapides|les hautes herbes ondulent dans le champ tandis que les nuages filent au-dessus, accéléré, caméra fixe
+image|Birch leaves rustle|Feuilles de bouleau frémissantes|les feuilles des bouleaux frémissent et miroitent dans le vent, les troncs blancs immobiles, lente inclinaison vers le haut
+image|Walk through flower meadow|Promenade dans la prairie fleurie|la caméra avance lentement le long du sentier à travers la prairie en fleurs
+image|Fox trots into grass|Le renard file dans l'herbe|le renard du champ tourne la tête et s'éloigne au trot dans l'herbe, caméra fixe
+image|Rice terraces shimmer|Rizières en terrasses miroitantes|l'eau miroite sur les rizières vertes en terrasses, le vent faisant onduler les plants, lent panoramique aérien vers la droite
+image|Bluebell forest floor|Sous-bois de jacinthes|les jacinthes des bois se balancent sur le sol de la forêt, la lumière changeant à travers les feuilles, lent travelling avant
+image|Tractor dust trail|Tracteur et traînée de poussière|un tracteur traverse lentement un champ lointain en laissant une traînée de poussière, caméra fixe
+image|Fireflies in the glade|Lucioles dans la clairière|des lucioles dérivent et clignotent dans la clairière sombre de la forêt, lent travelling avant
+

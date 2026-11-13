@@ -252,6 +252,7 @@ def main():
 	freeMemory()
 	peak("vae")
 
+
 	# Encoding (H.264, high quality)
 	out("STATUS Encoding")
 	aF, aH, aW, _ = aVideo.shape

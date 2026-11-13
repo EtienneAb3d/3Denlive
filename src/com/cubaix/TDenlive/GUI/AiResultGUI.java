@@ -21,6 +21,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.ProgressBar;
@@ -113,6 +114,15 @@ public class AiResultGUI {
 		position.setMinimum(0);
 		position.setMaximum(1000);
 		position.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		//An image (.png, colorization): nothing to play
+		if(out.getName().toLowerCase().endsWith(".png")) {
+			for(Control aC : new Control[] {playB, position}) {
+				aC.setVisible(false);
+				GridData aGD = aC.getLayoutData() instanceof GridData ? (GridData)aC.getLayoutData() : new GridData();
+				aGD.exclude = true;
+				aC.setLayoutData(aGD);
+			}
+		}
 		statusL = ai.addLabel(shell, " ", 0);
 
 		Composite aButtons = new Composite(shell, SWT.NONE);

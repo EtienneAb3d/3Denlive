@@ -86,10 +86,18 @@ public class MonitorRulerGUI {
 				? aShown : tde.timeLineStack;
 	}
 
+	/**
+	 * Callable from any thread (e.g. TimeLineStackGUI.redraw() while a project is opened in the background)
+	 */
 	public void redraw() {
-		if(!canvas.isDisposed()) {
-			canvas.redraw();
+		if(canvas.isDisposed()) {
+			return;
 		}
+		canvas.getDisplay().syncExec(() -> {
+			if(!canvas.isDisposed()) {
+				canvas.redraw();
+			}
+		});
 	}
 
 	/**

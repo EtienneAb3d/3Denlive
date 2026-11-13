@@ -175,12 +175,12 @@ public class Shapes extends Processor {
 
 	@Override
 	public int addKeyGT(long aTime) {
-		if(aTime < getClip().getStartTimeMS() || aTime <= getClip().getKeysOriginMS() || aTime > getClip().getStartTimeMS() + getClip().getDurationMS()) {
+		if(aTime < getClip().getStartTimeMS() || keyTime(aTime) <= 0 || aTime > getClip().getStartTimeMS() + getClip().getDurationMS()) {
 			//Can't insert outside
 			return -1;
 		}
 		synchronized (keys) {
-			long aT = aTime-getClip().getKeysOriginMS();
+			long aT = keyTime(aTime);
 			int aExact = keyAt(aT);
 			if(aExact >= 0) {
 				return aExact;
@@ -212,7 +212,7 @@ public class Shapes extends Processor {
 
 	@Override
 	public int getPrevKeyGT(long aTime) {
-		long aT = aTime - getClip().getKeysOriginMS();
+		long aT = keyTime(aTime);
 		for(int k = keys.size() - 1;k >= 0;k--) {
 			if(keys.elementAt(k).time <= aT) {
 				return k;
@@ -223,7 +223,7 @@ public class Shapes extends Processor {
 
 	@Override
 	public int getNextKeyGT(long aTime) {
-		long aT = aTime - getClip().getKeysOriginMS();
+		long aT = keyTime(aTime);
 		for(int k = 0;k < keys.size();k++) {
 			if(keys.elementAt(k).time > aT) {
 				return k;
@@ -269,7 +269,7 @@ public class Shapes extends Processor {
 	}
 
 	public Vector<Shape> getShapesAt(long aTimePos) {
-		return interpolate(aTimePos-getClip().getKeysOriginMS());
+		return interpolate(keyTime(aTimePos));
 	}
 
 	@Override
@@ -358,7 +358,7 @@ public class Shapes extends Processor {
 		if(aT < 0 || aT >= getClip().getDurationMS()) {
 			return -1;
 		}
-		return aTimePos-getClip().getKeysOriginMS();
+		return keyTime(aTimePos);
 	}
 
 	/**
@@ -451,7 +451,7 @@ public class Shapes extends Processor {
 			if(aK >= 0) {
 				return aK;
 			}
-			return addKeyGT(aT+getClip().getKeysOriginMS());
+			return addKeyGT(keyTimePos(aT));
 		}
 	}
 

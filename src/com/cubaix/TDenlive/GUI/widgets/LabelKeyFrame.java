@@ -38,8 +38,7 @@ public abstract class LabelKeyFrame extends Widget {
 		if(aSelected < 0) {
 			return;
 		}
-		long aSelectedTime = proc.getTime(aSelected)+((Clip)proc.targetMedia).getKeysOriginMS();
-		if(aTime != aSelectedTime) {
+		if(!proc.isKeyAt(aSelected, aTime)) {
 			setAddMode(true);
 		}
 	}
@@ -80,7 +79,7 @@ public abstract class LabelKeyFrame extends Widget {
 		}
 		long aTimePos = tde.timeLineStack.getTimePosMS();
 		Clip aClip = (Clip)proc.targetMedia;
-		if(aKey < proc.getNbKeys() && proc.getTime(aKey)+aClip.getKeysOriginMS() == aTimePos) {
+		if(proc.isKeyAt(aKey, aTimePos)) {
 			return aKey;
 		}
 		if(aTimePos < aClip.getStartTimeMS() || aTimePos > aClip.getStartTimeMS()+aClip.getDurationMS()) {
@@ -102,9 +101,12 @@ public abstract class LabelKeyFrame extends Widget {
 			return aMain;
 		}
 		long aTimePos = tde.timeLineStack.getTimePosMS();
-		long aOrigin = ((Clip)proc.targetMedia).getKeysOriginMS();
 		int aKey = proc.getPrevKeyGT(aTimePos);
-		if(aKey >= 0 && proc.getTime(aKey)+aOrigin == aTimePos) {
+		if(!proc.isKeyAt(aKey, aTimePos) && proc.isKeyAt(proc.getNextKeyGT(aTimePos), aTimePos)) {
+			//Fast motion: the time line position of the next key, rounded, can be the cursor
+			aKey = proc.getNextKeyGT(aTimePos);
+		}
+		if(proc.isKeyAt(aKey, aTimePos)) {
 			if(kf.getSelection() != aKey) {
 				kf.setSelection(aKey);
 				kf.container.redraw();
@@ -246,7 +248,7 @@ public abstract class LabelKeyFrame extends Widget {
 			}
 			//Not before the clip (the first keys of the second part of a cut clip)
 			long aTimeNew = Math.max(((Clip)proc.targetMedia).getStartTimeMS()
-					, proc.getTime(aKey)+((Clip)proc.targetMedia).getKeysOriginMS());
+					, proc.keyTimePos(proc.getTime(aKey)));
 			tde.timeLineStack.setTimePosMS(aTimeNew);
 			tde.timeLineStack.setRequestedTimePosMS(aTimeNew);
 			
@@ -271,7 +273,17 @@ public abstract class LabelKeyFrame extends Widget {
 				setAddMode(false);
 			}
 			else {
-				proc.deleteKey(aKey = kf.getSelection());
+				aKey = kf.getSelection();
+				final int aDel = aKey;
+				if("Speed".equals(proc.getClassName())) {
+					//The speed changes: the clip keeps the same end in its media, its duration follows
+					((Clip)proc.targetMedia).keepMediaEnd(() -> proc.deleteKey(aDel));
+					tde.gui.timeLinesGUI.redraw();
+					tde.gui.monitorGUI.redraw();
+				}
+				else {
+					proc.deleteKey(aDel);
+				}
 				if(aKey > 0) {
 					aKey--;
 				}
@@ -291,7 +303,7 @@ public abstract class LabelKeyFrame extends Widget {
 			Clip aClip = (Clip)proc.targetMedia;
 			long aEnd = aClip.getStartTimeMS()+aClip.getDurationMS();
 			int aKey = proc.getNextKeyGT(tde.timeLineStack.getTimePosMS());
-			if(aKey >= 0 && proc.getTime(aKey)+aClip.getKeysOriginMS() >= aEnd) {
+			if(aKey >= 0 && proc.keyTimePos(proc.getTime(aKey)) >= aEnd) {
 				//After the end of the clip (the last keys of the first part of a cut clip)
 				aKey = -1;
 			}
@@ -306,8 +318,7 @@ public abstract class LabelKeyFrame extends Widget {
 				addMode = true;
 			}
 			else {
-				long aTimeNew = proc.getTime(aKey)
-						+((Clip)proc.targetMedia).getKeysOriginMS();
+				long aTimeNew = proc.keyTimePos(proc.getTime(aKey));
 				tde.timeLineStack.setTimePosMS(aTimeNew);
 				tde.timeLineStack.setRequestedTimePosMS(aTimeNew);
 				addDelete.setImage(tde.gui.imgsSwt.getIcon("delete.png"));
