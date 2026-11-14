@@ -62,12 +62,13 @@ public class WanGenerator extends PythonAI {
 	 * Variant advised for this computer: the best one that fits in the free GPU memory, else the smallest
 	 */
 	public static Variant defaultVariant() {
-		long[] aBest = com.cubaix.TDenlive.depth.DepthEstimator.bestGpu();
-		if(aBest == null) {
+		//The model kept loaded is unloaded before Wan: its memory counts as free
+		long aAvail = availableGpuMemory();
+		if(aAvail < 0) {
 			return Q8_0;
 		}
 		for(Variant aV : VARIANTS) {
-			if(aV.gpuMemory <= aBest[1]) {
+			if(aV.gpuMemory <= aAvail) {
 				return aV;
 			}
 		}

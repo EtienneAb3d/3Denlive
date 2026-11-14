@@ -35,7 +35,7 @@ import com.cubaix.TDenlive.utils.ImageUtils;
 
 /**
  * End of an AI generation (AiClipGUI): the result can be played in the window, never automatically (the user may not
- * be in front of the screen): the video in a loop, the sound with Play / Pause; then added to the media list, generated again (back to the form, with the same prompt and name)
+ * be in front of the screen): the video in a loop, the sound with Play / Pause; then added to the media list, generated again at once with the same settings (Retry) or back to the form, with the same prompt and name (Something else)
  * or discarded (its files deleted). Closing the window asks before discarding.
  */
 public class AiResultGUI {
@@ -62,6 +62,10 @@ public class AiResultGUI {
 	Label statusL = null;
 	//The window is closed by a button (no discard question)
 	boolean decided = false;
+	//Added to the media list: the window stays (another try, something else), its files are kept
+	boolean added = false;
+	Button addB = null;
+	Button discardB = null;
 
 	AiResultGUI(AiClipGUI aAI,File aOut,File aPromptFile) {
 		ai = aAI;
@@ -83,7 +87,7 @@ public class AiResultGUI {
 		ai.labelWidth = 560;
 		ai.addLabel(shell, lng("AI.ResultIntro"), 0);
 		String aP = ai.prompt;
-		ai.addLabel(shell, aP.length() > 200 ? aP.substring(0, 200)+"..." : aP, 0).setFont(tde.gui.fontsSwt.robotoBold);
+		ai.addLabel(shell, aP.length() > 400 ? aP.substring(0, 400)+"..." : aP, 0).setFont(tde.gui.fontsSwt.robotoBold);
 
 		Composite aPlay = new Composite(shell, SWT.NONE);
 		tde.gui.applyColorFont(aPlay);
@@ -124,16 +128,23 @@ public class AiResultGUI {
 			}
 		}
 		statusL = ai.addLabel(shell, " ", 0);
+		//A generation draws at random: another one may be much better (not the colorization: always the same)
+		if(!ai.color) {
+			Label aVaries = ai.addLabel(shell, lng("AI.ResultVaries"), 0);
+			aVaries.setFont(tde.gui.fontsSwt.robotoBold);
+			((GridData)aVaries.getLayoutData()).verticalIndent = 6;
+		}
 
 		Composite aButtons = new Composite(shell, SWT.NONE);
 		GridData aBGD = new GridData(GridData.HORIZONTAL_ALIGN_END);
 		aBGD.verticalIndent = 8;
 		aButtons.setLayoutData(aBGD);
 		tde.gui.applyColorFont(aButtons);
-		GridLayout aBGL = new GridLayout(3, true);
+		GridLayout aBGL = new GridLayout(ai.color ? 3 : 4, true);
 		tde.gui.applyNoMargin(aBGL);
 		aButtons.setLayout(aBGL);
 		Button aDiscard = button(aButtons, lng("AI.ResultDiscard"), "trash.png");
+		discardB = aDiscard;
 		aDiscard.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -142,8 +153,21 @@ public class AiResultGUI {
 				AiClipGUI.running = false;
 			}
 		});
-		Button aAgain = button(aButtons, lng("AI.ResultAgain"), null);
-		aAgain.addSelectionListener(new SelectionAdapter() {
+		//Retry: the same generation at once (another result: random seed; not the colorization, deterministic)
+		if(!ai.color) {
+			Button aRetry = button(aButtons, lng("AI.ResultRetry"), null);
+			aRetry.addSelectionListener(new SelectionAdapter() {
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					discard();
+					close();
+					ai.retry();
+				}
+			});
+		}
+		//Something else: back to the form, with the same settings
+		Button aOther = button(aButtons, lng("AI.ResultOther"), null);
+		aOther.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				discard();
@@ -152,6 +176,7 @@ public class AiResultGUI {
 			}
 		});
 		Button aAdd = button(aButtons, lng("AI.ResultAdd"), "checked.gif");
+		addB = aAdd;
 		aAdd.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -160,6 +185,11 @@ public class AiResultGUI {
 		});
 		shell.addListener(SWT.Close, e -> {
 			if(decided) {
+				return;
+			}
+			if(added) {
+				stop();
+				AiClipGUI.running = false;
 				return;
 			}
 			MessageBox aMB = new MessageBox(shell, SWT.ICON_QUESTION | SWT.YES | SWT.NO);
@@ -237,17 +267,20 @@ public class AiResultGUI {
 	 */
 	void discard() {
 		stop();
+		//Kept: in the media list
+		if(added) {
+			return;
+		}
 		out.delete();
 		promptFile.delete();
 	}
 
 	/**
-	 * Load into the media list (in a thread, as the files are read), then close
+	 * Load into the media list (in a thread, as the files are read); the window stays, so that the user can try
+	 * again or ask something else after keeping this result
 	 */
 	void add() {
-		decided = true;
-		stop();
-		shell.setEnabled(false);
+		addB.setEnabled(false);
 		statusL.setText(lng(ai.music ? "AI.LoadingSound" : "AI.Loading"));
 		final String aPath = out.getPath();
 		final boolean aMusic = ai.music;
@@ -267,14 +300,23 @@ public class AiResultGUI {
 			}
 			final String aE = aErr;
 			tde.gui.display.asyncExec(() -> {
-				AiClipGUI.running = false;
-				if(!shell.isDisposed()) {
-					shell.dispose();
+				tde.gui.mediaListGUI.redraw();
+				if(shell.isDisposed()) {
+					return;
 				}
 				if(aE != null) {
+					addB.setEnabled(true);
+					statusL.setText(" ");
 					AiClipGUI.message(tde, SWT.ICON_ERROR, aE);
+					return;
 				}
-				tde.gui.mediaListGUI.redraw();
+				added = true;
+				statusL.setText(lng("AI.ResultAdded"));
+				addB.setText(lng("AI.ResultAdded"));
+				//Nothing to discard any more: the button only closes
+				discardB.setText(lng("AI.ResultClose"));
+				discardB.setImage(null);
+				shell.layout(true, true);
 			});
 		}).start();
 	}

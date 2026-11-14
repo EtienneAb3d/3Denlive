@@ -233,6 +233,8 @@ public class DepthEstimator implements AutoCloseable {
 	 */
 	public DepthEstimator(String aTdeDir,DepthModel aModel) throws Exception {
 		model = aModel;
+		//Another model: the AI model kept loaded (sound, colorization, LLM) is unloaded first
+		com.cubaix.TDenlive.ai.PythonAI.beforeLoad("depth "+aModel.id);
 		String aJava = ProcessHandle.current().info().command().orElse("java");
 		Vector<String> aCmd = new Vector<String>();
 		aCmd.add(aJava);

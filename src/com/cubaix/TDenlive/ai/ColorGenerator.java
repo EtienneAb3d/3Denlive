@@ -113,16 +113,27 @@ public class ColorGenerator extends PythonAI {
 	 * Device: null for the GPU, else the reason of the CPU (DepthEstimator.CPU_REASON_*)
 	 */
 	public static String cpuReason(Model aModel) {
+		//Already loaded on the GPU: stays there (its own memory is not free)
+		if("auto".equals(loadedDevice(tag(aModel))) && hasGpu()) {
+			return null;
+		}
 		if(!hasGpu()) {
 			return DepthEstimator.CPU_REASON_NO_GPU;
 		}
 		if(!isMac()) {
-			long[] aBest = DepthEstimator.bestGpu();
-			if(aBest != null && aBest[1] < aModel.gpuMemory) {
+			long aAvail = availableGpuMemory();
+			if(aAvail >= 0 && aAvail < aModel.gpuMemory) {
 				return DepthEstimator.CPU_REASON_GPU_MEMORY;
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Name of aModel kept loaded (PythonAI.Resident)
+	 */
+	public static String tag(Model aModel) {
+		return "color "+aModel.id;
 	}
 
 	Model model;
@@ -158,16 +169,22 @@ public class ColorGenerator extends PythonAI {
 			return false;
 		}
 		File aDir = model.getDir(tdeDir);
+		//Another model kept loaded is unloaded first, so that its memory counts as free for the device
+		if(!isLoaded(tag(model))) {
+			beforeLoad(tag(model));
+		}
 		File aScript = copyScript("ddcolor_colorize.py", getRoot(tdeDir));
+		//Arguments of the model (the same: the model kept loaded is used again), then of these photos
 		Vector<String> aCmd = pythonCommand(aScript);
 		aCmd.add("--model-dir"); aCmd.add(aDir.getAbsolutePath());
 		aCmd.add("--code-dir"); aCmd.add(getCodeDir(tdeDir).getAbsolutePath());
-		for(int i = 0;i < aInputs.length;i++) {
-			aCmd.add("--input"); aCmd.add(aInputs[i].getAbsolutePath());
-			aCmd.add("--out"); aCmd.add(aOuts[i].getAbsolutePath());
-		}
 		aCmd.add("--device"); aCmd.add(cpuReason(model) == null ? "auto" : "cpu");
-		String aDone = runScript(aCmd);
+		Vector<String> aReq = new Vector<String>();
+		for(int i = 0;i < aInputs.length;i++) {
+			aReq.add("--input"); aReq.add(aInputs[i].getAbsolutePath());
+			aReq.add("--out"); aReq.add(aOuts[i].getAbsolutePath());
+		}
+		String aDone = runResident(tag(model), model.gpuMemory, aCmd, aReq);
 		if(aDone == null || canceled()) {
 			for(File aO : aOuts) {
 				aO.delete();

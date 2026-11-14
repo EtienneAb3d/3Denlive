@@ -21,9 +21,11 @@ import com.cubaix.TDenlive.depth.DepthModel;
  * the image (the first frame) and describes it with the motion asked. Downloaded at its first use into
  * ~/3Denlive/Models/Qwen3-VL-4B-Instruct/.
  * The script stays loaded between the requests (the prompt is rewritten while it is typed): one JSON line per
- * request on its stdin, RESULT / FAIL lines on its stdout; close() stops it (the form is closed).
+ * request on its stdin, RESULT / FAIL lines on its stdout. It is the model kept loaded of the application
+ * (PythonAI.Resident): a form closed only detaches from it (detach()), the next form takes it back (attach());
+ * it is stopped (close()) only when another model has to be loaded.
  */
-public class PromptExtender extends PythonAI {
+public class PromptExtender extends PythonAI implements PythonAI.Resident {
 	static final long GB = 1024L*1024*1024;
 	public static final String REPO = "Qwen/Qwen3-VL-4B-Instruct";
 	static final String DIR = "Qwen3-VL-4B-Instruct";
@@ -70,14 +72,35 @@ public class PromptExtender extends PythonAI {
 	}
 
 	/**
-	 * Free GPU memory (NVIDIA; Apple Silicon: free + reclaimable, see DepthEstimator.bestGpu()), -1 if none / unknown
+	 * GPU memory available for the LLM (PythonAI.availableGpuMemory(): the model kept loaded counts as free),
+	 * -1 if none / unknown
 	 */
 	public static long freeGpuMemory() {
 		if(!hasGpu()) {
 			return -1;
 		}
-		long[] aBest = DepthEstimator.bestGpu();
-		return aBest == null ? -1 : aBest[1];
+		return availableGpuMemory();
+	}
+
+	//Name of the LLM kept loaded (PythonAI.Resident)
+	public static final String TAG = "llm";
+
+	/**
+	 * Memory it takes once loaded (its bf16 weights): given back before another model is loaded
+	 */
+	public static long loadedMemory() {
+		long aS = 0;
+		for(Object[] aF : FILES) {
+			aS += (Long)aF[1];
+		}
+		return aS;
+	}
+
+	/**
+	 * The LLM is the model kept loaded
+	 */
+	public static boolean isLoaded() {
+		return PythonAI.isLoaded(TAG);
 	}
 
 	/**
@@ -91,12 +114,16 @@ public class PromptExtender extends PythonAI {
 	 * Device: null for the GPU, else the reason of the CPU (DepthEstimator.CPU_REASON_*)
 	 */
 	public static String cpuReason() {
+		//Already loaded on the GPU: stays there (its own memory is not free)
+		if("auto".equals(loadedDevice(TAG)) && hasGpu()) {
+			return null;
+		}
 		if(!hasGpu()) {
 			return DepthEstimator.CPU_REASON_NO_GPU;
 		}
 		if(!isMac()) {
-			long[] aBest = DepthEstimator.bestGpu();
-			if(aBest != null && aBest[1] < CUDA_MEMORY) {
+			long aAvail = availableGpuMemory();
+			if(aAvail >= 0 && aAvail < CUDA_MEMORY) {
 				return DepthEstimator.CPU_REASON_GPU_MEMORY;
 			}
 		}
@@ -106,11 +133,74 @@ public class PromptExtender extends PythonAI {
 	//Answers of the script: {"R", prompt}, {"E", error code or message}, {"X", null} at its end
 	final LinkedBlockingQueue<String[]> answers = new LinkedBlockingQueue<String[]>();
 	volatile Process server = null;
+	//Device argument it was started with ("auto" or "cpu")
+	volatile String device = "auto";
 	volatile boolean closed = false;
 	Thread hook = null;
 
 	public PromptExtender(String aTdeDir,Progress aProgress) {
 		super(aTdeDir, aProgress);
+	}
+
+	/**
+	 * The LLM kept loaded if it is running (its messages now to aProgress), else a new one
+	 */
+	public static PromptExtender attach(String aTdeDir,Progress aProgress) {
+		Resident aR = resident();
+		if(aR instanceof PromptExtender) {
+			PromptExtender aPE = (PromptExtender)aR;
+			Process aP = aPE.server;
+			if(!aPE.closed && aP != null && aP.isAlive()) {
+				aPE.progress = aProgress;
+				System.out.println("AI prompt rewriting: LLM already loaded");
+				return aPE;
+			}
+		}
+		return new PromptExtender(aTdeDir, aProgress);
+	}
+
+	/**
+	 * The form no longer uses it: it stays loaded (unloaded when another model has to be loaded), its messages
+	 * no longer shown
+	 */
+	public void detach() {
+		progress = null;
+	}
+
+	String key() {
+		return "prompt_extend.py --device "+device;
+	}
+
+	@Override
+	public String residentTag() {
+		return TAG;
+	}
+
+	@Override
+	public String residentDevice() {
+		return device;
+	}
+
+	@Override
+	public long residentMemory() {
+		return loadedMemory();
+	}
+
+	@Override
+	public boolean residentAlive() {
+		Process aP = server;
+		return !closed && aP != null && aP.isAlive();
+	}
+
+	@Override
+	public String residentKey() {
+		return key();
+	}
+
+	@Override
+	public void unload() {
+		close();
+		System.out.println("AI prompt rewriting: LLM unloaded");
 	}
 
 	@Override
@@ -144,17 +234,23 @@ public class PromptExtender extends PythonAI {
 	 */
 	public synchronized boolean start() throws Exception {
 		if(server != null && server.isAlive()) {
+			//Taken back loaded: said to the form as after its loading
+			status("AI.LlmReady", null, 0, 0);
 			return true;
 		}
 		if(!install()) {
 			return false;
 		}
+		//The model kept loaded (another one) is unloaded first, so that its memory counts as free for the device
+		beforeLoad(TAG);
+		device = cpuReason() == null ? "auto" : "cpu";
+		setResident(this);
 		File aDir = getDir(tdeDir);
 		File aScript = copyScript("prompt_extend.py", aDir);
 		Vector<String> aCmd = pythonCommand(aScript);
 		aCmd.add("--model-dir"); aCmd.add(aDir.getAbsolutePath());
 		aCmd.add("--max-tokens"); aCmd.add(""+MAX_TOKENS);
-		aCmd.add("--device"); aCmd.add(cpuReason() == null ? "auto" : "cpu");
+		aCmd.add("--device"); aCmd.add(device);
 		aCmd.add("--serve");
 		answers.clear();
 		Process aP = scriptProcess(aCmd).start();
@@ -202,6 +298,7 @@ public class PromptExtender extends PythonAI {
 			catch(Throwable t) {
 			}
 			answers.add(new String[] {"X", null});
+			residentGone(PromptExtender.this);
 		}, "PromptExtender stdout");
 		aOut.setDaemon(true);
 		aOut.start();
@@ -215,11 +312,25 @@ public class PromptExtender extends PythonAI {
 	 * @return the English prompt, null if closed meanwhile
 	 */
 	public String extend(String aPrompt,String aImagePath) throws Exception {
+		return extend(aPrompt, aImagePath, aImagePath != null ? "i2v" : "t2v");
+	}
+
+	/**
+	 * The prompt of a sound suited to the image aImagePath (aMode MUSIC_MODE or SFX_MODE), following aPrompt (the
+	 * request of the user in any language, may be empty). SFX_MODE: "prompt|seconds".
+	 * @return null if closed meanwhile
+	 */
+	public String soundFromImage(String aPrompt,String aImagePath,String aMode) throws Exception {
+		return extend(aPrompt, aImagePath, aMode);
+	}
+	public static final String MUSIC_MODE = "music";
+	public static final String SFX_MODE = "sfx";
+
+	String extend(String aPrompt,String aImagePath,String aMode) throws Exception {
 		if(!start()) {
 			return null;
 		}
 		Process aP = server;
-		String aMode = aImagePath != null ? "i2v" : "t2v";
 		String aReq = "{\"mode\": \""+aMode+"\", \"prompt\": \""+quote(aPrompt)+"\""
 				+(aImagePath != null ? ", \"image\": \""+quote(aImagePath)+"\"" : "")+"}\n";
 		OutputStream aOS = aP.getOutputStream();
@@ -248,6 +359,7 @@ public class PromptExtender extends PythonAI {
 	 */
 	public void close() {
 		closed = true;
+		residentGone(this);
 		Process aP = server;
 		server = null;
 		if(aP != null) {

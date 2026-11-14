@@ -57,7 +57,7 @@ def lab2rgb(torch, aLab):
 	return torch.where(aLin > 0.0031308, 1.055 * aLin ** (1.0 / 2.4) - 0.055, 12.92 * aLin).clamp(0.0, 1.0)
 
 
-def main():
+def main(aArgv):
 	aP = argparse.ArgumentParser()
 	aP.add_argument("--model-dir", required=True)
 	aP.add_argument("--code-dir", required=True)
@@ -66,7 +66,7 @@ def main():
 	aP.add_argument("--out", action="append", required=True)
 	aP.add_argument("--size", type=int, default=512)
 	aP.add_argument("--device", default="auto")
-	aArgs = aP.parse_args()
+	aArgs = aP.parse_args(aArgv)
 	if len(aArgs.input) != len(aArgs.out):
 		raise ValueError("as many --out as --input")
 
@@ -88,6 +88,17 @@ def main():
 	if aDevice.type == "cpu":
 		torch.set_num_threads(max(1, os.cpu_count() or 1))
 
+	import ai_serve
+
+	def load():
+		return loadModel(aArgs, aDevice, torch)
+
+	# Loaded once in resident mode
+	aModel = ai_serve.cached(("ddcolor", aArgs.model_dir, aArgs.code_dir, aArgs.size, str(aDevice)), load)
+	return colorize(aArgs, aModel, aDevice, torch, F, np, Image)
+
+
+def loadModel(aArgs, aDevice, torch):
 	# basicsr and basicsr.archs: empty packages (their __init__ would import the training code)
 	aArchs = os.path.join(aArgs.code_dir, "basicsr", "archs")
 	for aName, aPath in (("basicsr", os.path.join(aArgs.code_dir, "basicsr")), ("basicsr.archs", aArchs)):
@@ -114,7 +125,11 @@ def main():
 	del aState
 	aModel.to(aDevice)
 	aModel.eval()
+	return aModel
 
+
+def colorize(aArgs, aModel, aDevice, torch, F, np, Image):
+	aCuda = aDevice.type == "cuda"
 	aN = len(aArgs.input)
 	for i, (aIn, aOut) in enumerate(zip(aArgs.input, aArgs.out)):
 		out("STATUS Colorizing")
@@ -149,10 +164,6 @@ def main():
 
 
 if __name__ == "__main__":
-	try:
-		sys.exit(main())
-	except Exception as e:
-		traceback.print_exc()
-		aOom = "out of memory" in str(e).lower() or type(e).__name__ == "OutOfMemoryError"
-		out("ERROR " + ("OOM" if aOom else (type(e).__name__ + ": " + str(e)).replace("\n", " ")))
-		sys.exit(1)
+	# One generation, or resident (--serve: the model stays loaded between the requests)
+	import ai_serve
+	ai_serve.run(main)

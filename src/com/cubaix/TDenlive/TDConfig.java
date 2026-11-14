@@ -61,6 +61,8 @@ public class TDConfig {
 	public String aiColorModel = "";
 	public String aiMusicModel = "";
 	public String aiSfxModel = "";
+	//"No background noise" option of the AI sound effects (SoundGenerator.clean)
+	public boolean aiSfxClean = false;
 	
 	public String renderDir = "";
 	
@@ -131,6 +133,11 @@ public class TDConfig {
 					if("aiColorModel".equalsIgnoreCase(aT.tagName)) {
 						o++;
 						aiColorModel = aOs.elementAt(o) instanceof XmlTag ? "" : aOs.elementAt(o).text.trim();
+						continue;
+					}
+					if("aiSfxClean".equalsIgnoreCase(aT.tagName)) {
+						o++;
+						aiSfxClean = !(aOs.elementAt(o) instanceof XmlTag) && "true".equalsIgnoreCase(aOs.elementAt(o).text.trim());
 						continue;
 					}
 					if("aiSfxModel".equalsIgnoreCase(aT.tagName)) {
@@ -220,6 +227,7 @@ public class TDConfig {
 			aOut.write("<aiVideoModel>"+aiVideoModel+"</aiVideoModel>\n");
 			aOut.write("<aiMusicModel>"+aiMusicModel+"</aiMusicModel>\n");
 			aOut.write("<aiSfxModel>"+aiSfxModel+"</aiSfxModel>\n");
+			aOut.write("<aiSfxClean>"+aiSfxClean+"</aiSfxClean>\n");
 			aOut.write("<aiColorModel>"+aiColorModel+"</aiColorModel>\n");
 			aOut.flush();
 			aOut.close();

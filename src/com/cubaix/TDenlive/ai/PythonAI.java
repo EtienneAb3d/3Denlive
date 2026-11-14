@@ -23,6 +23,9 @@ import com.cubaix.TDenlive.depth.Downloader;
  * The scripts write their messages on stdout, one per line:
  * STATUS key (AI.* language key), STEP done total, PEAK stage bytes, DONE path, ERROR code;
  * the other lines go to handleLine() of the subclass, else to the log.
+ * Model kept loaded: one model of the application at a time (Resident: a resident script, ScriptServer, or the
+ * LLM of the prompts, PromptExtender) stays in memory after its use, and is unloaded only when another model has
+ * to be loaded (beforeLoad(): another resident script, Wan, the depth maps).
  */
 public abstract class PythonAI {
 	static final String HF = "https://huggingface.co/";
@@ -79,6 +82,116 @@ public abstract class PythonAI {
 		GenerationException(String aCode) {
 			super(aCode);
 			code = aCode;
+		}
+	}
+
+	/**
+	 * A model kept loaded after its use (see beforeLoad())
+	 */
+	public interface Resident {
+		/** What is loaded (command of the script...) */
+		String residentKey();
+		/** Which model it is ("sound <id>", "color <id>", "llm") */
+		String residentTag();
+		/** Its device argument: "auto" (the GPU when there is one) or "cpu" */
+		String residentDevice();
+		/** Still running */
+		boolean residentAlive();
+		/** Memory it takes on its device (bytes, estimate of the model) */
+		long residentMemory();
+		/** Stop it and give its memory back (returns once done) */
+		void unload();
+	}
+
+	static final Object SLOT = new Object();
+	static Resident resident = null;
+
+	static Resident resident() {
+		synchronized(SLOT) {
+			return resident;
+		}
+	}
+
+	/**
+	 * Device argument ("auto" or "cpu") of the model aTag if it is the one kept loaded, else null. A model
+	 * already loaded stays on its device, and its own memory is not counted as missing (memory warnings).
+	 */
+	public static String loadedDevice(String aTag) {
+		Resident aR = resident();
+		if(aR == null || !aTag.equals(aR.residentTag()) || !aR.residentAlive()) {
+			return null;
+		}
+		return aR.residentDevice();
+	}
+
+	public static boolean isLoaded(String aTag) {
+		return loadedDevice(aTag) != null;
+	}
+
+	/**
+	 * GPU memory available for the next model (bytes, -1 if no GPU / unknown): the free memory
+	 * (DepthEstimator.bestGpu(): NVIDIA, or free + reclaimable on Apple Silicon) plus the memory of the model kept
+	 * loaded on the GPU, which is either the model asked (already in place) or another one (unloaded before);
+	 * at most 3/4 of the RAM on Apple Silicon (unified memory)
+	 */
+	public static long availableGpuMemory() {
+		long[] aBest = DepthEstimator.bestGpu();
+		if(aBest == null || aBest[1] < 0) {
+			return -1;
+		}
+		long aAvail = aBest[1];
+		Resident aR = resident();
+		if(aR != null && aR.residentAlive() && "auto".equals(aR.residentDevice()) && hasGpu()) {
+			aAvail += aR.residentMemory();
+		}
+		if(isMac()) {
+			try {
+				long aRam = ((com.sun.management.OperatingSystemMXBean)java.lang.management.ManagementFactory.getOperatingSystemMXBean()).getTotalMemorySize();
+				if(aRam > 0) {
+					aAvail = Math.min(aAvail, aRam*3/4);
+				}
+			}
+			catch(Throwable t) {
+			}
+		}
+		return aAvail;
+	}
+
+	/**
+	 * The model aKey is going to be loaded: the model kept loaded is unloaded first if it is another one
+	 */
+	public static void beforeLoad(String aKey) {
+		Resident aR;
+		synchronized(SLOT) {
+			aR = resident;
+			if(aR == null || aR.residentKey().equals(aKey)) {
+				return;
+			}
+			resident = null;
+		}
+		System.out.println("AI: model unloaded ("+aR.residentKey()+") to load "+aKey);
+		aR.unload();
+	}
+
+	/**
+	 * aR is the model kept loaded now (another one is unloaded first)
+	 */
+	static void setResident(Resident aR) {
+		beforeLoad(aR.residentKey());
+		synchronized(SLOT) {
+			resident = aR;
+		}
+		System.out.println("AI: model kept loaded ("+aR.residentKey()+")");
+	}
+
+	/**
+	 * aR is no longer loaded (stopped, or ended by itself)
+	 */
+	static void residentGone(Resident aR) {
+		synchronized(SLOT) {
+			if(resident == aR) {
+				resident = null;
+			}
 		}
 	}
 
@@ -229,6 +342,10 @@ public abstract class PythonAI {
 		try(InputStream aIS = PythonAI.class.getResourceAsStream("/com/cubaix/TDenlive/res/ai/"+aName)) {
 			Files.copy(aIS, aScript.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		}
+		//Resident mode of the scripts, imported by them
+		try(InputStream aIS = PythonAI.class.getResourceAsStream("/com/cubaix/TDenlive/res/ai/ai_serve.py")) {
+			Files.copy(aIS, new File(aDir, "ai_serve.py").toPath(), StandardCopyOption.REPLACE_EXISTING);
+		}
 		return aScript;
 	}
 
@@ -262,6 +379,8 @@ public abstract class PythonAI {
 	 * @return the path of the DONE message, null if canceled
 	 */
 	String runScript(Vector<String> aCmd) throws Exception {
+		//Its own models: the model kept loaded is unloaded first
+		beforeLoad(String.join(" ", aCmd));
 		ProcessBuilder aPB = scriptProcess(aCmd);
 		String[] aResult = {null, null};
 		runProcess(aPB, aL -> {
@@ -285,6 +404,19 @@ public abstract class PythonAI {
 			throw new Exception("Nothing produced (see log/3De.log)");
 		}
 		return aResult[0];
+	}
+
+	/**
+	 * Run a script in resident mode (ScriptServer): aCmd its command with the arguments of the model (started
+	 * only if it is not the model kept loaded), aRequest the arguments of this generation
+	 * @return the path of the DONE message, null if canceled
+	 */
+	String runResident(String aTag,long aMemory,Vector<String> aCmd,Vector<String> aRequest) throws Exception {
+		ScriptServer aS = ScriptServer.obtain(this, aTag, aMemory, aCmd);
+		if(canceled()) {
+			return null;
+		}
+		return aS.request(this, aRequest);
 	}
 
 	/**

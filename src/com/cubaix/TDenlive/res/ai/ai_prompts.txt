@@ -1,8 +1,10 @@
 # Example prompts of the AI panel (GUI/AiClipGUI), shown as a tree in the panel of their kind:
-# category > subcategory > prompts. One per line: kind|Category/Subcategory|BPM|Name|prompt
+# category > subcategory > prompts. One per line: kind|Category/Subcategory|BPM|Name|prompt[|seconds]
 # - kind: video (Wan2.2-TI2V-5B), image (Wan2.2-TI2V-5B with a reference image: shown instead of the video
-#   examples once an image is chosen, they animate the image), music (MusicGen) or sfx (sound effects, AudioLDM 2);
+#   examples once an image is chosen, they animate the image), music (MusicGen) or sfx (sound effects, Woosh);
 # - BPM: tempo of a music (also written at the end of its prompt), empty for the others;
+# - seconds (sfx): the duration that suits the sound asked (1 to 10 s, the maximum of Woosh: a short impact,
+#   an event, a sequence, an ambience), selected with the prompt: the result depends much on it;
 # - Name: name given to the clip in the media list (its file name), filled in with the prompt;
 #   the music prompts of a subcategory are shown by tempo;
 # - the category / subcategory names are translated by the AI.PromptCat<letters of the name> language entries.
@@ -2009,1006 +2011,1006 @@ music|Themes/Vlog and travel|105|Road trip vlog|road trip music with driving aco
 music|Themes/Vlog and travel|100|Beach vlog|beach vlog music with ukulele, steel drums and tropical vibe, 100 bpm
 music|Themes/Vlog and travel|130|City vlog|city vlog music with upbeat electronic beat and urban energy, 130 bpm
 music|Themes/Vlog and travel|75|Sunset recap|calm sunset recap music with soft guitar and warm pads, 75 bpm
-sfx|Nature/Rain||Rain on tin roof|heavy rain falling on a tin roof with distant thunder
-sfx|Nature/Rain||Light rain on leaves|light rain pattering on leaves in a quiet forest
-sfx|Nature/Rain||Rain on car windshield|rain drumming on a car windshield heard from inside the car
-sfx|Nature/Rain||Drizzle on pavement|soft drizzle on a city pavement with occasional dripping gutters
-sfx|Nature/Rain||Rain on tent fabric|steady rain tapping on a nylon tent heard from inside
-sfx|Nature/Rain||Monsoon downpour|torrential monsoon downpour hammering the ground and overflowing gutters
-sfx|Nature/Rain||Rain on window pane|raindrops hitting a window pane in a quiet bedroom
-sfx|Nature/Rain||Rain on umbrella|rain falling on an open umbrella while someone stands still
-sfx|Nature/Rain||Rain on a pond|rain falling on the still surface of a pond, gentle plops
-sfx|Nature/Rain||Rain in gutter pipe|rainwater gurgling and rushing down a metal drainpipe
-sfx|Nature/Rain||Rain on greenhouse glass|rain spattering on the glass roof of a greenhouse
-sfx|Nature/Rain||Sudden summer shower|a sudden summer shower starting softly then pouring hard
-sfx|Nature/Rain||Rain on wooden porch|rain dripping from the eaves onto a wooden porch
-sfx|Nature/Rain||Rain stopping slowly|heavy rain gradually fading into last dripping drops
-sfx|Nature/Storms and thunder||Close thunder clap|a sharp thunder clap very close followed by a long rumble
-sfx|Nature/Storms and thunder||Distant rolling thunder|low thunder rolling far away across open plains
-sfx|Nature/Storms and thunder||Violent thunderstorm|violent thunderstorm with pouring rain and repeated thunder
-sfx|Nature/Storms and thunder||Lightning strike crack|a lightning strike hitting a tree with a loud crack
-sfx|Nature/Storms and thunder||Hailstorm on roof|hailstones pounding on a roof and car bodies
-sfx|Nature/Storms and thunder||Tropical storm gusts|tropical storm with roaring gusts and lashing rain
-sfx|Nature/Storms and thunder||Thunder over mountains|thunder echoing between mountain valleys with a long fading rumble
-sfx|Nature/Storms and thunder||Thunder heard indoors|muffled thunder heard from inside a house with rain on windows
-sfx|Nature/Storms and thunder||Approaching storm|an approaching storm with rising wind and first heavy drops
-sfx|Nature/Storms and thunder||Tornado roar|a tornado roaring like a freight train with debris flying
-sfx|Nature/Wind||Howling storm wind|strong wind howling through trees during a storm
-sfx|Nature/Wind||Autumn breeze in leaves|gentle breeze rustling dry autumn leaves
-sfx|Nature/Wind||Wind through window gap|wind whistling through the gap of an old window
-sfx|Nature/Wind||Desert wind with sand|dry desert wind blowing sand across dunes
-sfx|Nature/Wind||Wind on mountain summit|fierce wind buffeting a mountain summit with low roar
-sfx|Nature/Wind||Wind in tall grass|soft wind sweeping through a field of tall grass
-sfx|Nature/Wind||Blizzard wind|icy blizzard wind howling with snow blowing hard
-sfx|Nature/Wind||Wind in pine forest|wind sighing through a pine forest with creaking trunks
-sfx|Nature/Wind||Flag flapping in wind|a cloth flag flapping and snapping in strong wind
-sfx|Nature/Wind||Wind around a chimney|wind moaning around a chimney on a cold night
-sfx|Nature/Wind||Gusty coastal wind|gusty wind on a coastal cliff with distant surf
-sfx|Nature/Wind||Wind chimes in breeze|wind chimes tinkling gently in a light breeze
-sfx|Nature/Ocean and waves||Waves on rocky shore|ocean waves crashing on a rocky shore
-sfx|Nature/Ocean and waves||Calm beach waves|calm waves lapping on a sandy beach
-sfx|Nature/Ocean and waves||Big surf breaking|big surf waves breaking with a powerful roar
-sfx|Nature/Ocean and waves||Waves on pebble beach|waves pulling back over a pebble beach with rattling stones
-sfx|Nature/Ocean and waves||Underwater ocean sound|muffled underwater ocean sound with bubbles and currents
-sfx|Nature/Ocean and waves||Sea cave wave booms|waves booming inside a sea cave with deep echo
-sfx|Nature/Ocean and waves||Stormy sea|stormy sea with huge waves and howling wind
-sfx|Nature/Ocean and waves||Waves under a pier|waves sloshing against the wooden pillars of a pier
-sfx|Nature/Ocean and waves||Tide pool trickle|water trickling in rock pools at low tide
-sfx|Nature/Ocean and waves||Distant ocean surf|distant ocean surf heard from behind sand dunes
-sfx|Nature/Ocean and waves||Waves hitting a seawall|waves slamming against a concrete seawall with spray
-sfx|Nature/Ocean and waves||Night ocean ripples|gentle ripples on a calm sea at night
-sfx|Nature/Rivers and streams||Mountain stream|clear mountain stream flowing fast over rocks and small falls
-sfx|Nature/Rivers and streams||Roaring waterfall|powerful waterfall roaring into a deep pool with spray
-sfx|Nature/Rivers and streams||Lazy river flow|wide slow river flowing gently past reeds
-sfx|Nature/Rivers and streams||Babbling brook|small brook babbling over pebbles in a meadow
-sfx|Nature/Rivers and streams||River rapids|whitewater river rapids rushing loudly over big boulders
-sfx|Nature/Rivers and streams||Small cascade|small cascade splashing into a rock pool
-sfx|Nature/Rivers and streams||Spring snowmelt torrent|swollen torrent of snowmelt rushing down a gorge
-sfx|Nature/Rivers and streams||Stream under a bridge|stream gurgling under a small stone bridge with echo
-sfx|Nature/Rivers and streams||Ice cracking on river|river ice cracking and groaning in early spring
-sfx|Nature/Rivers and streams||Forest creek trickle|thin forest creek trickling between mossy stones
-sfx|Nature/Water drops and splashes||Cave drips|water dripping slowly in a cave with echo
-sfx|Nature/Water drops and splashes||Stone splash in lake|a stone thrown into a lake, splash
-sfx|Nature/Water drops and splashes||Leaky faucet drip|single water drops falling into a metal sink at a steady rhythm
-sfx|Nature/Water drops and splashes||Big splash into water|a heavy object falling into deep water with a big splash
-sfx|Nature/Water drops and splashes||Pebbles skipping|a flat stone skipping across a lake surface several times
-sfx|Nature/Water drops and splashes||Bubbles rising|air bubbles rising and popping in a water tank
-sfx|Nature/Water drops and splashes||Puddle splash|a foot splashing into a shallow puddle
-sfx|Nature/Water drops and splashes||Water poured on rocks|water poured over hot stones in a sauna with hissing steam
-sfx|Nature/Water drops and splashes||Bucket emptied|a full bucket of water emptied onto concrete
-sfx|Nature/Water drops and splashes||Drops in a well|water drops falling into a deep stone well with long echo
-sfx|Nature/Water drops and splashes||Fish jumping|a small fish jumping out of a pond and splashing back
-sfx|Nature/Water drops and splashes||Dripping after rain|leaves dripping water onto the ground after rain
-sfx|Nature/Water drops and splashes||Hose spray|a garden hose spraying water on a lawn
-sfx|Nature/Water drops and splashes||Diving into a pool|someone diving into a swimming pool, splash and bubbles
-sfx|Nature/Ice and snow||Snow crunching|boots crunching slowly through fresh dry snow
-sfx|Nature/Ice and snow||Icicle breaking|an icicle snapping and shattering on frozen ground
-sfx|Nature/Ice and snow||Frozen lake booming|a frozen lake booming and pinging as the ice shifts
-sfx|Nature/Ice and snow||Glacier calving|a glacier calving with a huge crack and ice crashing into water
-sfx|Nature/Ice and snow||Snow falling from roof|a heavy block of snow sliding off a roof and thudding
-sfx|Nature/Ice and snow||Skating on ice|ice skates scraping and gliding on a frozen pond
-sfx|Nature/Ice and snow||Ice cubes in glass|ice cubes clinking and cracking in a glass
-sfx|Nature/Ice and snow||Avalanche rumble|a distant avalanche rumbling down a mountain
-sfx|Nature/Ice and snow||Sleet on window|sleet ticking against a window pane
-sfx|Nature/Ice and snow||Hail on snow|small hail falling softly on a snowy field
-sfx|Nature/Fire||Campfire crackling|crackling campfire at night with popping sparks and soft wind
-sfx|Nature/Fire||Fireplace logs|fireplace with burning logs crackling softly
-sfx|Nature/Fire||Forest fire roar|large forest fire roaring with burning branches cracking
-sfx|Nature/Fire||Match strike|match being struck and lighting up
-sfx|Nature/Fire||Torch flame whoosh|a burning torch whooshing as it is waved
-sfx|Nature/Fire||Bonfire ignition|a bonfire igniting with a whoosh then roaring flames
-sfx|Nature/Fire||Wood stove fire|fire burning in a cast iron wood stove with ticking metal
-sfx|Nature/Fire||Candle flame flicker|a candle flame flickering softly in a quiet room
-sfx|Nature/Fire||Paper burning|a sheet of paper catching fire and burning quickly
-sfx|Nature/Fire||Embers hissing water|glowing embers hissing as water is poured on them
-sfx|Nature/Fire||Gas burner lighting|a gas burner clicking and lighting with a soft whoosh
-sfx|Nature/Fire||Barn fire|a wooden barn burning with beams cracking and collapsing
-sfx|Nature/Fire||Blacksmith forge|blacksmith forge fire roaring with bellows pumping air
-sfx|Nature/Fire||Dying fire embers|a dying fire with faint crackles and settling embers
-sfx|Nature/Earth and rocks||Rockfall in canyon|rocks tumbling down a canyon wall and bouncing
-sfx|Nature/Earth and rocks||Landslide rumble|a landslide rumbling with earth and stones sliding down
-sfx|Nature/Earth and rocks||Earthquake tremor|a deep earthquake rumble with objects rattling
-sfx|Nature/Earth and rocks||Gravel shifting|loose gravel shifting and sliding under weight
-sfx|Nature/Earth and rocks||Mud bubbling|thick mud bubbling and popping in a volcanic pool
-sfx|Nature/Earth and rocks||Geyser eruption|a geyser hissing then erupting with rushing water
-sfx|Nature/Earth and rocks||Volcano rumble|a volcano rumbling with lava bubbling and spitting
-sfx|Nature/Earth and rocks||Rocks clacking|two large stones knocked together outdoors
-sfx|Nature/Earth and rocks||Sand pouring|dry sand pouring from a bucket onto a pile
-sfx|Nature/Earth and rocks||Digging in soil|a shovel digging into moist soil
-sfx|Nature/Plants and wood||Tree falling|a large tree creaking then crashing down in a forest
-sfx|Nature/Plants and wood||Branch snapping|a dry branch snapping underfoot in the woods
-sfx|Nature/Plants and wood||Leaves raked|dry leaves being raked on a lawn
-sfx|Nature/Plants and wood||Bamboo knocking|bamboo stalks knocking together in the wind
-sfx|Nature/Plants and wood||Old tree creaking|an old tree trunk creaking slowly in the wind
-sfx|Nature/Plants and wood||Rustling bushes|bushes rustling as something moves through them
-sfx|Nature/Plants and wood||Cornfield rustle|wind rustling through a dry cornfield
-sfx|Nature/Plants and wood||Pine cones falling|pine cones dropping onto the forest floor
-sfx|Nature/Plants and wood||Firewood split|an axe splitting a log of firewood
-sfx|Nature/Plants and wood||Twigs crackling|walking through crackling twigs and dry undergrowth
-sfx|Nature/Plants and wood||Wheat field breeze|a breeze waving through a ripe wheat field
-sfx|Nature/Plants and wood||Fruit dropping|ripe apples falling from a tree onto grass
-sfx|Nature/Plants and wood||Reeds swaying|tall reeds swishing at the edge of a lake
-sfx|Nature/Plants and wood||Palm fronds rustling|palm fronds rustling in a warm tropical wind
-sfx|Animals/Dogs||Dog barking far away|a dog barking several times in the distance
-sfx|Animals/Dogs||Small dog yapping|a small dog yapping excitedly at the front door
-sfx|Animals/Dogs||Big dog deep bark|a large dog barking with a deep loud voice
-sfx|Animals/Dogs||Puppy whimpering|a puppy whimpering and whining softly
-sfx|Animals/Dogs||Dog growling|a dog growling low and menacing
-sfx|Animals/Dogs||Dog howling at night|a lone dog howling at night in a village
-sfx|Animals/Dogs||Dog panting|a dog panting heavily after running
-sfx|Animals/Dogs||Dog lapping water|a dog lapping water from a metal bowl
-sfx|Animals/Dogs||Dog shaking off water|a wet dog shaking off water, collar tags jingling
-sfx|Animals/Dogs||Kennel of barking dogs|many dogs barking together in a kennel
-sfx|Animals/Dogs||Dog sniffing|a dog sniffing around eagerly close up
-sfx|Animals/Dogs||Dog claws on parquet|a dog trotting with claws clicking on a wooden floor
-sfx|Animals/Cats||Cat meowing|a cat meowing softly near a kitchen door
-sfx|Animals/Cats||Cat purring|a cat purring loudly close to the ear
-sfx|Animals/Cats||Cat hissing|an angry cat hissing and spitting
-sfx|Animals/Cats||Cats fighting|two cats yowling and fighting at night
-sfx|Animals/Cats||Kitten mewing|a tiny kitten mewing for its mother
-sfx|Animals/Cats||Cat chirping at birds|a cat chattering and chirping at birds through a window
-sfx|Animals/Cats||Cat eating dry food|a cat crunching dry food from a bowl
-sfx|Animals/Cats||Cat lapping milk|a cat lapping milk from a saucer
-sfx|Animals/Cats||Cat scratching post|a cat scratching a sisal post
-sfx|Animals/Cats||Cat in heat|a cat yowling long and loud at night
-sfx|Animals/Farm animals||Rooster at dawn|a rooster crowing at dawn over a quiet farmyard
-sfx|Animals/Farm animals||Cow mooing|a cow mooing in a field
-sfx|Animals/Farm animals||Sheep bleating|a flock of sheep bleating on a hillside
-sfx|Animals/Farm animals||Goat bleating|a goat bleating loudly in a rocky enclosure
-sfx|Animals/Farm animals||Pigs grunting|pigs grunting and squealing in a sty
-sfx|Animals/Farm animals||Hens clucking|hens clucking and scratching in a farmyard
-sfx|Animals/Farm animals||Ducks quacking|ducks quacking on a farm pond
-sfx|Animals/Farm animals||Geese honking|farm geese honking and flapping wings in a yard
-sfx|Animals/Farm animals||Turkey gobbling|a turkey gobbling in a barnyard
-sfx|Animals/Farm animals||Donkey braying|a donkey braying loudly in a dusty field
-sfx|Animals/Farm animals||Cow bells in pasture|cow bells clanking in an alpine pasture
-sfx|Animals/Farm animals||Milking a cow|milk squirting into a metal pail during hand milking
-sfx|Animals/Farm animals||Chicks peeping|baby chicks peeping under a heat lamp
-sfx|Animals/Farm animals||Cattle stampede|a herd of cattle stampeding with thundering hooves
-sfx|Animals/Farm animals||Pigs eating slop|pigs eating noisily from a trough
-sfx|Animals/Farm animals||Llama humming|a llama humming and snorting softly in its pen
-sfx|Animals/Horses||Horse galloping|horse galloping on a dirt road
-sfx|Animals/Horses||Horse neighing|a horse neighing loudly in an open paddock
-sfx|Animals/Horses||Horse snorting|a horse snorting and blowing air
-sfx|Animals/Horses||Hooves on cobblestones|horse hooves clip clopping on cobblestones
-sfx|Animals/Horses||Horse trotting|a horse trotting on a gravel path
-sfx|Animals/Horses||Horse eating hay|a horse chewing hay in a stable
-sfx|Animals/Horses||Herd of wild horses|a herd of wild horses galloping across a plain
-sfx|Animals/Horses||Horse whinny in stable|a horse whinnying softly in a wooden stable
-sfx|Animals/Birds||Morning birds|birds chirping in the morning in a forest
-sfx|Animals/Birds||Seagulls over harbor|seagulls crying and squabbling over a fishing harbor
-sfx|Animals/Birds||Crows cawing|crows cawing in tall trees on a grey afternoon
-sfx|Animals/Birds||Pigeons cooing|pigeons cooing and flapping on a rooftop
-sfx|Animals/Birds||Woodpecker drumming|a woodpecker drumming on a tree trunk
-sfx|Animals/Birds||Cuckoo calling|a cuckoo calling in a spring forest
-sfx|Animals/Birds||Eagle screech|an eagle screeching high above a canyon
-sfx|Animals/Birds||Parrot squawking|a parrot squawking loudly on its perch in a room
-sfx|Animals/Birds||Blackbird song|a blackbird singing in a garden at dusk
-sfx|Animals/Birds||Skylark over fields|a skylark singing high above open fields
-sfx|Animals/Birds||Wings flapping|a large bird taking off with heavy wing flaps
-sfx|Animals/Birds||Flock taking off|a flock of starlings taking off all at once
-sfx|Animals/Birds||Sparrows chattering|sparrows chattering noisily in a garden hedge
-sfx|Animals/Birds||Nightingale song|a nightingale singing in the night
-sfx|Animals/Birds||Canary trilling|a canary trilling in a cage
-sfx|Animals/Birds||Geese flying over|wild geese honking as they fly overhead
-sfx|Animals/Birds||Loon call on lake|a loon calling across a misty lake
-sfx|Animals/Birds||Peacock call|a peacock crying out in a garden
-sfx|Animals/Birds||Hummingbird wings|a hummingbird hovering with fast buzzing wings
-sfx|Animals/Birds||Swallows twittering|swallows twittering while swooping over a barn
-sfx|Animals/Wild mammals||Lion roar|a male lion roaring at dusk on the savanna
-sfx|Animals/Wild mammals||Wolves howling far away|wolves howling in the distance across a snowy valley
-sfx|Animals/Wild mammals||Elephant trumpeting|an elephant trumpeting loudly near a watering hole
-sfx|Animals/Wild mammals||Bear growl|a brown bear growling and huffing
-sfx|Animals/Wild mammals||Deer stag bellow|a red deer stag bellowing during the rut
-sfx|Animals/Wild mammals||Monkeys screeching|monkeys screeching and chattering in trees
-sfx|Animals/Wild mammals||Tiger snarl|a tiger snarling and growling close up in the grass
-sfx|Animals/Wild mammals||Hyenas laughing|hyenas cackling at night on the savanna
-sfx|Animals/Wild mammals||Coyote yips|coyotes yipping and howling in the desert
-sfx|Animals/Wild mammals||Fox scream|a red fox screaming at night in a field
-sfx|Animals/Wild mammals||Gorilla chest beating|a gorilla beating its chest and grunting
-sfx|Animals/Wild mammals||Wild boar grunting|a wild boar grunting and rooting in the undergrowth
-sfx|Animals/Wild mammals||Squirrel chattering|a squirrel chattering angrily in a tree
-sfx|Animals/Wild mammals||Moose call|a moose calling in a northern forest
-sfx|Animals/Wild mammals||Zebras barking|zebras barking and braying on the plains
-sfx|Animals/Wild mammals||Rhino snorting|a rhinoceros snorting and stomping on dry ground
-sfx|Animals/Wild mammals||Hippo grunts|hippos grunting and honking in a river
-sfx|Animals/Wild mammals||Lion pride growls|a pride of lions growling at a kill
-sfx|Animals/Insects||Bees buzzing in flowers|honey bees buzzing around flowers in a sunny garden
-sfx|Animals/Insects||Summer crickets|crickets chirping on a summer night
-sfx|Animals/Insects||Mosquito whine|a mosquito whining close to the ear
-sfx|Animals/Insects||Housefly buzzing|a housefly buzzing around a room and hitting a window
-sfx|Animals/Insects||Cicadas in heat|cicadas buzzing loudly on a hot afternoon
-sfx|Animals/Insects||Beehive inside|the dense hum inside a beehive
-sfx|Animals/Insects||Grasshoppers in meadow|grasshoppers stridulating in a sunny meadow
-sfx|Animals/Insects||Wasp nest|wasps buzzing angrily around a nest
-sfx|Animals/Insects||Bumblebee close by|a bumblebee flying past close to the ear
-sfx|Animals/Insects||Dragonfly wings|a dragonfly hovering with whirring wings over water
-sfx|Animals/Insects||Locust swarm|a huge swarm of locusts buzzing across fields
-sfx|Animals/Insects||Beetle crawling|a beetle crawling on dry leaves close up
-sfx|Animals/Insects||Termites chewing wood|termites chewing inside a wooden beam, faint clicking
-sfx|Animals/Insects||Moth at a lamp|a moth fluttering against a lamp shade
-sfx|Animals/Sea animals||Whale song|humpback whale song echoing underwater in the deep ocean
-sfx|Animals/Sea animals||Dolphins clicking|dolphins clicking and whistling underwater near a reef
-sfx|Animals/Sea animals||Sea lions barking|sea lions barking on a rocky beach
-sfx|Animals/Sea animals||Seals grunting|seals grunting and splashing on an ice floe
-sfx|Animals/Sea animals||Walrus bellow|a walrus bellowing on a beach
-sfx|Animals/Sea animals||Penguin colony|a noisy penguin colony braying on the shore
-sfx|Animals/Sea animals||Orca blow|an orca surfacing and blowing air through its blowhole
-sfx|Animals/Sea animals||Crabs clicking|crabs clicking and scuttling over rocks
-sfx|Animals/Sea animals||Shrimp crackling reef|snapping shrimp crackling on a coral reef underwater
-sfx|Animals/Sea animals||Whale breaching|a whale breaching and crashing back into the sea
-sfx|Animals/Reptiles and amphibians||Frogs croaking|frogs croaking in a pond at night
-sfx|Animals/Reptiles and amphibians||Bullfrog calls|a bullfrog calling with deep croaks
-sfx|Animals/Reptiles and amphibians||Tree frogs chorus|a chorus of tree frogs in a tropical night
-sfx|Animals/Reptiles and amphibians||Toad trilling|a toad trilling near a marsh
-sfx|Animals/Reptiles and amphibians||Rattlesnake rattle|a rattlesnake shaking its rattle among desert rocks
-sfx|Animals/Reptiles and amphibians||Snake hissing|a snake hissing slowly on dry leaves close up
-sfx|Animals/Reptiles and amphibians||Alligator growl|an alligator growling low in a swamp
-sfx|Animals/Reptiles and amphibians||Gecko chirps|a gecko chirping on a wall at night
-sfx|Animals/Reptiles and amphibians||Tortoise chewing|a tortoise munching on lettuce on a garden path
-sfx|Animals/Reptiles and amphibians||Crocodile splash|a crocodile lunging into the water with a splash
-sfx|Animals/Jungle||Tropical jungle morning|tropical jungle morning with exotic birds and insects
-sfx|Animals/Jungle||Howler monkeys|howler monkeys roaring across the rainforest canopy
-sfx|Animals/Jungle||Toucan calls|toucans croaking from the high branches of the jungle
-sfx|Animals/Jungle||Rainforest rain|rain falling on the rainforest canopy with dripping leaves
-sfx|Animals/Jungle||Jaguar growl|a jaguar growling in the dense jungle
-sfx|Animals/Jungle||Macaws flying over|macaws screeching as they fly over the canopy
-sfx|Animals/Jungle||Jungle insects buzz|dense buzzing and clicking of jungle insects
-sfx|Animals/Jungle||Jungle river|a jungle river flowing with birds calling
-sfx|Animals/Jungle||Gibbons whooping|gibbons whooping and calling in the treetops
-sfx|Animals/Jungle||Jungle at dusk|jungle at dusk with cicadas and distant monkeys
-sfx|Animals/Night animals||Owl hooting|a tawny owl hooting at night in old woods
-sfx|Animals/Night animals||Barn owl screech|a barn owl screeching in the dark
-sfx|Animals/Night animals||Bats squeaking|bats squeaking and fluttering out of a cave
-sfx|Animals/Night animals||Nightjar churring|a nightjar churring on a heath at night
-sfx|Animals/Night animals||Raccoons rummaging|raccoons rummaging and chittering near trash bins
-sfx|Animals/Night animals||Hedgehog snuffling|a hedgehog snuffling through leaves at night
-sfx|Animals/Night animals||Wolf pack at night|a wolf pack howling under a full moon
-sfx|Animals/Night animals||Frogs and crickets night|frogs and crickets together on a warm night by a pond
-sfx|Animals/Night animals||Mouse scratching|a mouse scratching and squeaking inside a wall
-sfx|Animals/Night animals||Opossum hissing|an opossum hissing in the dark
-sfx|Animals/Small pets||Hamster wheel|a hamster running in a squeaky wheel
-sfx|Animals/Small pets||Guinea pig squeaks|a guinea pig squeaking excitedly in its hay cage
-sfx|Animals/Small pets||Rabbit thumping|a rabbit thumping its hind leg on the floor
-sfx|Animals/Small pets||Budgies chattering|budgies chattering and chirping together in a cage
-sfx|Animals/Small pets||Aquarium bubbling|an aquarium filter bubbling softly in a quiet room
-sfx|Animals/Small pets||Parakeet whistling|a pet parakeet whistling a cheerful little tune
-sfx|Animals/Small pets||Ferret dooking|a ferret making happy dooking sounds
-sfx|Animals/Small pets||Hamster gnawing|a hamster gnawing on a wooden stick
-sfx|Animals/Small pets||Rat squeaking|a pet rat squeaking and sniffing
-sfx|Animals/Small pets||Chinchilla dust bath|a chinchilla rolling in a dust bath
-sfx|Animals/Small pets||Bird cage rattle|a bird hopping and rattling its cage bars
-sfx|Animals/Small pets||Rabbit munching|a rabbit munching a crunchy carrot close up
-sfx|Ambiences/City streets||Busy city street|busy city street with traffic and people talking
-sfx|Ambiences/City streets||Quiet night street|quiet residential street at night with a distant car
-sfx|Ambiences/City streets||Rush hour traffic jam|rush hour traffic jam with honking horns and idling engines
-sfx|Ambiences/City streets||Pedestrian crossing beeps|pedestrian crossing signal beeping with footsteps and traffic
-sfx|Ambiences/City streets||Rainy city street|cars driving on a wet city street in the rain
-sfx|Ambiences/City streets||Street construction|city street with jackhammers and construction machines
-sfx|Ambiences/City streets||Asian city market street|crowded asian street with scooters, vendors calling and chatter
-sfx|Ambiences/City streets||Sunday morning street|calm sunday morning street with church bells and few cars
-sfx|Ambiences/City streets||Street musician square|town square with a distant street accordion and pigeons
-sfx|Ambiences/City streets||Downtown sirens|downtown streets with distant sirens and traffic hum
-sfx|Ambiences/City streets||Cafe terrace street|outdoor cafe terrace with cups clinking and passing traffic
-sfx|Ambiences/City streets||Alley with dripping|narrow back alley with dripping pipes and a distant dog
-sfx|Ambiences/City streets||Snowy city street|muffled city street after snowfall with slow cars
-sfx|Ambiences/City streets||Tram on city avenue|city avenue with a tram ringing its bell and passing
-sfx|Ambiences/Indoor public places||Busy restaurant ambience|busy restaurant with cutlery and chatter
-sfx|Ambiences/Indoor public places||Subway station crowd|crowded subway station with an arriving train
-sfx|Ambiences/Indoor public places||Airport terminal|airport terminal with announcements and rolling suitcases
-sfx|Ambiences/Indoor public places||Shopping mall|shopping mall with background music, chatter and footsteps
-sfx|Ambiences/Indoor public places||Library quiet room|quiet library with pages turning and soft footsteps
-sfx|Ambiences/Indoor public places||Train station hall|large train station hall with echoing announcements
-sfx|Ambiences/Indoor public places||Hospital corridor|hospital corridor with beeping monitors and quiet voices
-sfx|Ambiences/Indoor public places||Museum gallery|museum gallery with hushed voices and footsteps on parquet
-sfx|Ambiences/Indoor public places||Supermarket checkout|supermarket checkout with scanner beeps and carts
-sfx|Ambiences/Indoor public places||Indoor swimming pool|indoor swimming pool with splashes and echoing voices
-sfx|Ambiences/Indoor public places||Coffee shop ambience|coffee shop with espresso machine and quiet conversation
-sfx|Ambiences/Indoor public places||Cathedral interior|vast cathedral interior with footsteps and long reverb
-sfx|Ambiences/Indoor public places||Hotel lobby|hotel lobby with soft music and quiet check in voices
-sfx|Ambiences/Indoor public places||Waiting room clock|small waiting room with a ticking clock and coughs
-sfx|Ambiences/Countryside||Farm morning|farm morning with a rooster, cows and a distant tractor
-sfx|Ambiences/Countryside||Summer meadow|summer meadow with bees, birds and soft wind
-sfx|Ambiences/Countryside||Village church bells|small village with church bells ringing in the distance
-sfx|Ambiences/Countryside||Vineyard afternoon|vineyard on a warm afternoon with cicadas and distant voices
-sfx|Ambiences/Countryside||Country road|quiet country road with birds and a car passing slowly
-sfx|Ambiences/Countryside||Hay field harvest|harvest field with a combine harvester working far away
-sfx|Ambiences/Countryside||Windmill creaking|old windmill sails creaking in the wind
-sfx|Ambiences/Countryside||Sheep on hillside|open hillside with sheep bleating and wind
-sfx|Ambiences/Countryside||Country evening|countryside evening with crickets and a distant dog
-sfx|Ambiences/Countryside||Stream by the farm|farm courtyard with a stream and chickens
-sfx|Ambiences/Countryside||Alpine pasture|alpine pasture with cow bells and mountain wind
-sfx|Ambiences/Countryside||Countryside after rain|countryside after rain with dripping and birds singing
-sfx|Ambiences/Forest||Forest morning|deep forest morning with many birds and light wind
-sfx|Ambiences/Forest||Rainy forest|forest under steady rain with water dripping from trees
-sfx|Ambiences/Forest||Winter forest silence|silent winter forest with snow falling from branches
-sfx|Ambiences/Forest||Autumn forest walk|autumn forest with crunching leaves and a woodpecker
-sfx|Ambiences/Forest||Forest at night|forest at night with owls, insects and rustling
-sfx|Ambiences/Forest||Pine forest wind|pine forest with wind in the treetops and a distant crow
-sfx|Ambiences/Forest||Bamboo forest|bamboo forest with creaking stalks and light wind
-sfx|Ambiences/Forest||Forest clearing|sunny forest clearing with buzzing insects and bird song
-sfx|Ambiences/Forest||Misty forest dawn|misty forest at dawn with sparse bird calls and drips
-sfx|Ambiences/Forest||Forest lake shore|forest lake shore with lapping water and loons
-sfx|Ambiences/Beach and harbor||Sunny beach crowd|sunny beach with waves, children playing and gulls
-sfx|Ambiences/Beach and harbor||Fishing harbor|fishing harbor with boats creaking, gulls and engines
-sfx|Ambiences/Beach and harbor||Marina rigging|marina with halyards clinking against masts in the wind
-sfx|Ambiences/Beach and harbor||Quiet morning beach|quiet morning beach with soft waves and a few gulls
-sfx|Ambiences/Beach and harbor||Harbor fog horn|foggy harbor with a distant fog horn and lapping water
-sfx|Ambiences/Beach and harbor||Busy port docks|busy port docks with cranes, ship horns and machinery
-sfx|Ambiences/Beach and harbor||Beach bar|beach bar with distant music, waves and chatter
-sfx|Ambiences/Beach and harbor||Fish market harbor|fish market on the quay with vendors and ice shoveling
-sfx|Ambiences/Beach and harbor||Night harbor ambience|night harbor with water lapping and boats creaking
-sfx|Ambiences/Beach and harbor||Windy beach|windy beach with surf and blowing sand
-sfx|Ambiences/Industrial||Factory floor ambience|large industrial factory floor with many machines running and clanking
-sfx|Ambiences/Industrial||Steel mill ambience|steel mill with roaring furnaces and clanging metal
-sfx|Ambiences/Industrial||Power plant hum|power plant with a deep electrical hum and turbines
-sfx|Ambiences/Industrial||Warehouse forklifts|warehouse with forklifts beeping and pallets dropping
-sfx|Ambiences/Industrial||Printing press hall|printing press hall with rhythmic machines
-sfx|Ambiences/Industrial||Shipyard welding|shipyard with welding, grinding and hammering on steel
-sfx|Ambiences/Industrial||Boiler room ambience|boiler room with hissing pipes and a low rumble
-sfx|Ambiences/Industrial||Sawmill ambience|sawmill with saws cutting logs and conveyors
-sfx|Ambiences/Industrial||Bottling plant|bottling plant with glass bottles clinking on conveyors
-sfx|Ambiences/Industrial||Abandoned factory|abandoned factory with wind, dripping and metal creaks
-sfx|Ambiences/Underground and caves||Deep cave ambience|deep cave with distant drips and low air movement
-sfx|Ambiences/Underground and caves||Sewer tunnel|sewer tunnel with flowing water and echoing drips
-sfx|Ambiences/Underground and caves||Mine shaft|old mine shaft with creaking timbers and falling pebbles
-sfx|Ambiences/Underground and caves||Underground parking|underground parking with distant car doors and engine echoes
-sfx|Ambiences/Underground and caves||Stone catacombs|stone catacombs with faint echoes and a slow drip
-sfx|Ambiences/Underground and caves||Metro tunnel rumble|metro tunnel with a distant train rumbling through
-sfx|Ambiences/Underground and caves||Ice cave|ice cave with cracking ice and dripping meltwater
-sfx|Ambiences/Underground and caves||Bunker ventilation|concrete bunker with a ventilation fan humming
-sfx|Ambiences/Night||Summer night crickets|warm summer night with crickets and distant frogs
-sfx|Ambiences/Night||City at night|city at night with distant traffic and a far siren
-sfx|Ambiences/Night||Night campsite|campsite at night with crackling fire and owls
-sfx|Ambiences/Night||Desert night|desert night with soft wind and a distant coyote
-sfx|Ambiences/Night||Night rain on roof|night rain softly falling on a roof in a quiet house
-sfx|Ambiences/Night||Late night highway|distant highway at night with occasional trucks
-sfx|Ambiences/Night||Suburban night|suburban night with a dog barking far away and a sprinkler
-sfx|Ambiences/Night||Night by the lake|lake at night with frogs and lapping water
-sfx|Ambiences/Night||Midnight empty station|empty train station at midnight with humming lights
-sfx|Ambiences/Night||Tropical night|tropical night with geckos, insects and warm wind
-sfx|Ambiences/Office||Open space office|open space office with keyboards, phones and quiet talk
-sfx|Ambiences/Office||Office printer room|office with a printer running and a photocopier
-sfx|Ambiences/Office||Call center|call center with many people talking on headsets
-sfx|Ambiences/Office||Empty office at night|empty office at night with humming air conditioning
-sfx|Ambiences/Office||Meeting room murmur|meeting room with murmured voices and pens tapping
-sfx|Ambiences/Office||Office coffee corner|office kitchen with a coffee machine and small talk
-sfx|Ambiences/Office||Server room ambience|server room with fans whirring loudly
-sfx|Ambiences/Office||Busy newsroom|busy newsroom with phones ringing and typing
-sfx|Ambiences/Home||Family kitchen ambience|family kitchen with cooking, dishes and chatter
-sfx|Ambiences/Home||Quiet living room tick|quiet living room with a ticking clock and a fridge hum
-sfx|Ambiences/Home||Children playing indoors|children playing in a house with toys and laughter
-sfx|Ambiences/Home||Bathroom shower ambience|bathroom with a running shower and echo
-sfx|Ambiences/Home||Apartment with neighbors|apartment with muffled neighbors and footsteps above
-sfx|Ambiences/Home||Sunday lunch table|dining room with a sunday lunch, cutlery and conversation
-sfx|Ambiences/Home||Laundry room ambience|laundry room with a washing machine spinning
-sfx|Ambiences/Home||Bedroom at night|quiet bedroom at night with a fan and distant traffic
-sfx|Ambiences/Crowded events||Stadium crowd before kickoff|stadium crowd chanting before a match
-sfx|Ambiences/Crowded events||Concert crowd between songs|large concert crowd cheering and whistling between songs
-sfx|Ambiences/Crowded events||Street parade|street parade with drums, whistles and a crowd
-sfx|Ambiences/Crowded events||Fairground ambience|fairground with rides, music and screaming people
-sfx|Ambiences/Crowded events||Christmas market crowd|christmas market with chatter, bells and music in the distance
-sfx|Ambiences/Crowded events||Conference hall|conference hall with a crowd murmuring before a talk
-sfx|Transport/Cars||Car engine idling|a car engine starting and idling
-sfx|Transport/Cars||Sports car pass by|a sports car accelerating fast and passing by
-sfx|Transport/Cars||Tires screeching|car tires screeching on asphalt during a sharp turn
-sfx|Transport/Cars||Car horn honking|a car horn honking twice on a busy street
-sfx|Transport/Cars||Car door closing|a car door opening and closing with a solid thud
-sfx|Transport/Cars||Car alarm in parking|a car alarm going off in a parking lot
-sfx|Transport/Cars||Electric car whine|an electric car accelerating with a high whine
-sfx|Transport/Cars||Diesel engine start|a cold diesel car engine cranking and starting
-sfx|Transport/Cars||Car on gravel road|a car driving slowly on a gravel road
-sfx|Transport/Cars||Highway traffic|cars rushing by on a highway
-sfx|Transport/Cars||Racing car lap|a racing car screaming past on a circuit
-sfx|Transport/Cars||Parking lot fender bender|a slow car bump in a parking lot with a dull thud and cracking plastic
-sfx|Transport/Cars||Engine revving|a car engine revving hard in neutral
-sfx|Transport/Cars||Car interior drive|inside a car driving on a motorway with road noise
-sfx|Transport/Cars||Car stuck in mud|car wheels spinning in mud with a revving engine
-sfx|Transport/Cars||Windshield wipers|windshield wipers sweeping on a car in light rain
-sfx|Transport/Cars||Car trunk slam|a car trunk slammed shut in a parking lot
-sfx|Transport/Cars||Turn signal ticking|a car turn signal ticking inside the cabin
-sfx|Transport/Motorcycles||Motorcycle leaving|a motorcycle revving and driving away
-sfx|Transport/Motorcycles||Motorbike pass by|a motorbike passing by fast on a road
-sfx|Transport/Motorcycles||Harley style idle|a big v twin motorcycle idling with a deep rumble
-sfx|Transport/Motorcycles||Dirt bike|a dirt bike revving and jumping on a motocross track
-sfx|Transport/Motorcycles||Moped buzzing|a small moped buzzing through a narrow street
-sfx|Transport/Motorcycles||Sport bike high revs|a sport motorcycle screaming at high revs
-sfx|Transport/Motorcycles||Motorcycle kick start|a motorcycle kick started then idling
-sfx|Transport/Motorcycles||Motorcycle gang|a group of motorcycles riding by together
-sfx|Transport/Motorcycles||Motorcycle in tunnel|a motorcycle accelerating through a tunnel with echo
-sfx|Transport/Motorcycles||Motorcycle downshift|a motorcycle downshifting and braking before a corner
-sfx|Transport/Trucks and buses||Truck air brakes|a heavy truck braking with a hiss of air brakes
-sfx|Transport/Trucks and buses||Truck horn|a big truck air horn blowing
-sfx|Transport/Trucks and buses||Truck reversing beeps|a truck reversing with warning beeps
-sfx|Transport/Trucks and buses||City bus stop|a city bus pulling into a stop with doors opening
-sfx|Transport/Trucks and buses||Bus interior ride|inside a city bus driving with engine and passengers
-sfx|Transport/Trucks and buses||Truck passing on road|a heavy truck passing by on a country road
-sfx|Transport/Trucks and buses||Garbage truck|a garbage truck compacting trash with hydraulic whine
-sfx|Transport/Trucks and buses||Truck engine idle|a diesel truck engine idling loudly
-sfx|Transport/Trucks and buses||Tour coach departure|a tour coach starting and pulling away
-sfx|Transport/Trucks and buses||Dump truck unloading|a dump truck tipping and unloading gravel
-sfx|Transport/Trucks and buses||Truck gear changes|a truck accelerating through gear changes
-sfx|Transport/Trucks and buses||Bus door hiss|bus doors hissing open and closing
-sfx|Transport/Trains and metros||Steam train whistle|a steam train whistle and chugging
-sfx|Transport/Trains and metros||High speed train|a modern train passing by at high speed
-sfx|Transport/Trains and metros||Freight train|a long freight train rolling by with clanking wagons
-sfx|Transport/Trains and metros||Train horn|a train horn blowing at a level crossing
-sfx|Transport/Trains and metros||Level crossing bells|level crossing bells ringing as a train approaches
-sfx|Transport/Trains and metros||Inside a train|inside a train carriage with rhythmic clacking rails
-sfx|Transport/Trains and metros||Metro arriving|a metro train arriving and braking in a station
-sfx|Transport/Trains and metros||Metro doors closing|metro doors chiming and closing on a station platform
-sfx|Transport/Trains and metros||Train brakes squeal|train brakes squealing as it slows down
-sfx|Transport/Trains and metros||Diesel locomotive|a diesel locomotive idling and pulling away
-sfx|Transport/Trains and metros||Tram bell|a tram ringing its bell and passing on rails
-sfx|Transport/Trains and metros||Train in tunnel|a train rushing through a tunnel with rumble
-sfx|Transport/Trains and metros||Cable car|a cable car moving along its cable with creaking
-sfx|Transport/Trains and metros||Monorail glide|a monorail gliding by with a smooth electric hum
-sfx|Transport/Planes||Jet take off|a jet airplane taking off from a runway with roaring engines
-sfx|Transport/Planes||Propeller plane|a small propeller plane flying overhead on a sunny day
-sfx|Transport/Planes||Airliner landing|an airliner landing with reverse thrust roaring
-sfx|Transport/Planes||Jet flyby|a fighter jet flying low and fast overhead
-sfx|Transport/Planes||Inside airplane cabin|inside an airplane cabin with engine drone
-sfx|Transport/Planes||Airplane far overhead|a distant airplane passing high overhead
-sfx|Transport/Planes||Plane engines spool up|jet engines spooling up on a runway
-sfx|Transport/Planes||Glider wind|a glider flying with wind rushing and no engine
-sfx|Transport/Planes||Seaplane take off|a seaplane taking off from a lake with splashing
-sfx|Transport/Planes||Biplane loop|an old biplane looping with sputtering engine
-sfx|Transport/Planes||Jet sonic boom|a supersonic jet producing a sonic boom
-sfx|Transport/Planes||Cabin chime|an airplane cabin chime with a quiet hum
-sfx|Transport/Helicopters and drones||Helicopter hover|a helicopter hovering then flying away
-sfx|Transport/Helicopters and drones||Helicopter landing|a helicopter landing with rotor wash and wind
-sfx|Transport/Helicopters and drones||Helicopter flyover|a helicopter flying low overhead above a field
-sfx|Transport/Helicopters and drones||Rotor spin down|helicopter rotors slowing down after landing
-sfx|Transport/Helicopters and drones||Inside helicopter|inside a helicopter cockpit with loud rotor noise
-sfx|Transport/Helicopters and drones||Quadcopter drone|a small quadcopter drone buzzing overhead
-sfx|Transport/Helicopters and drones||Drone take off|a drone taking off and hovering close by
-sfx|Transport/Helicopters and drones||Military helicopter|a large military helicopter with heavy thumping rotors
-sfx|Transport/Boats and ships||Ship horn in harbor|a large ship horn blowing in a harbor
-sfx|Transport/Boats and ships||Motorboat passing|a motorboat speeding past on a lake
-sfx|Transport/Boats and ships||Rowing boat|oars dipping and creaking in a rowing boat
-sfx|Transport/Boats and ships||Sailboat creaking|a sailboat creaking with sails flapping in wind
-sfx|Transport/Boats and ships||Outboard motor|an outboard motor starting and running
-sfx|Transport/Boats and ships||Jet ski on waves|a jet ski racing over waves
-sfx|Transport/Boats and ships||Ferry engine|inside a ferry with a deep engine rumble
-sfx|Transport/Boats and ships||Anchor chain|an anchor chain rattling down into the sea
-sfx|Transport/Boats and ships||Ship hull waves|waves slapping against a ship hull
-sfx|Transport/Boats and ships||Speedboat bouncing|a speedboat bouncing hard over choppy water
-sfx|Transport/Boats and ships||Canoe paddling|a canoe paddling quietly on a calm river
-sfx|Transport/Boats and ships||Steamboat whistle|an old paddle steamboat whistle and churning wheel
-sfx|Transport/Boats and ships||Cargo ship engine|a cargo ship engine room thrumming
-sfx|Transport/Boats and ships||Boat mooring ropes|mooring ropes creaking as a boat rocks at the dock
-sfx|Transport/Bicycles and scooters||Bicycle bell|a bicycle bell ringing twice on a park path
-sfx|Transport/Bicycles and scooters||Bike freewheel|a bicycle freewheeling with ticking hub
-sfx|Transport/Bicycles and scooters||Bike chain pedaling|pedaling a bicycle with the chain whirring
-sfx|Transport/Bicycles and scooters||Bike brakes squeak|bicycle brakes squeaking to a stop
-sfx|Transport/Bicycles and scooters||Kick scooter|a kick scooter rolling on pavement
-sfx|Transport/Bicycles and scooters||Electric scooter|an electric scooter whirring past on a city sidewalk
-sfx|Transport/Bicycles and scooters||Skateboard rolling|a skateboard rolling and clacking over cracks
-sfx|Transport/Bicycles and scooters||Bike on gravel|a mountain bike riding on a gravel trail
-sfx|Transport/Bicycles and scooters||Bicycle tire pump|a bicycle tire being pumped up
-sfx|Transport/Bicycles and scooters||Bike race passing|a pack of racing cyclists whooshing past
-sfx|Transport/Emergency vehicles||Police siren|a police siren passing by on a city street
-sfx|Transport/Emergency vehicles||Ambulance siren|an ambulance siren approaching and fading away
-sfx|Transport/Emergency vehicles||Fire truck horn|a fire truck with siren and air horn rushing by
-sfx|Transport/Emergency vehicles||European police siren|a european two tone police siren passing
-sfx|Transport/Emergency vehicles||Fire engine arriving|a fire engine arriving and braking with a hiss
-sfx|Transport/Emergency vehicles||Siren in traffic|an emergency siren weaving through traffic
-sfx|Transport/Emergency vehicles||Police car chase|a police car chase with sirens and screeching tires
-sfx|Transport/Emergency vehicles||Tow truck winch|a tow truck winch whirring and its chain rattling as a car is pulled up
-sfx|Transport/Emergency vehicles||Ambulance yelp|an ambulance yelp siren at an intersection
-sfx|Transport/Emergency vehicles||Rescue helicopter|a rescue helicopter hovering low over a mountain with strong rotor wind
-sfx|Transport/Vintage vehicles||Steam locomotive start|a steam locomotive starting with heavy chuffs
-sfx|Transport/Vintage vehicles||Old car horn|an old car horn honking a ooga sound
-sfx|Transport/Vintage vehicles||Early motorcar engine|an early motorcar engine rattling and puttering on a country lane
-sfx|Transport/Vintage vehicles||Horse drawn carriage|a horse drawn carriage on cobblestones with creaking wheels
-sfx|Transport/Vintage vehicles||Vintage motorcycle|a vintage motorcycle putt putting along a road
-sfx|Transport/Vintage vehicles||Old tractor|an old tractor engine chugging in a field
-sfx|Transport/Vintage vehicles||Penny farthing|an old high wheel bicycle rolling and creaking
-sfx|Transport/Vintage vehicles||Old propeller airliner|an old four engine propeller airliner droning overhead
-sfx|Transport/Vintage vehicles||Classic muscle car|a classic muscle car rumbling and revving
-sfx|Transport/Vintage vehicles||Steam ship engine|an old steam ship engine pounding rhythmically
-sfx|Transport/Vintage vehicles||Vintage bus|an old bus rattling and grinding gears
-sfx|Transport/Vintage vehicles||Old car backfire|an old car engine backfiring and sputtering
-sfx|Home/Doors and windows||Creaking wooden door|a heavy wooden door creaking open slowly in a quiet old house
-sfx|Home/Doors and windows||Front door slam|a front door slamming shut with a loud bang and rattling frame
-sfx|Home/Doors and windows||Three knocks on door|knuckles knocking three times on a solid wooden door
-sfx|Home/Doors and windows||Ding dong doorbell|a two tone ding dong doorbell ringing inside a hallway
-sfx|Home/Doors and windows||Keys unlocking door|a bunch of keys jingling then a key turning in a door lock
-sfx|Home/Doors and windows||Sliding glass door|a sliding glass patio door rolling open on its metal track
-sfx|Home/Doors and windows||Window opened in rain|a window being opened, letting in the sound of rain outside
-sfx|Home/Doors and windows||Wooden shutters closing|old wooden shutters swinging shut and a latch clicking
-sfx|Home/Doors and windows||Garage door opener|an electric garage door motor humming as the door rolls up
-sfx|Home/Doors and windows||Screen door spring|a screen door creaking open and snapping back on its spring
-sfx|Home/Doors and windows||Door chain latch|a door security chain sliding and dropping into its latch
-sfx|Home/Doors and windows||Roller blind rattle|a metal roller blind being pulled down with a rattling clatter
-sfx|Home/Kitchen||Whistling kettle|water boiling in a kettle until it whistles loudly
-sfx|Home/Kitchen||Bacon sizzling in pan|bacon sizzling and popping in a hot frying pan
-sfx|Home/Kitchen||Chopping carrots|a knife chopping carrots quickly on a wooden board
-sfx|Home/Kitchen||Water poured in glass|pouring water from a jug into a glass
-sfx|Home/Kitchen||Washing up dishes|dishes and cutlery clinking in a sink full of water while washing up
-sfx|Home/Kitchen||Fridge door and hum|a refrigerator door opening with a suction pop and the fridge humming
-sfx|Home/Kitchen||Microwave beeping|a microwave oven running, then beeping three times when done
-sfx|Home/Kitchen||Toaster pop up|a toaster clicking down, ticking, then popping up the toast
-sfx|Home/Kitchen||Blender smoothie|a blender crushing ice and fruit at high speed
-sfx|Home/Kitchen||Coffee grinder|an electric coffee grinder grinding beans in a small kitchen
-sfx|Home/Kitchen||Espresso machine|an espresso machine hissing and gurgling while pouring a coffee
-sfx|Home/Kitchen||Cutlery drawer|a cutlery drawer pulled open with forks and knives rattling
-sfx|Home/Kitchen||Can opener|a manual can opener puncturing and cutting around a tin can
-sfx|Home/Kitchen||Kitchen tap running|a kitchen tap turned on full, water splashing into a steel sink
-sfx|Home/Cooking||Boiling pot of pasta|a large pot of water boiling with bubbles and a lid rattling
-sfx|Home/Cooking||Whisking eggs|a whisk beating eggs quickly in a glass bowl
-sfx|Home/Cooking||Onions frying|onions frying gently in butter in a skillet
-sfx|Home/Cooking||Stew simmering|a thick stew simmering slowly with soft bubbling in a cast iron pot
-sfx|Home/Cooking||Pressure cooker hiss|a pressure cooker valve hissing and jiggling on the stove
-sfx|Home/Cooking||Popcorn popping|popcorn kernels popping fast in a covered pan
-sfx|Home/Cooking||Grill steak sizzle|a thick steak dropped on a hot grill with a loud sizzle
-sfx|Home/Cooking||Deep fryer bubbling|food lowered into a deep fryer, oil bubbling violently
-sfx|Home/Cooking||Rolling dough|a rolling pin rolling dough on a floured wooden table
-sfx|Home/Cooking||Gas stove ignition|a gas stove igniter clicking and the burner lighting with a whoosh
-sfx|Home/Bathroom||Toilet flush|a toilet flushing and the tank refilling in a small bathroom
-sfx|Home/Bathroom||Shower running|a shower running with water spraying on tiles
-sfx|Home/Bathroom||Bath filling|a bathtub filling with water from a running tap, echo on tiles
-sfx|Home/Bathroom||Brushing teeth|someone brushing their teeth, then spitting and rinsing
-sfx|Home/Bathroom||Hair dryer|a hair dryer blowing at full speed then switched off
-sfx|Home/Bathroom||Electric shaver|an electric razor buzzing while shaving
-sfx|Home/Bathroom||Dripping bathroom tap|a leaky tap dripping slowly into a sink in a quiet bathroom
-sfx|Home/Bathroom||Bath drain gurgle|water draining from a bathtub with a long gurgling swirl
-sfx|Home/Bathroom||Gargling mouthwash|a person gargling mouthwash and spitting into a sink
-sfx|Home/Bathroom||Spray bottle squirts|a spray bottle of perfume squirting several times
-sfx|Home/Household appliances||Vacuum cleaner on rug|a vacuum cleaner running back and forth on a carpet
-sfx|Home/Household appliances||Washing machine spin|a washing machine spinning fast and rumbling
-sfx|Home/Household appliances||Tumble dryer zipper|a tumble dryer turning with a zipper clinking inside the drum
-sfx|Home/Household appliances||Dishwasher running|a dishwasher running with water sloshing inside
-sfx|Home/Household appliances||Ceiling fan whir|a ceiling fan spinning with a gentle whirring and a slight wobble
-sfx|Home/Household appliances||Air conditioner hum|a window air conditioner humming with a rattling vent
-sfx|Home/Household appliances||Electric heater ticks|an electric radiator clicking and ticking as it heats up
-sfx|Home/Household appliances||Steam iron hiss|a steam iron hissing and puffing on an ironing board
-sfx|Home/Household appliances||Sewing machine|a sewing machine stitching fast with a mechanical clatter
-sfx|Home/Household appliances||Robot vacuum bumps|a robot vacuum whirring and bumping gently into furniture
-sfx|Home/Household appliances||Old fridge compressor|an old refrigerator compressor starting with a shudder and humming
-sfx|Home/Household appliances||Smoke alarm beeping|a smoke alarm beeping loudly in a hallway
-sfx|Home/Furniture||Creaky armchair|someone sitting down in a creaky leather armchair
-sfx|Home/Furniture||Drawer slammed shut|a wooden drawer slammed shut in a dresser
-sfx|Home/Furniture||Chair dragged on tiles|a wooden chair dragged across a tiled floor
-sfx|Home/Furniture||Squeaky bed springs|old metal bed springs squeaking as someone turns over
-sfx|Home/Furniture||Wardrobe door|a large wardrobe door creaking open with hangers clinking
-sfx|Home/Furniture||Rocking chair|a wooden rocking chair rocking slowly on a wooden floor
-sfx|Home/Furniture||Folding chair snap|a metal folding chair being unfolded and snapped open
-sfx|Home/Furniture||Sofa cushion flop|someone flopping heavily onto a soft sofa
-sfx|Home/Furniture||Office chair swivel|an office chair squeaking as it swivels and rolls
-sfx|Home/Furniture||Flat pack assembly|screws turned and wooden panels tapped while assembling furniture
-sfx|Home/Cleaning||Broom sweeping|a broom sweeping a stone floor with short strokes
-sfx|Home/Cleaning||Mopping the floor|a wet mop sloshing in a bucket and wiping a tiled floor
-sfx|Home/Cleaning||Scrubbing brush|a stiff brush scrubbing a dirty pot in a sink
-sfx|Home/Cleaning||Window squeegee|a squeegee wiping a wet window with a rubbery squeak
-sfx|Home/Cleaning||Dusting with cloth|a feather duster and a cloth brushing over shelves
-sfx|Home/Cleaning||Trash bag tied|a plastic trash bag rustled, tied and dropped in a bin
-sfx|Home/Cleaning||Bin lid clunk|a pedal bin lid flipping open and shutting with a clunk
-sfx|Home/Cleaning||Carpet beater|a carpet beater whacking a hanging rug outdoors
-sfx|Home/Objects||Grandfather clock|a grandfather clock ticking slowly in a quiet room, then chiming
-sfx|Home/Objects||Alarm clock bell|a mechanical alarm clock ringing loudly on a bedside table
-sfx|Home/Objects||Wind up music box|a music box being wound up then playing a delicate tune
-sfx|Home/Objects||Zipper opened|a zipper of a bag opened quickly
-sfx|Home/Objects||Velcro strap ripped|a velcro strap on a backpack ripped open in one pull
-sfx|Home/Objects||Umbrella opening|an umbrella snapping open with a whoosh
-sfx|Home/Objects||Lighter flick|a metal lighter lid flicked open and the flint struck
-sfx|Home/Objects||Match struck|a match struck on a box and flaring up
-sfx|Home/Objects||Light switch clicks|a light switch clicked on and off twice
-sfx|Home/Objects||Coins on table|a handful of coins dropped and spinning on a wooden table
-sfx|Home/Objects||Plastic bag rustle|a plastic shopping bag rustling and crinkling
-sfx|Home/Objects||Cardboard box taped|packing tape pulled off a roll and sealing a cardboard box
-sfx|Home/Paper and books||Book pages turning|the pages of an old book turned one by one
-sfx|Home/Paper and books||Paper crumpled|a sheet of paper crumpled into a ball and thrown away
-sfx|Home/Paper and books||Paper torn in half|a sheet of paper torn slowly in half
-sfx|Home/Paper and books||Envelope opened|an envelope torn open and a letter unfolded
-sfx|Home/Paper and books||Heavy book closed|a heavy hardcover book closed with a dull thud
-sfx|Home/Paper and books||Newspaper unfolded|a large newspaper shaken and unfolded
-sfx|Home/Glass and dishes||Wine glasses toast|two wine glasses clinking in a toast
-sfx|Home/Glass and dishes||Plate smashed|a ceramic plate dropped and smashing on a tiled floor
-sfx|Home/Glass and dishes||Spoon stirring cup|a spoon stirring coffee in a porcelain cup
-sfx|Home/Glass and dishes||Porcelain teacup on saucer|a porcelain teacup set down on its saucer with a delicate clink
-sfx|Home/Glass and dishes||Stack of plates|a stack of dishes rattling as it is put away in a cupboard
-sfx|Home/Glass and dishes||Bottle uncorked|a cork pulled from a wine bottle with a pop and wine glugging into a glass
-sfx|Human/Footsteps||Steps on gravel|footsteps walking slowly on a gravel path
-sfx|Human/Footsteps||High heels on marble|high heels walking on a marble floor in a large hall
-sfx|Human/Footsteps||Running on wood floor|footsteps running fast on a wooden floor
-sfx|Human/Footsteps||Steps in deep snow|footsteps crunching in deep fresh snow
-sfx|Human/Footsteps||Boots on metal stairs|heavy boots climbing metal stairs with a ringing echo
-sfx|Human/Footsteps||Steps in dry leaves|footsteps shuffling through dry autumn leaves
-sfx|Human/Footsteps||Barefoot on tiles|bare feet padding on a wet tiled floor
-sfx|Human/Footsteps||Sneakers on gym floor|sneakers squeaking on a polished gym floor
-sfx|Human/Footsteps||Boots in thick mud|heavy boots squelching step by step through thick mud
-sfx|Human/Footsteps||Creaky wooden stairs|someone walking slowly up creaky wooden stairs
-sfx|Human/Footsteps||Steps in corridor|footsteps echoing in a long empty concrete corridor
-sfx|Human/Footsteps||Splashing in puddles|footsteps splashing through rain puddles on a sidewalk
-sfx|Human/Footsteps||Barefoot on beach sand|bare feet walking on dry beach sand
-sfx|Human/Footsteps||Marching soldiers|a group of soldiers marching in step on a paved square
-sfx|Human/Body||Slow clapping|one person clapping hands slowly in a quiet room
-sfx|Human/Body||Finger snaps|fingers snapping in a steady rhythm
-sfx|Human/Body||Knuckles cracking|knuckles cracking one after the other
-sfx|Human/Body||Man coughing|a man coughing hard several times
-sfx|Human/Body||Loud sneeze|a person sneezing loudly twice in a quiet office
-sfx|Human/Body||Repeated hiccups|a person hiccuping repeatedly and trying to hold their breath
-sfx|Human/Body||Stomach growl|a hungry stomach growling and gurgling
-sfx|Human/Body||Hands rubbing|hands rubbing together briskly to warm up
-sfx|Human/Body||Slap on skin|a hand slapping bare skin sharply
-sfx|Human/Body||Body thrown on floor|a body falling heavily onto a wooden floor
-sfx|Human/Breathing and heartbeat||Heavy breathing|a person breathing heavily after running
-sfx|Human/Breathing and heartbeat||Slow heartbeat|a heartbeat beating slowly and deeply
-sfx|Human/Breathing and heartbeat||Racing heartbeat|a fast pounding heartbeat with panicked breathing
-sfx|Human/Breathing and heartbeat||Calm sleeping breath|a person breathing softly and calmly while asleep
-sfx|Human/Breathing and heartbeat||Loud snoring|a man snoring loudly in a quiet bedroom
-sfx|Human/Breathing and heartbeat||Panting in fear|short frightened panting breaths in the dark
-sfx|Human/Breathing and heartbeat||Breath on cold air|a person exhaling slowly, deep relaxing breaths
-sfx|Human/Breathing and heartbeat||Underwater breathing|breathing through a diving regulator with bubbles underwater
-sfx|Human/Voice without words||Hearty belly laugh|a man laughing heartily from the belly in a small room
-sfx|Human/Voice without words||Giggling woman|a young woman giggling softly behind her hand
-sfx|Human/Voice without words||Deep tired sigh|a long tired sigh of a person sinking into a chair
-sfx|Human/Voice without words||Surprised gasp|a woman taking a sharp surprised gasp of breath
-sfx|Human/Voice without words||Terrified scream|a woman screaming in terror in a dark echoing corridor
-sfx|Human/Voice without words||Humming a tune|a person humming a gentle tune with closed lips
-sfx|Human/Voice without words||Sleepy yawn|a person yawning loudly and stretching in the morning
-sfx|Human/Voice without words||Pained groan|a man groaning in pain while lying on the floor
-sfx|Human/Voice without words||Whistling a melody|a person whistling a cheerful melody
-sfx|Human/Voice without words||Disgusted grunt|a short disgusted grunt and a sniff
-sfx|Human/Crowds||Stadium goal cheer|a stadium crowd erupting in cheers after a goal
-sfx|Human/Crowds||Theater applause|an audience applauding in a theater
-sfx|Human/Crowds||Crowd murmur in hall|a crowd murmuring in a large hall before a show
-sfx|Human/Crowds||Protest chanting|a large crowd chanting and shouting at a street protest
-sfx|Human/Crowds||Booing audience|a theater audience booing loudly and whistling in disapproval
-sfx|Human/Crowds||Concert crowd roar|a concert crowd screaming and roaring as the band appears
-sfx|Human/Crowds||Cocktail party chatter|people chatting and laughing at a cocktail party with glasses clinking
-sfx|Human/Crowds||Countdown crowd|a crowd counting down together then cheering
-sfx|Human/Crowds||Gasp of crowd|a large audience gasping in shock together
-sfx|Human/Crowds||Laughing audience|a comedy club audience laughing out loud
-sfx|Human/Crowds||Panicked crowd|a panicked crowd screaming and running away
-sfx|Human/Crowds||Standing ovation|a long standing ovation with whistles and cheers
-sfx|Human/Children||Playground laughter|children laughing and playing in a playground
-sfx|Human/Children||Baby crying|a baby crying in a crib
-sfx|Human/Children||Baby giggling|a baby giggling and cooing happily
-sfx|Human/Children||Toddler babbling|a toddler babbling and playing with toys
-sfx|Human/Children||Kids splashing in pool|children splashing and shrieking in a swimming pool
-sfx|Human/Children||School bell recess|children rushing out of class shouting as a school bell rings
-sfx|Human/Children||Children party|children screaming with joy at a birthday party
-sfx|Human/Children||Child running away|a child laughing and running away on a wooden floor
-sfx|Human/Clothing and fabric||Coat put on|a heavy coat being put on with fabric rustling
-sfx|Human/Clothing and fabric||Bedsheet shaken|a bedsheet shaken out and flapping
-sfx|Human/Clothing and fabric||Leather jacket creak|a leather jacket creaking with movement
-sfx|Human/Clothing and fabric||Fabric ripping|a piece of cloth torn apart
-sfx|Human/Clothing and fabric||Rain jacket rustle|a nylon rain jacket swishing as someone walks
-sfx|Human/Clothing and fabric||Belt buckle|a belt buckle unfastened and the belt pulled out
-sfx|Human/Clothing and fabric||Shoelaces tied|shoelaces of a sneaker pulled tight and tied in a knot
-sfx|Human/Clothing and fabric||Cloth flag flapping|a cloth flag flapping hard in the wind
-sfx|Human/Eating and drinking||Apple crunch|biting into a crisp apple with a loud crunch
-sfx|Human/Eating and drinking||Chips crunching|someone eating potato chips with loud crunches
-sfx|Human/Eating and drinking||Drinking gulps|a person gulping water from a bottle
-sfx|Human/Eating and drinking||Slurping soup|someone slurping hot soup from a spoon
-sfx|Human/Eating and drinking||Soda can opened|a soda can opened with a crack and fizz
-sfx|Human/Eating and drinking||Drinking with straw|slurping the last drops of a drink through a straw
-sfx|Human/Eating and drinking||Chewing gum|someone chewing gum noisily and popping a bubble
-sfx|Human/Eating and drinking||Burp after drink|a loud satisfied burp after a drink
-sfx|Human/Eating and drinking||Hot tea sip|a person sipping hot tea and sighing with pleasure
-sfx|Human/Eating and drinking||Celery bite|chewing a stick of celery with crunchy bites
-sfx|Action/Impacts||Punch to the body|a punch hitting a body hard in a fight
-sfx|Action/Impacts||Face slap|a hard slap across the face
-sfx|Action/Impacts||Body kick thud|a heavy kick landing on a body with a dull thud
-sfx|Action/Impacts||Metal object on concrete|a heavy metal object falling on concrete
-sfx|Action/Impacts||Hammer on anvil|a hammer striking an anvil with a ringing clang
-sfx|Action/Impacts||Wooden plank hit|a wooden plank smashed against a wall
-sfx|Action/Impacts||Pipe on metal door|a metal pipe hitting a steel door with a loud clang
-sfx|Action/Impacts||Head butt|a heavy head butt impact with a crunch
-sfx|Action/Impacts||Boxing bag punches|fast punches hitting a heavy boxing bag
-sfx|Action/Impacts||Rock thrown on car|a big rock smashing onto a car roof
-sfx|Action/Impacts||Baseball bat swing hit|a baseball bat swung hard and hitting a wooden crate
-sfx|Action/Impacts||Cinematic boom hit|a deep cinematic impact boom with a long rumbling tail
-sfx|Action/Explosions||Huge explosion|a huge explosion with debris falling all around
-sfx|Action/Explosions||Distant explosion|a distant explosion rumbling across a valley
-sfx|Action/Explosions||Exploding car wreck|a car exploding and burning with flames roaring
-sfx|Action/Explosions||Grenade blast|a grenade exploding with shrapnel scattering
-sfx|Action/Explosions||Building demolition|a building demolished with explosive charges and collapsing
-sfx|Action/Explosions||Underwater explosion|a muffled underwater explosion with bubbles rising
-sfx|Action/Explosions||Gas tank blast|a gas tank exploding in a big fireball whoosh
-sfx|Action/Explosions||Firecracker string|a string of firecrackers popping quickly
-sfx|Action/Explosions||Mine blast in tunnel|an explosion echoing inside a mine tunnel with falling rocks
-sfx|Action/Explosions||Dynamite fuse|a dynamite fuse sizzling, then a loud explosion
-sfx|Action/Firearms||Pistol shots|a pistol firing three shots in an alley
-sfx|Action/Firearms||Shotgun pump and fire|a shotgun being pumped and fired
-sfx|Action/Firearms||Machine gun burst|an automatic rifle firing a long burst
-sfx|Action/Firearms||Sniper shot echo|a single sniper rifle shot echoing across mountains
-sfx|Action/Firearms||Revolver cylinder spin|a revolver cylinder spun, then the hammer cocked
-sfx|Action/Firearms||Gun reload|a pistol magazine ejected and a new one inserted and racked
-sfx|Action/Firearms||Silenced pistol|a silenced pistol firing two muffled shots
-sfx|Action/Firearms||Bullet ricochet|bullets ricocheting off metal with whistling whines
-sfx|Action/Firearms||Shell casings falling|empty shell casings bouncing on a concrete floor
-sfx|Action/Firearms||Western gunfight|a western gunfight with revolver shots echoing in a canyon
-sfx|Action/Melee weapons||Sword drawn|a sword being drawn from its metal sheath
-sfx|Action/Melee weapons||Sword clash fight|swords clashing repeatedly in a fight
-sfx|Action/Melee weapons||Arrow hits target|a bow shooting an arrow that hits a wooden target
-sfx|Action/Melee weapons||Arrow volley|a volley of arrows whistling through the air
-sfx|Action/Melee weapons||Axe chopping|an axe chopping into a wooden log
-sfx|Action/Melee weapons||Knife sharpening|a knife being sharpened on a whetstone
-sfx|Action/Melee weapons||Dagger stab|a dagger stabbing into flesh with a wet thrust
-sfx|Action/Melee weapons||Chain whip|a heavy chain swung and whipping the ground
-sfx|Action/Melee weapons||Shield block|a sword hitting a wooden shield with a heavy thud
-sfx|Action/Melee weapons||Spear thrown|a spear thrown and sticking into the ground
-sfx|Action/Melee weapons||Whip crack|a long leather whip cracking sharply in an open arena
-sfx|Action/Melee weapons||Mace on armor|a mace hitting metal armor with a loud clank
-sfx|Action/Destruction||Glass window shattering|a large glass window shattering into pieces
-sfx|Action/Destruction||Wall collapsing|a brick wall collapsing with bricks tumbling
-sfx|Action/Destruction||Wood splintering|a wooden door splintering as it is kicked in
-sfx|Action/Destruction||Car crushed|a car being crushed by a hydraulic press, metal groaning
-sfx|Action/Destruction||Wooden fence smashed|a wooden fence smashed apart with splintering and cracking planks
-sfx|Action/Destruction||Ceramic vase breaks|a ceramic vase falling and breaking into pieces
-sfx|Action/Destruction||Bones crunching|bones crunching and snapping under a heavy blow in a fight
-sfx|Action/Destruction||Metal tearing|thick metal sheets tearing and screeching
-sfx|Action/Destruction||Ice cracking|a thick sheet of ice cracking and breaking apart
-sfx|Action/Destruction||Bridge collapse|a wooden bridge creaking and collapsing into a river
-sfx|Action/Falls and crashes||Body falling down stairs|a person tumbling down wooden stairs
-sfx|Action/Falls and crashes||Two car collision|two cars colliding with crunching metal and breaking glass
-sfx|Action/Falls and crashes||Bicycle crash on asphalt|a bicycle crashing on asphalt with metal scraping
-sfx|Action/Falls and crashes||Shelf collapsing|a shelf collapsing with dishes and objects crashing down
-sfx|Action/Falls and crashes||Pile of boxes falls|a pile of cardboard boxes tumbling down
-sfx|Action/Falls and crashes||Pots and pans falling|pots and pans clattering onto a kitchen floor
-sfx|Action/Falls and crashes||Falling into water|a person falling into a river with a big splash
-sfx|Action/Falls and crashes||Debris landing|rubble and debris raining down on a metal roof
-sfx|Action/Whooshes||Fast whoosh|a fast whoosh passing from left to right
-sfx|Action/Whooshes||Sword swing whoosh|a sword swung through the air with a sharp swish
-sfx|Action/Whooshes||Low heavy whoosh|a deep heavy whoosh passing close by
-sfx|Action/Whooshes||Reverse whoosh riser|a reversed whoosh rising to a sudden stop
-sfx|Action/Whooshes||Fire whoosh|a burst of fire whooshing up
-sfx|Action/Whooshes||Air swipe|a quick hand swiping through the air
-sfx|Action/Whooshes||Arrow fly by|an arrow flying close past the ear
-sfx|Action/Whooshes||Cloth whoosh|a cape swirling through the air with a fluttering whoosh
-sfx|Action/Whooshes||Rocket fly by|a small rocket whizzing past at high speed
-sfx|Action/Whooshes||Swirling wind whoosh|a swirling whoosh spinning around the listener
-sfx|Action/Military||Cannon fire|a cannon firing in the distance
-sfx|Action/Military||Battle tank tracks|a heavy tank rolling forward with clanking tracks
-sfx|Action/Military||Artillery barrage|an artillery barrage with shells whistling and exploding
-sfx|Action/Military||Air raid siren|an air raid siren winding up and wailing over a city
-sfx|Action/Military||Fighter jet strafing|a fighter jet diving and firing its cannon
-sfx|Action/Military||Military drill shouts|boots stomping and a sergeant shouting orders on a parade ground
-sfx|Action/Military||Helicopter gunship|a military helicopter hovering and firing rockets
-sfx|Action/Military||Morse radio|a military radio crackling with morse code beeps
-sfx|Science fiction and fantasy/Science fiction||Laser gun blasts|a futuristic laser gun firing several bright zapping shots
-sfx|Science fiction and fantasy/Science fiction||Spaceship fly by|a spaceship engine humming and passing by overhead
-sfx|Science fiction and fantasy/Science fiction||Teleporter beam out|a teleportation whoosh with electric crackles and a shimmer
-sfx|Science fiction and fantasy/Science fiction||Force field hum|an energy force field humming and crackling when touched
-sfx|Science fiction and fantasy/Science fiction||Starship bridge hum|the deep engine hum of a starship bridge with soft computer beeps
-sfx|Science fiction and fantasy/Science fiction||Warp drive jump|a warp drive charging up and jumping with a huge whoosh
-sfx|Science fiction and fantasy/Science fiction||Airlock hiss|a spaceship airlock door hissing and sliding open
-sfx|Science fiction and fantasy/Science fiction||Plasma cannon|a heavy plasma cannon charging and firing a deep blast
-sfx|Science fiction and fantasy/Science fiction||Alien transmission|a distorted alien radio transmission with strange warbling tones
-sfx|Science fiction and fantasy/Science fiction||Hologram flicker|a hologram flickering on with a glitchy electronic shimmer
-sfx|Science fiction and fantasy/Science fiction||Lightsaber style hum|an energy blade igniting, humming and swinging
-sfx|Science fiction and fantasy/Science fiction||Hover car pass|a hover vehicle gliding past with a smooth electric whine
-sfx|Science fiction and fantasy/Science fiction||Cryo pod opening|a cryogenic pod hissing open with cold mist venting
-sfx|Science fiction and fantasy/Science fiction||Spaceship alarm|a red alert alarm blaring inside a spaceship corridor
-sfx|Science fiction and fantasy/Science fiction||Tractor beam|a tractor beam pulsing with a low throbbing drone
-sfx|Science fiction and fantasy/Science fiction||Space station creak|metal creaking and distant thrumming inside an orbiting space station
-sfx|Science fiction and fantasy/Robots||Robot servos|a robot moving with servo motors whirring and beeps
-sfx|Science fiction and fantasy/Robots||Robot footsteps|a heavy robot walking with metallic clanking steps
-sfx|Science fiction and fantasy/Robots||Robot power up|a robot booting up with rising electronic tones and clicks
-sfx|Science fiction and fantasy/Robots||Robot power down|a robot shutting down with a descending whine
-sfx|Science fiction and fantasy/Robots||Droid chirps|a small droid chirping and beeping happily
-sfx|Science fiction and fantasy/Robots||Mech transformation|a giant robot transforming with gears and metal clanks
-sfx|Science fiction and fantasy/Robots||Robotic arm|an industrial robotic arm swiveling with hydraulic hisses
-sfx|Science fiction and fantasy/Robots||Robot malfunction|a robot malfunctioning with sparks, stuttering beeps and grinding
-sfx|Science fiction and fantasy/Magic||Magic spell sparkle|a magical spell with sparkling chimes
-sfx|Science fiction and fantasy/Magic||Fireball spell|a fireball spell conjured and launched with a roaring whoosh
-sfx|Science fiction and fantasy/Magic||Ice spell|an ice spell freezing with crystalline crackling
-sfx|Science fiction and fantasy/Magic||Healing spell|a soft healing spell with warm shimmering tones
-sfx|Science fiction and fantasy/Magic||Magic portal|a magic portal opening with a swirling deep hum
-sfx|Science fiction and fantasy/Magic||Fairy dust|fairy dust sprinkled with tiny tinkling bells
-sfx|Science fiction and fantasy/Magic||Lightning spell|a wizard casting a lightning bolt with crackling thunder
-sfx|Science fiction and fantasy/Magic||Potion bubbling|a magic potion bubbling in a cauldron
-sfx|Science fiction and fantasy/Magic||Wand flick|a magic wand flicked with a bright twinkle
-sfx|Science fiction and fantasy/Magic||Enchanted shield|a magical shield appearing with a resonant hum
-sfx|Science fiction and fantasy/Magic||Spell backfires|a magic spell exploding with a puff of smoke
-sfx|Science fiction and fantasy/Magic||Dark curse|a dark curse cast with low ominous whispers and a rumble
-sfx|Science fiction and fantasy/Magic||Dragon fire breath|a dragon breathing a long blast of fire
-sfx|Science fiction and fantasy/Magic||Treasure chest glow|a magic treasure chest opening with a shimmering glow sound
-sfx|Science fiction and fantasy/Horror||Creepy whispers|creepy whispers echoing in a dark room
-sfx|Science fiction and fantasy/Horror||Haunted house creaks|floorboards creaking and doors groaning in a haunted house
-sfx|Science fiction and fantasy/Horror||Ghost moan|a ghostly moan drifting through an empty hall
-sfx|Science fiction and fantasy/Horror||Horror stinger|a sudden horror stinger with screeching violins
-sfx|Science fiction and fantasy/Horror||Heartbeat drone horror|a slow heartbeat under a dark droning tension
-sfx|Science fiction and fantasy/Horror||Chains dragging|heavy chains dragging on a stone floor in a dungeon
-sfx|Science fiction and fantasy/Horror||Nails on chalkboard|fingernails scraping slowly down a chalkboard
-sfx|Science fiction and fantasy/Horror||Evil laugh|a sinister evil laugh echoing in a castle
-sfx|Science fiction and fantasy/Horror||Skeleton bones rattling|a skeleton's dry bones rattling and clattering in a crypt
-sfx|Science fiction and fantasy/Horror||Clock in empty house|a clock ticking loudly in a silent empty house, then stopping
-sfx|Science fiction and fantasy/Horror||Scratching in wall|something scratching inside a wall in the dark
-sfx|Science fiction and fantasy/Horror||Flesh squelch|a wet gory squelch of flesh being torn
-sfx|Science fiction and fantasy/Horror||Music box horror|an out of tune music box slowing down eerily
-sfx|Science fiction and fantasy/Horror||Crow and church bell|a crow cawing and a church bell tolling once at midnight
-sfx|Science fiction and fantasy/Monsters||Monster roar|a huge monster roaring in a cave
-sfx|Science fiction and fantasy/Monsters||Zombie horde groans|a horde of zombies groaning and shuffling closer in the dark
-sfx|Science fiction and fantasy/Monsters||Creature growl|a deep creature growling from the shadows
-sfx|Science fiction and fantasy/Monsters||Giant footsteps|giant footsteps shaking the ground with deep booming thuds
-sfx|Science fiction and fantasy/Monsters||Slime creature|a slimy creature squelching and gurgling
-sfx|Science fiction and fantasy/Monsters||Alien creature screech|an alien creature screeching loudly inside a metal ventilation shaft
-sfx|Science fiction and fantasy/Monsters||Werewolf howl|a werewolf growling then howling at the moon in a forest
-sfx|Science fiction and fantasy/Monsters||Vampire hiss|a vampire hissing angrily with bared fangs in a stone crypt
-sfx|Interface and tech/Interface||Soft UI button click|a soft short button click of a user interface
-sfx|Interface and tech/Interface||Toggle switch on|a crisp toggle switch clicking on
-sfx|Interface and tech/Interface||Menu hover tick|a tiny tick sound as a menu item is highlighted
-sfx|Interface and tech/Interface||Error buzzer|a short low error buzzer for a wrong answer
-sfx|Interface and tech/Interface||Success chime|a bright two note success chime
-sfx|Interface and tech/Interface||Swipe transition|a quick digital swipe transition sound
-sfx|Interface and tech/Interface||Pop up open|a bubbly pop as a window opens
-sfx|Interface and tech/Interface||Typing in text field|soft digital keystrokes typing in a text field
-sfx|Interface and tech/Interface||Loading complete|a rising tone as a loading bar completes
-sfx|Interface and tech/Interface||Delete trash sound|crumpled paper sound for moving a file to the trash
-sfx|Interface and tech/Interface||Level up jingle|a short game level up jingle with ascending notes
-sfx|Interface and tech/Interface||Countdown beeps|three short countdown beeps and a long final beep
-sfx|Interface and tech/Notifications||Notification chime|a short positive notification chime with two soft bell notes
-sfx|Interface and tech/Notifications||New message ping|a soft ping for a new message
-sfx|Interface and tech/Notifications||Calendar reminder|a gentle marimba reminder tone playing three rising notes
-sfx|Interface and tech/Notifications||Email received|a whoosh and ding when an email arrives
-sfx|Interface and tech/Notifications||Warning alert|an urgent repeating warning alert tone
-sfx|Interface and tech/Notifications||Low battery|a descending low battery warning beep
-sfx|Interface and tech/Notifications||Upload done|a light upward swoosh confirming an upload
-sfx|Interface and tech/Notifications||Like pop|a cute pop sound for a like
-sfx|Interface and tech/Electronics||Neon light buzz|the electric buzz of a flickering neon light
-sfx|Interface and tech/Electronics||Electric sparks|electric sparks crackling from a broken cable
-sfx|Interface and tech/Electronics||Transformer hum|a high voltage transformer humming steadily in an electrical substation
-sfx|Interface and tech/Electronics||Radio static tuning|an old radio tuning through static and stations
-sfx|Interface and tech/Electronics||TV static noise|a television showing static white noise
-sfx|Interface and tech/Electronics||Power surge|a power surge with buzzing and lights popping off
-sfx|Interface and tech/Electronics||Speaker feedback|a microphone feedback squeal through a speaker
-sfx|Interface and tech/Electronics||Tesla coil|a tesla coil discharging with loud zapping arcs
-sfx|Interface and tech/Phones||Old phone ringing|an old rotary phone ringing loudly
-sfx|Interface and tech/Phones||Rotary dial|a rotary phone dial turning and clicking back
-sfx|Interface and tech/Phones||Smartphone vibrate|a smartphone vibrating on a wooden table
-sfx|Interface and tech/Phones||Phone busy tone|a telephone line busy tone beeping through a handset earpiece
-sfx|Interface and tech/Phones||Phone hang up|a phone handset put down on its cradle
-sfx|Interface and tech/Phones||Phone camera shutter|a smartphone camera shutter clicking several times in a row
-sfx|Interface and tech/Computers||Mechanical keyboard|fast typing on a mechanical keyboard
-sfx|Interface and tech/Computers||Mouse clicks|a computer mouse clicking several times
-sfx|Interface and tech/Computers||Hard drive seek|an old hard drive spinning and clicking
-sfx|Interface and tech/Computers||Server room hum|cooling fans humming in a server room
-sfx|Interface and tech/Computers||Computer startup|a desktop computer starting up with fans spinning
-sfx|Interface and tech/Computers||Laser printer|a laser printer printing and pushing out pages
-sfx|Interface and tech/Retro tech||Dial up modem|a dial up modem connecting with screeches and tones
-sfx|Interface and tech/Retro tech||Cassette tape insert|a cassette inserted into a player and play pressed
-sfx|Interface and tech/Retro tech||VHS tape rewind|a VHS tape rewinding in a video recorder
-sfx|Interface and tech/Retro tech||Typewriter carriage bell|an old typewriter typing with a bell and carriage return
-sfx|Interface and tech/Retro tech||Film projector|an old film projector running with a clicking reel
-sfx|Interface and tech/Retro tech||Vinyl crackle|a needle dropped on a vinyl record, crackling
-sfx|Interface and tech/Retro tech||Floppy disk drive|a floppy disk drive reading with grinding noises
-sfx|Interface and tech/Retro tech||Arcade machine|an old arcade machine with bleeps and coin insert
-sfx|Interface and tech/Retro tech||Polaroid camera|an instant camera clicking and ejecting a photo
-sfx|Interface and tech/Retro tech||Tube TV switching on|an old CRT television turning on with a high pitched whine
-sfx|Work and industry/Construction||Jackhammer on pavement|a jackhammer breaking up pavement on a busy construction site
-sfx|Work and industry/Construction||Cement mixer turning|a cement mixer truck drum turning and churning wet concrete
-sfx|Work and industry/Construction||Nail gun bursts|a pneumatic nail gun firing nails into wooden beams
-sfx|Work and industry/Construction||Bulldozer pushing rubble|a bulldozer engine roaring as it pushes rubble and rocks
-sfx|Work and industry/Construction||Excavator digging|an excavator bucket scraping and digging into rocky soil
-sfx|Work and industry/Construction||Scaffolding clanks|metal scaffolding poles clanking as workers assemble them
-sfx|Work and industry/Construction||Crane beeping reverse|a construction crane motor whining with a reversing beep alarm
-sfx|Work and industry/Construction||Pile driver pounding|a pile driver pounding a steel post into the ground
-sfx|Work and industry/Construction||Bricklayer trowel|a trowel scraping mortar and tapping bricks into place
-sfx|Work and industry/Construction||Roof tiles laid|clay roof tiles clinking as they are stacked and laid on a roof
-sfx|Work and industry/Construction||Concrete saw cutting|a concrete saw screaming as it cuts through a slab
-sfx|Work and industry/Construction||Dumpster rubble drop|rubble and planks dumped into a metal dumpster with a crash
-sfx|Work and industry/Tools||Power drill into wall|a power drill boring into a brick wall
-sfx|Work and industry/Tools||Chainsaw cutting log|a chainsaw starting up and cutting through a thick log
-sfx|Work and industry/Tools||Hand saw on plank|a hand saw cutting back and forth through a wooden plank
-sfx|Work and industry/Tools||Hammering nails|a hammer driving nails into a wooden board
-sfx|Work and industry/Tools||Circular saw|a circular saw spinning up and ripping through plywood
-sfx|Work and industry/Tools||Angle grinder sparks|an angle grinder cutting a steel bar with a high pitched screech
-sfx|Work and industry/Tools||Sanding wood by hand|sandpaper rubbing back and forth on a piece of wood
-sfx|Work and industry/Tools||Wrench ratchet|a ratchet wrench clicking while tightening a bolt
-sfx|Work and industry/Tools||Screwdriver turning|a screwdriver squeaking as it turns a tight screw
-sfx|Work and industry/Tools||Toolbox rummaging|hands rummaging through a metal toolbox full of tools
-sfx|Work and industry/Tools||Welding torch|an arc welder buzzing and crackling in a workshop
-sfx|Work and industry/Tools||Air compressor|an air compressor motor running and releasing pressure with a hiss
-sfx|Work and industry/Tools||Lawn mower|a petrol lawn mower starting and mowing grass
-sfx|Work and industry/Tools||Leaf blower|a leaf blower roaring in a garden
-sfx|Work and industry/Factory||Factory machines|an industrial factory hall with heavy machines running
-sfx|Work and industry/Factory||Conveyor belt|a conveyor belt rattling and carrying metal parts
-sfx|Work and industry/Factory||Hydraulic press|a hydraulic press stamping metal with a loud thump and hiss
-sfx|Work and industry/Factory||Steam whistle shift|a factory steam whistle signaling the end of a shift
-sfx|Work and industry/Factory||Bottling line|glass bottles clinking along a bottling line
-sfx|Work and industry/Factory||Metal lathe|a metal lathe spinning and cutting steel with shrill scraping
-sfx|Work and industry/Factory||Forklift beeping|a forklift driving and beeping in a warehouse
-sfx|Work and industry/Factory||Steel mill furnace|a roaring steel mill furnace with molten metal pouring
-sfx|Work and industry/Farm work||Tractor plowing field|a tractor engine chugging as it plows a field
-sfx|Work and industry/Farm work||Milking by hand|milk squirting into a metal bucket during hand milking
-sfx|Work and industry/Farm work||Hay pitchfork|a pitchfork tossing hay in a barn
-sfx|Work and industry/Farm work||Wood splitting|an axe splitting firewood logs on a chopping block
-sfx|Work and industry/Farm work||Barn door rolling|a big wooden barn door rolling on its rusty rail
-sfx|Work and industry/Farm work||Water pump handle|an old hand water pump creaking and gushing water into a bucket
-sfx|Leisure and sports/Ball sports||Tennis rally|a tennis ball being hit back and forth on a court
-sfx|Leisure and sports/Ball sports||Basketball bounce|a basketball bouncing on a wooden gym floor
-sfx|Leisure and sports/Ball sports||Basketball swish|a basketball swishing through the net after a shot
-sfx|Leisure and sports/Ball sports||Football kick|a football kicked hard on a grass field
-sfx|Leisure and sports/Ball sports||Golf swing|a golf club swinging and hitting a ball off the tee
-sfx|Leisure and sports/Ball sports||Golf ball in cup|a golf putt rolling and dropping into the cup
-sfx|Leisure and sports/Ball sports||Baseball bat crack|a baseball bat cracking as it hits a fast pitch
-sfx|Leisure and sports/Ball sports||Ping pong rally|a ping pong ball bouncing quickly back and forth on a table
-sfx|Leisure and sports/Ball sports||Bowling strike|a bowling ball rolling down the lane and knocking all the pins
-sfx|Leisure and sports/Ball sports||Volleyball spike|a volleyball spiked hard and hitting the sand
-sfx|Leisure and sports/Ball sports||Rugby tackle|rugby players colliding in a heavy tackle with grunts
-sfx|Leisure and sports/Ball sports||Billiard break|billiard balls breaking and clacking on a pool table
-sfx|Leisure and sports/Ball sports||Squash ball echo|a squash ball smacking against the walls of a court
-sfx|Leisure and sports/Ball sports||Ice hockey slap shot|an ice hockey slap shot hitting the boards of the rink
-sfx|Leisure and sports/Other sports||Referee whistle|a referee whistle blowing sharply three times
-sfx|Leisure and sports/Other sports||Boxing ring bell|a boxing ring bell ringing to start the round
-sfx|Leisure and sports/Other sports||Skateboard tricks|a skateboard rolling and landing a trick on concrete
-sfx|Leisure and sports/Other sports||Ice skating blades|ice skates gliding and scraping on an ice rink
-sfx|Leisure and sports/Other sports||Swimmer diving|a swimmer diving into a pool and swimming strokes
-sfx|Leisure and sports/Other sports||Weightlifting drop|heavy barbell weights dropped on a gym floor
-sfx|Leisure and sports/Other sports||Fencing bout|fencing foils clashing quickly during a bout
-sfx|Leisure and sports/Other sports||Starting pistol race|a starting pistol fired and runners sprinting off
-sfx|Leisure and sports/Other sports||Skiing downhill|skis carving through snow on a steep slope
-sfx|Leisure and sports/Other sports||Archery practice|a bow string released and an arrow thudding into a target
-sfx|Leisure and sports/Games||Dice rolling|dice rolling and clattering on a wooden board
-sfx|Leisure and sports/Games||Shuffling cards|a deck of playing cards being shuffled and dealt
-sfx|Leisure and sports/Games||Chess pieces|chess pieces placed on a wooden board with soft clicks
-sfx|Leisure and sports/Games||Slot machine jackpot|a slot machine spinning and paying out a jackpot of coins
-sfx|Leisure and sports/Games||Pinball machine|a pinball machine with bumpers, bells and flippers
-sfx|Leisure and sports/Games||Roulette wheel|a roulette wheel spinning and the ball bouncing into a slot
-sfx|Leisure and sports/Games||Jigsaw puzzle|jigsaw puzzle pieces poured out of a box onto a table
-sfx|Leisure and sports/Games||Video game coin|a retro video game coin collect sound
-sfx|Leisure and sports/Games||Board game timer|a sand timer flipped and a game buzzer ringing
-sfx|Leisure and sports/Games||Marbles rolling|glass marbles rolling and clicking on a wooden floor
-sfx|Leisure and sports/Celebrations||Fireworks finale|fireworks exploding and crackling in the night sky
-sfx|Leisure and sports/Celebrations||Champagne cork|a champagne cork popping and fizzing
-sfx|Leisure and sports/Celebrations||Party horn blowout|a paper party horn blowing and unrolling at a birthday
-sfx|Leisure and sports/Celebrations||Balloon popping|a balloon inflated then popping loudly
-sfx|Leisure and sports/Celebrations||Confetti cannon|a confetti cannon firing with paper raining down
-sfx|Leisure and sports/Celebrations||Birthday cheers|people cheering and clapping as candles are blown out
-sfx|Leisure and sports/Celebrations||Wedding bells|wedding bells ringing joyfully from a village church tower
-sfx|Leisure and sports/Celebrations||Glasses clinking toast|many glasses clinking in a crowded toast
-sfx|Leisure and sports/Celebrations||Sparkler fizz|a handheld sparkler fizzing and crackling on a quiet evening
-sfx|Leisure and sports/Celebrations||New year horns|noisemakers and horns blowing at a new year party
-sfx|Leisure and sports/Fairground||Carousel organ|a carousel turning with its organ music playing
-sfx|Leisure and sports/Fairground||Roller coaster|a roller coaster rattling and people screaming
-sfx|Leisure and sports/Fairground||Shooting gallery|a fairground shooting gallery with pops and tin targets falling
-sfx|Leisure and sports/Fairground||Bumper cars|bumper cars colliding with electric buzzing
-sfx|Leisure and sports/Fairground||Fairground barker|a busy fairground with rides and a bell ringing for a prize
-sfx|Leisure and sports/Fairground||Ferris wheel creak|a ferris wheel creaking slowly as it turns
-sfx|Cartoon and music cues/Cartoon||Cartoon spring boing|a cartoon boing of a spring bouncing up and down
-sfx|Cartoon and music cues/Cartoon||Slide whistle fall|a slide whistle falling down from high to low pitch
-sfx|Cartoon and music cues/Cartoon||Cartoon zip away|cartoon feet spinning fast then zipping away with a whoosh
-sfx|Cartoon and music cues/Cartoon||Bonk on the head|a cartoon bonk on the head followed by tweeting birds
-sfx|Cartoon and music cues/Cartoon||Cream pie splat|a cartoon splat of a cream pie hitting a face
-sfx|Cartoon and music cues/Cartoon||Rubber duck squeak|a rubber duck squeezed and squeaking in a bathtub
-sfx|Cartoon and music cues/Cartoon||Cartoon cork pop|a cartoon cork pop with a springy wobble
-sfx|Cartoon and music cues/Cartoon||Tiptoe sneaking|cartoon tiptoe sneaking steps with plucked pizzicato strings
-sfx|Cartoon and music cues/Cartoon||Falling whistle crash|a long whistle falling down, then a distant crash
-sfx|Cartoon and music cues/Cartoon||Kazoo silly laugh|a kazoo playing a silly mocking laugh
-sfx|Cartoon and music cues/Cartoon||Cartoon eye blinks|two quick cartoon eye blinks with soft clicking pops
-sfx|Cartoon and music cues/Cartoon||Clown horn honk|a clown bicycle horn honking three times in a circus
-sfx|Cartoon and music cues/Cartoon||Cartoon gulp|a cartoon character gulping and swallowing loudly in fear
-sfx|Cartoon and music cues/Cartoon||Wobbly jelly|a wobbly jelly sound bouncing and shaking on a plate
-sfx|Cartoon and music cues/Musical cues||Sad trombone|a sad trombone playing wah wah wah after a failure
-sfx|Cartoon and music cues/Musical cues||Drum roll and crash|a snare drum roll building up and ending with a cymbal crash
-sfx|Cartoon and music cues/Musical cues||Rimshot after joke|a drummer playing a rimshot after a joke in a comedy club
-sfx|Cartoon and music cues/Musical cues||Big orchestral hit|a big orchestral hit with brass and timpani in a concert hall
-sfx|Cartoon and music cues/Musical cues||Dreamy harp glissando|a dreamy harp glissando sweeping up for a flashback
-sfx|Cartoon and music cues/Musical cues||Rising suspense strings|tense suspense strings rising slowly to a sudden stop
-sfx|Cartoon and music cues/Musical cues||Victory fanfare|a short triumphant brass victory fanfare with timpani
-sfx|Cartoon and music cues/Musical cues||Game over tune|a sad descending game over tune played on a chiptune synth
-sfx|Cartoon and music cues/Musical cues||Piano chord stab|a dramatic low piano chord stab with long sustain
-sfx|Cartoon and music cues/Musical cues||Gong strike|a large gong struck and resonating in a temple hall
-sfx|Cartoon and music cues/Musical cues||Cymbal swell|a cymbal swell rising with mallets to a bright crash
-sfx|Cartoon and music cues/Musical cues||Ta da brass sting|a cheerful ta da brass sting for a magic trick reveal
-sfx|Cartoon and music cues/Bells and chimes||Church bells peal|church bells ringing a full peal from a stone tower
-sfx|Cartoon and music cues/Bells and chimes||Garden wind chimes|metal wind chimes tinkling gently in a garden breeze
-sfx|Cartoon and music cues/Bells and chimes||Shop door bell|a little bell tinkling as a shop door opens
-sfx|Cartoon and music cues/Bells and chimes||School hand bell|a teacher shaking a brass hand bell in a courtyard
-sfx|Cartoon and music cues/Bells and chimes||Tibetan singing bowl|a tibetan singing bowl struck and ringing with a long hum
-sfx|Cartoon and music cues/Bells and chimes||Sleigh bells|sleigh bells jingling in rhythm on a winter night
-sfx|Cartoon and music cues/Bells and chimes||Alpine cowbell|a large swiss cowbell clanking slowly in a mountain pasture
-sfx|Cartoon and music cues/Bells and chimes||Ship bell on deck|a brass ship bell ringing on a wooden deck
-sfx|Cartoon and music cues/Bells and chimes||Temple bell|a huge bronze temple bell struck with a wooden log
-sfx|Cartoon and music cues/Bells and chimes||Reception desk bell|a reception desk bell dinged twice in a hotel lobby
-sfx|Cartoon and music cues/Bells and chimes||Tubular bells|tubular bells chiming slowly in a large concert hall
-sfx|Cartoon and music cues/Bells and chimes||Glockenspiel melody|a glockenspiel playing a light twinkling melody
-sfx|Cartoon and music cues/Bells and chimes||Clock tower chime|a large clock tower chiming the hour over a city square
-sfx|Cartoon and music cues/Bells and chimes||Triangle ding|an orchestral triangle struck once and ringing out
+sfx|Nature/Rain||Rain on tin roof|heavy rain falling on a tin roof with distant thunder|10
+sfx|Nature/Rain||Light rain on leaves|light rain pattering on leaves in a quiet forest|10
+sfx|Nature/Rain||Rain on car windshield|rain drumming on a car windshield heard from inside the car|10
+sfx|Nature/Rain||Drizzle on pavement|soft drizzle on a city pavement with occasional dripping gutters|10
+sfx|Nature/Rain||Rain on tent fabric|steady rain tapping on a nylon tent heard from inside|10
+sfx|Nature/Rain||Monsoon downpour|torrential monsoon downpour hammering the ground and overflowing gutters|10
+sfx|Nature/Rain||Rain on window pane|raindrops hitting a window pane in a quiet bedroom|10
+sfx|Nature/Rain||Rain on umbrella|rain falling on an open umbrella while someone stands still|8
+sfx|Nature/Rain||Rain on a pond|rain falling on the still surface of a pond, gentle plops|8
+sfx|Nature/Rain||Rain in gutter pipe|rainwater gurgling and rushing down a metal drainpipe|8
+sfx|Nature/Rain||Rain on greenhouse glass|rain spattering on the glass roof of a greenhouse|10
+sfx|Nature/Rain||Sudden summer shower|a sudden summer shower starting softly then pouring hard|10
+sfx|Nature/Rain||Rain on wooden porch|rain dripping from the eaves onto a wooden porch|8
+sfx|Nature/Rain||Rain stopping slowly|heavy rain gradually fading into last dripping drops|10
+sfx|Nature/Storms and thunder||Close thunder clap|a sharp thunder clap very close followed by a long rumble|8
+sfx|Nature/Storms and thunder||Distant rolling thunder|low thunder rolling far away across open plains|8
+sfx|Nature/Storms and thunder||Violent thunderstorm|violent thunderstorm with pouring rain and repeated thunder|10
+sfx|Nature/Storms and thunder||Lightning strike crack|a lightning strike hitting a tree with a loud crack|3
+sfx|Nature/Storms and thunder||Hailstorm on roof|hailstones pounding on a roof and car bodies|8
+sfx|Nature/Storms and thunder||Tropical storm gusts|tropical storm with roaring gusts and lashing rain|10
+sfx|Nature/Storms and thunder||Thunder over mountains|thunder echoing between mountain valleys with a long fading rumble|10
+sfx|Nature/Storms and thunder||Thunder heard indoors|muffled thunder heard from inside a house with rain on windows|10
+sfx|Nature/Storms and thunder||Approaching storm|an approaching storm with rising wind and first heavy drops|10
+sfx|Nature/Storms and thunder||Tornado roar|a tornado roaring like a freight train with debris flying|10
+sfx|Nature/Wind||Howling storm wind|strong wind howling through trees during a storm|10
+sfx|Nature/Wind||Autumn breeze in leaves|gentle breeze rustling dry autumn leaves|8
+sfx|Nature/Wind||Wind through window gap|wind whistling through the gap of an old window|8
+sfx|Nature/Wind||Desert wind with sand|dry desert wind blowing sand across dunes|10
+sfx|Nature/Wind||Wind on mountain summit|fierce wind buffeting a mountain summit with low roar|10
+sfx|Nature/Wind||Wind in tall grass|soft wind sweeping through a field of tall grass|8
+sfx|Nature/Wind||Blizzard wind|icy blizzard wind howling with snow blowing hard|10
+sfx|Nature/Wind||Wind in pine forest|wind sighing through a pine forest with creaking trunks|10
+sfx|Nature/Wind||Flag flapping in wind|a cloth flag flapping and snapping in strong wind|6
+sfx|Nature/Wind||Wind around a chimney|wind moaning around a chimney on a cold night|10
+sfx|Nature/Wind||Gusty coastal wind|gusty wind on a coastal cliff with distant surf|10
+sfx|Nature/Wind||Wind chimes in breeze|wind chimes tinkling gently in a light breeze|8
+sfx|Nature/Ocean and waves||Waves on rocky shore|ocean waves crashing on a rocky shore|10
+sfx|Nature/Ocean and waves||Calm beach waves|calm waves lapping on a sandy beach|10
+sfx|Nature/Ocean and waves||Big surf breaking|big surf waves breaking with a powerful roar|10
+sfx|Nature/Ocean and waves||Waves on pebble beach|waves pulling back over a pebble beach with rattling stones|8
+sfx|Nature/Ocean and waves||Underwater ocean sound|muffled underwater ocean sound with bubbles and currents|10
+sfx|Nature/Ocean and waves||Sea cave wave booms|waves booming inside a sea cave with deep echo|10
+sfx|Nature/Ocean and waves||Stormy sea|stormy sea with huge waves and howling wind|10
+sfx|Nature/Ocean and waves||Waves under a pier|waves sloshing against the wooden pillars of a pier|8
+sfx|Nature/Ocean and waves||Tide pool trickle|water trickling in rock pools at low tide|8
+sfx|Nature/Ocean and waves||Distant ocean surf|distant ocean surf heard from behind sand dunes|10
+sfx|Nature/Ocean and waves||Waves hitting a seawall|waves slamming against a concrete seawall with spray|6
+sfx|Nature/Ocean and waves||Night ocean ripples|gentle ripples on a calm sea at night|10
+sfx|Nature/Rivers and streams||Mountain stream|clear mountain stream flowing fast over rocks and small falls|10
+sfx|Nature/Rivers and streams||Roaring waterfall|powerful waterfall roaring into a deep pool with spray|10
+sfx|Nature/Rivers and streams||Lazy river flow|wide slow river flowing gently past reeds|10
+sfx|Nature/Rivers and streams||Babbling brook|small brook babbling over pebbles in a meadow|10
+sfx|Nature/Rivers and streams||River rapids|whitewater river rapids rushing loudly over big boulders|10
+sfx|Nature/Rivers and streams||Small cascade|small cascade splashing into a rock pool|8
+sfx|Nature/Rivers and streams||Spring snowmelt torrent|swollen torrent of snowmelt rushing down a gorge|10
+sfx|Nature/Rivers and streams||Stream under a bridge|stream gurgling under a small stone bridge with echo|10
+sfx|Nature/Rivers and streams||Ice cracking on river|river ice cracking and groaning in early spring|8
+sfx|Nature/Rivers and streams||Forest creek trickle|thin forest creek trickling between mossy stones|10
+sfx|Nature/Water drops and splashes||Cave drips|water dripping slowly in a cave with echo|8
+sfx|Nature/Water drops and splashes||Stone splash in lake|a stone thrown into a lake, splash|2
+sfx|Nature/Water drops and splashes||Leaky faucet drip|single water drops falling into a metal sink at a steady rhythm|6
+sfx|Nature/Water drops and splashes||Big splash into water|a heavy object falling into deep water with a big splash|3
+sfx|Nature/Water drops and splashes||Pebbles skipping|a flat stone skipping across a lake surface several times|4
+sfx|Nature/Water drops and splashes||Bubbles rising|air bubbles rising and popping in a water tank|6
+sfx|Nature/Water drops and splashes||Puddle splash|a foot splashing into a shallow puddle|2
+sfx|Nature/Water drops and splashes||Water poured on rocks|water poured over hot stones in a sauna with hissing steam|5
+sfx|Nature/Water drops and splashes||Bucket emptied|a full bucket of water emptied onto concrete|4
+sfx|Nature/Water drops and splashes||Drops in a well|water drops falling into a deep stone well with long echo|5
+sfx|Nature/Water drops and splashes||Fish jumping|a small fish jumping out of a pond and splashing back|3
+sfx|Nature/Water drops and splashes||Dripping after rain|leaves dripping water onto the ground after rain|8
+sfx|Nature/Water drops and splashes||Hose spray|a garden hose spraying water on a lawn|8
+sfx|Nature/Water drops and splashes||Diving into a pool|someone diving into a swimming pool, splash and bubbles|4
+sfx|Nature/Ice and snow||Snow crunching|boots crunching slowly through fresh dry snow|6
+sfx|Nature/Ice and snow||Icicle breaking|an icicle snapping and shattering on frozen ground|3
+sfx|Nature/Ice and snow||Frozen lake booming|a frozen lake booming and pinging as the ice shifts|8
+sfx|Nature/Ice and snow||Glacier calving|a glacier calving with a huge crack and ice crashing into water|8
+sfx|Nature/Ice and snow||Snow falling from roof|a heavy block of snow sliding off a roof and thudding|3
+sfx|Nature/Ice and snow||Skating on ice|ice skates scraping and gliding on a frozen pond|6
+sfx|Nature/Ice and snow||Ice cubes in glass|ice cubes clinking and cracking in a glass|3
+sfx|Nature/Ice and snow||Avalanche rumble|a distant avalanche rumbling down a mountain|10
+sfx|Nature/Ice and snow||Sleet on window|sleet ticking against a window pane|8
+sfx|Nature/Ice and snow||Hail on snow|small hail falling softly on a snowy field|8
+sfx|Nature/Fire||Campfire crackling|crackling campfire at night with popping sparks and soft wind|10
+sfx|Nature/Fire||Fireplace logs|fireplace with burning logs crackling softly|10
+sfx|Nature/Fire||Forest fire roar|large forest fire roaring with burning branches cracking|10
+sfx|Nature/Fire||Match strike|match being struck and lighting up|3
+sfx|Nature/Fire||Torch flame whoosh|a burning torch whooshing as it is waved|3
+sfx|Nature/Fire||Bonfire ignition|a bonfire igniting with a whoosh then roaring flames|6
+sfx|Nature/Fire||Wood stove fire|fire burning in a cast iron wood stove with ticking metal|10
+sfx|Nature/Fire||Candle flame flicker|a candle flame flickering softly in a quiet room|8
+sfx|Nature/Fire||Paper burning|a sheet of paper catching fire and burning quickly|6
+sfx|Nature/Fire||Embers hissing water|glowing embers hissing as water is poured on them|5
+sfx|Nature/Fire||Gas burner lighting|a gas burner clicking and lighting with a soft whoosh|3
+sfx|Nature/Fire||Barn fire|a wooden barn burning with beams cracking and collapsing|10
+sfx|Nature/Fire||Blacksmith forge|blacksmith forge fire roaring with bellows pumping air|10
+sfx|Nature/Fire||Dying fire embers|a dying fire with faint crackles and settling embers|10
+sfx|Nature/Earth and rocks||Rockfall in canyon|rocks tumbling down a canyon wall and bouncing|6
+sfx|Nature/Earth and rocks||Landslide rumble|a landslide rumbling with earth and stones sliding down|10
+sfx|Nature/Earth and rocks||Earthquake tremor|a deep earthquake rumble with objects rattling|8
+sfx|Nature/Earth and rocks||Gravel shifting|loose gravel shifting and sliding under weight|4
+sfx|Nature/Earth and rocks||Mud bubbling|thick mud bubbling and popping in a volcanic pool|8
+sfx|Nature/Earth and rocks||Geyser eruption|a geyser hissing then erupting with rushing water|8
+sfx|Nature/Earth and rocks||Volcano rumble|a volcano rumbling with lava bubbling and spitting|10
+sfx|Nature/Earth and rocks||Rocks clacking|two large stones knocked together outdoors|2
+sfx|Nature/Earth and rocks||Sand pouring|dry sand pouring from a bucket onto a pile|4
+sfx|Nature/Earth and rocks||Digging in soil|a shovel digging into moist soil|3
+sfx|Nature/Plants and wood||Tree falling|a large tree creaking then crashing down in a forest|8
+sfx|Nature/Plants and wood||Branch snapping|a dry branch snapping underfoot in the woods|2
+sfx|Nature/Plants and wood||Leaves raked|dry leaves being raked on a lawn|6
+sfx|Nature/Plants and wood||Bamboo knocking|bamboo stalks knocking together in the wind|8
+sfx|Nature/Plants and wood||Old tree creaking|an old tree trunk creaking slowly in the wind|8
+sfx|Nature/Plants and wood||Rustling bushes|bushes rustling as something moves through them|4
+sfx|Nature/Plants and wood||Cornfield rustle|wind rustling through a dry cornfield|8
+sfx|Nature/Plants and wood||Pine cones falling|pine cones dropping onto the forest floor|5
+sfx|Nature/Plants and wood||Firewood split|an axe splitting a log of firewood|2
+sfx|Nature/Plants and wood||Twigs crackling|walking through crackling twigs and dry undergrowth|6
+sfx|Nature/Plants and wood||Wheat field breeze|a breeze waving through a ripe wheat field|8
+sfx|Nature/Plants and wood||Fruit dropping|ripe apples falling from a tree onto grass|5
+sfx|Nature/Plants and wood||Reeds swaying|tall reeds swishing at the edge of a lake|8
+sfx|Nature/Plants and wood||Palm fronds rustling|palm fronds rustling in a warm tropical wind|8
+sfx|Animals/Dogs||Dog barking far away|a dog barking several times in the distance|6
+sfx|Animals/Dogs||Small dog yapping|a small dog yapping excitedly at the front door|4
+sfx|Animals/Dogs||Big dog deep bark|a large dog barking with a deep loud voice|4
+sfx|Animals/Dogs||Puppy whimpering|a puppy whimpering and whining softly|5
+sfx|Animals/Dogs||Dog growling|a dog growling low and menacing|4
+sfx|Animals/Dogs||Dog howling at night|a lone dog howling at night in a village|8
+sfx|Animals/Dogs||Dog panting|a dog panting heavily after running|5
+sfx|Animals/Dogs||Dog lapping water|a dog lapping water from a metal bowl|5
+sfx|Animals/Dogs||Dog shaking off water|a wet dog shaking off water, collar tags jingling|4
+sfx|Animals/Dogs||Kennel of barking dogs|many dogs barking together in a kennel|8
+sfx|Animals/Dogs||Dog sniffing|a dog sniffing around eagerly close up|5
+sfx|Animals/Dogs||Dog claws on parquet|a dog trotting with claws clicking on a wooden floor|5
+sfx|Animals/Cats||Cat meowing|a cat meowing softly near a kitchen door|3
+sfx|Animals/Cats||Cat purring|a cat purring loudly close to the ear|8
+sfx|Animals/Cats||Cat hissing|an angry cat hissing and spitting|3
+sfx|Animals/Cats||Cats fighting|two cats yowling and fighting at night|8
+sfx|Animals/Cats||Kitten mewing|a tiny kitten mewing for its mother|4
+sfx|Animals/Cats||Cat chirping at birds|a cat chattering and chirping at birds through a window|5
+sfx|Animals/Cats||Cat eating dry food|a cat crunching dry food from a bowl|5
+sfx|Animals/Cats||Cat lapping milk|a cat lapping milk from a saucer|5
+sfx|Animals/Cats||Cat scratching post|a cat scratching a sisal post|4
+sfx|Animals/Cats||Cat in heat|a cat yowling long and loud at night|6
+sfx|Animals/Farm animals||Rooster at dawn|a rooster crowing at dawn over a quiet farmyard|5
+sfx|Animals/Farm animals||Cow mooing|a cow mooing in a field|4
+sfx|Animals/Farm animals||Sheep bleating|a flock of sheep bleating on a hillside|8
+sfx|Animals/Farm animals||Goat bleating|a goat bleating loudly in a rocky enclosure|4
+sfx|Animals/Farm animals||Pigs grunting|pigs grunting and squealing in a sty|6
+sfx|Animals/Farm animals||Hens clucking|hens clucking and scratching in a farmyard|8
+sfx|Animals/Farm animals||Ducks quacking|ducks quacking on a farm pond|6
+sfx|Animals/Farm animals||Geese honking|farm geese honking and flapping wings in a yard|6
+sfx|Animals/Farm animals||Turkey gobbling|a turkey gobbling in a barnyard|4
+sfx|Animals/Farm animals||Donkey braying|a donkey braying loudly in a dusty field|5
+sfx|Animals/Farm animals||Cow bells in pasture|cow bells clanking in an alpine pasture|10
+sfx|Animals/Farm animals||Milking a cow|milk squirting into a metal pail during hand milking|6
+sfx|Animals/Farm animals||Chicks peeping|baby chicks peeping under a heat lamp|8
+sfx|Animals/Farm animals||Cattle stampede|a herd of cattle stampeding with thundering hooves|8
+sfx|Animals/Farm animals||Pigs eating slop|pigs eating noisily from a trough|6
+sfx|Animals/Farm animals||Llama humming|a llama humming and snorting softly in its pen|6
+sfx|Animals/Horses||Horse galloping|horse galloping on a dirt road|6
+sfx|Animals/Horses||Horse neighing|a horse neighing loudly in an open paddock|4
+sfx|Animals/Horses||Horse snorting|a horse snorting and blowing air|3
+sfx|Animals/Horses||Hooves on cobblestones|horse hooves clip clopping on cobblestones|6
+sfx|Animals/Horses||Horse trotting|a horse trotting on a gravel path|6
+sfx|Animals/Horses||Horse eating hay|a horse chewing hay in a stable|6
+sfx|Animals/Horses||Herd of wild horses|a herd of wild horses galloping across a plain|8
+sfx|Animals/Horses||Horse whinny in stable|a horse whinnying softly in a wooden stable|4
+sfx|Animals/Birds||Morning birds|birds chirping in the morning in a forest|10
+sfx|Animals/Birds||Seagulls over harbor|seagulls crying and squabbling over a fishing harbor|8
+sfx|Animals/Birds||Crows cawing|crows cawing in tall trees on a grey afternoon|8
+sfx|Animals/Birds||Pigeons cooing|pigeons cooing and flapping on a rooftop|6
+sfx|Animals/Birds||Woodpecker drumming|a woodpecker drumming on a tree trunk|4
+sfx|Animals/Birds||Cuckoo calling|a cuckoo calling in a spring forest|6
+sfx|Animals/Birds||Eagle screech|an eagle screeching high above a canyon|4
+sfx|Animals/Birds||Parrot squawking|a parrot squawking loudly on its perch in a room|4
+sfx|Animals/Birds||Blackbird song|a blackbird singing in a garden at dusk|8
+sfx|Animals/Birds||Skylark over fields|a skylark singing high above open fields|10
+sfx|Animals/Birds||Wings flapping|a large bird taking off with heavy wing flaps|3
+sfx|Animals/Birds||Flock taking off|a flock of starlings taking off all at once|4
+sfx|Animals/Birds||Sparrows chattering|sparrows chattering noisily in a garden hedge|8
+sfx|Animals/Birds||Nightingale song|a nightingale singing in the night|10
+sfx|Animals/Birds||Canary trilling|a canary trilling in a cage|8
+sfx|Animals/Birds||Geese flying over|wild geese honking as they fly overhead|8
+sfx|Animals/Birds||Loon call on lake|a loon calling across a misty lake|6
+sfx|Animals/Birds||Peacock call|a peacock crying out in a garden|4
+sfx|Animals/Birds||Hummingbird wings|a hummingbird hovering with fast buzzing wings|4
+sfx|Animals/Birds||Swallows twittering|swallows twittering while swooping over a barn|8
+sfx|Animals/Wild mammals||Lion roar|a male lion roaring at dusk on the savanna|6
+sfx|Animals/Wild mammals||Wolves howling far away|wolves howling in the distance across a snowy valley|10
+sfx|Animals/Wild mammals||Elephant trumpeting|an elephant trumpeting loudly near a watering hole|4
+sfx|Animals/Wild mammals||Bear growl|a brown bear growling and huffing|5
+sfx|Animals/Wild mammals||Deer stag bellow|a red deer stag bellowing during the rut|6
+sfx|Animals/Wild mammals||Monkeys screeching|monkeys screeching and chattering in trees|8
+sfx|Animals/Wild mammals||Tiger snarl|a tiger snarling and growling close up in the grass|5
+sfx|Animals/Wild mammals||Hyenas laughing|hyenas cackling at night on the savanna|8
+sfx|Animals/Wild mammals||Coyote yips|coyotes yipping and howling in the desert|8
+sfx|Animals/Wild mammals||Fox scream|a red fox screaming at night in a field|4
+sfx|Animals/Wild mammals||Gorilla chest beating|a gorilla beating its chest and grunting|5
+sfx|Animals/Wild mammals||Wild boar grunting|a wild boar grunting and rooting in the undergrowth|6
+sfx|Animals/Wild mammals||Squirrel chattering|a squirrel chattering angrily in a tree|5
+sfx|Animals/Wild mammals||Moose call|a moose calling in a northern forest|6
+sfx|Animals/Wild mammals||Zebras barking|zebras barking and braying on the plains|6
+sfx|Animals/Wild mammals||Rhino snorting|a rhinoceros snorting and stomping on dry ground|5
+sfx|Animals/Wild mammals||Hippo grunts|hippos grunting and honking in a river|8
+sfx|Animals/Wild mammals||Lion pride growls|a pride of lions growling at a kill|8
+sfx|Animals/Insects||Bees buzzing in flowers|honey bees buzzing around flowers in a sunny garden|10
+sfx|Animals/Insects||Summer crickets|crickets chirping on a summer night|10
+sfx|Animals/Insects||Mosquito whine|a mosquito whining close to the ear|5
+sfx|Animals/Insects||Housefly buzzing|a housefly buzzing around a room and hitting a window|8
+sfx|Animals/Insects||Cicadas in heat|cicadas buzzing loudly on a hot afternoon|10
+sfx|Animals/Insects||Beehive inside|the dense hum inside a beehive|10
+sfx|Animals/Insects||Grasshoppers in meadow|grasshoppers stridulating in a sunny meadow|10
+sfx|Animals/Insects||Wasp nest|wasps buzzing angrily around a nest|8
+sfx|Animals/Insects||Bumblebee close by|a bumblebee flying past close to the ear|3
+sfx|Animals/Insects||Dragonfly wings|a dragonfly hovering with whirring wings over water|6
+sfx|Animals/Insects||Locust swarm|a huge swarm of locusts buzzing across fields|10
+sfx|Animals/Insects||Beetle crawling|a beetle crawling on dry leaves close up|6
+sfx|Animals/Insects||Termites chewing wood|termites chewing inside a wooden beam, faint clicking|8
+sfx|Animals/Insects||Moth at a lamp|a moth fluttering against a lamp shade|6
+sfx|Animals/Sea animals||Whale song|humpback whale song echoing underwater in the deep ocean|10
+sfx|Animals/Sea animals||Dolphins clicking|dolphins clicking and whistling underwater near a reef|8
+sfx|Animals/Sea animals||Sea lions barking|sea lions barking on a rocky beach|8
+sfx|Animals/Sea animals||Seals grunting|seals grunting and splashing on an ice floe|6
+sfx|Animals/Sea animals||Walrus bellow|a walrus bellowing on a beach|5
+sfx|Animals/Sea animals||Penguin colony|a noisy penguin colony braying on the shore|10
+sfx|Animals/Sea animals||Orca blow|an orca surfacing and blowing air through its blowhole|4
+sfx|Animals/Sea animals||Crabs clicking|crabs clicking and scuttling over rocks|6
+sfx|Animals/Sea animals||Shrimp crackling reef|snapping shrimp crackling on a coral reef underwater|10
+sfx|Animals/Sea animals||Whale breaching|a whale breaching and crashing back into the sea|6
+sfx|Animals/Reptiles and amphibians||Frogs croaking|frogs croaking in a pond at night|10
+sfx|Animals/Reptiles and amphibians||Bullfrog calls|a bullfrog calling with deep croaks|6
+sfx|Animals/Reptiles and amphibians||Tree frogs chorus|a chorus of tree frogs in a tropical night|10
+sfx|Animals/Reptiles and amphibians||Toad trilling|a toad trilling near a marsh|6
+sfx|Animals/Reptiles and amphibians||Rattlesnake rattle|a rattlesnake shaking its rattle among desert rocks|4
+sfx|Animals/Reptiles and amphibians||Snake hissing|a snake hissing slowly on dry leaves close up|4
+sfx|Animals/Reptiles and amphibians||Alligator growl|an alligator growling low in a swamp|5
+sfx|Animals/Reptiles and amphibians||Gecko chirps|a gecko chirping on a wall at night|5
+sfx|Animals/Reptiles and amphibians||Tortoise chewing|a tortoise munching on lettuce on a garden path|6
+sfx|Animals/Reptiles and amphibians||Crocodile splash|a crocodile lunging into the water with a splash|3
+sfx|Animals/Jungle||Tropical jungle morning|tropical jungle morning with exotic birds and insects|10
+sfx|Animals/Jungle||Howler monkeys|howler monkeys roaring across the rainforest canopy|10
+sfx|Animals/Jungle||Toucan calls|toucans croaking from the high branches of the jungle|8
+sfx|Animals/Jungle||Rainforest rain|rain falling on the rainforest canopy with dripping leaves|10
+sfx|Animals/Jungle||Jaguar growl|a jaguar growling in the dense jungle|5
+sfx|Animals/Jungle||Macaws flying over|macaws screeching as they fly over the canopy|6
+sfx|Animals/Jungle||Jungle insects buzz|dense buzzing and clicking of jungle insects|10
+sfx|Animals/Jungle||Jungle river|a jungle river flowing with birds calling|10
+sfx|Animals/Jungle||Gibbons whooping|gibbons whooping and calling in the treetops|8
+sfx|Animals/Jungle||Jungle at dusk|jungle at dusk with cicadas and distant monkeys|10
+sfx|Animals/Night animals||Owl hooting|a tawny owl hooting at night in old woods|6
+sfx|Animals/Night animals||Barn owl screech|a barn owl screeching in the dark|4
+sfx|Animals/Night animals||Bats squeaking|bats squeaking and fluttering out of a cave|6
+sfx|Animals/Night animals||Nightjar churring|a nightjar churring on a heath at night|8
+sfx|Animals/Night animals||Raccoons rummaging|raccoons rummaging and chittering near trash bins|6
+sfx|Animals/Night animals||Hedgehog snuffling|a hedgehog snuffling through leaves at night|6
+sfx|Animals/Night animals||Wolf pack at night|a wolf pack howling under a full moon|10
+sfx|Animals/Night animals||Frogs and crickets night|frogs and crickets together on a warm night by a pond|10
+sfx|Animals/Night animals||Mouse scratching|a mouse scratching and squeaking inside a wall|6
+sfx|Animals/Night animals||Opossum hissing|an opossum hissing in the dark|3
+sfx|Animals/Small pets||Hamster wheel|a hamster running in a squeaky wheel|6
+sfx|Animals/Small pets||Guinea pig squeaks|a guinea pig squeaking excitedly in its hay cage|5
+sfx|Animals/Small pets||Rabbit thumping|a rabbit thumping its hind leg on the floor|3
+sfx|Animals/Small pets||Budgies chattering|budgies chattering and chirping together in a cage|8
+sfx|Animals/Small pets||Aquarium bubbling|an aquarium filter bubbling softly in a quiet room|10
+sfx|Animals/Small pets||Parakeet whistling|a pet parakeet whistling a cheerful little tune|6
+sfx|Animals/Small pets||Ferret dooking|a ferret making happy dooking sounds|5
+sfx|Animals/Small pets||Hamster gnawing|a hamster gnawing on a wooden stick|6
+sfx|Animals/Small pets||Rat squeaking|a pet rat squeaking and sniffing|5
+sfx|Animals/Small pets||Chinchilla dust bath|a chinchilla rolling in a dust bath|6
+sfx|Animals/Small pets||Bird cage rattle|a bird hopping and rattling its cage bars|5
+sfx|Animals/Small pets||Rabbit munching|a rabbit munching a crunchy carrot close up|5
+sfx|Ambiences/City streets||Busy city street|busy city street with traffic and people talking|10
+sfx|Ambiences/City streets||Quiet night street|quiet residential street at night with a distant car|10
+sfx|Ambiences/City streets||Rush hour traffic jam|rush hour traffic jam with honking horns and idling engines|10
+sfx|Ambiences/City streets||Pedestrian crossing beeps|pedestrian crossing signal beeping with footsteps and traffic|10
+sfx|Ambiences/City streets||Rainy city street|cars driving on a wet city street in the rain|10
+sfx|Ambiences/City streets||Street construction|city street with jackhammers and construction machines|10
+sfx|Ambiences/City streets||Asian city market street|crowded asian street with scooters, vendors calling and chatter|10
+sfx|Ambiences/City streets||Sunday morning street|calm sunday morning street with church bells and few cars|10
+sfx|Ambiences/City streets||Street musician square|town square with a distant street accordion and pigeons|10
+sfx|Ambiences/City streets||Downtown sirens|downtown streets with distant sirens and traffic hum|10
+sfx|Ambiences/City streets||Cafe terrace street|outdoor cafe terrace with cups clinking and passing traffic|10
+sfx|Ambiences/City streets||Alley with dripping|narrow back alley with dripping pipes and a distant dog|10
+sfx|Ambiences/City streets||Snowy city street|muffled city street after snowfall with slow cars|10
+sfx|Ambiences/City streets||Tram on city avenue|city avenue with a tram ringing its bell and passing|10
+sfx|Ambiences/Indoor public places||Busy restaurant ambience|busy restaurant with cutlery and chatter|10
+sfx|Ambiences/Indoor public places||Subway station crowd|crowded subway station with an arriving train|10
+sfx|Ambiences/Indoor public places||Airport terminal|airport terminal with announcements and rolling suitcases|10
+sfx|Ambiences/Indoor public places||Shopping mall|shopping mall with background music, chatter and footsteps|10
+sfx|Ambiences/Indoor public places||Library quiet room|quiet library with pages turning and soft footsteps|10
+sfx|Ambiences/Indoor public places||Train station hall|large train station hall with echoing announcements|10
+sfx|Ambiences/Indoor public places||Hospital corridor|hospital corridor with beeping monitors and quiet voices|10
+sfx|Ambiences/Indoor public places||Museum gallery|museum gallery with hushed voices and footsteps on parquet|10
+sfx|Ambiences/Indoor public places||Supermarket checkout|supermarket checkout with scanner beeps and carts|10
+sfx|Ambiences/Indoor public places||Indoor swimming pool|indoor swimming pool with splashes and echoing voices|10
+sfx|Ambiences/Indoor public places||Coffee shop ambience|coffee shop with espresso machine and quiet conversation|10
+sfx|Ambiences/Indoor public places||Cathedral interior|vast cathedral interior with footsteps and long reverb|10
+sfx|Ambiences/Indoor public places||Hotel lobby|hotel lobby with soft music and quiet check in voices|10
+sfx|Ambiences/Indoor public places||Waiting room clock|small waiting room with a ticking clock and coughs|10
+sfx|Ambiences/Countryside||Farm morning|farm morning with a rooster, cows and a distant tractor|10
+sfx|Ambiences/Countryside||Summer meadow|summer meadow with bees, birds and soft wind|10
+sfx|Ambiences/Countryside||Village church bells|small village with church bells ringing in the distance|10
+sfx|Ambiences/Countryside||Vineyard afternoon|vineyard on a warm afternoon with cicadas and distant voices|10
+sfx|Ambiences/Countryside||Country road|quiet country road with birds and a car passing slowly|10
+sfx|Ambiences/Countryside||Hay field harvest|harvest field with a combine harvester working far away|10
+sfx|Ambiences/Countryside||Windmill creaking|old windmill sails creaking in the wind|10
+sfx|Ambiences/Countryside||Sheep on hillside|open hillside with sheep bleating and wind|10
+sfx|Ambiences/Countryside||Country evening|countryside evening with crickets and a distant dog|10
+sfx|Ambiences/Countryside||Stream by the farm|farm courtyard with a stream and chickens|10
+sfx|Ambiences/Countryside||Alpine pasture|alpine pasture with cow bells and mountain wind|10
+sfx|Ambiences/Countryside||Countryside after rain|countryside after rain with dripping and birds singing|10
+sfx|Ambiences/Forest||Forest morning|deep forest morning with many birds and light wind|10
+sfx|Ambiences/Forest||Rainy forest|forest under steady rain with water dripping from trees|10
+sfx|Ambiences/Forest||Winter forest silence|silent winter forest with snow falling from branches|10
+sfx|Ambiences/Forest||Autumn forest walk|autumn forest with crunching leaves and a woodpecker|10
+sfx|Ambiences/Forest||Forest at night|forest at night with owls, insects and rustling|10
+sfx|Ambiences/Forest||Pine forest wind|pine forest with wind in the treetops and a distant crow|10
+sfx|Ambiences/Forest||Bamboo forest|bamboo forest with creaking stalks and light wind|10
+sfx|Ambiences/Forest||Forest clearing|sunny forest clearing with buzzing insects and bird song|10
+sfx|Ambiences/Forest||Misty forest dawn|misty forest at dawn with sparse bird calls and drips|10
+sfx|Ambiences/Forest||Forest lake shore|forest lake shore with lapping water and loons|10
+sfx|Ambiences/Beach and harbor||Sunny beach crowd|sunny beach with waves, children playing and gulls|10
+sfx|Ambiences/Beach and harbor||Fishing harbor|fishing harbor with boats creaking, gulls and engines|10
+sfx|Ambiences/Beach and harbor||Marina rigging|marina with halyards clinking against masts in the wind|10
+sfx|Ambiences/Beach and harbor||Quiet morning beach|quiet morning beach with soft waves and a few gulls|10
+sfx|Ambiences/Beach and harbor||Harbor fog horn|foggy harbor with a distant fog horn and lapping water|10
+sfx|Ambiences/Beach and harbor||Busy port docks|busy port docks with cranes, ship horns and machinery|10
+sfx|Ambiences/Beach and harbor||Beach bar|beach bar with distant music, waves and chatter|10
+sfx|Ambiences/Beach and harbor||Fish market harbor|fish market on the quay with vendors and ice shoveling|10
+sfx|Ambiences/Beach and harbor||Night harbor ambience|night harbor with water lapping and boats creaking|10
+sfx|Ambiences/Beach and harbor||Windy beach|windy beach with surf and blowing sand|10
+sfx|Ambiences/Industrial||Factory floor ambience|large industrial factory floor with many machines running and clanking|10
+sfx|Ambiences/Industrial||Steel mill ambience|steel mill with roaring furnaces and clanging metal|10
+sfx|Ambiences/Industrial||Power plant hum|power plant with a deep electrical hum and turbines|10
+sfx|Ambiences/Industrial||Warehouse forklifts|warehouse with forklifts beeping and pallets dropping|10
+sfx|Ambiences/Industrial||Printing press hall|printing press hall with rhythmic machines|10
+sfx|Ambiences/Industrial||Shipyard welding|shipyard with welding, grinding and hammering on steel|10
+sfx|Ambiences/Industrial||Boiler room ambience|boiler room with hissing pipes and a low rumble|10
+sfx|Ambiences/Industrial||Sawmill ambience|sawmill with saws cutting logs and conveyors|10
+sfx|Ambiences/Industrial||Bottling plant|bottling plant with glass bottles clinking on conveyors|10
+sfx|Ambiences/Industrial||Abandoned factory|abandoned factory with wind, dripping and metal creaks|10
+sfx|Ambiences/Underground and caves||Deep cave ambience|deep cave with distant drips and low air movement|10
+sfx|Ambiences/Underground and caves||Sewer tunnel|sewer tunnel with flowing water and echoing drips|10
+sfx|Ambiences/Underground and caves||Mine shaft|old mine shaft with creaking timbers and falling pebbles|10
+sfx|Ambiences/Underground and caves||Underground parking|underground parking with distant car doors and engine echoes|10
+sfx|Ambiences/Underground and caves||Stone catacombs|stone catacombs with faint echoes and a slow drip|10
+sfx|Ambiences/Underground and caves||Metro tunnel rumble|metro tunnel with a distant train rumbling through|10
+sfx|Ambiences/Underground and caves||Ice cave|ice cave with cracking ice and dripping meltwater|10
+sfx|Ambiences/Underground and caves||Bunker ventilation|concrete bunker with a ventilation fan humming|10
+sfx|Ambiences/Night||Summer night crickets|warm summer night with crickets and distant frogs|10
+sfx|Ambiences/Night||City at night|city at night with distant traffic and a far siren|10
+sfx|Ambiences/Night||Night campsite|campsite at night with crackling fire and owls|10
+sfx|Ambiences/Night||Desert night|desert night with soft wind and a distant coyote|10
+sfx|Ambiences/Night||Night rain on roof|night rain softly falling on a roof in a quiet house|10
+sfx|Ambiences/Night||Late night highway|distant highway at night with occasional trucks|10
+sfx|Ambiences/Night||Suburban night|suburban night with a dog barking far away and a sprinkler|10
+sfx|Ambiences/Night||Night by the lake|lake at night with frogs and lapping water|10
+sfx|Ambiences/Night||Midnight empty station|empty train station at midnight with humming lights|10
+sfx|Ambiences/Night||Tropical night|tropical night with geckos, insects and warm wind|10
+sfx|Ambiences/Office||Open space office|open space office with keyboards, phones and quiet talk|10
+sfx|Ambiences/Office||Office printer room|office with a printer running and a photocopier|10
+sfx|Ambiences/Office||Call center|call center with many people talking on headsets|10
+sfx|Ambiences/Office||Empty office at night|empty office at night with humming air conditioning|10
+sfx|Ambiences/Office||Meeting room murmur|meeting room with murmured voices and pens tapping|10
+sfx|Ambiences/Office||Office coffee corner|office kitchen with a coffee machine and small talk|10
+sfx|Ambiences/Office||Server room ambience|server room with fans whirring loudly|10
+sfx|Ambiences/Office||Busy newsroom|busy newsroom with phones ringing and typing|10
+sfx|Ambiences/Home||Family kitchen ambience|family kitchen with cooking, dishes and chatter|10
+sfx|Ambiences/Home||Quiet living room tick|quiet living room with a ticking clock and a fridge hum|10
+sfx|Ambiences/Home||Children playing indoors|children playing in a house with toys and laughter|10
+sfx|Ambiences/Home||Bathroom shower ambience|bathroom with a running shower and echo|10
+sfx|Ambiences/Home||Apartment with neighbors|apartment with muffled neighbors and footsteps above|10
+sfx|Ambiences/Home||Sunday lunch table|dining room with a sunday lunch, cutlery and conversation|10
+sfx|Ambiences/Home||Laundry room ambience|laundry room with a washing machine spinning|10
+sfx|Ambiences/Home||Bedroom at night|quiet bedroom at night with a fan and distant traffic|10
+sfx|Ambiences/Crowded events||Stadium crowd before kickoff|stadium crowd chanting before a match|10
+sfx|Ambiences/Crowded events||Concert crowd between songs|large concert crowd cheering and whistling between songs|10
+sfx|Ambiences/Crowded events||Street parade|street parade with drums, whistles and a crowd|10
+sfx|Ambiences/Crowded events||Fairground ambience|fairground with rides, music and screaming people|10
+sfx|Ambiences/Crowded events||Christmas market crowd|christmas market with chatter, bells and music in the distance|10
+sfx|Ambiences/Crowded events||Conference hall|conference hall with a crowd murmuring before a talk|10
+sfx|Transport/Cars||Car engine idling|a car engine starting and idling|6
+sfx|Transport/Cars||Sports car pass by|a sports car accelerating fast and passing by|5
+sfx|Transport/Cars||Tires screeching|car tires screeching on asphalt during a sharp turn|3
+sfx|Transport/Cars||Car horn honking|a car horn honking twice on a busy street|2
+sfx|Transport/Cars||Car door closing|a car door opening and closing with a solid thud|2
+sfx|Transport/Cars||Car alarm in parking|a car alarm going off in a parking lot|8
+sfx|Transport/Cars||Electric car whine|an electric car accelerating with a high whine|5
+sfx|Transport/Cars||Diesel engine start|a cold diesel car engine cranking and starting|5
+sfx|Transport/Cars||Car on gravel road|a car driving slowly on a gravel road|6
+sfx|Transport/Cars||Highway traffic|cars rushing by on a highway|8
+sfx|Transport/Cars||Racing car lap|a racing car screaming past on a circuit|4
+sfx|Transport/Cars||Parking lot fender bender|a slow car bump in a parking lot with a dull thud and cracking plastic|3
+sfx|Transport/Cars||Engine revving|a car engine revving hard in neutral|4
+sfx|Transport/Cars||Car interior drive|inside a car driving on a motorway with road noise|10
+sfx|Transport/Cars||Car stuck in mud|car wheels spinning in mud with a revving engine|6
+sfx|Transport/Cars||Windshield wipers|windshield wipers sweeping on a car in light rain|8
+sfx|Transport/Cars||Car trunk slam|a car trunk slammed shut in a parking lot|2
+sfx|Transport/Cars||Turn signal ticking|a car turn signal ticking inside the cabin|6
+sfx|Transport/Motorcycles||Motorcycle leaving|a motorcycle revving and driving away|6
+sfx|Transport/Motorcycles||Motorbike pass by|a motorbike passing by fast on a road|4
+sfx|Transport/Motorcycles||Harley style idle|a big v twin motorcycle idling with a deep rumble|8
+sfx|Transport/Motorcycles||Dirt bike|a dirt bike revving and jumping on a motocross track|6
+sfx|Transport/Motorcycles||Moped buzzing|a small moped buzzing through a narrow street|5
+sfx|Transport/Motorcycles||Sport bike high revs|a sport motorcycle screaming at high revs|5
+sfx|Transport/Motorcycles||Motorcycle kick start|a motorcycle kick started then idling|6
+sfx|Transport/Motorcycles||Motorcycle gang|a group of motorcycles riding by together|6
+sfx|Transport/Motorcycles||Motorcycle in tunnel|a motorcycle accelerating through a tunnel with echo|5
+sfx|Transport/Motorcycles||Motorcycle downshift|a motorcycle downshifting and braking before a corner|5
+sfx|Transport/Trucks and buses||Truck air brakes|a heavy truck braking with a hiss of air brakes|4
+sfx|Transport/Trucks and buses||Truck horn|a big truck air horn blowing|3
+sfx|Transport/Trucks and buses||Truck reversing beeps|a truck reversing with warning beeps|6
+sfx|Transport/Trucks and buses||City bus stop|a city bus pulling into a stop with doors opening|8
+sfx|Transport/Trucks and buses||Bus interior ride|inside a city bus driving with engine and passengers|10
+sfx|Transport/Trucks and buses||Truck passing on road|a heavy truck passing by on a country road|6
+sfx|Transport/Trucks and buses||Garbage truck|a garbage truck compacting trash with hydraulic whine|8
+sfx|Transport/Trucks and buses||Truck engine idle|a diesel truck engine idling loudly|8
+sfx|Transport/Trucks and buses||Tour coach departure|a tour coach starting and pulling away|6
+sfx|Transport/Trucks and buses||Dump truck unloading|a dump truck tipping and unloading gravel|6
+sfx|Transport/Trucks and buses||Truck gear changes|a truck accelerating through gear changes|8
+sfx|Transport/Trucks and buses||Bus door hiss|bus doors hissing open and closing|4
+sfx|Transport/Trains and metros||Steam train whistle|a steam train whistle and chugging|8
+sfx|Transport/Trains and metros||High speed train|a modern train passing by at high speed|5
+sfx|Transport/Trains and metros||Freight train|a long freight train rolling by with clanking wagons|10
+sfx|Transport/Trains and metros||Train horn|a train horn blowing at a level crossing|4
+sfx|Transport/Trains and metros||Level crossing bells|level crossing bells ringing as a train approaches|8
+sfx|Transport/Trains and metros||Inside a train|inside a train carriage with rhythmic clacking rails|10
+sfx|Transport/Trains and metros||Metro arriving|a metro train arriving and braking in a station|8
+sfx|Transport/Trains and metros||Metro doors closing|metro doors chiming and closing on a station platform|4
+sfx|Transport/Trains and metros||Train brakes squeal|train brakes squealing as it slows down|5
+sfx|Transport/Trains and metros||Diesel locomotive|a diesel locomotive idling and pulling away|8
+sfx|Transport/Trains and metros||Tram bell|a tram ringing its bell and passing on rails|6
+sfx|Transport/Trains and metros||Train in tunnel|a train rushing through a tunnel with rumble|8
+sfx|Transport/Trains and metros||Cable car|a cable car moving along its cable with creaking|8
+sfx|Transport/Trains and metros||Monorail glide|a monorail gliding by with a smooth electric hum|5
+sfx|Transport/Planes||Jet take off|a jet airplane taking off from a runway with roaring engines|10
+sfx|Transport/Planes||Propeller plane|a small propeller plane flying overhead on a sunny day|8
+sfx|Transport/Planes||Airliner landing|an airliner landing with reverse thrust roaring|10
+sfx|Transport/Planes||Jet flyby|a fighter jet flying low and fast overhead|4
+sfx|Transport/Planes||Inside airplane cabin|inside an airplane cabin with engine drone|10
+sfx|Transport/Planes||Airplane far overhead|a distant airplane passing high overhead|8
+sfx|Transport/Planes||Plane engines spool up|jet engines spooling up on a runway|8
+sfx|Transport/Planes||Glider wind|a glider flying with wind rushing and no engine|8
+sfx|Transport/Planes||Seaplane take off|a seaplane taking off from a lake with splashing|8
+sfx|Transport/Planes||Biplane loop|an old biplane looping with sputtering engine|8
+sfx|Transport/Planes||Jet sonic boom|a supersonic jet producing a sonic boom|3
+sfx|Transport/Planes||Cabin chime|an airplane cabin chime with a quiet hum|3
+sfx|Transport/Helicopters and drones||Helicopter hover|a helicopter hovering then flying away|10
+sfx|Transport/Helicopters and drones||Helicopter landing|a helicopter landing with rotor wash and wind|8
+sfx|Transport/Helicopters and drones||Helicopter flyover|a helicopter flying low overhead above a field|6
+sfx|Transport/Helicopters and drones||Rotor spin down|helicopter rotors slowing down after landing|8
+sfx|Transport/Helicopters and drones||Inside helicopter|inside a helicopter cockpit with loud rotor noise|10
+sfx|Transport/Helicopters and drones||Quadcopter drone|a small quadcopter drone buzzing overhead|6
+sfx|Transport/Helicopters and drones||Drone take off|a drone taking off and hovering close by|6
+sfx|Transport/Helicopters and drones||Military helicopter|a large military helicopter with heavy thumping rotors|8
+sfx|Transport/Boats and ships||Ship horn in harbor|a large ship horn blowing in a harbor|4
+sfx|Transport/Boats and ships||Motorboat passing|a motorboat speeding past on a lake|5
+sfx|Transport/Boats and ships||Rowing boat|oars dipping and creaking in a rowing boat|8
+sfx|Transport/Boats and ships||Sailboat creaking|a sailboat creaking with sails flapping in wind|10
+sfx|Transport/Boats and ships||Outboard motor|an outboard motor starting and running|6
+sfx|Transport/Boats and ships||Jet ski on waves|a jet ski racing over waves|6
+sfx|Transport/Boats and ships||Ferry engine|inside a ferry with a deep engine rumble|10
+sfx|Transport/Boats and ships||Anchor chain|an anchor chain rattling down into the sea|4
+sfx|Transport/Boats and ships||Ship hull waves|waves slapping against a ship hull|8
+sfx|Transport/Boats and ships||Speedboat bouncing|a speedboat bouncing hard over choppy water|6
+sfx|Transport/Boats and ships||Canoe paddling|a canoe paddling quietly on a calm river|8
+sfx|Transport/Boats and ships||Steamboat whistle|an old paddle steamboat whistle and churning wheel|8
+sfx|Transport/Boats and ships||Cargo ship engine|a cargo ship engine room thrumming|10
+sfx|Transport/Boats and ships||Boat mooring ropes|mooring ropes creaking as a boat rocks at the dock|8
+sfx|Transport/Bicycles and scooters||Bicycle bell|a bicycle bell ringing twice on a park path|2
+sfx|Transport/Bicycles and scooters||Bike freewheel|a bicycle freewheeling with ticking hub|5
+sfx|Transport/Bicycles and scooters||Bike chain pedaling|pedaling a bicycle with the chain whirring|6
+sfx|Transport/Bicycles and scooters||Bike brakes squeak|bicycle brakes squeaking to a stop|3
+sfx|Transport/Bicycles and scooters||Kick scooter|a kick scooter rolling on pavement|5
+sfx|Transport/Bicycles and scooters||Electric scooter|an electric scooter whirring past on a city sidewalk|4
+sfx|Transport/Bicycles and scooters||Skateboard rolling|a skateboard rolling and clacking over cracks|6
+sfx|Transport/Bicycles and scooters||Bike on gravel|a mountain bike riding on a gravel trail|8
+sfx|Transport/Bicycles and scooters||Bicycle tire pump|a bicycle tire being pumped up|5
+sfx|Transport/Bicycles and scooters||Bike race passing|a pack of racing cyclists whooshing past|4
+sfx|Transport/Emergency vehicles||Police siren|a police siren passing by on a city street|6
+sfx|Transport/Emergency vehicles||Ambulance siren|an ambulance siren approaching and fading away|8
+sfx|Transport/Emergency vehicles||Fire truck horn|a fire truck with siren and air horn rushing by|6
+sfx|Transport/Emergency vehicles||European police siren|a european two tone police siren passing|6
+sfx|Transport/Emergency vehicles||Fire engine arriving|a fire engine arriving and braking with a hiss|5
+sfx|Transport/Emergency vehicles||Siren in traffic|an emergency siren weaving through traffic|8
+sfx|Transport/Emergency vehicles||Police car chase|a police car chase with sirens and screeching tires|8
+sfx|Transport/Emergency vehicles||Tow truck winch|a tow truck winch whirring and its chain rattling as a car is pulled up|8
+sfx|Transport/Emergency vehicles||Ambulance yelp|an ambulance yelp siren at an intersection|5
+sfx|Transport/Emergency vehicles||Rescue helicopter|a rescue helicopter hovering low over a mountain with strong rotor wind|8
+sfx|Transport/Vintage vehicles||Steam locomotive start|a steam locomotive starting with heavy chuffs|8
+sfx|Transport/Vintage vehicles||Old car horn|an old car horn honking a ooga sound|2
+sfx|Transport/Vintage vehicles||Early motorcar engine|an early motorcar engine rattling and puttering on a country lane|8
+sfx|Transport/Vintage vehicles||Horse drawn carriage|a horse drawn carriage on cobblestones with creaking wheels|8
+sfx|Transport/Vintage vehicles||Vintage motorcycle|a vintage motorcycle putt putting along a road|6
+sfx|Transport/Vintage vehicles||Old tractor|an old tractor engine chugging in a field|8
+sfx|Transport/Vintage vehicles||Penny farthing|an old high wheel bicycle rolling and creaking|6
+sfx|Transport/Vintage vehicles||Old propeller airliner|an old four engine propeller airliner droning overhead|8
+sfx|Transport/Vintage vehicles||Classic muscle car|a classic muscle car rumbling and revving|6
+sfx|Transport/Vintage vehicles||Steam ship engine|an old steam ship engine pounding rhythmically|8
+sfx|Transport/Vintage vehicles||Vintage bus|an old bus rattling and grinding gears|8
+sfx|Transport/Vintage vehicles||Old car backfire|an old car engine backfiring and sputtering|5
+sfx|Home/Doors and windows||Creaking wooden door|a heavy wooden door creaking open slowly in a quiet old house|6
+sfx|Home/Doors and windows||Front door slam|a front door slamming shut with a loud bang and rattling frame|3
+sfx|Home/Doors and windows||Three knocks on door|knuckles knocking three times on a solid wooden door|2
+sfx|Home/Doors and windows||Ding dong doorbell|a two tone ding dong doorbell ringing inside a hallway|3
+sfx|Home/Doors and windows||Keys unlocking door|a bunch of keys jingling then a key turning in a door lock|5
+sfx|Home/Doors and windows||Sliding glass door|a sliding glass patio door rolling open on its metal track|4
+sfx|Home/Doors and windows||Window opened in rain|a window being opened, letting in the sound of rain outside|6
+sfx|Home/Doors and windows||Wooden shutters closing|old wooden shutters swinging shut and a latch clicking|4
+sfx|Home/Doors and windows||Garage door opener|an electric garage door motor humming as the door rolls up|8
+sfx|Home/Doors and windows||Screen door spring|a screen door creaking open and snapping back on its spring|3
+sfx|Home/Doors and windows||Door chain latch|a door security chain sliding and dropping into its latch|3
+sfx|Home/Doors and windows||Roller blind rattle|a metal roller blind being pulled down with a rattling clatter|4
+sfx|Home/Kitchen||Whistling kettle|water boiling in a kettle until it whistles loudly|10
+sfx|Home/Kitchen||Bacon sizzling in pan|bacon sizzling and popping in a hot frying pan|10
+sfx|Home/Kitchen||Chopping carrots|a knife chopping carrots quickly on a wooden board|5
+sfx|Home/Kitchen||Water poured in glass|pouring water from a jug into a glass|4
+sfx|Home/Kitchen||Washing up dishes|dishes and cutlery clinking in a sink full of water while washing up|8
+sfx|Home/Kitchen||Fridge door and hum|a refrigerator door opening with a suction pop and the fridge humming|6
+sfx|Home/Kitchen||Microwave beeping|a microwave oven running, then beeping three times when done|10
+sfx|Home/Kitchen||Toaster pop up|a toaster clicking down, ticking, then popping up the toast|8
+sfx|Home/Kitchen||Blender smoothie|a blender crushing ice and fruit at high speed|8
+sfx|Home/Kitchen||Coffee grinder|an electric coffee grinder grinding beans in a small kitchen|8
+sfx|Home/Kitchen||Espresso machine|an espresso machine hissing and gurgling while pouring a coffee|8
+sfx|Home/Kitchen||Cutlery drawer|a cutlery drawer pulled open with forks and knives rattling|3
+sfx|Home/Kitchen||Can opener|a manual can opener puncturing and cutting around a tin can|6
+sfx|Home/Kitchen||Kitchen tap running|a kitchen tap turned on full, water splashing into a steel sink|6
+sfx|Home/Cooking||Boiling pot of pasta|a large pot of water boiling with bubbles and a lid rattling|10
+sfx|Home/Cooking||Whisking eggs|a whisk beating eggs quickly in a glass bowl|6
+sfx|Home/Cooking||Onions frying|onions frying gently in butter in a skillet|10
+sfx|Home/Cooking||Stew simmering|a thick stew simmering slowly with soft bubbling in a cast iron pot|10
+sfx|Home/Cooking||Pressure cooker hiss|a pressure cooker valve hissing and jiggling on the stove|8
+sfx|Home/Cooking||Popcorn popping|popcorn kernels popping fast in a covered pan|8
+sfx|Home/Cooking||Grill steak sizzle|a thick steak dropped on a hot grill with a loud sizzle|5
+sfx|Home/Cooking||Deep fryer bubbling|food lowered into a deep fryer, oil bubbling violently|6
+sfx|Home/Cooking||Rolling dough|a rolling pin rolling dough on a floured wooden table|6
+sfx|Home/Cooking||Gas stove ignition|a gas stove igniter clicking and the burner lighting with a whoosh|3
+sfx|Home/Bathroom||Toilet flush|a toilet flushing and the tank refilling in a small bathroom|10
+sfx|Home/Bathroom||Shower running|a shower running with water spraying on tiles|10
+sfx|Home/Bathroom||Bath filling|a bathtub filling with water from a running tap, echo on tiles|10
+sfx|Home/Bathroom||Brushing teeth|someone brushing their teeth, then spitting and rinsing|8
+sfx|Home/Bathroom||Hair dryer|a hair dryer blowing at full speed then switched off|6
+sfx|Home/Bathroom||Electric shaver|an electric razor buzzing while shaving|6
+sfx|Home/Bathroom||Dripping bathroom tap|a leaky tap dripping slowly into a sink in a quiet bathroom|8
+sfx|Home/Bathroom||Bath drain gurgle|water draining from a bathtub with a long gurgling swirl|8
+sfx|Home/Bathroom||Gargling mouthwash|a person gargling mouthwash and spitting into a sink|6
+sfx|Home/Bathroom||Spray bottle squirts|a spray bottle of perfume squirting several times|3
+sfx|Home/Household appliances||Vacuum cleaner on rug|a vacuum cleaner running back and forth on a carpet|10
+sfx|Home/Household appliances||Washing machine spin|a washing machine spinning fast and rumbling|10
+sfx|Home/Household appliances||Tumble dryer zipper|a tumble dryer turning with a zipper clinking inside the drum|10
+sfx|Home/Household appliances||Dishwasher running|a dishwasher running with water sloshing inside|10
+sfx|Home/Household appliances||Ceiling fan whir|a ceiling fan spinning with a gentle whirring and a slight wobble|10
+sfx|Home/Household appliances||Air conditioner hum|a window air conditioner humming with a rattling vent|10
+sfx|Home/Household appliances||Electric heater ticks|an electric radiator clicking and ticking as it heats up|6
+sfx|Home/Household appliances||Steam iron hiss|a steam iron hissing and puffing on an ironing board|6
+sfx|Home/Household appliances||Sewing machine|a sewing machine stitching fast with a mechanical clatter|6
+sfx|Home/Household appliances||Robot vacuum bumps|a robot vacuum whirring and bumping gently into furniture|8
+sfx|Home/Household appliances||Old fridge compressor|an old refrigerator compressor starting with a shudder and humming|8
+sfx|Home/Household appliances||Smoke alarm beeping|a smoke alarm beeping loudly in a hallway|6
+sfx|Home/Furniture||Creaky armchair|someone sitting down in a creaky leather armchair|3
+sfx|Home/Furniture||Drawer slammed shut|a wooden drawer slammed shut in a dresser|2
+sfx|Home/Furniture||Chair dragged on tiles|a wooden chair dragged across a tiled floor|3
+sfx|Home/Furniture||Squeaky bed springs|old metal bed springs squeaking as someone turns over|4
+sfx|Home/Furniture||Wardrobe door|a large wardrobe door creaking open with hangers clinking|5
+sfx|Home/Furniture||Rocking chair|a wooden rocking chair rocking slowly on a wooden floor|8
+sfx|Home/Furniture||Folding chair snap|a metal folding chair being unfolded and snapped open|3
+sfx|Home/Furniture||Sofa cushion flop|someone flopping heavily onto a soft sofa|2
+sfx|Home/Furniture||Office chair swivel|an office chair squeaking as it swivels and rolls|4
+sfx|Home/Furniture||Flat pack assembly|screws turned and wooden panels tapped while assembling furniture|8
+sfx|Home/Cleaning||Broom sweeping|a broom sweeping a stone floor with short strokes|6
+sfx|Home/Cleaning||Mopping the floor|a wet mop sloshing in a bucket and wiping a tiled floor|8
+sfx|Home/Cleaning||Scrubbing brush|a stiff brush scrubbing a dirty pot in a sink|6
+sfx|Home/Cleaning||Window squeegee|a squeegee wiping a wet window with a rubbery squeak|4
+sfx|Home/Cleaning||Dusting with cloth|a feather duster and a cloth brushing over shelves|6
+sfx|Home/Cleaning||Trash bag tied|a plastic trash bag rustled, tied and dropped in a bin|5
+sfx|Home/Cleaning||Bin lid clunk|a pedal bin lid flipping open and shutting with a clunk|3
+sfx|Home/Cleaning||Carpet beater|a carpet beater whacking a hanging rug outdoors|6
+sfx|Home/Objects||Grandfather clock|a grandfather clock ticking slowly in a quiet room, then chiming|10
+sfx|Home/Objects||Alarm clock bell|a mechanical alarm clock ringing loudly on a bedside table|6
+sfx|Home/Objects||Wind up music box|a music box being wound up then playing a delicate tune|10
+sfx|Home/Objects||Zipper opened|a zipper of a bag opened quickly|2
+sfx|Home/Objects||Velcro strap ripped|a velcro strap on a backpack ripped open in one pull|1
+sfx|Home/Objects||Umbrella opening|an umbrella snapping open with a whoosh|2
+sfx|Home/Objects||Lighter flick|a metal lighter lid flicked open and the flint struck|3
+sfx|Home/Objects||Match struck|a match struck on a box and flaring up|3
+sfx|Home/Objects||Light switch clicks|a light switch clicked on and off twice|3
+sfx|Home/Objects||Coins on table|a handful of coins dropped and spinning on a wooden table|4
+sfx|Home/Objects||Plastic bag rustle|a plastic shopping bag rustling and crinkling|4
+sfx|Home/Objects||Cardboard box taped|packing tape pulled off a roll and sealing a cardboard box|5
+sfx|Home/Paper and books||Book pages turning|the pages of an old book turned one by one|6
+sfx|Home/Paper and books||Paper crumpled|a sheet of paper crumpled into a ball and thrown away|3
+sfx|Home/Paper and books||Paper torn in half|a sheet of paper torn slowly in half|3
+sfx|Home/Paper and books||Envelope opened|an envelope torn open and a letter unfolded|4
+sfx|Home/Paper and books||Heavy book closed|a heavy hardcover book closed with a dull thud|2
+sfx|Home/Paper and books||Newspaper unfolded|a large newspaper shaken and unfolded|3
+sfx|Home/Glass and dishes||Wine glasses toast|two wine glasses clinking in a toast|2
+sfx|Home/Glass and dishes||Plate smashed|a ceramic plate dropped and smashing on a tiled floor|2
+sfx|Home/Glass and dishes||Spoon stirring cup|a spoon stirring coffee in a porcelain cup|4
+sfx|Home/Glass and dishes||Porcelain teacup on saucer|a porcelain teacup set down on its saucer with a delicate clink|2
+sfx|Home/Glass and dishes||Stack of plates|a stack of dishes rattling as it is put away in a cupboard|4
+sfx|Home/Glass and dishes||Bottle uncorked|a cork pulled from a wine bottle with a pop and wine glugging into a glass|6
+sfx|Human/Footsteps||Steps on gravel|footsteps walking slowly on a gravel path|8
+sfx|Human/Footsteps||High heels on marble|high heels walking on a marble floor in a large hall|6
+sfx|Human/Footsteps||Running on wood floor|footsteps running fast on a wooden floor|4
+sfx|Human/Footsteps||Steps in deep snow|footsteps crunching in deep fresh snow|6
+sfx|Human/Footsteps||Boots on metal stairs|heavy boots climbing metal stairs with a ringing echo|6
+sfx|Human/Footsteps||Steps in dry leaves|footsteps shuffling through dry autumn leaves|6
+sfx|Human/Footsteps||Barefoot on tiles|bare feet padding on a wet tiled floor|6
+sfx|Human/Footsteps||Sneakers on gym floor|sneakers squeaking on a polished gym floor|5
+sfx|Human/Footsteps||Boots in thick mud|heavy boots squelching step by step through thick mud|8
+sfx|Human/Footsteps||Creaky wooden stairs|someone walking slowly up creaky wooden stairs|6
+sfx|Human/Footsteps||Steps in corridor|footsteps echoing in a long empty concrete corridor|6
+sfx|Human/Footsteps||Splashing in puddles|footsteps splashing through rain puddles on a sidewalk|6
+sfx|Human/Footsteps||Barefoot on beach sand|bare feet walking on dry beach sand|6
+sfx|Human/Footsteps||Marching soldiers|a group of soldiers marching in step on a paved square|8
+sfx|Human/Body||Slow clapping|one person clapping hands slowly in a quiet room|4
+sfx|Human/Body||Finger snaps|fingers snapping in a steady rhythm|5
+sfx|Human/Body||Knuckles cracking|knuckles cracking one after the other|4
+sfx|Human/Body||Man coughing|a man coughing hard several times|4
+sfx|Human/Body||Loud sneeze|a person sneezing loudly twice in a quiet office|3
+sfx|Human/Body||Repeated hiccups|a person hiccuping repeatedly and trying to hold their breath|6
+sfx|Human/Body||Stomach growl|a hungry stomach growling and gurgling|4
+sfx|Human/Body||Hands rubbing|hands rubbing together briskly to warm up|3
+sfx|Human/Body||Slap on skin|a hand slapping bare skin sharply|1
+sfx|Human/Body||Body thrown on floor|a body falling heavily onto a wooden floor|2
+sfx|Human/Breathing and heartbeat||Heavy breathing|a person breathing heavily after running|6
+sfx|Human/Breathing and heartbeat||Slow heartbeat|a heartbeat beating slowly and deeply|8
+sfx|Human/Breathing and heartbeat||Racing heartbeat|a fast pounding heartbeat with panicked breathing|8
+sfx|Human/Breathing and heartbeat||Calm sleeping breath|a person breathing softly and calmly while asleep|10
+sfx|Human/Breathing and heartbeat||Loud snoring|a man snoring loudly in a quiet bedroom|10
+sfx|Human/Breathing and heartbeat||Panting in fear|short frightened panting breaths in the dark|6
+sfx|Human/Breathing and heartbeat||Breath on cold air|a person exhaling slowly, deep relaxing breaths|8
+sfx|Human/Breathing and heartbeat||Underwater breathing|breathing through a diving regulator with bubbles underwater|8
+sfx|Human/Voice without words||Hearty belly laugh|a man laughing heartily from the belly in a small room|4
+sfx|Human/Voice without words||Giggling woman|a young woman giggling softly behind her hand|3
+sfx|Human/Voice without words||Deep tired sigh|a long tired sigh of a person sinking into a chair|3
+sfx|Human/Voice without words||Surprised gasp|a woman taking a sharp surprised gasp of breath|2
+sfx|Human/Voice without words||Terrified scream|a woman screaming in terror in a dark echoing corridor|3
+sfx|Human/Voice without words||Humming a tune|a person humming a gentle tune with closed lips|8
+sfx|Human/Voice without words||Sleepy yawn|a person yawning loudly and stretching in the morning|4
+sfx|Human/Voice without words||Pained groan|a man groaning in pain while lying on the floor|5
+sfx|Human/Voice without words||Whistling a melody|a person whistling a cheerful melody|8
+sfx|Human/Voice without words||Disgusted grunt|a short disgusted grunt and a sniff|2
+sfx|Human/Crowds||Stadium goal cheer|a stadium crowd erupting in cheers after a goal|8
+sfx|Human/Crowds||Theater applause|an audience applauding in a theater|8
+sfx|Human/Crowds||Crowd murmur in hall|a crowd murmuring in a large hall before a show|10
+sfx|Human/Crowds||Protest chanting|a large crowd chanting and shouting at a street protest|10
+sfx|Human/Crowds||Booing audience|a theater audience booing loudly and whistling in disapproval|8
+sfx|Human/Crowds||Concert crowd roar|a concert crowd screaming and roaring as the band appears|8
+sfx|Human/Crowds||Cocktail party chatter|people chatting and laughing at a cocktail party with glasses clinking|10
+sfx|Human/Crowds||Countdown crowd|a crowd counting down together then cheering|8
+sfx|Human/Crowds||Gasp of crowd|a large audience gasping in shock together|3
+sfx|Human/Crowds||Laughing audience|a comedy club audience laughing out loud|6
+sfx|Human/Crowds||Panicked crowd|a panicked crowd screaming and running away|8
+sfx|Human/Crowds||Standing ovation|a long standing ovation with whistles and cheers|10
+sfx|Human/Children||Playground laughter|children laughing and playing in a playground|10
+sfx|Human/Children||Baby crying|a baby crying in a crib|8
+sfx|Human/Children||Baby giggling|a baby giggling and cooing happily|6
+sfx|Human/Children||Toddler babbling|a toddler babbling and playing with toys|8
+sfx|Human/Children||Kids splashing in pool|children splashing and shrieking in a swimming pool|10
+sfx|Human/Children||School bell recess|children rushing out of class shouting as a school bell rings|8
+sfx|Human/Children||Children party|children screaming with joy at a birthday party|8
+sfx|Human/Children||Child running away|a child laughing and running away on a wooden floor|4
+sfx|Human/Clothing and fabric||Coat put on|a heavy coat being put on with fabric rustling|4
+sfx|Human/Clothing and fabric||Bedsheet shaken|a bedsheet shaken out and flapping|3
+sfx|Human/Clothing and fabric||Leather jacket creak|a leather jacket creaking with movement|4
+sfx|Human/Clothing and fabric||Fabric ripping|a piece of cloth torn apart|2
+sfx|Human/Clothing and fabric||Rain jacket rustle|a nylon rain jacket swishing as someone walks|6
+sfx|Human/Clothing and fabric||Belt buckle|a belt buckle unfastened and the belt pulled out|3
+sfx|Human/Clothing and fabric||Shoelaces tied|shoelaces of a sneaker pulled tight and tied in a knot|4
+sfx|Human/Clothing and fabric||Cloth flag flapping|a cloth flag flapping hard in the wind|6
+sfx|Human/Eating and drinking||Apple crunch|biting into a crisp apple with a loud crunch|2
+sfx|Human/Eating and drinking||Chips crunching|someone eating potato chips with loud crunches|6
+sfx|Human/Eating and drinking||Drinking gulps|a person gulping water from a bottle|4
+sfx|Human/Eating and drinking||Slurping soup|someone slurping hot soup from a spoon|4
+sfx|Human/Eating and drinking||Soda can opened|a soda can opened with a crack and fizz|2
+sfx|Human/Eating and drinking||Drinking with straw|slurping the last drops of a drink through a straw|3
+sfx|Human/Eating and drinking||Chewing gum|someone chewing gum noisily and popping a bubble|6
+sfx|Human/Eating and drinking||Burp after drink|a loud satisfied burp after a drink|2
+sfx|Human/Eating and drinking||Hot tea sip|a person sipping hot tea and sighing with pleasure|4
+sfx|Human/Eating and drinking||Celery bite|chewing a stick of celery with crunchy bites|5
+sfx|Action/Impacts||Punch to the body|a punch hitting a body hard in a fight|1
+sfx|Action/Impacts||Face slap|a hard slap across the face|1
+sfx|Action/Impacts||Body kick thud|a heavy kick landing on a body with a dull thud|1
+sfx|Action/Impacts||Metal object on concrete|a heavy metal object falling on concrete|2
+sfx|Action/Impacts||Hammer on anvil|a hammer striking an anvil with a ringing clang|3
+sfx|Action/Impacts||Wooden plank hit|a wooden plank smashed against a wall|2
+sfx|Action/Impacts||Pipe on metal door|a metal pipe hitting a steel door with a loud clang|3
+sfx|Action/Impacts||Head butt|a heavy head butt impact with a crunch|1
+sfx|Action/Impacts||Boxing bag punches|fast punches hitting a heavy boxing bag|5
+sfx|Action/Impacts||Rock thrown on car|a big rock smashing onto a car roof|3
+sfx|Action/Impacts||Baseball bat swing hit|a baseball bat swung hard and hitting a wooden crate|2
+sfx|Action/Impacts||Cinematic boom hit|a deep cinematic impact boom with a long rumbling tail|6
+sfx|Action/Explosions||Huge explosion|a huge explosion with debris falling all around|8
+sfx|Action/Explosions||Distant explosion|a distant explosion rumbling across a valley|8
+sfx|Action/Explosions||Exploding car wreck|a car exploding and burning with flames roaring|8
+sfx|Action/Explosions||Grenade blast|a grenade exploding with shrapnel scattering|4
+sfx|Action/Explosions||Building demolition|a building demolished with explosive charges and collapsing|10
+sfx|Action/Explosions||Underwater explosion|a muffled underwater explosion with bubbles rising|6
+sfx|Action/Explosions||Gas tank blast|a gas tank exploding in a big fireball whoosh|5
+sfx|Action/Explosions||Firecracker string|a string of firecrackers popping quickly|5
+sfx|Action/Explosions||Mine blast in tunnel|an explosion echoing inside a mine tunnel with falling rocks|8
+sfx|Action/Explosions||Dynamite fuse|a dynamite fuse sizzling, then a loud explosion|6
+sfx|Action/Firearms||Pistol shots|a pistol firing three shots in an alley|3
+sfx|Action/Firearms||Shotgun pump and fire|a shotgun being pumped and fired|3
+sfx|Action/Firearms||Machine gun burst|an automatic rifle firing a long burst|4
+sfx|Action/Firearms||Sniper shot echo|a single sniper rifle shot echoing across mountains|6
+sfx|Action/Firearms||Revolver cylinder spin|a revolver cylinder spun, then the hammer cocked|3
+sfx|Action/Firearms||Gun reload|a pistol magazine ejected and a new one inserted and racked|4
+sfx|Action/Firearms||Silenced pistol|a silenced pistol firing two muffled shots|2
+sfx|Action/Firearms||Bullet ricochet|bullets ricocheting off metal with whistling whines|4
+sfx|Action/Firearms||Shell casings falling|empty shell casings bouncing on a concrete floor|3
+sfx|Action/Firearms||Western gunfight|a western gunfight with revolver shots echoing in a canyon|10
+sfx|Action/Melee weapons||Sword drawn|a sword being drawn from its metal sheath|2
+sfx|Action/Melee weapons||Sword clash fight|swords clashing repeatedly in a fight|6
+sfx|Action/Melee weapons||Arrow hits target|a bow shooting an arrow that hits a wooden target|3
+sfx|Action/Melee weapons||Arrow volley|a volley of arrows whistling through the air|4
+sfx|Action/Melee weapons||Axe chopping|an axe chopping into a wooden log|2
+sfx|Action/Melee weapons||Knife sharpening|a knife being sharpened on a whetstone|6
+sfx|Action/Melee weapons||Dagger stab|a dagger stabbing into flesh with a wet thrust|2
+sfx|Action/Melee weapons||Chain whip|a heavy chain swung and whipping the ground|3
+sfx|Action/Melee weapons||Shield block|a sword hitting a wooden shield with a heavy thud|2
+sfx|Action/Melee weapons||Spear thrown|a spear thrown and sticking into the ground|2
+sfx|Action/Melee weapons||Whip crack|a long leather whip cracking sharply in an open arena|2
+sfx|Action/Melee weapons||Mace on armor|a mace hitting metal armor with a loud clank|2
+sfx|Action/Destruction||Glass window shattering|a large glass window shattering into pieces|3
+sfx|Action/Destruction||Wall collapsing|a brick wall collapsing with bricks tumbling|6
+sfx|Action/Destruction||Wood splintering|a wooden door splintering as it is kicked in|3
+sfx|Action/Destruction||Car crushed|a car being crushed by a hydraulic press, metal groaning|8
+sfx|Action/Destruction||Wooden fence smashed|a wooden fence smashed apart with splintering and cracking planks|4
+sfx|Action/Destruction||Ceramic vase breaks|a ceramic vase falling and breaking into pieces|3
+sfx|Action/Destruction||Bones crunching|bones crunching and snapping under a heavy blow in a fight|2
+sfx|Action/Destruction||Metal tearing|thick metal sheets tearing and screeching|5
+sfx|Action/Destruction||Ice cracking|a thick sheet of ice cracking and breaking apart|5
+sfx|Action/Destruction||Bridge collapse|a wooden bridge creaking and collapsing into a river|8
+sfx|Action/Falls and crashes||Body falling down stairs|a person tumbling down wooden stairs|4
+sfx|Action/Falls and crashes||Two car collision|two cars colliding with crunching metal and breaking glass|4
+sfx|Action/Falls and crashes||Bicycle crash on asphalt|a bicycle crashing on asphalt with metal scraping|4
+sfx|Action/Falls and crashes||Shelf collapsing|a shelf collapsing with dishes and objects crashing down|5
+sfx|Action/Falls and crashes||Pile of boxes falls|a pile of cardboard boxes tumbling down|4
+sfx|Action/Falls and crashes||Pots and pans falling|pots and pans clattering onto a kitchen floor|4
+sfx|Action/Falls and crashes||Falling into water|a person falling into a river with a big splash|3
+sfx|Action/Falls and crashes||Debris landing|rubble and debris raining down on a metal roof|6
+sfx|Action/Whooshes||Fast whoosh|a fast whoosh passing from left to right|1
+sfx|Action/Whooshes||Sword swing whoosh|a sword swung through the air with a sharp swish|1
+sfx|Action/Whooshes||Low heavy whoosh|a deep heavy whoosh passing close by|2
+sfx|Action/Whooshes||Reverse whoosh riser|a reversed whoosh rising to a sudden stop|2
+sfx|Action/Whooshes||Fire whoosh|a burst of fire whooshing up|3
+sfx|Action/Whooshes||Air swipe|a quick hand swiping through the air|1
+sfx|Action/Whooshes||Arrow fly by|an arrow flying close past the ear|1
+sfx|Action/Whooshes||Cloth whoosh|a cape swirling through the air with a fluttering whoosh|2
+sfx|Action/Whooshes||Rocket fly by|a small rocket whizzing past at high speed|2
+sfx|Action/Whooshes||Swirling wind whoosh|a swirling whoosh spinning around the listener|3
+sfx|Action/Military||Cannon fire|a cannon firing in the distance|3
+sfx|Action/Military||Battle tank tracks|a heavy tank rolling forward with clanking tracks|8
+sfx|Action/Military||Artillery barrage|an artillery barrage with shells whistling and exploding|10
+sfx|Action/Military||Air raid siren|an air raid siren winding up and wailing over a city|10
+sfx|Action/Military||Fighter jet strafing|a fighter jet diving and firing its cannon|5
+sfx|Action/Military||Military drill shouts|boots stomping and a sergeant shouting orders on a parade ground|8
+sfx|Action/Military||Helicopter gunship|a military helicopter hovering and firing rockets|8
+sfx|Action/Military||Morse radio|a military radio crackling with morse code beeps|8
+sfx|Science fiction and fantasy/Science fiction||Laser gun blasts|a futuristic laser gun firing several bright zapping shots|3
+sfx|Science fiction and fantasy/Science fiction||Spaceship fly by|a spaceship engine humming and passing by overhead|6
+sfx|Science fiction and fantasy/Science fiction||Teleporter beam out|a teleportation whoosh with electric crackles and a shimmer|3
+sfx|Science fiction and fantasy/Science fiction||Force field hum|an energy force field humming and crackling when touched|4
+sfx|Science fiction and fantasy/Science fiction||Starship bridge hum|the deep engine hum of a starship bridge with soft computer beeps|10
+sfx|Science fiction and fantasy/Science fiction||Warp drive jump|a warp drive charging up and jumping with a huge whoosh|5
+sfx|Science fiction and fantasy/Science fiction||Airlock hiss|a spaceship airlock door hissing and sliding open|3
+sfx|Science fiction and fantasy/Science fiction||Plasma cannon|a heavy plasma cannon charging and firing a deep blast|4
+sfx|Science fiction and fantasy/Science fiction||Alien transmission|a distorted alien radio transmission with strange warbling tones|6
+sfx|Science fiction and fantasy/Science fiction||Hologram flicker|a hologram flickering on with a glitchy electronic shimmer|3
+sfx|Science fiction and fantasy/Science fiction||Lightsaber style hum|an energy blade igniting, humming and swinging|4
+sfx|Science fiction and fantasy/Science fiction||Hover car pass|a hover vehicle gliding past with a smooth electric whine|4
+sfx|Science fiction and fantasy/Science fiction||Cryo pod opening|a cryogenic pod hissing open with cold mist venting|4
+sfx|Science fiction and fantasy/Science fiction||Spaceship alarm|a red alert alarm blaring inside a spaceship corridor|6
+sfx|Science fiction and fantasy/Science fiction||Tractor beam|a tractor beam pulsing with a low throbbing drone|8
+sfx|Science fiction and fantasy/Science fiction||Space station creak|metal creaking and distant thrumming inside an orbiting space station|10
+sfx|Science fiction and fantasy/Robots||Robot servos|a robot moving with servo motors whirring and beeps|4
+sfx|Science fiction and fantasy/Robots||Robot footsteps|a heavy robot walking with metallic clanking steps|6
+sfx|Science fiction and fantasy/Robots||Robot power up|a robot booting up with rising electronic tones and clicks|4
+sfx|Science fiction and fantasy/Robots||Robot power down|a robot shutting down with a descending whine|3
+sfx|Science fiction and fantasy/Robots||Droid chirps|a small droid chirping and beeping happily|3
+sfx|Science fiction and fantasy/Robots||Mech transformation|a giant robot transforming with gears and metal clanks|6
+sfx|Science fiction and fantasy/Robots||Robotic arm|an industrial robotic arm swiveling with hydraulic hisses|5
+sfx|Science fiction and fantasy/Robots||Robot malfunction|a robot malfunctioning with sparks, stuttering beeps and grinding|5
+sfx|Science fiction and fantasy/Magic||Magic spell sparkle|a magical spell with sparkling chimes|3
+sfx|Science fiction and fantasy/Magic||Fireball spell|a fireball spell conjured and launched with a roaring whoosh|3
+sfx|Science fiction and fantasy/Magic||Ice spell|an ice spell freezing with crystalline crackling|3
+sfx|Science fiction and fantasy/Magic||Healing spell|a soft healing spell with warm shimmering tones|4
+sfx|Science fiction and fantasy/Magic||Magic portal|a magic portal opening with a swirling deep hum|6
+sfx|Science fiction and fantasy/Magic||Fairy dust|fairy dust sprinkled with tiny tinkling bells|3
+sfx|Science fiction and fantasy/Magic||Lightning spell|a wizard casting a lightning bolt with crackling thunder|4
+sfx|Science fiction and fantasy/Magic||Potion bubbling|a magic potion bubbling in a cauldron|8
+sfx|Science fiction and fantasy/Magic||Wand flick|a magic wand flicked with a bright twinkle|2
+sfx|Science fiction and fantasy/Magic||Enchanted shield|a magical shield appearing with a resonant hum|3
+sfx|Science fiction and fantasy/Magic||Spell backfires|a magic spell exploding with a puff of smoke|2
+sfx|Science fiction and fantasy/Magic||Dark curse|a dark curse cast with low ominous whispers and a rumble|6
+sfx|Science fiction and fantasy/Magic||Dragon fire breath|a dragon breathing a long blast of fire|5
+sfx|Science fiction and fantasy/Magic||Treasure chest glow|a magic treasure chest opening with a shimmering glow sound|4
+sfx|Science fiction and fantasy/Horror||Creepy whispers|creepy whispers echoing in a dark room|8
+sfx|Science fiction and fantasy/Horror||Haunted house creaks|floorboards creaking and doors groaning in a haunted house|10
+sfx|Science fiction and fantasy/Horror||Ghost moan|a ghostly moan drifting through an empty hall|6
+sfx|Science fiction and fantasy/Horror||Horror stinger|a sudden horror stinger with screeching violins|3
+sfx|Science fiction and fantasy/Horror||Heartbeat drone horror|a slow heartbeat under a dark droning tension|10
+sfx|Science fiction and fantasy/Horror||Chains dragging|heavy chains dragging on a stone floor in a dungeon|6
+sfx|Science fiction and fantasy/Horror||Nails on chalkboard|fingernails scraping slowly down a chalkboard|4
+sfx|Science fiction and fantasy/Horror||Evil laugh|a sinister evil laugh echoing in a castle|5
+sfx|Science fiction and fantasy/Horror||Skeleton bones rattling|a skeleton's dry bones rattling and clattering in a crypt|5
+sfx|Science fiction and fantasy/Horror||Clock in empty house|a clock ticking loudly in a silent empty house, then stopping|8
+sfx|Science fiction and fantasy/Horror||Scratching in wall|something scratching inside a wall in the dark|6
+sfx|Science fiction and fantasy/Horror||Flesh squelch|a wet gory squelch of flesh being torn|2
+sfx|Science fiction and fantasy/Horror||Music box horror|an out of tune music box slowing down eerily|8
+sfx|Science fiction and fantasy/Horror||Crow and church bell|a crow cawing and a church bell tolling once at midnight|6
+sfx|Science fiction and fantasy/Monsters||Monster roar|a huge monster roaring in a cave|4
+sfx|Science fiction and fantasy/Monsters||Zombie horde groans|a horde of zombies groaning and shuffling closer in the dark|10
+sfx|Science fiction and fantasy/Monsters||Creature growl|a deep creature growling from the shadows|5
+sfx|Science fiction and fantasy/Monsters||Giant footsteps|giant footsteps shaking the ground with deep booming thuds|6
+sfx|Science fiction and fantasy/Monsters||Slime creature|a slimy creature squelching and gurgling|6
+sfx|Science fiction and fantasy/Monsters||Alien creature screech|an alien creature screeching loudly inside a metal ventilation shaft|4
+sfx|Science fiction and fantasy/Monsters||Werewolf howl|a werewolf growling then howling at the moon in a forest|8
+sfx|Science fiction and fantasy/Monsters||Vampire hiss|a vampire hissing angrily with bared fangs in a stone crypt|3
+sfx|Interface and tech/Interface||Soft UI button click|a soft short button click of a user interface|1
+sfx|Interface and tech/Interface||Toggle switch on|a crisp toggle switch clicking on|1
+sfx|Interface and tech/Interface||Menu hover tick|a tiny tick sound as a menu item is highlighted|1
+sfx|Interface and tech/Interface||Error buzzer|a short low error buzzer for a wrong answer|1
+sfx|Interface and tech/Interface||Success chime|a bright two note success chime|1
+sfx|Interface and tech/Interface||Swipe transition|a quick digital swipe transition sound|1
+sfx|Interface and tech/Interface||Pop up open|a bubbly pop as a window opens|1
+sfx|Interface and tech/Interface||Typing in text field|soft digital keystrokes typing in a text field|3
+sfx|Interface and tech/Interface||Loading complete|a rising tone as a loading bar completes|2
+sfx|Interface and tech/Interface||Delete trash sound|crumpled paper sound for moving a file to the trash|1
+sfx|Interface and tech/Interface||Level up jingle|a short game level up jingle with ascending notes|2
+sfx|Interface and tech/Interface||Countdown beeps|three short countdown beeps and a long final beep|4
+sfx|Interface and tech/Notifications||Notification chime|a short positive notification chime with two soft bell notes|2
+sfx|Interface and tech/Notifications||New message ping|a soft ping for a new message|1
+sfx|Interface and tech/Notifications||Calendar reminder|a gentle marimba reminder tone playing three rising notes|2
+sfx|Interface and tech/Notifications||Email received|a whoosh and ding when an email arrives|2
+sfx|Interface and tech/Notifications||Warning alert|an urgent repeating warning alert tone|4
+sfx|Interface and tech/Notifications||Low battery|a descending low battery warning beep|2
+sfx|Interface and tech/Notifications||Upload done|a light upward swoosh confirming an upload|1
+sfx|Interface and tech/Notifications||Like pop|a cute pop sound for a like|1
+sfx|Interface and tech/Electronics||Neon light buzz|the electric buzz of a flickering neon light|8
+sfx|Interface and tech/Electronics||Electric sparks|electric sparks crackling from a broken cable|4
+sfx|Interface and tech/Electronics||Transformer hum|a high voltage transformer humming steadily in an electrical substation|10
+sfx|Interface and tech/Electronics||Radio static tuning|an old radio tuning through static and stations|8
+sfx|Interface and tech/Electronics||TV static noise|a television showing static white noise|6
+sfx|Interface and tech/Electronics||Power surge|a power surge with buzzing and lights popping off|4
+sfx|Interface and tech/Electronics||Speaker feedback|a microphone feedback squeal through a speaker|3
+sfx|Interface and tech/Electronics||Tesla coil|a tesla coil discharging with loud zapping arcs|5
+sfx|Interface and tech/Phones||Old phone ringing|an old rotary phone ringing loudly|6
+sfx|Interface and tech/Phones||Rotary dial|a rotary phone dial turning and clicking back|4
+sfx|Interface and tech/Phones||Smartphone vibrate|a smartphone vibrating on a wooden table|3
+sfx|Interface and tech/Phones||Phone busy tone|a telephone line busy tone beeping through a handset earpiece|6
+sfx|Interface and tech/Phones||Phone hang up|a phone handset put down on its cradle|2
+sfx|Interface and tech/Phones||Phone camera shutter|a smartphone camera shutter clicking several times in a row|3
+sfx|Interface and tech/Computers||Mechanical keyboard|fast typing on a mechanical keyboard|6
+sfx|Interface and tech/Computers||Mouse clicks|a computer mouse clicking several times|3
+sfx|Interface and tech/Computers||Hard drive seek|an old hard drive spinning and clicking|8
+sfx|Interface and tech/Computers||Server room hum|cooling fans humming in a server room|10
+sfx|Interface and tech/Computers||Computer startup|a desktop computer starting up with fans spinning|6
+sfx|Interface and tech/Computers||Laser printer|a laser printer printing and pushing out pages|8
+sfx|Interface and tech/Retro tech||Dial up modem|a dial up modem connecting with screeches and tones|10
+sfx|Interface and tech/Retro tech||Cassette tape insert|a cassette inserted into a player and play pressed|4
+sfx|Interface and tech/Retro tech||VHS tape rewind|a VHS tape rewinding in a video recorder|8
+sfx|Interface and tech/Retro tech||Typewriter carriage bell|an old typewriter typing with a bell and carriage return|8
+sfx|Interface and tech/Retro tech||Film projector|an old film projector running with a clicking reel|10
+sfx|Interface and tech/Retro tech||Vinyl crackle|a needle dropped on a vinyl record, crackling|6
+sfx|Interface and tech/Retro tech||Floppy disk drive|a floppy disk drive reading with grinding noises|6
+sfx|Interface and tech/Retro tech||Arcade machine|an old arcade machine with bleeps and coin insert|5
+sfx|Interface and tech/Retro tech||Polaroid camera|an instant camera clicking and ejecting a photo|4
+sfx|Interface and tech/Retro tech||Tube TV switching on|an old CRT television turning on with a high pitched whine|4
+sfx|Work and industry/Construction||Jackhammer on pavement|a jackhammer breaking up pavement on a busy construction site|8
+sfx|Work and industry/Construction||Cement mixer turning|a cement mixer truck drum turning and churning wet concrete|10
+sfx|Work and industry/Construction||Nail gun bursts|a pneumatic nail gun firing nails into wooden beams|5
+sfx|Work and industry/Construction||Bulldozer pushing rubble|a bulldozer engine roaring as it pushes rubble and rocks|8
+sfx|Work and industry/Construction||Excavator digging|an excavator bucket scraping and digging into rocky soil|6
+sfx|Work and industry/Construction||Scaffolding clanks|metal scaffolding poles clanking as workers assemble them|6
+sfx|Work and industry/Construction||Crane beeping reverse|a construction crane motor whining with a reversing beep alarm|6
+sfx|Work and industry/Construction||Pile driver pounding|a pile driver pounding a steel post into the ground|6
+sfx|Work and industry/Construction||Bricklayer trowel|a trowel scraping mortar and tapping bricks into place|6
+sfx|Work and industry/Construction||Roof tiles laid|clay roof tiles clinking as they are stacked and laid on a roof|6
+sfx|Work and industry/Construction||Concrete saw cutting|a concrete saw screaming as it cuts through a slab|6
+sfx|Work and industry/Construction||Dumpster rubble drop|rubble and planks dumped into a metal dumpster with a crash|3
+sfx|Work and industry/Tools||Power drill into wall|a power drill boring into a brick wall|5
+sfx|Work and industry/Tools||Chainsaw cutting log|a chainsaw starting up and cutting through a thick log|8
+sfx|Work and industry/Tools||Hand saw on plank|a hand saw cutting back and forth through a wooden plank|6
+sfx|Work and industry/Tools||Hammering nails|a hammer driving nails into a wooden board|5
+sfx|Work and industry/Tools||Circular saw|a circular saw spinning up and ripping through plywood|6
+sfx|Work and industry/Tools||Angle grinder sparks|an angle grinder cutting a steel bar with a high pitched screech|6
+sfx|Work and industry/Tools||Sanding wood by hand|sandpaper rubbing back and forth on a piece of wood|6
+sfx|Work and industry/Tools||Wrench ratchet|a ratchet wrench clicking while tightening a bolt|4
+sfx|Work and industry/Tools||Screwdriver turning|a screwdriver squeaking as it turns a tight screw|4
+sfx|Work and industry/Tools||Toolbox rummaging|hands rummaging through a metal toolbox full of tools|5
+sfx|Work and industry/Tools||Welding torch|an arc welder buzzing and crackling in a workshop|8
+sfx|Work and industry/Tools||Air compressor|an air compressor motor running and releasing pressure with a hiss|8
+sfx|Work and industry/Tools||Lawn mower|a petrol lawn mower starting and mowing grass|10
+sfx|Work and industry/Tools||Leaf blower|a leaf blower roaring in a garden|10
+sfx|Work and industry/Factory||Factory machines|an industrial factory hall with heavy machines running|10
+sfx|Work and industry/Factory||Conveyor belt|a conveyor belt rattling and carrying metal parts|10
+sfx|Work and industry/Factory||Hydraulic press|a hydraulic press stamping metal with a loud thump and hiss|4
+sfx|Work and industry/Factory||Steam whistle shift|a factory steam whistle signaling the end of a shift|5
+sfx|Work and industry/Factory||Bottling line|glass bottles clinking along a bottling line|8
+sfx|Work and industry/Factory||Metal lathe|a metal lathe spinning and cutting steel with shrill scraping|8
+sfx|Work and industry/Factory||Forklift beeping|a forklift driving and beeping in a warehouse|8
+sfx|Work and industry/Factory||Steel mill furnace|a roaring steel mill furnace with molten metal pouring|10
+sfx|Work and industry/Farm work||Tractor plowing field|a tractor engine chugging as it plows a field|10
+sfx|Work and industry/Farm work||Milking by hand|milk squirting into a metal bucket during hand milking|6
+sfx|Work and industry/Farm work||Hay pitchfork|a pitchfork tossing hay in a barn|6
+sfx|Work and industry/Farm work||Wood splitting|an axe splitting firewood logs on a chopping block|4
+sfx|Work and industry/Farm work||Barn door rolling|a big wooden barn door rolling on its rusty rail|5
+sfx|Work and industry/Farm work||Water pump handle|an old hand water pump creaking and gushing water into a bucket|6
+sfx|Leisure and sports/Ball sports||Tennis rally|a tennis ball being hit back and forth on a court|8
+sfx|Leisure and sports/Ball sports||Basketball bounce|a basketball bouncing on a wooden gym floor|5
+sfx|Leisure and sports/Ball sports||Basketball swish|a basketball swishing through the net after a shot|2
+sfx|Leisure and sports/Ball sports||Football kick|a football kicked hard on a grass field|2
+sfx|Leisure and sports/Ball sports||Golf swing|a golf club swinging and hitting a ball off the tee|3
+sfx|Leisure and sports/Ball sports||Golf ball in cup|a golf putt rolling and dropping into the cup|4
+sfx|Leisure and sports/Ball sports||Baseball bat crack|a baseball bat cracking as it hits a fast pitch|2
+sfx|Leisure and sports/Ball sports||Ping pong rally|a ping pong ball bouncing quickly back and forth on a table|6
+sfx|Leisure and sports/Ball sports||Bowling strike|a bowling ball rolling down the lane and knocking all the pins|5
+sfx|Leisure and sports/Ball sports||Volleyball spike|a volleyball spiked hard and hitting the sand|2
+sfx|Leisure and sports/Ball sports||Rugby tackle|rugby players colliding in a heavy tackle with grunts|3
+sfx|Leisure and sports/Ball sports||Billiard break|billiard balls breaking and clacking on a pool table|3
+sfx|Leisure and sports/Ball sports||Squash ball echo|a squash ball smacking against the walls of a court|6
+sfx|Leisure and sports/Ball sports||Ice hockey slap shot|an ice hockey slap shot hitting the boards of the rink|3
+sfx|Leisure and sports/Other sports||Referee whistle|a referee whistle blowing sharply three times|3
+sfx|Leisure and sports/Other sports||Boxing ring bell|a boxing ring bell ringing to start the round|3
+sfx|Leisure and sports/Other sports||Skateboard tricks|a skateboard rolling and landing a trick on concrete|4
+sfx|Leisure and sports/Other sports||Ice skating blades|ice skates gliding and scraping on an ice rink|6
+sfx|Leisure and sports/Other sports||Swimmer diving|a swimmer diving into a pool and swimming strokes|6
+sfx|Leisure and sports/Other sports||Weightlifting drop|heavy barbell weights dropped on a gym floor|2
+sfx|Leisure and sports/Other sports||Fencing bout|fencing foils clashing quickly during a bout|4
+sfx|Leisure and sports/Other sports||Starting pistol race|a starting pistol fired and runners sprinting off|5
+sfx|Leisure and sports/Other sports||Skiing downhill|skis carving through snow on a steep slope|6
+sfx|Leisure and sports/Other sports||Archery practice|a bow string released and an arrow thudding into a target|3
+sfx|Leisure and sports/Games||Dice rolling|dice rolling and clattering on a wooden board|3
+sfx|Leisure and sports/Games||Shuffling cards|a deck of playing cards being shuffled and dealt|6
+sfx|Leisure and sports/Games||Chess pieces|chess pieces placed on a wooden board with soft clicks|5
+sfx|Leisure and sports/Games||Slot machine jackpot|a slot machine spinning and paying out a jackpot of coins|8
+sfx|Leisure and sports/Games||Pinball machine|a pinball machine with bumpers, bells and flippers|8
+sfx|Leisure and sports/Games||Roulette wheel|a roulette wheel spinning and the ball bouncing into a slot|8
+sfx|Leisure and sports/Games||Jigsaw puzzle|jigsaw puzzle pieces poured out of a box onto a table|4
+sfx|Leisure and sports/Games||Video game coin|a retro video game coin collect sound|1
+sfx|Leisure and sports/Games||Board game timer|a sand timer flipped and a game buzzer ringing|6
+sfx|Leisure and sports/Games||Marbles rolling|glass marbles rolling and clicking on a wooden floor|5
+sfx|Leisure and sports/Celebrations||Fireworks finale|fireworks exploding and crackling in the night sky|10
+sfx|Leisure and sports/Celebrations||Champagne cork|a champagne cork popping and fizzing|3
+sfx|Leisure and sports/Celebrations||Party horn blowout|a paper party horn blowing and unrolling at a birthday|3
+sfx|Leisure and sports/Celebrations||Balloon popping|a balloon inflated then popping loudly|4
+sfx|Leisure and sports/Celebrations||Confetti cannon|a confetti cannon firing with paper raining down|4
+sfx|Leisure and sports/Celebrations||Birthday cheers|people cheering and clapping as candles are blown out|6
+sfx|Leisure and sports/Celebrations||Wedding bells|wedding bells ringing joyfully from a village church tower|10
+sfx|Leisure and sports/Celebrations||Glasses clinking toast|many glasses clinking in a crowded toast|4
+sfx|Leisure and sports/Celebrations||Sparkler fizz|a handheld sparkler fizzing and crackling on a quiet evening|8
+sfx|Leisure and sports/Celebrations||New year horns|noisemakers and horns blowing at a new year party|8
+sfx|Leisure and sports/Fairground||Carousel organ|a carousel turning with its organ music playing|10
+sfx|Leisure and sports/Fairground||Roller coaster|a roller coaster rattling and people screaming|8
+sfx|Leisure and sports/Fairground||Shooting gallery|a fairground shooting gallery with pops and tin targets falling|6
+sfx|Leisure and sports/Fairground||Bumper cars|bumper cars colliding with electric buzzing|8
+sfx|Leisure and sports/Fairground||Fairground barker|a busy fairground with rides and a bell ringing for a prize|10
+sfx|Leisure and sports/Fairground||Ferris wheel creak|a ferris wheel creaking slowly as it turns|8
+sfx|Cartoon and music cues/Cartoon||Cartoon spring boing|a cartoon boing of a spring bouncing up and down|2
+sfx|Cartoon and music cues/Cartoon||Slide whistle fall|a slide whistle falling down from high to low pitch|2
+sfx|Cartoon and music cues/Cartoon||Cartoon zip away|cartoon feet spinning fast then zipping away with a whoosh|3
+sfx|Cartoon and music cues/Cartoon||Bonk on the head|a cartoon bonk on the head followed by tweeting birds|3
+sfx|Cartoon and music cues/Cartoon||Cream pie splat|a cartoon splat of a cream pie hitting a face|2
+sfx|Cartoon and music cues/Cartoon||Rubber duck squeak|a rubber duck squeezed and squeaking in a bathtub|3
+sfx|Cartoon and music cues/Cartoon||Cartoon cork pop|a cartoon cork pop with a springy wobble|2
+sfx|Cartoon and music cues/Cartoon||Tiptoe sneaking|cartoon tiptoe sneaking steps with plucked pizzicato strings|4
+sfx|Cartoon and music cues/Cartoon||Falling whistle crash|a long whistle falling down, then a distant crash|5
+sfx|Cartoon and music cues/Cartoon||Kazoo silly laugh|a kazoo playing a silly mocking laugh|3
+sfx|Cartoon and music cues/Cartoon||Cartoon eye blinks|two quick cartoon eye blinks with soft clicking pops|2
+sfx|Cartoon and music cues/Cartoon||Clown horn honk|a clown bicycle horn honking three times in a circus|3
+sfx|Cartoon and music cues/Cartoon||Cartoon gulp|a cartoon character gulping and swallowing loudly in fear|2
+sfx|Cartoon and music cues/Cartoon||Wobbly jelly|a wobbly jelly sound bouncing and shaking on a plate|3
+sfx|Cartoon and music cues/Musical cues||Sad trombone|a sad trombone playing wah wah wah after a failure|3
+sfx|Cartoon and music cues/Musical cues||Drum roll and crash|a snare drum roll building up and ending with a cymbal crash|5
+sfx|Cartoon and music cues/Musical cues||Rimshot after joke|a drummer playing a rimshot after a joke in a comedy club|2
+sfx|Cartoon and music cues/Musical cues||Big orchestral hit|a big orchestral hit with brass and timpani in a concert hall|3
+sfx|Cartoon and music cues/Musical cues||Dreamy harp glissando|a dreamy harp glissando sweeping up for a flashback|3
+sfx|Cartoon and music cues/Musical cues||Rising suspense strings|tense suspense strings rising slowly to a sudden stop|6
+sfx|Cartoon and music cues/Musical cues||Victory fanfare|a short triumphant brass victory fanfare with timpani|4
+sfx|Cartoon and music cues/Musical cues||Game over tune|a sad descending game over tune played on a chiptune synth|4
+sfx|Cartoon and music cues/Musical cues||Piano chord stab|a dramatic low piano chord stab with long sustain|5
+sfx|Cartoon and music cues/Musical cues||Gong strike|a large gong struck and resonating in a temple hall|8
+sfx|Cartoon and music cues/Musical cues||Cymbal swell|a cymbal swell rising with mallets to a bright crash|5
+sfx|Cartoon and music cues/Musical cues||Ta da brass sting|a cheerful ta da brass sting for a magic trick reveal|2
+sfx|Cartoon and music cues/Bells and chimes||Church bells peal|church bells ringing a full peal from a stone tower|10
+sfx|Cartoon and music cues/Bells and chimes||Garden wind chimes|metal wind chimes tinkling gently in a garden breeze|8
+sfx|Cartoon and music cues/Bells and chimes||Shop door bell|a little bell tinkling as a shop door opens|3
+sfx|Cartoon and music cues/Bells and chimes||School hand bell|a teacher shaking a brass hand bell in a courtyard|5
+sfx|Cartoon and music cues/Bells and chimes||Tibetan singing bowl|a tibetan singing bowl struck and ringing with a long hum|10
+sfx|Cartoon and music cues/Bells and chimes||Sleigh bells|sleigh bells jingling in rhythm on a winter night|8
+sfx|Cartoon and music cues/Bells and chimes||Alpine cowbell|a large swiss cowbell clanking slowly in a mountain pasture|8
+sfx|Cartoon and music cues/Bells and chimes||Ship bell on deck|a brass ship bell ringing on a wooden deck|5
+sfx|Cartoon and music cues/Bells and chimes||Temple bell|a huge bronze temple bell struck with a wooden log|8
+sfx|Cartoon and music cues/Bells and chimes||Reception desk bell|a reception desk bell dinged twice in a hotel lobby|2
+sfx|Cartoon and music cues/Bells and chimes||Tubular bells|tubular bells chiming slowly in a large concert hall|8
+sfx|Cartoon and music cues/Bells and chimes||Glockenspiel melody|a glockenspiel playing a light twinkling melody|6
+sfx|Cartoon and music cues/Bells and chimes||Clock tower chime|a large clock tower chiming the hour over a city square|10
+sfx|Cartoon and music cues/Bells and chimes||Triangle ding|an orchestral triangle struck once and ringing out|4
 
 # Image to video: shown instead of the video examples once a reference image is chosen
 # First the "Any image" category: prompts that suit almost any image

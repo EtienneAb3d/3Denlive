@@ -13,11 +13,10 @@ import com.cubaix.TDenlive.depth.DepthModel;
  * (see PythonAI), with one of two generators:
  * - music: MusicGen (Meta, https://huggingface.co/facebook/musicgen-small, -medium, -large; CC-BY-NC-4.0),
  * musicgen_generate.py (transformers), 32 kHz mono, at most 30 s;
- * - sound effects: AudioLDM 2 (https://huggingface.co/cvssp/audioldm2, audioldm2-large; CC-BY-NC-SA-4.0),
- * audioldm2_generate.py (diffusers), 16 kHz mono; or MOSS-SoundEffect v2.0
- * (https://huggingface.co/OpenMOSS-Team/MOSS-SoundEffect-v2.0, Apache-2.0), moss_soundeffect_generate.py with
- * the inference code of its authors (downloaded from GitHub at a fixed commit, MOSS_CODE_FILES) in its own
- * Python environment (MOSS_ENV: the versions of transformers / diffusers it was made with), 48 kHz mono.
+ * - sound effects: Woosh (Sony AI, https://github.com/SonyResearch/Woosh, CC-BY-NC-4.0 weights), Woosh-DFlow
+ * (distilled, 4 steps) or Woosh-Flow, woosh_generate.py with the woosh package of its authors (GitHub archive at
+ * WOOSH_COMMIT) in its own environment (WOOSH_ENV), 48 kHz mono; its weights are zip files of the GitHub release
+ * (archives). AudioLDM 2 and MOSS-SoundEffect, tried before, were removed (far worse).
  * The model chosen is downloaded at its first use into ~/3Denlive/Models/<model>/.
  * Unlike Wan, they also run on the CPU (slower): it is used when there is no GPU, or when the NVIDIA GPU
  * has not enough free memory for the model. Output: WAV.
@@ -46,11 +45,13 @@ public class SoundGenerator extends PythonAI {
 		public final int sampleRate;
 		//Python environment (null: the shared one)
 		Env env = null;
-		//Inference code downloaded with the model into <dir>/code/: base URL, files {path, size (0: any)}
-		String codeUrl = null;
-		Object[][] codeFiles = null;
 		//Denoising steps (0: those of the script)
 		int steps = 0;
+		//Model of a family given to the script (--variant; null: none)
+		String variant = null;
+		//Zip archives unpacked into the folder of the model: {url, size, entry prefix kept, folder of those
+		//entries (relative to the model folder), name}; unpacked when <dir>/.unpacked-<name> exists
+		Object[][] archives = new Object[0][];
 
 		Model(String aKind,String aId,String aRepo,String aDir,String aScript,String aParams,Object[][] aFiles
 				,long aCuda,long aMac,long aCpu,double aMaxSeconds,int aRate) {
@@ -77,21 +78,31 @@ public class SoundGenerator extends PythonAI {
 			for(Object[] aF : files) {
 				aS += (Long)aF[1];
 			}
+			for(Object[] aA : archives) {
+				aS += (Long)aA[1];
+			}
 			return aS;
 		}
 
 		public long bytesToDownload(String aTdeDir) {
-			return PythonAI.bytesToDownload(getDir(aTdeDir), files);
+			long aS = PythonAI.bytesToDownload(getDir(aTdeDir), files);
+			for(Object[] aA : archives) {
+				if(!isUnpacked(aTdeDir, aA)) {
+					aS += (Long)aA[1];
+				}
+			}
+			return aS;
+		}
+
+		boolean isUnpacked(String aTdeDir,Object[] aArchive) {
+			return unpackedMarker(aTdeDir, aArchive).isFile();
+		}
+
+		File unpackedMarker(String aTdeDir,Object[] aArchive) {
+			return new File(getDir(aTdeDir), ".unpacked-"+aArchive[4]);
 		}
 
 		public boolean isDownloaded(String aTdeDir) {
-			if(codeFiles != null) {
-				for(Object[] aF : codeFiles) {
-					if(!new File(getCodeDir(aTdeDir), ((String)aF[0]).replace('/', File.separatorChar)).isFile()) {
-						return false;
-					}
-				}
-			}
 			return bytesToDownload(aTdeDir) == 0;
 		}
 
@@ -154,105 +165,50 @@ public class SoundGenerator extends PythonAI {
 	}, 10*GB, 16*GB, 24*GB);
 	public static final Model[] MUSIC_MODELS = {SMALL, MEDIUM, LARGE};
 
-	//AudioLDM 2 (safetensors only): the same files for both, except the UNet
-	static Object[][] audioLdm2Files(long aUnetSize) {
-		return new Object[][] {
-			{"model_index.json", 0L},
-			{"feature_extractor/preprocessor_config.json", 0L},
-			{"language_model/config.json", 0L},
-			{"language_model/model.safetensors", 497772432L},
-			{"projection_model/config.json", 0L},
-			{"projection_model/diffusion_pytorch_model.safetensors", 4737688L},
-			{"scheduler/scheduler_config.json", 0L},
-			{"text_encoder/config.json", 0L},
-			{"text_encoder/model.safetensors", 776327432L},
-			{"text_encoder_2/config.json", 0L},
-			{"text_encoder_2/model.safetensors", 1364951064L},
-			{"tokenizer/merges.txt", 0L},
-			{"tokenizer/special_tokens_map.json", 0L},
-			{"tokenizer/tokenizer.json", 2108774L},
-			{"tokenizer/tokenizer_config.json", 0L},
-			{"tokenizer/vocab.json", 0L},
-			{"tokenizer_2/special_tokens_map.json", 0L},
-			{"tokenizer_2/spiece.model", 0L},
-			{"tokenizer_2/tokenizer.json", 2422164L},
-			{"tokenizer_2/tokenizer_config.json", 0L},
-			{"unet/config.json", 0L},
-			{"unet/diffusion_pytorch_model.safetensors", aUnetSize},
-			{"vae/config.json", 0L},
-			{"vae/diffusion_pytorch_model.safetensors", 221530308L},
-			{"vocoder/config.json", 0L},
-			{"vocoder/model.safetensors", 221079092L},
+	//Woosh: the woosh package of its authors (GitHub archive at this commit: only woosh/, into code/), the
+	//tokenizer and configuration of RoBERTa-large (its weights are in TextConditionerA), the zip files of the
+	//release v1.0.0 (checkpoints/<name>/config.yaml + weights.safetensors): autoencoder, text encoder, flow
+	static final String WOOSH_COMMIT = "7f238bbd5d6dbc94d27190c07827b2d0eaefa268";
+	static final String WOOSH_RELEASE = "https://github.com/SonyResearch/Woosh/releases/download/v1.0.0/";
+	//Versions tested with that commit (its pyproject: torch 2.8.0, transformers >= 4.57.2), without the demo,
+	//video and training packages (gradio, av, lightning), not used by the text to audio models
+	public static final Env WOOSH_ENV = new Env("woosh-env", "1", new String[] {"torch==2.8.0", "torchaudio==2.8.0"
+			, "einops==0.8.2", "hydra-core==1.3.8", "omegaconf==2.3.1", "timm==1.0.31", "torchdiffeq==0.2.5"
+			, "transformers==4.57.3", "hear21passt==0.0.26", "pydantic==2.14.3", "numpy==2.5.4", "soundfile==0.14.0"
+			, "requests"}, new String[0]);
+	static final String ROBERTA = HF+"FacebookAI/roberta-large/resolve/main/";
+
+	//Memories: 6.5 GB peak measured on Apple Silicon (Woosh-DFlow, 5 s, fp32, process footprint), the others
+	//estimated from the weights (3.7 GB in fp32)
+	static Model woosh(String aId,String aFlowZip,long aFlowSize,String aParams,int aSteps) {
+		Model aM = new Model(SFX, aId, "SonyResearch/Woosh", "Woosh", "woosh_generate.py", aParams, new Object[][] {
+			{"roberta-large/config.json", 482L, ROBERTA+"config.json"},
+			{"roberta-large/vocab.json", 898823L, ROBERTA+"vocab.json"},
+			{"roberta-large/merges.txt", 456318L, ROBERTA+"merges.txt"},
+			{"roberta-large/tokenizer.json", 1355863L, ROBERTA+"tokenizer.json"},
+			{"roberta-large/tokenizer_config.json", 25L, ROBERTA+"tokenizer_config.json"},
+		}, 5*GB, 7*GB, 8*GB, 10, 48000);
+		aM.env = WOOSH_ENV;
+		aM.variant = aId;
+		aM.steps = aSteps;
+		aM.archives = new Object[][] {
+			{"https://github.com/SonyResearch/Woosh/archive/"+WOOSH_COMMIT+".zip", 0L, "Woosh-"+WOOSH_COMMIT+"/woosh/", "code/woosh/", "code-"+WOOSH_COMMIT.substring(0, 8)},
+			{WOOSH_RELEASE+"Woosh-AE.zip", 822991075L, "checkpoints/", "checkpoints/", "Woosh-AE"},
+			{WOOSH_RELEASE+"TextConditionerA.zip", 1297121262L, "checkpoints/", "checkpoints/", "TextConditionerA"},
+			{WOOSH_RELEASE+aFlowZip, aFlowSize, "checkpoints/", "checkpoints/", aId},
 		};
+		return aM;
 	}
 
-	//6.4 GB peak measured on Apple Silicon in fp32 for the base model
-	public static final Model AUDIOLDM2 = new Model(SFX, "AudioLDM 2", "cvssp/audioldm2", "audioldm2"
-			, "audioldm2_generate.py", "1.1 G", audioLdm2Files(1387964784L), 4*GB, 8*GB, 8*GB, 20, 16000);
-	//Its UNet is twice as large (750 M parameters instead of 350 M)
-	public static final Model AUDIOLDM2_LARGE = new Model(SFX, "AudioLDM 2 Large", "cvssp/audioldm2-large", "audioldm2-large"
-			, "audioldm2_generate.py", "1.5 G", audioLdm2Files(2872468672L), 5*GB, 10*GB, 10*GB, 20, 16000);
-
-	//MOSS-SoundEffect v2.0: its inference code, moss_soundeffect_v2 of github.com/OpenMOSS/MOSS-TTS at this commit
-	//(only the files of the inference: no training, no demo)
-	static final String MOSS_COMMIT = "934d6826b084c46a0d033402174d5f8ac4ed2519";
-	static final Object[][] MOSS_CODE_FILES = {
-		{"moss_soundeffect_v2/__init__.py", 0L},
-		{"moss_soundeffect_v2/pipeline_moss_soundeffect.py", 0L},
-		{"moss_soundeffect_v2/diffsynth/__init__.py", 0L},
-		{"moss_soundeffect_v2/diffsynth/models/__init__.py", 0L},
-		{"moss_soundeffect_v2/diffsynth/models/utils.py", 0L},
-		{"moss_soundeffect_v2/diffsynth/models/dac_vae.py", 0L},
-		{"moss_soundeffect_v2/diffsynth/models/qwen3_text_encoder.py", 0L},
-		{"moss_soundeffect_v2/diffsynth/models/wan_audio_dit.py", 0L},
-		{"moss_soundeffect_v2/diffsynth/models/wan_video_dit.py", 0L},
-		{"moss_soundeffect_v2/diffsynth/models/wan_video_camera_controller.py", 0L},
-		{"moss_soundeffect_v2/diffsynth/pipelines/__init__.py", 0L},
-		{"moss_soundeffect_v2/diffsynth/pipelines/wan_audio.py", 0L},
-		{"moss_soundeffect_v2/diffsynth/prompters/__init__.py", 0L},
-		{"moss_soundeffect_v2/diffsynth/prompters/base_prompter.py", 0L},
-		{"moss_soundeffect_v2/diffsynth/prompters/wan_prompter.py", 0L},
-		{"moss_soundeffect_v2/diffsynth/schedulers/__init__.py", 0L},
-		{"moss_soundeffect_v2/diffsynth/schedulers/flow_match.py", 0L},
-		{"moss_soundeffect_v2/diffsynth/utils/__init__.py", 0L},
-	};
-	//Versions of its pyproject.toml (transformers 4.57, diffusers 0.37), without the demo (gradio)
-	public static final Env MOSS_ENV = new Env("moss-env", "1", new String[] {"torch==2.9.0", "torchaudio==2.9.0"
-			, "numpy==1.26.4", "einops==0.8.2", "pillow==12.2.0", "tqdm==4.67.3", "safetensors==0.7.0"
-			, "transformers==4.57.1", "diffusers==0.37.1", "ftfy==6.3.1", "regex==2026.4.4", "soundfile==0.13.1"
-			, "descript-audiotools==0.7.2", "typing-extensions>=4.10"}, new String[0]);
-	//DiT 1.3 B + Qwen3 1.7 B text encoder + DAC VAE; files in fp32 (11.2 GB), run in bf16 on the GPU.
-	//Memories estimated from the weights (not measured yet: see the PEAK line in 3De.log)
-	public static final Model MOSS = new Model(SFX, "MOSS-SoundEffect v2", "OpenMOSS-Team/MOSS-SoundEffect-v2.0"
-			, "MOSS-SoundEffect-v2.0", "moss_soundeffect_generate.py", "1.3 G + 1.7 G", new Object[][] {
-		{"model_index.json", 0L},
-		{"scheduler/scheduler_config.json", 0L},
-		{"text_encoder/config.json", 0L},
-		{"text_encoder/generation_config.json", 0L},
-		{"text_encoder/model.safetensors.index.json", 0L},
-		{"text_encoder/model-00001-of-00002.safetensors", 3441185608L},
-		{"text_encoder/model-00002-of-00002.safetensors", 622329984L},
-		{"tokenizer/merges.txt", 1671853L},
-		{"tokenizer/tokenizer.json", 11422654L},
-		{"tokenizer/tokenizer_config.json", 0L},
-		{"tokenizer/vocab.json", 2776833L},
-		{"transformer/config.json", 0L},
-		{"transformer/diffusion_pytorch_model.safetensors", 5664274560L},
-		{"vae/config.json", 0L},
-		{"vae/vae_128d_48k.pth", 1486465965L},
-	}, 8*GB, 12*GB, 16*GB, 30, 48000);
-	static {
-		MOSS.env = MOSS_ENV;
-		MOSS.codeUrl = "https://raw.githubusercontent.com/OpenMOSS/MOSS-TTS/"+MOSS_COMMIT+"/";
-		MOSS.codeFiles = MOSS_CODE_FILES;
-		MOSS.steps = 100;
-	}
-	public static final Model[] SFX_MODELS = {AUDIOLDM2, AUDIOLDM2_LARGE, MOSS};
-
-	//Denoising steps of AudioLDM 2 (200 in its examples, little difference above 100)
-	public static final int SFX_STEPS = 150;
+	//Distilled: 4 steps, a few seconds; the original: adaptive ODE solver (dopri5), slower, a bit finer
+	public static final Model WOOSH_DFLOW = woosh("Woosh-DFlow", "Woosh-DFlow.zip", 1281505601L, "350 M", 4);
+	public static final Model WOOSH_FLOW = woosh("Woosh-Flow", "Woosh-Flow.zip", 1253883744L, "350 M", 0);
+	//Woosh-DFlow first: advised (same memory, faster; defaultModel() keeps the first of equal needs)
+	public static final Model[] SFX_MODELS = {WOOSH_DFLOW, WOOSH_FLOW};
 
 	public static final double MIN_SECONDS = 1;
+	//Longest music made by continuing a music (MusicGen sees 30 s at once: continued window after window)
+	public static final double CONTINUE_MAX_SECONDS = 600;
 
 	/**
 	 * Models of a kind (MUSIC or SFX), from the smallest
@@ -271,8 +227,8 @@ public class SoundGenerator extends PythonAI {
 	}
 
 	/**
-	 * Model of a kind advised for this computer: the largest that fits in the free GPU memory (NVIDIA; on
-	 * Apple Silicon the free + reclaimable memory, see DepthEstimator.bestGpu(), as the memory warning of the
+	 * Model of a kind advised for this computer: the largest that fits in the available GPU memory
+	 * (PythonAI.availableGpuMemory(): the model kept loaded counts as free, as the memory warning of the
 	 * form), the smallest on the CPU
 	 */
 	public static Model defaultModel(String aKind) {
@@ -280,14 +236,14 @@ public class SoundGenerator extends PythonAI {
 		if(!hasGpu()) {
 			return aModels[0];
 		}
-		long[] aBest = DepthEstimator.bestGpu();
-		long aMem = aBest == null ? -1 : aBest[1];
+		long aMem = availableGpuMemory();
 		if(aMem < 0) {
 			return aModels[0];
 		}
 		Model aBestM = aModels[0];
 		for(Model aM : aModels) {
-			if(aM.gpuMemory() <= aMem) {
+			//Equal needs: the first one (the faster)
+			if(aM.gpuMemory() <= aMem && aM.gpuMemory() > aBestM.gpuMemory()) {
 				aBestM = aM;
 			}
 		}
@@ -319,19 +275,58 @@ public class SoundGenerator extends PythonAI {
 	 * the GPU is always used.
 	 */
 	public static String cpuReason(Model aModel) {
+		//Already loaded on the GPU: stays there (its own memory is not free)
+		if("auto".equals(loadedDevice(tag(aModel))) && hasGpu()) {
+			return null;
+		}
 		if(!hasGpu()) {
 			return DepthEstimator.CPU_REASON_NO_GPU;
 		}
 		if(!isMac()) {
-			long[] aBest = DepthEstimator.bestGpu();
-			if(aBest != null && aBest[1] < aModel.cudaMemory) {
+			long aAvail = availableGpuMemory();
+			if(aAvail >= 0 && aAvail < aModel.cudaMemory) {
 				return DepthEstimator.CPU_REASON_GPU_MEMORY;
 			}
 		}
 		return null;
 	}
 
+	/**
+	 * Name of aModel kept loaded (PythonAI.Resident)
+	 */
+	public static String tag(Model aModel) {
+		return "sound "+aModel.id;
+	}
+
+	/**
+	 * aModel is the model kept loaded
+	 */
+	public static boolean isLoaded(Model aModel) {
+		return PythonAI.isLoaded(tag(aModel));
+	}
+
 	Model model;
+	//"No background noise" (sound effects): words added to the prompt by the form, where they are seen (said
+	//positively: the CLAP text encoder of Woosh reads a negation badly)
+	public static final String CLEAN_PROMPT = ", isolated sound on a silent background, clean close studio recording";
+
+	/**
+	 * aPrompt with the words of "No background noise" at its end (once)
+	 */
+	public static String withClean(String aPrompt) {
+		String aP = withoutClean(aPrompt).replaceAll("[\\s.,;]+$", "");
+		return aP.isEmpty() ? aP : aP+CLEAN_PROMPT;
+	}
+
+	/**
+	 * aPrompt without the words of "No background noise"
+	 */
+	public static String withoutClean(String aPrompt) {
+		return aPrompt.replace(CLEAN_PROMPT, "").replace(CLEAN_PROMPT.substring(2), "").trim();
+	}
+
+	//MusicGen: the generation stops when this file exists (GenerationException STOPPED, the model stays loaded)
+	public File stopFile = null;
 	//Device used by the script (DEVICE message): cuda, mps or cpu
 	public volatile String device = null;
 
@@ -365,27 +360,48 @@ public class SoundGenerator extends PythonAI {
 	 * @return false if canceled
 	 */
 	public boolean generate(File aPromptFile,double aSeconds,File aOut) throws Exception {
+		return generate(aPromptFile, aSeconds, null, aOut);
+	}
+
+	/**
+	 * Same, the sound of aContinue (WAV, MusicGen only, null: none) continued up to aSeconds in all
+	 * @return false if canceled
+	 */
+	public boolean generate(File aPromptFile,double aSeconds,File aContinue,File aOut) throws Exception {
 		if(!installEnv() || !downloadModel() || canceled()) {
 			return false;
 		}
+		//Another model kept loaded is unloaded first, so that its memory counts as free for the device
+		if(!isLoaded(model)) {
+			beforeLoad(tag(model));
+		}
 		File aDir = model.getDir(tdeDir);
 		File aScript = copyScript(model.script, aDir);
+		//Arguments of the model (the same: the model kept loaded is used again)
 		Vector<String> aCmd = pythonCommand(aScript);
 		aCmd.add("--model-dir"); aCmd.add(aDir.getAbsolutePath());
-		if(model.codeFiles != null) {
+		if(model.variant != null) {
 			aCmd.add("--code-dir"); aCmd.add(model.getCodeDir(tdeDir).getAbsolutePath());
 		}
-		aCmd.add("--prompt-file"); aCmd.add(aPromptFile.getAbsolutePath());
-		aCmd.add("--seconds"); aCmd.add(String.format(Locale.ROOT, "%.1f", aSeconds));
-		if(model.steps > 0) {
-			aCmd.add("--steps"); aCmd.add(""+model.steps);
-		}
-		else if(SFX.equals(model.kind)) {
-			aCmd.add("--steps"); aCmd.add(""+SFX_STEPS);
+		if(model.variant != null) {
+			aCmd.add("--variant"); aCmd.add(model.variant);
 		}
 		aCmd.add("--device"); aCmd.add(cpuReason(model) == null ? "auto" : "cpu");
-		aCmd.add("--out"); aCmd.add(aOut.getAbsolutePath());
-		String aDone = runScript(aCmd);
+		//Arguments of this generation
+		Vector<String> aReq = new Vector<String>();
+		aReq.add("--prompt-file"); aReq.add(aPromptFile.getAbsolutePath());
+		aReq.add("--seconds"); aReq.add(String.format(Locale.ROOT, "%.1f", aSeconds));
+		if(model.steps > 0) {
+			aReq.add("--steps"); aReq.add(""+model.steps);
+		}
+		if(aContinue != null) {
+			aReq.add("--continue"); aReq.add(aContinue.getAbsolutePath());
+		}
+		if(stopFile != null && MUSIC.equals(model.kind)) {
+			aReq.add("--stop-file"); aReq.add(stopFile.getAbsolutePath());
+		}
+		aReq.add("--out"); aReq.add(aOut.getAbsolutePath());
+		String aDone = runResident(tag(model), model.gpuMemory(), aCmd, aReq);
 		if(aDone == null || canceled()) {
 			aOut.delete();
 			return false;
@@ -397,24 +413,75 @@ public class SoundGenerator extends PythonAI {
 	}
 
 	/**
+	 * Download (resumed) and unpack a zip archive of the model (see Model.archives), then delete it
+	 * @return false if canceled
+	 */
+	boolean downloadArchive(Object[] aA) throws Exception {
+		if(model.isUnpacked(tdeDir, aA)) {
+			return true;
+		}
+		File aDir = model.getDir(tdeDir);
+		String aName = (String)aA[4];
+		File aZip = new File(aDir, aName+".zip");
+		Vector<String[]> aFiles = new Vector<String[]>();
+		aFiles.add(new String[] {(String)aA[0], aZip.getName(), ""+aA[1]});
+		if(!downloadFiles(aDir, aFiles, "AI.DownloadingSoundModel") || canceled()) {
+			return false;
+		}
+		status("AI.UnpackingSoundModel", aName, 0, 0);
+		String aFrom = (String)aA[2];
+		File aTo = new File(aDir, ((String)aA[3]).replace('/', File.separatorChar));
+		String aRoot = aDir.getCanonicalPath()+File.separator;
+		int aN = 0;
+		try(java.util.zip.ZipInputStream aZ = new java.util.zip.ZipInputStream(
+				new java.io.BufferedInputStream(java.nio.file.Files.newInputStream(aZip.toPath()), 1 << 20))) {
+			java.util.zip.ZipEntry aE;
+			while((aE = aZ.getNextEntry()) != null) {
+				if(canceled()) {
+					return false;
+				}
+				String aPath = aE.getName();
+				if(aE.isDirectory() || !aPath.startsWith(aFrom)) {
+					continue;
+				}
+				File aF = new File(aTo, aPath.substring(aFrom.length()).replace('/', File.separatorChar)).getCanonicalFile();
+				//Nothing outside the folder of the model
+				if(!aF.getPath().startsWith(aRoot)) {
+					continue;
+				}
+				aF.getParentFile().mkdirs();
+				java.nio.file.Files.copy(aZ, aF.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				aN++;
+			}
+		}
+		if(aN == 0) {
+			throw new Exception("Nothing to unpack in "+aZip.getName());
+		}
+		java.nio.file.Files.write(model.unpackedMarker(tdeDir, aA).toPath(), (aA[0]+"\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+		aZip.delete();
+		System.out.println("AI sound model: "+aN+" files unpacked from "+aName);
+		return true;
+	}
+
+	/**
 	 * Model files (resumed file by file)
 	 * @return false if canceled
 	 */
 	boolean downloadModel() throws Exception {
 		Vector<String[]> aFiles = new Vector<String[]>();
 		for(Object[] aF : model.files) {
-			aFiles.add(new String[] {HF+model.repo+"/resolve/main/"+aF[0], (String)aF[0], ""+aF[1]});
+			//A file of another repository: its URL
+			String aUrl = aF.length > 2 ? (String)aF[2] : HF+model.repo+"/resolve/main/"+aF[0];
+			aFiles.add(new String[] {aUrl, (String)aF[0], ""+aF[1]});
 		}
 		if(!downloadFiles(model.getDir(tdeDir), aFiles, "AI.DownloadingSoundModel")) {
 			return false;
 		}
-		if(model.codeFiles == null) {
-			return true;
+		for(Object[] aA : model.archives) {
+			if(!downloadArchive(aA)) {
+				return false;
+			}
 		}
-		aFiles.clear();
-		for(Object[] aF : model.codeFiles) {
-			aFiles.add(new String[] {model.codeUrl+aF[0], (String)aF[0], ""+aF[1]});
-		}
-		return downloadFiles(model.getCodeDir(tdeDir), aFiles, "AI.DownloadingSoundModel");
+		return true;
 	}
 }

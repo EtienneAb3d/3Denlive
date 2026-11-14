@@ -55,13 +55,13 @@ import com.cubaix.TDenlive.utils.ImageUtils;
 
 /**
  * AI clip (button right of the 3D model one). A selector at the top of the form chooses what is generated
- * (always the music first, the video panel asking for the download of the LLM of its prompt; "Generate again":
+ * (always the music first, the video panel asking for the download of the LLM of its prompt; "Something else":
  * the same kind); each kind has its panel with its own models
  * (the one advised for the hardware selected first; the user's choice kept in 3De.conf when it differs):
  * - Video: a 2D video by Wan2.2-TI2V-5B (see ai.WanGenerator), transformer in Q8_0, Q6_K or Q4_K_M; prompt,
  * duration (at most 5 s), reference image, GPU needed. The progress window shows an approximate preview of the
  * video being denoised (animated latent frames).
- * - Music: MusicGen Small, Medium or Large; Sound effects: AudioLDM 2 or AudioLDM 2 Large (see ai.SoundGenerator),
+ * - Music: MusicGen Small, Medium or Large; Sound effects: Woosh-DFlow or Woosh-Flow (see ai.SoundGenerator),
  * with what the generator is made for, its licence and the hardware each model needs, on the GPU or else on the
  * CPU.
  * Each panel has a tree of the example prompts of its kind (res/ai/ai_prompts.txt); the video panel shows those
@@ -79,7 +79,8 @@ public class AiClipGUI {
 	//Sound: last prompts and durations
 	static String lastMusicPrompt = "";
 	static String lastSfxPrompt = "";
-	static double lastMusicSeconds = 10;
+	//Music: short by default, then continued from the series window (AiSoundSeriesGUI)
+	static double lastMusicSeconds = 3;
 	static double lastSfxSeconds = 5;
 
 	TDenlive tde;
@@ -107,6 +108,9 @@ public class AiClipGUI {
 	RefImage videoImg = new RefImage();
 	//Black and white photo of the colorization panel
 	RefImage colorImg = new RefImage();
+	//Images of the music and sound effects panels (a prompt suited to them proposed by the LLM)
+	RefImage musicImg = new RefImage();
+	RefImage sfxImg = new RefImage();
 	//Refresh of the reference image row
 	Runnable imageRowShow = null;
 
@@ -210,7 +214,14 @@ public class AiClipGUI {
 	}
 
 	/**
-	 * Generate again (from the result window): the form with the last kind, prompt, name and duration
+	 * Retry (from the result window): the same generation at once, without the form
+	 */
+	void retry() {
+		start();
+	}
+
+	/**
+	 * Something else (from the result window): the form with the last kind, prompt, name and duration
 	 */
 	void again() {
 		againKind = kind;
@@ -335,7 +346,8 @@ public class AiClipGUI {
 				prompt = null;
 				aChecks[kindIndex(kind)].run();
 				if(prompt != null) {
-					//The LLM of the video prompt is unloaded before the generation
+					//The form leaves the LLM of the video prompt (still loaded: unloaded only if the generation loads
+					//another model, see PythonAI.beforeLoad())
 					if(videoPair != null) {
 						videoPair.hidden();
 					}
@@ -469,18 +481,332 @@ public class AiClipGUI {
 	static boolean extendConfirmed = false;
 	//Prompt pair of the video panel (its LLM is loaded while the video panel is shown)
 	PromptPair videoPair = null;
-	//Kind of the form reopened by "Generate again" (else the music panel first)
+	//Kind of the form reopened by "Something else" (else the music panel first)
 	String againKind = null;
 	static String lastUserPrompt = "";
 	//Pause in the typing before the prompt is rewritten
 	static final int EXTEND_DELAY_MS = 800;
 
 	/**
+	 * Red warning when the LLM can't run comfortably on the GPU here, else null
+	 */
+	String llmWarning() {
+		return llmWarning(false);
+	}
+
+	/**
+	 * Same, for the analysis of an image (aImage: sound panels) or the rewriting of the video prompt
+	 */
+	String llmWarning(boolean aImage) {
+		//Already loaded: its memory is taken by itself, no warning
+		if(PromptExtender.isLoaded()) {
+			return null;
+		}
+		long aFree = PromptExtender.freeGpuMemory();
+		if(PromptExtender.isComfortable(aFree)) {
+			return null;
+		}
+		String aNeed = DepthModel.gb(PromptExtender.gpuMemory());
+		if(!PythonAI.hasGpu() || aFree < 0) {
+			return lng(aImage ? "AI.ImageLlmNoGpu" : "AI.LlmNoGpu").replace("%NEED%", aNeed);
+		}
+		return lng(aImage ? "AI.ImageLlmLowMemory" : "AI.LlmLowMemory").replace("%FREE%", DepthModel.gb(aFree)).replace("%NEED%", aNeed);
+	}
+
+	//Window of the installation in progress (installWindow()), receives the progress of the extender
+	PythonAI.Progress installProgress = null;
+
+	/**
+	 * Modal window: download of the LLM (and of the Python environment if needed), progress, Cancel
+	 * @return true when installed, false if canceled or failed
+	 */
+	boolean installWindow(Shell aParent,PromptExtender aPE) {
+		return installWindow(aParent, aPE, "AI.ExtendInstalling");
+	}
+
+	boolean installWindow(Shell aParent,PromptExtender aPE,String aTitleKey) {
+		Shell aD = new Shell(aParent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+		aD.setText(lng("AI.Title"));
+		tde.gui.applyColorFont(aD);
+		aD.setLayout(new GridLayout(1, false));
+		Label aTitle = new Label(aD, SWT.WRAP);
+		tde.gui.applyColorFont(aTitle);
+		aTitle.setText(lng(aTitleKey));
+		aTitle.setFont(tde.gui.fontsSwt.robotoBold);
+		GridData aTGD = new GridData(GridData.FILL_HORIZONTAL);
+		aTGD.widthHint = 460;
+		aTitle.setLayoutData(aTGD);
+		Label aStep = new Label(aD, SWT.WRAP);
+		tde.gui.applyColorFont(aStep);
+		aStep.setText(lng("AI.Starting"));
+		GridData aSGD = new GridData(GridData.FILL_HORIZONTAL);
+		aSGD.widthHint = 460;
+		aStep.setLayoutData(aSGD);
+		ProgressBar aBar = new ProgressBar(aD, SWT.HORIZONTAL);
+		aBar.setMaximum(1000);
+		aBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		Button aCancel = new Button(aD, SWT.PUSH);
+		tde.gui.applyColorFont(aCancel);
+		aCancel.setText(lng("AI.Cancel"));
+		aCancel.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
+		final boolean[] aOk = {false};
+		final String[] aErr = {null};
+		installProgress = new PythonAI.Progress() {
+			@Override
+			public void status(String aKey, String aDetail, long aDone, long aTotal) {
+				String aT = lng(aKey)+(aKey.startsWith("AI.Downloading") && aTotal > 0
+						? " "+DepthModel.gb(aDone)+" / "+DepthModel.gb(aTotal)+" GB" : "");
+				int aV = aTotal > 0 ? (int)Math.min(1000, 1000*aDone/aTotal) : -1;
+				tde.gui.display.asyncExec(() -> {
+					if(aD.isDisposed()) {
+						return;
+					}
+					aStep.setText(aT);
+					if(aV >= 0) {
+						aBar.setSelection(aV);
+					}
+				});
+			}
+			@Override
+			public boolean isCanceled() {
+				return false;
+			}
+		};
+		Thread aT = new Thread(() -> {
+			try {
+				aOk[0] = aPE.install();
+			}
+			catch(Throwable t) {
+				t.printStackTrace(System.err);
+				aErr[0] = t.getMessage();
+			}
+			tde.gui.display.asyncExec(() -> {
+				if(!aD.isDisposed()) {
+					aD.dispose();
+				}
+			});
+		}, "PromptExtender install");
+		aT.setDaemon(true);
+		aCancel.addListener(SWT.Selection, e -> {
+			aPE.close();
+			aD.dispose();
+		});
+		aD.addListener(SWT.Close, e -> aPE.close());
+		aD.pack();
+		Rectangle aP = aParent.getBounds();
+		Rectangle aS = aD.getBounds();
+		aD.setLocation(aP.x + (aP.width - aS.width) / 2, aP.y + (aP.height - aS.height) / 2);
+		aD.open();
+		aT.start();
+		while(!aD.isDisposed()) {
+			if(!tde.gui.display.readAndDispatch()) {
+				tde.gui.display.sleep();
+			}
+		}
+		installProgress = null;
+		if(aErr[0] != null) {
+			message(tde, SWT.ICON_ERROR, lng("AI.ExtendError")+" "+aErr[0]);
+		}
+		return aOk[0];
+	}
+
+	/**
+	 * The download of the model (and of the Python environment) accepted, asked once per session
+	 */
+	boolean confirmInstall(Shell aParent) {
+		if(extendConfirmed) {
+			return true;
+		}
+		long aBytes = PromptExtender.bytesToInstall(tde.tdeDir);
+		if(aBytes <= 0) {
+			return true;
+		}
+		MessageBox aMB = new MessageBox(aParent, SWT.ICON_QUESTION | SWT.OK | SWT.CANCEL);
+		aMB.setText(lng("AI.Title"));
+		String aWarn = llmWarning();
+		aMB.setMessage(lng("AI.ExtendDownload").replace("%GB%", DepthModel.gb(aBytes))+(aWarn == null ? "" : "\n\n"+aWarn));
+		extendConfirmed = aMB.open() == SWT.OK;
+		return extendConfirmed;
+	}
+
+	//Analysis of an image by the LLM accepted (session): download, or the limits of the machine
+	static boolean imageLlmConfirmed = false;
+
+	/**
+	 * Image of a sound panel: Qwen3-VL (PromptExtender) looks at it and proposes the prompt of a music or of a
+	 * sound effect suited to it (with its duration for a sound effect), following the description already typed
+	 * (any language) if it is not the previous proposal. ready() runs before the image is chosen: asks for the
+	 * download of the model or warns about the limits of the machine, once per session. The LLM stays loaded
+	 * after (resident), until another model is loaded (the generation of the sound).
+	 */
+	class SoundImage {
+		final boolean sfx;
+		final Text prompt;
+		final Spinner seconds;
+		final Button clean;
+		Label status = null;
+		PromptExtender extender = null;
+		volatile boolean busy = false;
+		//Image of the last proposal, and the proposal (the prompt unchanged since: not a request of the user)
+		String lastImage = null;
+		String lastProposal = null;
+
+		SoundImage(boolean aSfx,Text aPrompt,Spinner aSeconds,Button aClean) {
+			sfx = aSfx;
+			prompt = aPrompt;
+			seconds = aSeconds;
+			clean = aClean;
+		}
+
+		RefImage ref() {
+			return sfx ? sfxImg : musicImg;
+		}
+
+		/**
+		 * Before an image is chosen: the model downloaded (asked) or the limits of the machine told
+		 * @return false: no image
+		 */
+		boolean ready() {
+			Shell aShell = prompt.getShell();
+			long aBytes = PromptExtender.bytesToInstall(tde.tdeDir);
+			String aWarn = llmWarning(true);
+			if(aBytes > 0) {
+				MessageBox aMB = new MessageBox(aShell, SWT.ICON_QUESTION | SWT.OK | SWT.CANCEL);
+				aMB.setText(lng("AI.Title"));
+				aMB.setMessage(lng("AI.ImageLlmDownload").replace("%GB%", DepthModel.gb(aBytes))+(aWarn == null ? "" : "\n\n"+aWarn));
+				if(aMB.open() != SWT.OK) {
+					return false;
+				}
+				imageLlmConfirmed = true;
+				if(!installWindow(aShell, extender(), "AI.ImageLlmInstalling")) {
+					return false;
+				}
+				return true;
+			}
+			if(aWarn != null && !imageLlmConfirmed) {
+				MessageBox aMB = new MessageBox(aShell, SWT.ICON_WARNING | SWT.OK | SWT.CANCEL);
+				aMB.setText(lng("AI.Title"));
+				aMB.setMessage(lng("AI.ImageLlmLimits").replace("%WARN%", aWarn));
+				if(aMB.open() != SWT.OK) {
+					return false;
+				}
+				imageLlmConfirmed = true;
+			}
+			return true;
+		}
+
+		/**
+		 * The image chosen (or removed): a prompt proposed for a new image
+		 */
+		void analyze() {
+			String aPath = ref().path;
+			if(aPath == null || aPath.equals(lastImage) || status == null || busy) {
+				return;
+			}
+			lastImage = aPath;
+			busy = true;
+			String aTyped = SoundGenerator.withoutClean(prompt.getText()).trim();
+			//The previous proposal unchanged: not a request of the user
+			String aRequest = aTyped.equals(lastProposal) ? "" : aTyped;
+			setStatus(lng("AI.AnalyzingImage"));
+			PromptExtender aPE = extender();
+			Thread aT = new Thread(() -> {
+				String aR = null;
+				String aErr = null;
+				try {
+					aR = aPE.soundFromImage(aRequest, aPath, sfx ? PromptExtender.SFX_MODE : PromptExtender.MUSIC_MODE);
+				}
+				catch(Throwable t) {
+					t.printStackTrace(System.err);
+					aErr = t.getMessage() == null ? t.toString() : t.getMessage();
+				}
+				final String aRes = aR;
+				final String aE = aErr;
+				tde.gui.display.asyncExec(() -> {
+					busy = false;
+					if(prompt.isDisposed()) {
+						return;
+					}
+					if(aE != null || aRes == null || aRes.isBlank()) {
+						lastImage = null;
+						setStatus(aE == null ? " " : lng("AI.ImagePromptError")+" "+aE);
+						return;
+					}
+					String aP = aRes.trim();
+					//Sound effect: "prompt|seconds"
+					int aBar = aP.lastIndexOf('|');
+					if(aBar > 0) {
+						try {
+							int aS = (int)Math.round(Double.parseDouble(aP.substring(aBar+1).replaceAll("[^0-9.]", "")));
+							if(seconds != null && !seconds.isDisposed()) {
+								seconds.setSelection(Math.max(seconds.getMinimum(), Math.min(seconds.getMaximum(), aS)));
+							}
+						}
+						catch(NumberFormatException ex) {
+							//No duration: the duration is left
+						}
+						aP = aP.substring(0, aBar).trim();
+					}
+					lastProposal = aP;
+					prompt.setText(clean != null && clean.getSelection() ? SoundGenerator.withClean(aP) : aP);
+					setStatus(lng("AI.ImagePromptDone"));
+					System.out.println("AI sound prompt from the image "+aPath+": "+aRes);
+				});
+			}, "Sound prompt from an image");
+			aT.setDaemon(true);
+			aT.start();
+		}
+
+		void setStatus(String aText) {
+			if(status != null && !status.isDisposed()) {
+				status.setText(aText);
+				status.getParent().layout(true);
+			}
+		}
+
+		PromptExtender extender() {
+			if(extender == null) {
+				//The LLM still loaded (video panel, previous form) is taken back
+				extender = PromptExtender.attach(tde.tdeDir, new PythonAI.Progress() {
+					@Override
+					public void status(String aKey, String aDetail, long aDone, long aTotal) {
+						PythonAI.Progress aIP = installProgress;
+						if(aIP != null) {
+							aIP.status(aKey, aDetail, aDone, aTotal);
+							return;
+						}
+						//Loading of the model: shown while the image is analyzed
+						if(busy && ("AI.LoadingLlm".equals(aKey) || "AI.Starting".equals(aKey))) {
+							tde.gui.display.asyncExec(() -> setStatus(lng("AI.AnalyzingImage")+" ("+lng(aKey)+")"));
+						}
+					}
+					@Override
+					public boolean isCanceled() {
+						return false;
+					}
+				});
+			}
+			return extender;
+		}
+
+		/**
+		 * The form leaves the LLM (closed, generation started): it stays loaded until another model is loaded
+		 */
+		void hidden() {
+			if(extender != null) {
+				extender.detach();
+				extender = null;
+			}
+		}
+	}
+
+	/**
 	 * Prompt of the video in two boxes side by side: the description of the user (any language) and the final
 	 * English prompt given to the model (editable). The description is rewritten by PromptExtender after a pause
 	 * in the typing, and again when the reference image is chosen or removed (image to video mode). The video
-	 * panel needs the LLM: shown() asks for its download and loads it, hidden() unloads it (other panel, form
-	 * closed, generation started).
+	 * panel needs the LLM: shown() asks for its download and loads it (or takes it back if still loaded),
+	 * hidden() leaves it loaded (other panel, form closed, generation started): it is unloaded only when another
+	 * model has to be loaded (PythonAI.beforeLoad()).
 	 */
 	class PromptPair {
 		Text user;
@@ -621,31 +947,16 @@ public class AiClipGUI {
 		}
 
 		/**
-		 * Red warning when the LLM can't run comfortably on the GPU here, else null
-		 */
-		String llmWarning() {
-			long aFree = PromptExtender.freeGpuMemory();
-			if(PromptExtender.isComfortable(aFree)) {
-				return null;
-			}
-			String aNeed = DepthModel.gb(PromptExtender.gpuMemory());
-			if(!PythonAI.hasGpu() || aFree < 0) {
-				return lng("AI.LlmNoGpu").replace("%NEED%", aNeed);
-			}
-			return lng("AI.LlmLowMemory").replace("%FREE%", DepthModel.gb(aFree)).replace("%NEED%", aNeed);
-		}
-
-		/**
 		 * The video panel is shown: asks for the download of the LLM if needed, then loads it in the background
 		 * @return false if the download is refused (the video panel can't be used)
 		 */
 		boolean shown() {
-			if(!confirmInstall()) {
+			if(!confirmInstall(user.getShell())) {
 				System.out.println("AI prompt rewriting: download refused");
 				return false;
 			}
 			//Download right after the agreement, in a window (the user sees what happens)
-			if(PromptExtender.bytesToInstall(tde.tdeDir) > 0 && !installWindow()) {
+			if(PromptExtender.bytesToInstall(tde.tdeDir) > 0 && !installWindow(user.getShell(), extender())) {
 				System.out.println("AI prompt rewriting: download canceled");
 				hidden();
 				return false;
@@ -668,107 +979,13 @@ public class AiClipGUI {
 			return true;
 		}
 
-		//Window of the installation in progress (installWindow()), receives the progress of the extender
-		PythonAI.Progress installProgress = null;
-
-		/**
-		 * Modal window: download of the LLM (and of the Python environment if needed), progress, Cancel
-		 * @return true when installed, false if canceled or failed
-		 */
-		boolean installWindow() {
-			Shell aParent = user.getShell();
-			Shell aD = new Shell(aParent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
-			aD.setText(lng("AI.Title"));
-			tde.gui.applyColorFont(aD);
-			aD.setLayout(new GridLayout(1, false));
-			Label aTitle = new Label(aD, SWT.WRAP);
-			tde.gui.applyColorFont(aTitle);
-			aTitle.setText(lng("AI.ExtendInstalling"));
-			aTitle.setFont(tde.gui.fontsSwt.robotoBold);
-			GridData aTGD = new GridData(GridData.FILL_HORIZONTAL);
-			aTGD.widthHint = 460;
-			aTitle.setLayoutData(aTGD);
-			Label aStep = new Label(aD, SWT.WRAP);
-			tde.gui.applyColorFont(aStep);
-			aStep.setText(lng("AI.Starting"));
-			GridData aSGD = new GridData(GridData.FILL_HORIZONTAL);
-			aSGD.widthHint = 460;
-			aStep.setLayoutData(aSGD);
-			ProgressBar aBar = new ProgressBar(aD, SWT.HORIZONTAL);
-			aBar.setMaximum(1000);
-			aBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-			Button aCancel = new Button(aD, SWT.PUSH);
-			tde.gui.applyColorFont(aCancel);
-			aCancel.setText(lng("AI.Cancel"));
-			aCancel.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
-			PromptExtender aPE = extender();
-			final boolean[] aOk = {false};
-			final String[] aErr = {null};
-			installProgress = new PythonAI.Progress() {
-				@Override
-				public void status(String aKey, String aDetail, long aDone, long aTotal) {
-					String aT = lng(aKey)+(aKey.startsWith("AI.Downloading") && aTotal > 0
-							? " "+DepthModel.gb(aDone)+" / "+DepthModel.gb(aTotal)+" GB" : "");
-					int aV = aTotal > 0 ? (int)Math.min(1000, 1000*aDone/aTotal) : -1;
-					tde.gui.display.asyncExec(() -> {
-						if(aD.isDisposed()) {
-							return;
-						}
-						aStep.setText(aT);
-						if(aV >= 0) {
-							aBar.setSelection(aV);
-						}
-					});
-				}
-				@Override
-				public boolean isCanceled() {
-					return false;
-				}
-			};
-			Thread aT = new Thread(() -> {
-				try {
-					aOk[0] = aPE.install();
-				}
-				catch(Throwable t) {
-					t.printStackTrace(System.err);
-					aErr[0] = t.getMessage();
-				}
-				tde.gui.display.asyncExec(() -> {
-					if(!aD.isDisposed()) {
-						aD.dispose();
-					}
-				});
-			}, "PromptExtender install");
-			aT.setDaemon(true);
-			aCancel.addListener(SWT.Selection, e -> {
-				aPE.close();
-				aD.dispose();
-			});
-			aD.addListener(SWT.Close, e -> aPE.close());
-			aD.pack();
-			Rectangle aP = aParent.getBounds();
-			Rectangle aS = aD.getBounds();
-			aD.setLocation(aP.x + (aP.width - aS.width) / 2, aP.y + (aP.height - aS.height) / 2);
-			aD.open();
-			aT.start();
-			while(!aD.isDisposed()) {
-				if(!tde.gui.display.readAndDispatch()) {
-					tde.gui.display.sleep();
-				}
-			}
-			installProgress = null;
-			if(aErr[0] != null) {
-				message(tde, SWT.ICON_ERROR, lng("AI.ExtendError")+" "+aErr[0]);
-			}
-			return aOk[0];
-		}
-
 		/**
 		 * The LLM (created if needed; started by start() or the first request)
 		 */
 		PromptExtender extender() {
 			if(extender == null) {
-				extender = new PromptExtender(tde.tdeDir, new PythonAI.Progress() {
+				//The LLM still loaded by a previous form is taken back
+				extender = PromptExtender.attach(tde.tdeDir, new PythonAI.Progress() {
 					long lastMS = 0;
 					@Override
 					public void status(String aKey, String aDetail, long aDone, long aTotal) {
@@ -811,33 +1028,16 @@ public class AiClipGUI {
 		}
 
 		/**
-		 * The LLM is no longer needed (other panel, form closed, generation started): stopped, its memory freed
+		 * The LLM is no longer needed (other panel, form closed, generation started): the form detaches from it,
+		 * it stays loaded until another model has to be loaded (a video generation unloads it, see
+		 * PythonAI.beforeLoad())
 		 */
 		void hidden() {
 			if(extender != null) {
-				extender.close();
+				extender.detach();
 				extender = null;
-				System.out.println("AI prompt rewriting: LLM unloaded");
+				System.out.println("AI prompt rewriting: LLM left loaded");
 			}
-		}
-
-		/**
-		 * The download of the model (and of the Python environment) accepted, asked once per session
-		 */
-		boolean confirmInstall() {
-			if(extendConfirmed) {
-				return true;
-			}
-			long aBytes = PromptExtender.bytesToInstall(tde.tdeDir);
-			if(aBytes <= 0) {
-				return true;
-			}
-			MessageBox aMB = new MessageBox(user.getShell(), SWT.ICON_QUESTION | SWT.OK | SWT.CANCEL);
-			aMB.setText(lng("AI.Title"));
-			String aWarn = llmWarning();
-			aMB.setMessage(lng("AI.ExtendDownload").replace("%GB%", DepthModel.gb(aBytes))+(aWarn == null ? "" : "\n\n"+aWarn));
-			extendConfirmed = aMB.open() == SWT.OK;
-			return extendConfirmed;
 		}
 
 		/**
@@ -860,7 +1060,7 @@ public class AiClipGUI {
 				return;
 			}
 			System.out.println("AI prompt rewriting requested ("+(aImage != null ? "i2v, image "+aImage : "t2v")+"): "+aText);
-			if(!confirmInstall()) {
+			if(!confirmInstall(user.getShell())) {
 				System.out.println("AI prompt rewriting: download refused");
 				setFin(user.getText());
 				return;
@@ -1023,11 +1223,12 @@ public class AiClipGUI {
 		Label[] aFree = {null};
 		Label[] aDownload = {null};
 		Runnable aShow = () -> {
-			long[] aBest = DepthEstimator.bestGpu();
-			if(aBest != null) {
-				aFree[0].setText(lng("AI.GpuFree").replace("%GB%", gb(aBest[1]))
-						+(aBest[1] < videoModel.gpuMemory ? "\n"+lng("AI.GpuTooSmall") : ""));
-				aFree[0].setForeground(aBest[1] < videoModel.gpuMemory ? tde.gui.colorsSwt.RED : aWarn.getForeground());
+			//The model kept loaded (the LLM of the prompts...) is unloaded before Wan: its memory counts as free
+			long aAvail = PythonAI.availableGpuMemory();
+			if(aAvail >= 0) {
+				aFree[0].setText(lng("AI.GpuFree").replace("%GB%", gb(aAvail))
+						+(aAvail < videoModel.gpuMemory ? "\n"+lng("AI.GpuTooSmall") : ""));
+				aFree[0].setForeground(aAvail < videoModel.gpuMemory ? tde.gui.colorsSwt.RED : aWarn.getForeground());
 			}
 			long aBytes = WanGenerator.modelBytesToDownload(tde.tdeDir, videoModel)+WanGenerator.envBytesToInstall(tde.tdeDir);
 			aDownload[0].setText(aBytes > 0 ? lng("AI.Download").replace("%GB%", gb(aBytes)) : lng("AI.MusicReady"));
@@ -1188,7 +1389,7 @@ public class AiClipGUI {
 	}
 
 	/**
-	 * Panel of a sound kind (MUSIC: MusicGen, SFX: AudioLDM 2): what the generator is made for and its licence,
+	 * Panel of a sound kind (MUSIC: MusicGen, SFX: Woosh): what the generator is made for and its licence,
 	 * its models (the one advised for the hardware selected first) with the hardware each one needs, where it
 	 * will run; prompt with the tree of the examples of the kind, duration, downloads.
 	 * The model chosen is the data MODEL of aPanel.
@@ -1225,15 +1426,21 @@ public class AiClipGUI {
 			SoundGenerator.Model aM = (SoundGenerator.Model)aPanel.getData(MODEL);
 			soundModel = aM;
 			String aReason = SoundGenerator.cpuReason(aM);
-			long[] aBest = DepthEstimator.bestGpu();
+			//The model kept loaded is unloaded before another one: its memory counts as free
+			long aAvail = PythonAI.availableGpuMemory();
 			long aRam = SoundGenerator.ramSize();
+			//Already loaded: its memory is taken by itself, no warning
+			boolean aLoaded = SoundGenerator.isLoaded(aM);
 			String aW;
 			boolean aRed = false;
-			if(aReason == null) {
+			if(aLoaded) {
+				aW = lng(aReason == null ? "AI.MusicOnGpu" : "AI.MusicOnCpu")+" "+lng("AI.ModelLoaded");
+			}
+			else if(aReason == null) {
 				aW = lng("AI.MusicOnGpu");
-				if(aBest != null) {
-					aW += " "+lng("AI.MusicGpuFree").replace("%GB%", gb(aBest[1]));
-					if(aBest[1] < aM.gpuMemory()) {
+				if(aAvail >= 0) {
+					aW += " "+lng("AI.MusicGpuFree").replace("%GB%", gb(aAvail));
+					if(aAvail < aM.gpuMemory()) {
 						//Apple Silicon: the memory is shared, the CPU would not do better
 						aW += "\n"+lng("AI.MusicMemoryLow").replace("%GB%", gb(aM.gpuMemory()));
 						aRed = true;
@@ -1242,7 +1449,7 @@ public class AiClipGUI {
 			}
 			else {
 				aW = lng("AI.MusicOnCpu")+" "+lng("AI.MusicCpu"+aReason)
-						.replace("%FREE%", aBest == null ? "?" : gb(aBest[1])).replace("%GB%", gb(aM.cudaMemory));
+						.replace("%FREE%", aAvail < 0 ? "?" : gb(aAvail)).replace("%GB%", gb(aM.cudaMemory));
 				if(aRam > 0 && aRam < aM.cpuMemory) {
 					aW += "\n"+lng("AI.MusicRamLow").replace("%RAM%", gb(aRam)).replace("%GB%", gb(aM.cpuMemory));
 					aRed = true;
@@ -1277,8 +1484,18 @@ public class AiClipGUI {
 			TreeItem aI = (TreeItem)e.item;
 			Object aD = aI == null ? null : aI.getData();
 			if(aD instanceof String[]) {
-				aPrompt.setText(((String[])aD)[3]);
-				aName.setText(((String[])aD)[4]);
+				String[] aE = (String[])aD;
+				aPrompt.setText(aSfx && tde.config.aiSfxClean ? SoundGenerator.withClean(aE[3]) : aE[3]);
+				aName.setText(aE[4]);
+				//The duration suited to this sound (within the maximum of the model)
+				if(aE.length > 6 && !aE[6].isEmpty()) {
+					try {
+						aSeconds[0].setSelection(Math.max(aSeconds[0].getMinimum(), Math.min(aSeconds[0].getMaximum(), Integer.parseInt(aE[6]))));
+					}
+					catch(NumberFormatException ex) {
+						//Not a number: the duration is left
+					}
+				}
 			}
 		});
 		aTree.addListener(SWT.DefaultSelection, e -> aPrompt.setFocus());
@@ -1299,15 +1516,51 @@ public class AiClipGUI {
 		tde.gui.applyColorFont(aDMax[0]);
 		aDMax[0].setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+		//No background noise: for an isolated sound (not an ambience)
+		Button aClean = null;
+		if(aSfx) {
+			aClean = new Button(aRight, SWT.CHECK);
+			tde.gui.applyColorFont(aClean);
+			aClean.setText(lng("AI.SfxClean"));
+			aClean.setToolTipText(lng("AI.SfxCleanTip"));
+			aClean.setSelection(tde.config.aiSfxClean);
+			//The words go into the prompt, where they can be seen and changed
+			if(tde.config.aiSfxClean && !aPrompt.getText().trim().isEmpty()) {
+				aPrompt.setText(SoundGenerator.withClean(aPrompt.getText()));
+			}
+			final Button aCB = aClean;
+			aClean.addListener(SWT.Selection, e -> {
+				tde.config.aiSfxClean = aCB.getSelection();
+				String aT = aPrompt.getText();
+				aPrompt.setText(aCB.getSelection() ? SoundGenerator.withClean(aT) : SoundGenerator.withoutClean(aT));
+			});
+		}
+		final Button aCleanB = aClean;
+		//Optional image: Qwen3-VL proposes the prompt of a sound suited to it
+		SoundImage aSI = new SoundImage(aSfx, aPrompt, aSeconds[0], aCleanB);
+		createImageRow(aRight, null, aSfx ? sfxImg : musicImg, lng(aSfx ? "AI.SfxImage" : "AI.MusicImage"), aSI::analyze, aSI::ready);
+		aSI.status = addLabel(aRight, " ", 0);
+		aSI.status.addListener(SWT.Dispose, e -> aSI.hidden());
 		aDownload[0] = addLabel(aRight, " \n ", 0);
 		addLabel(aRight, lng("AI.SoundNote"), 0);
 		labelWidth = 560;
 		aShow.run();
 		return () -> {
+			//The prompt is being proposed from the image: wait for it
+			if(aSI.busy) {
+				aSI.status.setText(lng("AI.ImageAnalysisWait"));
+				return;
+			}
 			String aP = aPrompt.getText().trim();
 			if(aP.isEmpty()) {
 				aPrompt.setFocus();
 				return;
+			}
+			aSI.hidden();
+			//Typed after the box was checked: the words are added now (seen in the prompt)
+			if(aCleanB != null && aCleanB.getSelection()) {
+				aP = SoundGenerator.withClean(aP);
+				aPrompt.setText(aP);
 			}
 			SoundGenerator.Model aM = (SoundGenerator.Model)aPanel.getData(MODEL);
 			soundModel = aM;
@@ -1320,6 +1573,7 @@ public class AiClipGUI {
 				lastSfxPrompt = aP;
 				lastSfxSeconds = seconds;
 				tde.config.aiSfxModel = aId;
+				tde.config.aiSfxClean = aCleanB != null && aCleanB.getSelection();
 			}
 			else {
 				lastMusicPrompt = aP;
@@ -1339,7 +1593,7 @@ public class AiClipGUI {
 
 	/**
 	 * Example prompts of res/ai/ai_prompts.txt, one per line
-	 * ("kind|Category/Subcategory|BPM|Name|prompt"): {kind, path, bpm, prompt, name, description}.
+	 * ("kind|Category/Subcategory|BPM|Name|prompt[|seconds]"): {kind, path, bpm, prompt, name, description, seconds ("": none)}.
 	 * The prompt stays in English (the language of the models); the name and the description shown come from
 	 * res/ai/ai_prompts_<aLng>.txt ("kind|English name|name|description") when the language has it, else
 	 * the English ones.
@@ -1370,7 +1624,7 @@ public class AiClipGUI {
 			String aL;
 			while((aL = aR.readLine()) != null) {
 				aL = aL.trim();
-				String[] aF = aL.split("[|]", 5);
+				String[] aF = aL.split("[|]", 6);
 				if(aL.startsWith("#") || aF.length < 5) {
 					continue;
 				}
@@ -1379,7 +1633,9 @@ public class AiClipGUI {
 				aEx.add(new String[] {aF[0].trim(), aF[1].trim(), aF[2].trim(), aPrompt
 						, aT == null ? aF[3].trim() : aT[0]
 						//The tempo is shown first, not again at the end of the prompt
-						, aT == null ? aPrompt.replaceAll(",\\s*[0-9]+ bpm$", "") : aT[1]});
+						, aT == null ? aPrompt.replaceAll(",\\s*[0-9]+ bpm$", "") : aT[1]
+						//Duration suited to the sound (sfx), "" if none
+						, aF.length > 5 ? aF[5].trim() : ""});
 			}
 		}
 		catch(Throwable t) {
@@ -1402,8 +1658,19 @@ public class AiClipGUI {
 	 * Leaves: "name : description" in the interface language (music: the tempo first), data {kind, path, bpm,
 	 * prompt in English, name, description}: a click fills in the English prompt and the translated name.
 	 */
+	//Example last chosen in the library of each kind (video, image, music, sfx): {English prompt, name}, shown
+	//selected again when the form comes back (Retry, Something else, cancel)
+	java.util.Map<String,String[]> lastExamples = new java.util.HashMap<String,String[]>();
+
 	Tree createExamples(Composite aPanel,String aKind) {
 		Tree aTree = new Tree(aPanel, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
+		aTree.addListener(SWT.Selection, e -> {
+			Object aD = e.item == null ? null : e.item.getData();
+			if(aD instanceof String[]) {
+				String[] aE = (String[])aD;
+				lastExamples.put(aE[0], new String[] {aE[3], aE[4]});
+			}
+		});
 		tde.gui.applyColorFont(aTree);
 		GridData aGD = new GridData(GridData.FILL_BOTH);
 		aGD.widthHint = labelWidth;
@@ -1464,6 +1731,36 @@ public class AiClipGUI {
 			aN.setText(aN.getText()+" ("+countLeaves(aN)+")");
 		}
 		aTree.setRedraw(true);
+		//The example last chosen of this kind: selected and shown (its categories opened)
+		String[] aLast = lastExamples.get(aKind);
+		TreeItem aItem = aLast == null ? null : findExample(aTree.getItems(), aLast);
+		if(aItem != null) {
+			aTree.setSelection(aItem);
+			aTree.showItem(aItem);
+			//Scrolled again once the window has its size
+			tde.gui.display.asyncExec(() -> {
+				if(!aTree.isDisposed() && !aItem.isDisposed()) {
+					aTree.showItem(aItem);
+				}
+			});
+		}
+	}
+
+	/**
+	 * Leaf of the examples whose English prompt and name are aExample, null if none
+	 */
+	static TreeItem findExample(TreeItem[] aItems,String[] aExample) {
+		for(TreeItem aI : aItems) {
+			Object aD = aI.getData();
+			if(aD instanceof String[] && aExample[0].equals(((String[])aD)[3]) && aExample[1].equals(((String[])aD)[4])) {
+				return aI;
+			}
+			TreeItem aF = findExample(aI.getItems(), aExample);
+			if(aF != null) {
+				return aF;
+			}
+		}
+		return null;
 	}
 
 	static int bpm(String[] aE) {
@@ -1494,6 +1791,14 @@ public class AiClipGUI {
 	 * aOnChange runs after each change of the image (and once at the creation).
 	 */
 	void createImageRow(Composite aShell,Label aSizeL,RefImage aRef,String aLabel,Runnable aOnChange) {
+		createImageRow(aShell, aSizeL, aRef, aLabel, aOnChange, null);
+	}
+
+	/**
+	 * Same; aBefore (null: none) runs when Choose or From the library is clicked, before the choice: false
+	 * cancels it
+	 */
+	void createImageRow(Composite aShell,Label aSizeL,RefImage aRef,String aLabel,Runnable aOnChange,java.util.function.BooleanSupplier aBefore) {
 		Label aIL = addLabel(aShell, aLabel, 0);
 		((GridData)aIL.getLayoutData()).verticalIndent = 8;
 		Composite aRow = new Composite(aShell, SWT.NONE);
@@ -1579,6 +1884,9 @@ public class AiClipGUI {
 		aChoose.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				if(aBefore != null && !aBefore.getAsBoolean()) {
+					return;
+				}
 				FileDialog aFD = new FileDialog(aShell.getShell(), SWT.OPEN);
 				aFD.setText(lng("AI.Image"));
 				aFD.setFilterNames(new String[] {lng("AI.ImageFilter")});
@@ -1617,6 +1925,9 @@ public class AiClipGUI {
 		aLib.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				if(aBefore != null && !aBefore.getAsBoolean()) {
+					return;
+				}
 				StereoImage aM = chooseLibraryImage(aShell.getShell());
 				if(aM == null) {
 					return;
@@ -1868,6 +2179,11 @@ public class AiClipGUI {
 		final PythonAI aEnding = ending;
 		ending = null;
 		generator = null;
+		//Music and sound effects: generated in series, several ahead, listened and kept in the same window
+		if(music && !color) {
+			new AiSoundSeriesGUI(this, aEnding).open();
+			return;
+		}
 		stepStartMS = -1;
 		stepStartDone = 0;
 		lastUpdateMS = 0;
@@ -1884,7 +2200,8 @@ public class AiClipGUI {
 		}
 		else if(music) {
 			String aReason = SoundGenerator.cpuReason(soundModel);
-			addLabel(shell, (SoundGenerator.MUSIC.equals(soundModel.kind) ? "MusicGen " : "")+soundModel.id+" : "+String.format("%.0f s", seconds)+" - "
+			addLabel(shell, (SoundGenerator.MUSIC.equals(soundModel.kind) ? "MusicGen " : "")+soundModel.id+" : "+String.format("%.0f s", seconds)
+					+" - "
 					+lng(aReason == null ? "AI.MusicOnGpu" : "AI.MusicOnCpu"), 0);
 		}
 		else {
@@ -1937,11 +2254,7 @@ public class AiClipGUI {
 			aBase = (music ? (SoundGenerator.SFX.equals(soundModel.kind) ? "AI_Sfx_" : "AI_Music_") : color ? "AI_Color_" : "AI_")+new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 		}
 		//A name already taken in the folder: name_2, name_3...
-		String aFree = aBase;
-		for(int n = 2;new File(aOutDir, aFree+aExt).exists() || new File(aOutDir, aFree+".txt").exists();n++) {
-			aFree = aBase+"_"+n;
-		}
-		aBase = aFree;
+		aBase = freeBase(aOutDir, aBase, aExt);
 		File aOut = new File(aOutDir, aBase+aExt);
 		File aPromptFile = new File(aOutDir, aBase+".txt");
 		String aRef = color ? colorImg.path : videoImg.path;
@@ -2005,24 +2318,8 @@ public class AiClipGUI {
 						aDone = aWG.generate(aPromptFile, aRef == null ? null : new File(aRef), aFrames, width, height, aOut) && !isCanceled(aRun);
 					}
 				}
-				catch(PythonAI.GenerationException e) {
-					e.printStackTrace(System.err);
-					if("OOM".equals(e.code)) {
-						aError = color ? lng("AI.ColorErrorOom")
-								: music
-								? lng("AI.MusicErrorOom").replace("%GB%", DepthModel.gb(soundModel.gpuMemory()))
-								: lng("AI.ErrorOom").replace("%GB%", DepthModel.gb(videoModel.gpuMemory));
-					}
-					else if("NOGPU".equals(e.code)) {
-						aError = lng("AI.ErrorNoGpu");
-					}
-					else {
-						aError = lng(errorKey())+"\n"+e.code;
-					}
-				}
 				catch(Throwable t) {
-					t.printStackTrace(System.err);
-					aError = lng(errorKey())+"\n"+(t.getMessage() == null ? t.toString() : t.getMessage());
+					aError = errorMessage(t);
 				}
 				final boolean aCanceled = isCanceled(aRun);
 				if(!aDone) {
@@ -2057,6 +2354,38 @@ public class AiClipGUI {
 			}
 		});
 		aTh.start();
+	}
+
+	/**
+	 * Message of a failed generation
+	 */
+	String errorMessage(Throwable aT) {
+		aT.printStackTrace(System.err);
+		if(aT instanceof PythonAI.GenerationException) {
+			PythonAI.GenerationException e = (PythonAI.GenerationException)aT;
+			if("OOM".equals(e.code)) {
+				return color ? lng("AI.ColorErrorOom")
+						: music
+						? lng("AI.MusicErrorOom").replace("%GB%", DepthModel.gb(soundModel.gpuMemory()))
+						: lng("AI.ErrorOom").replace("%GB%", DepthModel.gb(videoModel.gpuMemory));
+			}
+			if("NOGPU".equals(e.code)) {
+				return lng("AI.ErrorNoGpu");
+			}
+			return lng(errorKey())+"\n"+e.code;
+		}
+		return lng(errorKey())+"\n"+(aT.getMessage() == null ? aT.toString() : aT.getMessage());
+	}
+
+	/**
+	 * aBase+aExt in aDir, or aBase_2, aBase_3... when taken (with its prompt file .txt)
+	 */
+	static String freeBase(File aDir,String aBase,String aExt) {
+		String aFree = aBase;
+		for(int n = 2;new File(aDir, aFree+aExt).exists() || new File(aDir, aFree+".txt").exists();n++) {
+			aFree = aBase+"_"+n;
+		}
+		return aFree;
 	}
 
 	/**

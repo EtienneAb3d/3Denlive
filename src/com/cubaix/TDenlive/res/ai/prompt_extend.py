@@ -3,7 +3,8 @@
 # Qwen/Qwen3-VL-4B-Instruct (Apache-2.0, multilingual vision language model, transformers
 # Qwen3VLForConditionalGeneration) rewrites the prompt of the user, written in any language, into one detailed
 # English paragraph in the style of the captions Wan2.2 was trained with (as the prompt extension advised by the
-# authors of Wan). With a reference image (first frame of the video), it sees the image and describes it. bf16 on
+# authors of Wan). With a reference image (first frame of the video), it sees the image and describes it. Music and
+# sound effects panels: the prompt of a sound suited to an image (modes music, sfx; sfx: "prompt|seconds"). bf16 on
 # CUDA, MPS or the CPU (--device cpu forces it). The model files are downloaded by 3Denlive before (no network
 # access here).
 # No torchvision in the environment: the processor of transformers (whose video part needs it) is not used; the
@@ -101,6 +102,37 @@ to that image, refer to its content generically when needed ("the person in the 
 landscape"), and do not describe an appearance that could contradict the image (colors, clothes, number of people) \
 unless the user mentions it."""
 
+# Sound from an image (music or sound effects panel): the model looks at the image and writes the prompt of a
+# sound suited to it, following the request of the user if any (any language)
+MUSIC = """You write prompts for MusicGen, an AI music generator that only understands English. Look at the \
+image and write the prompt of an instrumental music that would suit it as a soundtrack: its mood, its place, its \
+time, its light and its pace.
+- One line in English, 15 to 35 words, plain text, in this style: "slow orchestral elegy for full strings with \
+soft horns and long sustained chords, solemn and noble, 56 bpm".
+- Give the genre, the main instruments, the mood and the feel, and end with the tempo as ", <number> bpm".
+- Instrumental only: no voice, no lyrics, no song title, no artist name.
+- If the user gives a request (in any language), it comes first: keep its genre, instruments or mood, and adapt \
+the rest to the image.
+Answer with the prompt only."""
+
+SFX = """You write prompts for an AI sound effects generator that only understands English. Look at the image \
+and write the prompt of the sound that this scene would make, as if it were recorded there.
+- One line in English, 6 to 20 words, plain text, in this style: "heavy rain falling on a tin roof with distant \
+thunder", "footsteps walking slowly on a gravel path".
+- Write what one would HEAR there, not what one sees: the main sound source with a verb of sound (barks, \
+rustles, creaks, crunches, rumbles, beats, jingles, whistles, splashes...), concretely; add the ambience only if \
+it matters. No music, no speech, no words spoken.
+- Name what the image really shows (a donkey is not a horse) and only what is there: invent no sound source.
+- Describe sounds only: leave out what makes no sound (buildings, colors, reflections, the look of the place), \
+except a material or a surface that shapes the sound (snow, gravel, a wooden floor, a large hall). A still \
+landscape sounds through its wind, leaves, birds or water, if they are there.
+- If the user gives a request (in any language), it comes first: describe the sound asked, in the setting of the \
+image.
+- Then add "|" and the duration in seconds that suits this sound, from 1 to 10: a single impact 1 to 3, a short \
+event 4 to 6, a continuous activity (walking, pulling, playing, rustling) or an ambience 8 to 10. For example: \
+"a wooden door creaks open slowly|4", "a donkey pulling a sleigh through deep snow, bells jingling|8".
+Answer with that line only."""
+
 # Longest side of the image given to the model (enough to recognize the scene, few image tokens)
 IMAGE_SIDE = 768
 
@@ -113,7 +145,7 @@ def main():
 	aP = argparse.ArgumentParser()
 	aP.add_argument("--model-dir", required=True)
 	aP.add_argument("--prompt-file")
-	aP.add_argument("--mode", default="t2v", choices=["t2v", "i2v"])
+	aP.add_argument("--mode", default="t2v", choices=["t2v", "i2v", "music", "sfx"])
 	aP.add_argument("--image")
 	aP.add_argument("--max-tokens", type=int, default=320)
 	aP.add_argument("--device", default="auto")
@@ -200,11 +232,14 @@ def main():
 
 	def extend(aPrompt, aMode, aImagePath=None):
 		aImg = None
-		if aMode == "i2v" and aImagePath:
+		if aMode in ("i2v", "music", "sfx") and aImagePath:
 			aImg = Image.open(aImagePath).convert("RGB")
 			aImg.thumbnail((IMAGE_SIDE, IMAGE_SIDE))
 		aUserText = aPrompt
-		if aMode == "i2v":
+		if aMode in ("music", "sfx"):
+			aSystem = MUSIC if aMode == "music" else SFX
+			aUserText = ("Request of the user: " + aPrompt) if aPrompt else "No request: only the image."
+		elif aMode == "i2v":
 			aSystem = I2V if aImg is not None else I2V_BLIND
 			if aImg is not None:
 				aKey = (os.path.abspath(aImagePath), os.path.getmtime(aImagePath), os.path.getsize(aImagePath))
@@ -228,7 +263,7 @@ def main():
 		out("DONE " + aArgs.out)
 		return 0
 
-	# Server: one JSON request per line on stdin {"mode": "t2v"|"i2v", "prompt": "...", "image": path or absent}, until stdin is closed
+	# Server: one JSON request per line on stdin {"mode": "t2v"|"i2v"|"music"|"sfx", "prompt": "...", "image": path or absent}, until stdin is closed
 	out("STATUS LlmReady")
 	for aLine in sys.stdin:
 		aLine = aLine.strip()

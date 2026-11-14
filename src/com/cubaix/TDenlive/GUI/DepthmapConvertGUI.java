@@ -163,7 +163,8 @@ public class DepthmapConvertGUI {
 		aShell.setImage(tde.gui.imgsSwt.getIcon("3Denlive32.png"));
 
 		boolean aIsVideo = clip.getMedia() instanceof StereoMovie;
-		long aGpuFree = DepthEstimator.gpuFreeMemory();
+		//The AI model kept loaded is unloaded before the depth maps: its memory counts as free
+		long aGpuFree = com.cubaix.TDenlive.ai.PythonAI.availableGpuMemory();
 		addLabel(aShell, lng("DepthConvert.Intro"), 0);
 		for(DepthModel aM : DepthModel.MODELS) {
 			Button aRadio = new Button(aShell, SWT.RADIO);
