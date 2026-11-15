@@ -59,6 +59,16 @@ public class TDConfig {
 	public String aiVideoModel = "";
 	//Colorization model chosen ("": the advised one)
 	public String aiColorModel = "";
+	//Speech panels (subtitles, voice translation): speech recognition and voice models ("": the advised ones),
+	//language spoken ("": recognized), subtitle languages (English names, comma separated; "-": the spoken one),
+	//language of the voice translation, original sound kept under the voice
+	public String aiAsrModel = "";
+	public String aiTtsModel = "";
+	public String aiSpokenLang = "";
+	public String aiSubLangs = "-";
+	public String aiDubLang = "English";
+	//Voice of the cascade: "female" / "male" (native, designed), "original" (cloned from the speaker)
+	public String aiDubVoice = "speakers";
 	public String aiMusicModel = "";
 	public String aiSfxModel = "";
 	//"No background noise" option of the AI sound effects (SoundGenerator.clean)
@@ -128,6 +138,25 @@ public class TDConfig {
 					if("aiMusicModel".equalsIgnoreCase(aT.tagName)) {
 						o++;
 						aiMusicModel = aOs.elementAt(o) instanceof XmlTag ? "" : aOs.elementAt(o).text.trim();
+						continue;
+					}
+					if("aiAsrModel".equalsIgnoreCase(aT.tagName) || "aiTtsModel".equalsIgnoreCase(aT.tagName)
+							|| "aiSpokenLang".equalsIgnoreCase(aT.tagName) || "aiSubLangs".equalsIgnoreCase(aT.tagName)
+							|| "aiDubLang".equalsIgnoreCase(aT.tagName) || "aiDubKeep".equalsIgnoreCase(aT.tagName)
+							|| "aiDubVoice".equalsIgnoreCase(aT.tagName)) {
+						String aTag = aT.tagName.toLowerCase();
+						o++;
+						String aV = aOs.elementAt(o) instanceof XmlTag ? "" : aOs.elementAt(o).text.trim();
+						switch(aTag) {
+						case "aiasrmodel": aiAsrModel = aV; break;
+						case "aittsmodel": aiTtsModel = aV; break;
+						case "aispokenlang": aiSpokenLang = aV; break;
+						case "aisublangs": aiSubLangs = aV; break;
+						case "aidublang": aiDubLang = aV.isEmpty() ? "English" : aV; break;
+						case "aidubvoice": aiDubVoice = aV.isEmpty() ? "speakers" : aV; break;
+						//aiDubKeep of older versions: ignored (no original sound under the voice any more)
+						default: break;
+						}
 						continue;
 					}
 					if("aiColorModel".equalsIgnoreCase(aT.tagName)) {
@@ -229,6 +258,12 @@ public class TDConfig {
 			aOut.write("<aiSfxModel>"+aiSfxModel+"</aiSfxModel>\n");
 			aOut.write("<aiSfxClean>"+aiSfxClean+"</aiSfxClean>\n");
 			aOut.write("<aiColorModel>"+aiColorModel+"</aiColorModel>\n");
+			aOut.write("<aiAsrModel>"+aiAsrModel+"</aiAsrModel>\n");
+			aOut.write("<aiTtsModel>"+aiTtsModel+"</aiTtsModel>\n");
+			aOut.write("<aiSpokenLang>"+aiSpokenLang+"</aiSpokenLang>\n");
+			aOut.write("<aiSubLangs>"+aiSubLangs+"</aiSubLangs>\n");
+			aOut.write("<aiDubLang>"+aiDubLang+"</aiDubLang>\n");
+			aOut.write("<aiDubVoice>"+aiDubVoice+"</aiDubVoice>\n");
 			aOut.flush();
 			aOut.close();
 		}

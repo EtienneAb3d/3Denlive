@@ -439,6 +439,8 @@ public class Shapes extends Processor {
 	 * Key at the current time, created if needed, -1 out of the clip
 	 */
 	public int ensureCurrentKey() {
+		//Changed while playing: paused there
+		com.cubaix.TDenlive.GUI.PlayerControlGUI.pauseForEdit(tde);
 		long aT = currentClipTime();
 		if(aT < 0) {
 			return -1;

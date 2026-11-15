@@ -203,9 +203,20 @@ public class PromptExtender extends PythonAI implements PythonAI.Resident {
 		System.out.println("AI prompt rewriting: LLM unloaded");
 	}
 
+	//Last step reported by the script (its STEP messages count the tokens of a prompt or the translated sentences)
+	volatile String lastStatus = null;
+
+	@Override
+	void status(String aKey,String aDetail,long aDone,long aTotal) {
+		if(aTotal <= 0) {
+			lastStatus = aKey;
+		}
+		super.status(aKey, aDetail, aDone, aTotal);
+	}
+
 	@Override
 	String stepKey() {
-		return "AI.ExtendingPrompt";
+		return "AI.Translating".equals(lastStatus) ? lastStatus : "AI.ExtendingPrompt";
 	}
 
 	@Override
@@ -327,12 +338,30 @@ public class PromptExtender extends PythonAI implements PythonAI.Resident {
 	public static final String SFX_MODE = "sfx";
 
 	String extend(String aPrompt,String aImagePath,String aMode) throws Exception {
+		return request("{\"mode\": \""+aMode+"\", \"prompt\": \""+quote(aPrompt)+"\""
+				+(aImagePath != null ? ", \"image\": \""+quote(aImagePath)+"\"" : "")+"}\n");
+	}
+
+	/**
+	 * Subtitles translated (speech panels, SpeechGenerator): aLines one subtitle per line, translated into
+	 * aTarget (English name of the language) from aSource ("" if unknown), sentence by sentence (starts the
+	 * script if needed)
+	 * @return as many lines in the same order, null if closed meanwhile
+	 */
+	public String translate(String aLines,String aTarget,String aSource) throws Exception {
+		return request("{\"mode\": \"translate\", \"prompt\": \""+quote(aLines)+"\", \"target\": \""+quote(aTarget)
+				+"\", \"source\": \""+quote(aSource)+"\"}\n");
+	}
+
+	/**
+	 * One JSON request line to the script, its answer
+	 * @return null if closed meanwhile
+	 */
+	String request(String aReq) throws Exception {
 		if(!start()) {
 			return null;
 		}
 		Process aP = server;
-		String aReq = "{\"mode\": \""+aMode+"\", \"prompt\": \""+quote(aPrompt)+"\""
-				+(aImagePath != null ? ", \"image\": \""+quote(aImagePath)+"\"" : "")+"}\n";
 		OutputStream aOS = aP.getOutputStream();
 		synchronized(aOS) {
 			aOS.write(aReq.getBytes(StandardCharsets.UTF_8));

@@ -12,6 +12,7 @@ import org.eclipse.swt.widgets.Label;
 import java.util.Vector;
 
 import com.cubaix.TDenlive.TDenlive;
+import com.cubaix.TDenlive.GUI.PlayerControlGUI;
 import com.cubaix.TDenlive.medias.Clip;
 import com.cubaix.TDenlive.processors.Processor;
 
@@ -96,6 +97,8 @@ public abstract class LabelKeyFrame extends Widget {
 	 * With selected keys: the main selected key (use edit() to change all of them).
 	 */
 	public int editKey() {
+		//Changed while playing: paused there
+		PlayerControlGUI.pauseForEdit(tde);
 		int aMain = proc.getMainSelectedKey();
 		if(aMain >= 0) {
 			return aMain;
@@ -136,6 +139,7 @@ public abstract class LabelKeyFrame extends Widget {
 	 * all of them take it, else the key of editKey() (automatic mode)
 	 */
 	public void edit(IntConsumer aSet) {
+		PlayerControlGUI.pauseForEdit(tde);
 		Vector<Integer> aKeys = proc.getSelectedKeys();
 		if(aKeys.isEmpty()) {
 			int aKey = editKey();
@@ -265,6 +269,7 @@ public abstract class LabelKeyFrame extends Widget {
 		tde.gui.tip(addDelete, "KeyAdd");
 		addDelete.setBackground(tde.gui.colorsSwt.WHITE);
 		addDelete.addListener(SWT.MouseDown,e -> {
+			PlayerControlGUI.pauseForEdit(tde);
 			int aKey = -1;
 			if(addMode) {
 				aKey = proc.addKeyGT(tde.timeLineStack.getTimePosMS());

@@ -626,6 +626,49 @@ public abstract class PythonAI {
 		return true;
 	}
 
+	/**
+	 * Packages added to an environment already installed, for one use (aName: marker
+	 * 3Denlive-extra-<aName>.txt), without installing the environment again (the shared one is 1.5 to 6 GB)
+	 * @return false if canceled
+	 */
+	boolean installExtra(Env aE,String[] aPackages,String aName) throws Exception {
+		File aMarker = new File(getEnvDir(tdeDir, aE), "3Denlive-extra-"+aName+".txt");
+		String aList = String.join(" ", aPackages);
+		try {
+			if(aMarker.isFile() && aList.equals(new String(Files.readAllBytes(aMarker.toPath()), StandardCharsets.UTF_8).trim())) {
+				return true;
+			}
+		}
+		catch(Throwable t) {
+		}
+		File aPyDir = getPythonDir(tdeDir);
+		File aUv = installUv(aPyDir);
+		if(aUv == null) {
+			return false;
+		}
+		status("AI.InstallingPackages", null, 0, 0);
+		Vector<String> aCmd = new Vector<String>();
+		aCmd.add(aUv.getAbsolutePath());
+		aCmd.add("pip");
+		aCmd.add("install");
+		aCmd.add("--python");
+		aCmd.add(getEnvPython(tdeDir, aE).getAbsolutePath());
+		aCmd.add("--torch-backend=auto");
+		for(String aPkg : aPackages) {
+			aCmd.add(aPkg);
+		}
+		ProcessBuilder aPB = new ProcessBuilder(aCmd);
+		uvEnv(aPB, aPyDir);
+		if(runInstallStep(aPB) != 0 && !canceled()) {
+			throw new Exception("Installation of "+aList+" failed (see log/3De.log)");
+		}
+		if(canceled()) {
+			return false;
+		}
+		Files.write(aMarker.toPath(), aList.getBytes(StandardCharsets.UTF_8));
+		return true;
+	}
+
 	static void uvEnv(ProcessBuilder aPB,File aPyDir) {
 		Map<String,String> aEnv = aPB.environment();
 		aEnv.put("UV_PYTHON_INSTALL_DIR", new File(aPyDir, "python").getAbsolutePath());

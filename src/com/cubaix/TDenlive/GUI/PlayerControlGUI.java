@@ -93,11 +93,8 @@ public class PlayerControlGUI extends CompositePanel {
 				long aFrom = playedMedia.getRequestedTimePosMS();
 				startPlay(playedMedia, playedIsLib, aFrom, returnPosMS);
 			}
-			else if(playing) {
-				//The playing thread ends without going back to the start position
-				paused = true;
-				playing = false;
-				updateButtons();
+			else {
+				pause();
 			}
 		});
 
@@ -494,6 +491,40 @@ public class PlayerControlGUI extends CompositePanel {
 			}
 		});
 		aTh.start();
+	}
+
+	/**
+	 * Pause while playing (SWT thread): the playing thread ends without going back to the start position
+	 * @return true if it was playing
+	 */
+	public boolean pause() {
+		if(!playing) {
+			return false;
+		}
+		paused = true;
+		playing = false;
+		updateButtons();
+		return true;
+	}
+
+	/**
+	 * Pause of the play when a keyed parameter of a processor is changed (one key at the time of the change, not
+	 * one key per image played)
+	 */
+	public static void pauseForEdit(TDenlive aTDe) {
+		if(aTDe == null || aTDe.gui == null || aTDe.gui.playerControlGUI == null || !aTDe.gui.playerControlGUI.playing) {
+			return;
+		}
+		if(Thread.currentThread() == aTDe.gui.display.getThread()) {
+			aTDe.gui.playerControlGUI.pause();
+		}
+		else {
+			aTDe.gui.display.asyncExec(() -> {
+				if(aTDe.gui.playerControlGUI != null) {
+					aTDe.gui.playerControlGUI.pause();
+				}
+			});
+		}
 	}
 
 	/**

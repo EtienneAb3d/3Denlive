@@ -42,9 +42,11 @@ import com.cubaix.TDenlive.ai.ColorGenerator;
 import com.cubaix.TDenlive.ai.PromptExtender;
 import com.cubaix.TDenlive.ai.PythonAI;
 import com.cubaix.TDenlive.ai.SoundGenerator;
+import com.cubaix.TDenlive.ai.SpeechGenerator;
 import com.cubaix.TDenlive.ai.WanGenerator;
 import com.cubaix.TDenlive.depth.DepthEstimator;
 import com.cubaix.TDenlive.depth.DepthModel;
+import com.cubaix.TDenlive.medias.AudioMedia;
 import com.cubaix.TDenlive.medias.ColorBck;
 import com.cubaix.TDenlive.medias.Media;
 import com.cubaix.TDenlive.medias.Model3DMedia;
@@ -52,6 +54,7 @@ import com.cubaix.TDenlive.medias.ShapesMedia;
 import com.cubaix.TDenlive.medias.StereoImage;
 import com.cubaix.TDenlive.medias.StereoMovie;
 import com.cubaix.TDenlive.utils.ImageUtils;
+import com.cubaix.TDenlive.utils.SubtitleFile;
 
 /**
  * AI clip (button right of the 3D model one). A selector at the top of the form chooses what is generated
@@ -61,6 +64,9 @@ import com.cubaix.TDenlive.utils.ImageUtils;
  * - Video: a 2D video by Wan2.2-TI2V-5B (see ai.WanGenerator), transformer in Q8_0, Q6_K or Q4_K_M; prompt,
  * duration (at most 5 s), reference image, GPU needed. The progress window shows an approximate preview of the
  * video being denoised (animated latent frames).
+ * - Subtitles / Voice translation: the speech of a video transcribed (Qwen3-ASR or Parakeet), translated into one or
+ * several languages by the LLM, or spoken in another language with the cloned voice (Qwen3-TTS), see
+ * ai.SpeechGenerator; result window AiSpeechResultGUI.
  * - Music: MusicGen Small, Medium or Large; Sound effects: Woosh-DFlow or Woosh-Flow (see ai.SoundGenerator),
  * with what the generator is made for, its licence and the hardware each model needs, on the GPU or else on the
  * CPU.
@@ -90,6 +96,34 @@ public class AiClipGUI {
 	//Colorization of a photo (COLOR) instead of a generation
 	boolean color = false;
 	ColorGenerator.Model colorModel = ColorGenerator.MODELSCOPE;
+	//Speech of a video (SUBS: subtitles, DUB: voice translation) instead of a generation
+	boolean speech = false;
+	boolean dub = false;
+	SpeechGenerator.Model asrModel = SpeechGenerator.QWEN3_ASR;
+	SpeechGenerator.Model ttsModel = SpeechGenerator.TTS_17;
+	//Language spoken (English name, "": recognized), subtitle languages ("": the spoken one), voice language
+	String spokenLang = "";
+	Vector<String> subLangs = new Vector<String>();
+	String dubLang = "English";
+	//Voice of the cascade (SpeechGenerator.VOICE_*)
+	String dubVoice = SpeechGenerator.VOICE_MALE;
+	/**
+	 * Video or sound whose speech is used: its file, the media of the library it comes from (null: a file of the
+	 * disk), the name shown
+	 */
+	static class SpeechSource {
+		String path = null;
+		Media media = null;
+		String name = null;
+		//Subtitles file of its speech given by the user (.srt, .vtt): used instead of the recognition, else null
+		String srt = null;
+	}
+	SpeechSource subsSrc = new SpeechSource();
+	SpeechSource dubSrc = new SpeechSource();
+
+	SpeechSource speechSource() {
+		return dub ? dubSrc : subsSrc;
+	}
 	SoundGenerator.Model soundModel = SoundGenerator.SMALL;
 	WanGenerator.Variant videoModel = WanGenerator.Q8_0;
 	String prompt = null;
@@ -140,6 +174,7 @@ public class AiClipGUI {
 	long stepStartMS = -1;
 	long stepStartDone = 0;
 	long lastUpdateMS = 0;
+	String stepKeyNow = null;
 
 	AiClipGUI(TDenlive aTDe) {
 		tde = aTDe;
@@ -251,6 +286,16 @@ public class AiClipGUI {
 	//Width of the wrapped labels and of the prompt (narrower in the two columns of the sound panel)
 	int labelWidth = 560;
 
+	/**
+	 * The color of a processing message: violet while an action is in progress (loading a model, computing...),
+	 * the normal text color otherwise
+	 */
+	void working(Label aL,boolean aWorking) {
+		if(aL != null && !aL.isDisposed()) {
+			aL.setForeground(aWorking ? tde.gui.colorsSwt.VIOLET : tde.gui.colorsSwt.CUBAIX_BLUE);
+		}
+	}
+
 	Label addLabel(Composite aParent,String aText,int aIndent) {
 		Label aL = new Label(aParent, SWT.WRAP);
 		tde.gui.applyColorFont(aL);
@@ -314,7 +359,9 @@ public class AiClipGUI {
 		for(int k = 0;k < KINDS.length;k++) {
 			aPanels[k] = panel(aStack);
 			aChecks[k] = VIDEO.equals(KINDS[k]) ? createVideoPanel(aPanels[k])
-					: COLOR.equals(KINDS[k]) ? createColorPanel(aPanels[k]) : createSoundPanel(aPanels[k], KINDS[k]);
+					: COLOR.equals(KINDS[k]) ? createColorPanel(aPanels[k])
+					: SUBS.equals(KINDS[k]) || DUB.equals(KINDS[k]) ? createSpeechPanel(aPanels[k], DUB.equals(KINDS[k]))
+					: createSoundPanel(aPanels[k], KINDS[k]);
 		}
 
 		Composite aButtons = new Composite(aShell, SWT.NONE);
@@ -376,7 +423,9 @@ public class AiClipGUI {
 			}
 			int k = kindIndex(kind);
 			color = COLOR.equals(kind);
-			music = !VIDEO.equals(kind) && !color;
+			dub = DUB.equals(kind);
+			speech = dub || SUBS.equals(kind);
+			music = !VIDEO.equals(kind) && !color && !speech;
 			if(music) {
 				soundModel = (SoundGenerator.Model)aPanels[k].getData(MODEL);
 			}
@@ -431,9 +480,12 @@ public class AiClipGUI {
 	static final String KIND_DATA = "AiClipGUI.kind";
 	//Colorization of a black and white photo (DDColor, see ai.ColorGenerator)
 	static final String COLOR = "color";
-	static final String[] KINDS = {VIDEO, COLOR, MUSIC, SFX};
-	static final String[] KIND_KEYS = {"AI.KindVideo", "AI.KindColor", "AI.KindMusic", "AI.KindSfx"};
-	static final String[] KIND_TITLES = {"AI.Title", "AI.ColorTitle", "AI.MusicTitle", "AI.SfxTitle"};
+	//Speech of a video: subtitles in one or several languages, voice translation (see ai.SpeechGenerator)
+	static final String SUBS = "subtitles";
+	static final String DUB = "dub";
+	static final String[] KINDS = {VIDEO, COLOR, MUSIC, SFX, SUBS, DUB};
+	static final String[] KIND_KEYS = {"AI.KindVideo", "AI.KindColor", "AI.KindMusic", "AI.KindSfx", "AI.KindSubs", "AI.KindDub"};
+	static final String[] KIND_TITLES = {"AI.Title", "AI.ColorTitle", "AI.MusicTitle", "AI.SfxTitle", "AI.SubsTitle", "AI.DubTitle"};
 	//Data of a sound panel: its model chosen
 	static final String MODEL = "AiClipGUI.model";
 
@@ -539,6 +591,7 @@ public class AiClipGUI {
 		Label aStep = new Label(aD, SWT.WRAP);
 		tde.gui.applyColorFont(aStep);
 		aStep.setText(lng("AI.Starting"));
+		working(aStep, true);
 		GridData aSGD = new GridData(GridData.FILL_HORIZONTAL);
 		aSGD.widthHint = 460;
 		aStep.setLayoutData(aSGD);
@@ -647,9 +700,8 @@ public class AiClipGUI {
 		Label status = null;
 		PromptExtender extender = null;
 		volatile boolean busy = false;
-		//Image of the last proposal, and the proposal (the prompt unchanged since: not a request of the user)
+		//Image of the last proposal
 		String lastImage = null;
-		String lastProposal = null;
 
 		SoundImage(boolean aSfx,Text aPrompt,Spinner aSeconds,Button aClean) {
 			sfx = aSfx;
@@ -705,10 +757,10 @@ public class AiClipGUI {
 			}
 			lastImage = aPath;
 			busy = true;
-			String aTyped = SoundGenerator.withoutClean(prompt.getText()).trim();
-			//The previous proposal unchanged: not a request of the user
-			String aRequest = aTyped.equals(lastProposal) ? "" : aTyped;
-			setStatus(lng("AI.AnalyzingImage"));
+			//Another image: the prompt is reset, the new one comes from the image alone
+			prompt.setText("");
+			String aRequest = "";
+			setStatus(lng("AI.AnalyzingImage"), true);
 			PromptExtender aPE = extender();
 			Thread aT = new Thread(() -> {
 				String aR = null;
@@ -747,7 +799,6 @@ public class AiClipGUI {
 						}
 						aP = aP.substring(0, aBar).trim();
 					}
-					lastProposal = aP;
 					prompt.setText(clean != null && clean.getSelection() ? SoundGenerator.withClean(aP) : aP);
 					setStatus(lng("AI.ImagePromptDone"));
 					System.out.println("AI sound prompt from the image "+aPath+": "+aRes);
@@ -758,8 +809,13 @@ public class AiClipGUI {
 		}
 
 		void setStatus(String aText) {
+			setStatus(aText, false);
+		}
+
+		void setStatus(String aText,boolean aWorking) {
 			if(status != null && !status.isDisposed()) {
 				status.setText(aText);
+				working(status, aWorking);
 				status.getParent().layout(true);
 			}
 		}
@@ -777,7 +833,7 @@ public class AiClipGUI {
 						}
 						//Loading of the model: shown while the image is analyzed
 						if(busy && ("AI.LoadingLlm".equals(aKey) || "AI.Starting".equals(aKey))) {
-							tde.gui.display.asyncExec(() -> setStatus(lng("AI.AnalyzingImage")+" ("+lng(aKey)+")"));
+							tde.gui.display.asyncExec(() -> setStatus(lng("AI.AnalyzingImage")+" ("+lng(aKey)+")", true));
 						}
 					}
 					@Override
@@ -916,8 +972,13 @@ public class AiClipGUI {
 		}
 
 		void setStatus(String aText,String aTip) {
+			setStatus(aText, aTip, false);
+		}
+
+		void setStatus(String aText,String aTip,boolean aWorking) {
 			if(!status.isDisposed()) {
 				status.setText(aText == null ? "" : aText);
+				working(status, aWorking);
 				status.setToolTipText(aTip);
 				status.getParent().layout(true);
 			}
@@ -1016,7 +1077,7 @@ public class AiClipGUI {
 							aT += " "+(100*aDone/aTotal)+" %";
 						}
 						final String aF = aT;
-						tde.gui.display.asyncExec(() -> setStatus(aF, null));
+						tde.gui.display.asyncExec(() -> setStatus(aF, null, true));
 					}
 					@Override
 					public boolean isCanceled() {
@@ -1066,7 +1127,7 @@ public class AiClipGUI {
 				return;
 			}
 			busy = true;
-			setStatus(lng("AI.Starting"), null);
+			setStatus(lng("AI.Starting"), null, true);
 			PromptExtender aPE = extender();
 			//An example unchanged: the LLM starts from its English prompt
 			String aSource = aText.equals(exampleDescription) && examplePrompt != null ? examplePrompt : aText;
@@ -1117,7 +1178,7 @@ public class AiClipGUI {
 			String aText = user.getText().trim();
 			if(busy || (!aText.isEmpty() && !finEdited && !(aText.equals(lastInput) && java.util.Objects.equals(refImage(), lastImage)))) {
 				request();
-				setStatus(lng("AI.ExtendWait"), null);
+				setStatus(lng("AI.ExtendWait"), null, true);
 				return false;
 			}
 			return true;
@@ -1389,6 +1450,577 @@ public class AiClipGUI {
 	}
 
 	/**
+	 * Panel of the speech of a video (see ai.SpeechGenerator). Subtitles (aDub false): the languages of the
+	 * subtitles, checked in a list (several at once: one SRT per language, the spoken one transcribed, the others
+	 * translated by the LLM). Voice translation (aDub true): the language of the voice, the original sound kept
+	 * under it or not. Both: the video or the sound (file or library), the speech recognition model, the language
+	 * spoken (recognized or chosen), where it runs, downloads.
+	 * @return the check of the OK button: sets prompt (left null when the form is not valid)
+	 */
+	Runnable createSpeechPanel(Composite aPanel,boolean aDub) {
+		if(!SpeechGenerator.isPlatformSupported()) {
+			Label aU = addLabel(aPanel, lng("AI.UnsupportedAll"), 0);
+			aU.setForeground(tde.gui.colorsSwt.RED);
+			return () -> {};
+		}
+		Composite[] aCols = columns(aPanel);
+		Composite aLeft = aCols[0];
+		Composite aRight = aCols[1];
+		SpeechSource aSrc = aDub ? dubSrc : subsSrc;
+		Label aIntro = addLabel(aLeft, lng(aDub ? "AI.DubIntro" : "AI.SubsIntro"), 0);
+		aIntro.setFont(tde.gui.fontsSwt.robotoBold);
+		addLabel(aLeft, lng(aDub ? "AI.DubDesc" : "AI.SubsDesc"), 0);
+
+		SpeechGenerator.Model aAsrChosen = SpeechGenerator.byId(SpeechGenerator.ASR_MODELS, tde.config.aiAsrModel);
+		SpeechGenerator.Model[] aAsr = {aAsrChosen != null ? aAsrChosen : SpeechGenerator.QWEN3_ASR};
+		SpeechGenerator.Model aTtsChosen = SpeechGenerator.byId(SpeechGenerator.TTS_MODELS, tde.config.aiTtsModel);
+		SpeechGenerator.Model aTtsAdvised = SpeechGenerator.defaultTts();
+		SpeechGenerator.Model[] aTts = {aTtsChosen != null ? aTtsChosen : aTtsAdvised};
+		Choice[] aAsrChoices = speechChoices(SpeechGenerator.ASR_MODELS, SpeechGenerator.QWEN3_ASR);
+		Label[] aWhere = {null};
+		Label[] aDownload = {null};
+		Label[] aLlm = {null};
+		org.eclipse.swt.widgets.Combo[] aSpoken = {null};
+		org.eclipse.swt.widgets.Table[] aLangs = {null};
+		org.eclipse.swt.widgets.Combo[] aTarget = {null};
+		org.eclipse.swt.widgets.Combo[] aVoice = {null};
+		//Voices of the combo, in its order
+		//The voice of each speaker first (default: several speakers, men and women, keep their own voice)
+		String[] aVoices = {SpeechGenerator.VOICE_SPEAKERS, SpeechGenerator.VOICE_ORIGINAL, SpeechGenerator.VOICE_MALE, SpeechGenerator.VOICE_FEMALE};
+		//Radio buttons of the voice models; the last cascade model and voice (given back when leaving Hibiki-Zero)
+		java.util.Map<SpeechGenerator.Model,Button> aTtsRadios = new java.util.HashMap<SpeechGenerator.Model,Button>();
+		SpeechGenerator.Model[] aCascade = {aTts[0] == SpeechGenerator.HIBIKI ? aTtsAdvised : aTts[0]};
+		int[] aCascadeVoice = {-1};
+		//Refresh of the row of the subtitles file
+		Runnable[] aSubsShow = {null};
+		//Languages of the subtitles (English names, "" the spoken one) / of the voice, as checked or chosen
+		java.util.function.Supplier<Vector<String>> aTargets = () -> {
+			Vector<String> aV = new Vector<String>();
+			if(aDub) {
+				int aI = aTarget[0].getSelectionIndex();
+				aV.add(SpeechGenerator.TTS_LANGUAGES[Math.max(0, aI)]);
+			}
+			else {
+				for(org.eclipse.swt.widgets.TableItem aI : aLangs[0].getItems()) {
+					if(aI.getChecked()) {
+						aV.add((String)aI.getData());
+					}
+				}
+			}
+			return aV;
+		};
+		//The LLM is needed when a language is not the spoken one
+		java.util.function.BooleanSupplier aTranslates = () -> {
+			//Direct translation: no LLM
+			if(aDub && aTts[0] == SpeechGenerator.HIBIKI) {
+				return false;
+			}
+			String aS = aSpoken[0] == null ? "" : spokenOf(aSpoken[0], aAsr[0]);
+			for(String aT : aTargets.get()) {
+				if(!aT.isEmpty() && !aT.equals(aS)) {
+					return true;
+				}
+			}
+			return false;
+		};
+		Runnable aShow = () -> {
+			if(aWhere[0] == null || aDownload[0] == null || aLlm[0] == null) {
+				return;
+			}
+			boolean aDirect = aDub && aTts[0] == SpeechGenerator.HIBIKI;
+			boolean aOwn = aSrc.srt != null;
+			String aW = aDirect ? lng("AI.DubDirectNoAsr") : aOwn ? lng("AI.SpeechOwnSubsNoAsr")
+					: lng(SpeechGenerator.cpuReason(aAsr[0]) == null ? "AI.SpeechOnGpu" : "AI.SpeechOnCpu");
+			if(aDub) {
+				aW += "\n"+lng(SpeechGenerator.cpuReason(aTts[0]) == null ? "AI.VoiceOnGpu" : aDirect ? "AI.DubDirectOnCpu" : "AI.VoiceOnCpu");
+			}
+			aWhere[0].setText(aW);
+			if(aTarget[0] != null) {
+				//Hibiki-Zero speaks English only, with the voice of the speaker (another choice goes to the cascade)
+				if(aDirect) {
+					aTarget[0].select(java.util.Arrays.asList(SpeechGenerator.TTS_LANGUAGES).indexOf("English"));
+					int aOrig = java.util.Arrays.asList(aVoices).indexOf(SpeechGenerator.VOICE_ORIGINAL);
+					if(aVoice[0].getSelectionIndex() != aOrig) {
+						aCascadeVoice[0] = aVoice[0].getSelectionIndex();
+						aVoice[0].select(aOrig);
+					}
+				}
+				else if(aCascadeVoice[0] >= 0) {
+					aVoice[0].select(aCascadeVoice[0]);
+					aCascadeVoice[0] = -1;
+				}
+			}
+			boolean aTr = aTranslates.getAsBoolean();
+			String aWarn = aTr ? llmWarning() : null;
+			aLlm[0].setText(aDirect ? lng("AI.DubDirectNoLlm") : aTr ? lng("AI.SpeechLlm")+(aWarn == null ? "" : "\n"+aWarn) : lng("AI.SpeechNoLlm"));
+			aLlm[0].setForeground(aWarn != null ? tde.gui.colorsSwt.RED : aIntro.getForeground());
+			long aBytes = (aDirect || aOwn ? 0 : aAsr[0].bytesToDownload(tde.tdeDir))+SpeechGenerator.envBytesToInstall(tde.tdeDir, aDub ? aTts[0] : null)
+					+(aDub ? aTts[0].bytesToDownload(tde.tdeDir) : 0)+(aTr ? PromptExtender.bytesToDownload(tde.tdeDir) : 0)
+					+(aDub && !aDirect && aVoice[0] != null ? SpeechGenerator.designBytesToDownload(tde.tdeDir
+							, aVoices[Math.max(0, aVoice[0].getSelectionIndex())], aTargets.get().firstElement()) : 0);
+			aDownload[0].setText(aBytes > 0 ? lng("AI.MusicDownload").replace("%GB%", gb(aBytes)) : lng("AI.MusicReady"));
+			aPanel.layout(true, true);
+		};
+		//A choice that Hibiki-Zero cannot do (spoken language, target, native voice): the cascade model instead
+		java.util.function.BooleanSupplier aNeedsCascade = () -> {
+			//Own subtitles: Hibiki-Zero does not use subtitles
+			if(aSrc.srt != null) {
+				return true;
+			}
+			String aS = spokenOf(aSpoken[0], aAsr[0]);
+			if(!aS.isEmpty() && !java.util.Arrays.asList(SpeechGenerator.HIBIKI_SOURCES).contains(aS)) {
+				return true;
+			}
+			if(!"English".equals(SpeechGenerator.TTS_LANGUAGES[Math.max(0, aTarget[0].getSelectionIndex())])) {
+				return true;
+			}
+			return !SpeechGenerator.VOICE_ORIGINAL.equals(aVoices[Math.max(0, aVoice[0].getSelectionIndex())]);
+		};
+		Runnable aChoiceChanged = () -> {
+			if(aDub && aTts[0] == SpeechGenerator.HIBIKI && aNeedsCascade.getAsBoolean()) {
+				aCascadeVoice[0] = -1;
+				aTts[0] = aCascade[0];
+				for(java.util.Map.Entry<SpeechGenerator.Model,Button> aE : aTtsRadios.entrySet()) {
+					aE.getValue().setSelection(aE.getKey() == aTts[0]);
+				}
+			}
+			aShow.run();
+		};
+		Runnable aFillSpoken = () -> {
+			String aKeep = spokenOf(aSpoken[0], aAsr[0]);
+			if(aSpoken[0].getItemCount() == 0) {
+				aKeep = tde.config.aiSpokenLang;
+			}
+			aSpoken[0].removeAll();
+			aSpoken[0].add(lng(aAsr[0] == SpeechGenerator.PARAKEET ? "AI.SpeechSpokenAutoParakeet" : "AI.SpeechSpokenAuto"));
+			String[] aNames = sortedLanguages(aAsr[0].languages);
+			aSpoken[0].setData(aNames);
+			int aSel = 0;
+			for(int i = 0;i < aNames.length;i++) {
+				aSpoken[0].add(SpeechGenerator.displayName(aNames[i], tde.config.lng));
+				if(aNames[i].equals(aKeep)) {
+					aSel = i+1;
+				}
+			}
+			aSpoken[0].select(aSel);
+		};
+		createModelChoice(aLeft, aAsrChoices, aAsr[0], aM -> {
+			aAsr[0] = (SpeechGenerator.Model)aM;
+			aFillSpoken.run();
+			aShow.run();
+		});
+		if(aDub) {
+			Label aVL = addLabel(aLeft, lng("AI.DubVoiceModel"), 0);
+			((GridData)aVL.getLayoutData()).verticalIndent = 8;
+			for(Choice aC : speechChoices(SpeechGenerator.TTS_MODELS, aTtsAdvised)) {
+				Button aR = new Button(aLeft, SWT.RADIO);
+				tde.gui.applyColorFont(aR);
+				aR.setText(aC.name+(aC.advised ? " "+lng("AI.MusicAdvised") : ""));
+				if(aC.advised) {
+					aR.setFont(tde.gui.fontsSwt.robotoBold);
+				}
+				aR.setSelection(aC.model == aTts[0]);
+				aTtsRadios.put((SpeechGenerator.Model)aC.model, aR);
+				aR.addListener(SWT.Selection, e -> {
+					if(aR.getSelection()) {
+						aTts[0] = (SpeechGenerator.Model)aC.model;
+						if(aTts[0] != SpeechGenerator.HIBIKI) {
+							aCascade[0] = aTts[0];
+						}
+						else if(aSrc.srt != null && aSubsShow[0] != null) {
+							//Direct translation from the sound: no subtitles used
+							aSrc.srt = null;
+							aSubsShow[0].run();
+						}
+						aShow.run();
+					}
+				});
+				if(aC.model == SpeechGenerator.HIBIKI) {
+					//Its main limit, in bold
+					Label aOnly = addLabel(aLeft, lng("AI.SpeechHibikiOnly"), 20);
+					aOnly.setFont(tde.gui.fontsSwt.robotoBold);
+				}
+				addLabel(aLeft, aC.details, 20);
+			}
+		}
+		aWhere[0] = addLabel(aLeft, " \n ", 0);
+		((GridData)aWhere[0].getLayoutData()).verticalIndent = 8;
+		aLlm[0] = addLabel(aLeft, " \n ", 0);
+
+		Text aName = createNameField(aRight, aDub ? DUB : SUBS);
+		aName.setMessage(lng("AI.SpeechNameHint"));
+		createSourceRow(aRight, aSrc);
+		aSubsShow[0] = createSubsFileRow(aRight, aSrc, aChoiceChanged);
+
+		Composite aSp = new Composite(aRight, SWT.NONE);
+		tde.gui.applyColorFont(aSp);
+		GridData aSpGD = new GridData(GridData.FILL_HORIZONTAL);
+		aSpGD.verticalIndent = 8;
+		aSp.setLayoutData(aSpGD);
+		GridLayout aSpGL = new GridLayout(2, false);
+		tde.gui.applyNoMargin(aSpGL);
+		aSp.setLayout(aSpGL);
+		Label aSpL = new Label(aSp, SWT.NONE);
+		tde.gui.applyColorFont(aSpL);
+		aSpL.setText(lng("AI.SpeechSpoken"));
+		aSpoken[0] = new org.eclipse.swt.widgets.Combo(aSp, SWT.READ_ONLY | SWT.DROP_DOWN);
+		tde.gui.applyColorFont(aSpoken[0]);
+		aSpoken[0].setVisibleItemCount(20);
+		aSpoken[0].setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		aFillSpoken.run();
+		aSpoken[0].addListener(SWT.Selection, e -> aChoiceChanged.run());
+
+		if(aDub) {
+			Composite aT = new Composite(aRight, SWT.NONE);
+			tde.gui.applyColorFont(aT);
+			aT.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+			GridLayout aTGL = new GridLayout(2, false);
+			tde.gui.applyNoMargin(aTGL);
+			aT.setLayout(aTGL);
+			Label aTL = new Label(aT, SWT.NONE);
+			tde.gui.applyColorFont(aTL);
+			aTL.setText(lng("AI.DubTarget"));
+			aTarget[0] = new org.eclipse.swt.widgets.Combo(aT, SWT.READ_ONLY | SWT.DROP_DOWN);
+			tde.gui.applyColorFont(aTarget[0]);
+			aTarget[0].setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+			int aSel = 0;
+			for(int i = 0;i < SpeechGenerator.TTS_LANGUAGES.length;i++) {
+				aTarget[0].add(SpeechGenerator.displayName(SpeechGenerator.TTS_LANGUAGES[i], tde.config.lng));
+				if(SpeechGenerator.TTS_LANGUAGES[i].equals(tde.config.aiDubLang)) {
+					aSel = i;
+				}
+			}
+			aTarget[0].select(aSel);
+			aTarget[0].addListener(SWT.Selection, e -> aChoiceChanged.run());
+			Label aVL2 = new Label(aT, SWT.NONE);
+			tde.gui.applyColorFont(aVL2);
+			aVL2.setText(lng("AI.DubVoiceKind"));
+			aVoice[0] = new org.eclipse.swt.widgets.Combo(aT, SWT.READ_ONLY | SWT.DROP_DOWN);
+			tde.gui.applyColorFont(aVoice[0]);
+			aVoice[0].setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+			aVoice[0].add(lng("AI.DubVoiceSpeakers"));
+			aVoice[0].add(lng("AI.DubVoiceOriginal"));
+			aVoice[0].add(lng("AI.DubVoiceMale"));
+			aVoice[0].add(lng("AI.DubVoiceFemale"));
+			aVoice[0].setToolTipText(lng("AI.DubVoiceTip"));
+			aVoice[0].select(Math.max(0, java.util.Arrays.asList(aVoices).indexOf("original".equals(tde.config.aiDubVoice) ? "" : tde.config.aiDubVoice)));
+			aVoice[0].addListener(SWT.Selection, e -> aChoiceChanged.run());
+			Label aNote = addLabel(aRight, lng("AI.DubNote"), 0);
+			((GridData)aNote.getLayoutData()).verticalIndent = 8;
+		}
+		else {
+			Label aLL = addLabel(aRight, lng("AI.SubsLanguages"), 0);
+			((GridData)aLL.getLayoutData()).verticalIndent = 8;
+			aLangs[0] = new org.eclipse.swt.widgets.Table(aRight, SWT.BORDER | SWT.CHECK | SWT.V_SCROLL | SWT.SINGLE);
+			tde.gui.applyColorFont(aLangs[0]);
+			GridData aLGD = new GridData(GridData.FILL_BOTH);
+			aLGD.widthHint = labelWidth;
+			aLGD.heightHint = tde.gui.h(190);
+			aLangs[0].setLayoutData(aLGD);
+			java.util.Set<String> aChecked = new java.util.HashSet<String>(java.util.Arrays.asList(tde.config.aiSubLangs.split(",")));
+			org.eclipse.swt.widgets.TableItem aOrig = new org.eclipse.swt.widgets.TableItem(aLangs[0], SWT.NONE);
+			aOrig.setText(lng("AI.SubsSpokenLanguage"));
+			aOrig.setData("");
+			aOrig.setChecked(aChecked.contains("-"));
+			String[] aAll = new String[SpeechGenerator.SUBTITLE_LANGUAGES.length];
+			for(int i = 0;i < aAll.length;i++) {
+				aAll[i] = SpeechGenerator.SUBTITLE_LANGUAGES[i][1];
+			}
+			for(String aL : sortedLanguages(aAll)) {
+				org.eclipse.swt.widgets.TableItem aI = new org.eclipse.swt.widgets.TableItem(aLangs[0], SWT.NONE);
+				aI.setText(SpeechGenerator.displayName(aL, tde.config.lng));
+				aI.setData(aL);
+				aI.setChecked(aChecked.contains(aL));
+			}
+			aLangs[0].addListener(SWT.Selection, e -> {
+				//A click on the name checks it too
+				if(e.detail != SWT.CHECK && e.item instanceof org.eclipse.swt.widgets.TableItem) {
+					org.eclipse.swt.widgets.TableItem aI = (org.eclipse.swt.widgets.TableItem)e.item;
+					aI.setChecked(!aI.getChecked());
+				}
+				aShow.run();
+			});
+			Label aNote = addLabel(aRight, lng("AI.SubsNote"), 0);
+			((GridData)aNote.getLayoutData()).verticalIndent = 8;
+		}
+		aDownload[0] = addLabel(aRight, " \n ", 0);
+		addLabel(aRight, lng(aDub ? "AI.DubLicence" : "AI.SubsLicence"), 0);
+		labelWidth = 560;
+		aShow.run();
+		return () -> {
+			if(aSrc.path != null && !new File(aSrc.path).isFile()) {
+				aSrc.path = null;
+			}
+			if(aSrc.path == null) {
+				message(tde, SWT.ICON_INFORMATION, lng("AI.SpeechNoSource"));
+				return;
+			}
+			if(aSrc.srt != null) {
+				int aNb = 0;
+				try {
+					aNb = new File(aSrc.srt).isFile() ? SubtitleFile.read(aSrc.srt).size() : 0;
+				}
+				catch(Throwable t) {
+					t.printStackTrace(System.err);
+				}
+				if(aNb <= 0) {
+					message(tde, SWT.ICON_INFORMATION, lng("AI.SpeechOwnSubsEmpty").replace("%s", new File(aSrc.srt).getName()));
+					return;
+				}
+			}
+			Vector<String> aT = aTargets.get();
+			if(aT.isEmpty()) {
+				message(tde, SWT.ICON_INFORMATION, lng("AI.SubsNoLanguage"));
+				return;
+			}
+			if(aDub && aTts[0] == SpeechGenerator.HIBIKI && !aT.firstElement().equals("English")) {
+				message(tde, SWT.ICON_INFORMATION, lng("AI.DubDirectEnglishOnly"));
+				return;
+			}
+			asrModel = aAsr[0];
+			ttsModel = aTts[0];
+			spokenLang = spokenOf(aSpoken[0], aAsr[0]);
+			subLangs = aT;
+			if(aDub) {
+				dubLang = aT.firstElement();
+				dubVoice = aVoices[Math.max(0, aVoice[0].getSelectionIndex())];
+			}
+			String aSrcName = aSrc.name != null ? aSrc.name : new File(aSrc.path).getName();
+			StringBuilder aNames = new StringBuilder();
+			for(String aL : aT) {
+				aNames.append(aNames.length() > 0 ? ", " : "").append(aL.isEmpty() ? lng("AI.SubsSpokenLanguage") : SpeechGenerator.displayName(aL, tde.config.lng));
+			}
+			prompt = lng(aDub ? "AI.DubPrompt" : "AI.SubsPrompt").replace("%NAME%", aSrcName).replace("%LANGS%", aNames.toString());
+			clipName = aName.getText().trim();
+			if(clipName.isEmpty()) {
+				//The name of its file (the name shown of a library media may hold both files of a stereo pair)
+				clipName = new File(aSrc.path).getName().replaceAll("[.][A-Za-z0-9]{2,4}$", "");
+			}
+			//Kept in 3De.conf (the models only when they are not the advised ones)
+			tde.config.aiAsrModel = asrModel == SpeechGenerator.QWEN3_ASR ? "" : asrModel.id;
+			tde.config.aiSpokenLang = spokenLang;
+			if(aDub) {
+				tde.config.aiTtsModel = ttsModel == aTtsAdvised ? "" : ttsModel.id;
+				tde.config.aiDubLang = dubLang;
+				tde.config.aiDubVoice = dubVoice.isEmpty() ? "original" : dubVoice;
+			}
+			else {
+				StringBuilder aSB = new StringBuilder();
+				for(String aL : aT) {
+					aSB.append(aSB.length() > 0 ? "," : "").append(aL.isEmpty() ? "-" : aL);
+				}
+				tde.config.aiSubLangs = aSB.toString();
+			}
+		};
+	}
+
+	/**
+	 * Language chosen in the combo of the spoken language (English name), "" to recognize it
+	 */
+	static String spokenOf(org.eclipse.swt.widgets.Combo aC,SpeechGenerator.Model aAsr) {
+		if(aC == null || aC.getSelectionIndex() <= 0 || !(aC.getData() instanceof String[])) {
+			return "";
+		}
+		String[] aNames = (String[])aC.getData();
+		int aI = aC.getSelectionIndex()-1;
+		return aI < aNames.length ? aNames[aI] : "";
+	}
+
+	/**
+	 * Languages (English names) sorted by their name in the language of the interface
+	 */
+	String[] sortedLanguages(String[] aNames) {
+		String[] aS = aNames.clone();
+		java.text.Collator aCol = java.text.Collator.getInstance(java.util.Locale.forLanguageTag(tde.config.lng.toLowerCase()));
+		java.util.Arrays.sort(aS, (a, b) -> aCol.compare(SpeechGenerator.displayName(a, tde.config.lng), SpeechGenerator.displayName(b, tde.config.lng)));
+		return aS;
+	}
+
+	/**
+	 * Choices of speech models (the advised one in bold): name, size, hardware, note (AI.Speech<id>Note)
+	 */
+	Choice[] speechChoices(SpeechGenerator.Model[] aModels,SpeechGenerator.Model aAdvised) {
+		Choice[] aChoices = new Choice[aModels.length];
+		for(int m = 0;m < aModels.length;m++) {
+			SpeechGenerator.Model aM = aModels[m];
+			Choice aC = aChoices[m] = new Choice();
+			aC.model = aM;
+			aC.advised = aM == aAdvised;
+			aC.name = lng("AI.ColorModelName").replace("%NAME%", aM.name).replace("%PARAMS%", aM.params)
+					.replace("%GB%", gb(aM.downloadSize()))+downloaded(aM.isDownloaded(tde.tdeDir));
+			aC.details = lng("AI.SpeechHw").replace("%GB%", gb(aM.gpuMemory))+"\n"+lng("AI.Speech"+aM.id+"Note");
+		}
+		return aChoices;
+	}
+
+	//Sound files accepted as the source of the speech panels (with the videos)
+	static final String SOUND_EXTS = "*.wav;*.mp3;*.m4a;*.aac;*.flac;*.ogg;*.opus;*.wma;*.aif;*.aiff;";
+
+	/**
+	 * Row of the video (or sound) of a speech panel: name, Choose (a file), From the library (a video or a sound of
+	 * the media list)
+	 */
+	void createSourceRow(Composite aParent,SpeechSource aSrc) {
+		Label aL = addLabel(aParent, lng("AI.SpeechSource"), 0);
+		((GridData)aL.getLayoutData()).verticalIndent = 8;
+		Composite aRow = new Composite(aParent, SWT.NONE);
+		tde.gui.applyColorFont(aRow);
+		aRow.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		GridLayout aRGL = new GridLayout(3, false);
+		tde.gui.applyNoMargin(aRGL);
+		aRow.setLayout(aRGL);
+		Label aName = new Label(aRow, SWT.WRAP);
+		tde.gui.applyColorFont(aName);
+		GridData aNGD = new GridData(GridData.FILL_HORIZONTAL);
+		aNGD.widthHint = 260;
+		aName.setLayoutData(aNGD);
+		Button aChoose = new Button(aRow, SWT.PUSH);
+		tde.gui.applyColorFont(aChoose);
+		aChoose.setText(lng("AI.ImageChoose"));
+		Button aLib = new Button(aRow, SWT.PUSH);
+		tde.gui.applyColorFont(aLib);
+		aLib.setText(lng("AI.ImageLibrary"));
+		aLib.setToolTipText(lng("AI.SpeechLibraryTip"));
+		aLib.setEnabled(!librarySpeech().isEmpty());
+		Runnable aShow = () -> {
+			aName.setText(aSrc.path == null ? lng("AI.SpeechNoSourceYet")
+					: aSrc.name != null ? aSrc.name : new File(aSrc.path).getName());
+			aName.setFont(aSrc.path == null ? aChoose.getFont() : tde.gui.fontsSwt.robotoBold);
+			aRow.layout(true);
+		};
+		aChoose.addListener(SWT.Selection, e -> {
+			FileDialog aFD = new FileDialog(aParent.getShell(), SWT.OPEN);
+			aFD.setText(lng("AI.SpeechSource"));
+			aFD.setFilterNames(new String[] {lng("AI.SpeechFilter")});
+			String aExts = VIDEO_EXTS+SOUND_EXTS;
+			aFD.setFilterExtensions(new String[] {aExts+aExts.toUpperCase()});
+			String aDir = lastImageDir != null ? lastImageDir : (tde.lastDir != null ? tde.lastDir : tde.tdeDir);
+			aFD.setFilterPath(aDir);
+			String aPath = aFD.open();
+			if(aPath != null) {
+				lastImageDir = new File(aPath).getParent();
+				aSrc.path = aPath;
+				aSrc.media = null;
+				aSrc.name = null;
+				//Already in the media list: its clips can get the subtitles
+				for(Media aM : librarySpeech()) {
+					if(new File(aPath).getAbsolutePath().equals(new File(speechPath(aM)).getAbsolutePath())) {
+						aSrc.media = aM;
+						aSrc.name = aM.fileName;
+					}
+				}
+				aShow.run();
+			}
+		});
+		aLib.addListener(SWT.Selection, e -> {
+			Media aM = chooseLibraryMedia(aParent.getShell(), librarySpeech(), lng("AI.SpeechLibraryTitle"));
+			if(aM != null) {
+				aSrc.path = speechPath(aM);
+				aSrc.media = aM;
+				aSrc.name = aM.fileName;
+				aShow.run();
+			}
+		});
+		aShow.run();
+	}
+
+	/**
+	 * Row of the subtitles file of the speech (optional): name, Choose, Remove. Given, its subtitles are used as
+	 * they are instead of the speech recognition (the language spoken chosen is the one of the file)
+	 * @param aChanged run after a change
+	 * @return the refresh of the row
+	 */
+	Runnable createSubsFileRow(Composite aParent,SpeechSource aSrc,Runnable aChanged) {
+		Label aL = addLabel(aParent, lng("AI.SpeechOwnSubs"), 0);
+		((GridData)aL.getLayoutData()).verticalIndent = 4;
+		aL.setToolTipText(lng("AI.SpeechOwnSubsTip"));
+		Composite aRow = new Composite(aParent, SWT.NONE);
+		tde.gui.applyColorFont(aRow);
+		aRow.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		GridLayout aRGL = new GridLayout(3, false);
+		tde.gui.applyNoMargin(aRGL);
+		aRow.setLayout(aRGL);
+		Label aName = new Label(aRow, SWT.WRAP);
+		tde.gui.applyColorFont(aName);
+		GridData aNGD = new GridData(GridData.FILL_HORIZONTAL);
+		aNGD.widthHint = 260;
+		aName.setLayoutData(aNGD);
+		aName.setToolTipText(lng("AI.SpeechOwnSubsTip"));
+		Button aChoose = new Button(aRow, SWT.PUSH);
+		tde.gui.applyColorFont(aChoose);
+		aChoose.setText(lng("AI.ImageChoose"));
+		aChoose.setToolTipText(lng("AI.SpeechOwnSubsTip"));
+		Button aRemove = new Button(aRow, SWT.PUSH);
+		tde.gui.applyColorFont(aRemove);
+		aRemove.setText(lng("AI.ImageRemove"));
+		Runnable aShow = () -> {
+			if(aRow.isDisposed()) {
+				return;
+			}
+			aName.setText(aSrc.srt == null ? lng("AI.SpeechOwnSubsNone") : new File(aSrc.srt).getName());
+			aName.setFont(aSrc.srt == null ? aChoose.getFont() : tde.gui.fontsSwt.robotoBold);
+			aRemove.setEnabled(aSrc.srt != null);
+			aRow.layout(true);
+		};
+		aChoose.addListener(SWT.Selection, e -> {
+			FileDialog aFD = new FileDialog(aParent.getShell(), SWT.OPEN);
+			aFD.setText(lng("AI.SpeechOwnSubs"));
+			aFD.setFilterNames(new String[] {lng("Subtitles.Files"), "*"});
+			aFD.setFilterExtensions(new String[] {"*.srt;*.vtt;*.SRT;*.VTT", "*"});
+			String aDir = aSrc.srt != null ? new File(aSrc.srt).getParent()
+					: aSrc.path != null ? new File(aSrc.path).getParent()
+					: lastImageDir != null ? lastImageDir : (tde.lastDir != null ? tde.lastDir : tde.tdeDir);
+			if(aDir != null) {
+				aFD.setFilterPath(aDir);
+			}
+			String aPath = aFD.open();
+			if(aPath != null) {
+				aSrc.srt = aPath;
+				aShow.run();
+				aChanged.run();
+			}
+		});
+		aRemove.addListener(SWT.Selection, e -> {
+			aSrc.srt = null;
+			aShow.run();
+			aChanged.run();
+		});
+		aShow.run();
+		return aShow;
+	}
+
+	/**
+	 * Videos and sounds of the media list (their speech can be used)
+	 */
+	Vector<Media> librarySpeech() {
+		Vector<Media> aL = new Vector<Media>();
+		if(tde.mediaList == null) {
+			return aL;
+		}
+		for(Media aM : tde.mediaList.mediaList) {
+			String aP = speechPath(aM);
+			if(aP != null && new File(aP).isFile()) {
+				aL.add(aM);
+			}
+		}
+		return aL;
+	}
+
+	/**
+	 * File of the sound of a video (its left file, as the sound of its clips by default) or of a sound, else null
+	 */
+	static String speechPath(Media aM) {
+		if(aM instanceof StereoMovie) {
+			return ((StereoMovie)aM).getPathL();
+		}
+		if(aM instanceof AudioMedia) {
+			Vector<String> aPs = ((AudioMedia)aM).getFilePaths();
+			return aPs == null || aPs.isEmpty() ? null : aPs.firstElement();
+		}
+		return null;
+	}
+
+	/**
 	 * Panel of a sound kind (MUSIC: MusicGen, SFX: Woosh): what the generator is made for and its licence,
 	 * its models (the one advised for the hardware selected first) with the hardware each one needs, where it
 	 * will run; prompt with the tree of the examples of the kind, duration, downloads.
@@ -1548,7 +2180,7 @@ public class AiClipGUI {
 		return () -> {
 			//The prompt is being proposed from the image: wait for it
 			if(aSI.busy) {
-				aSI.status.setText(lng("AI.ImageAnalysisWait"));
+				aSI.setStatus(lng("AI.ImageAnalysisWait"), true);
 				return;
 			}
 			String aP = aPrompt.getText().trim();
@@ -2009,12 +2641,18 @@ public class AiClipGUI {
 	 * Window listing the still images of the media list (thumbnail + name): OK or a double click chooses one
 	 */
 	StereoImage chooseLibraryImage(Shell aParent) {
-		Vector<StereoImage> aImages = libraryImages();
+		return (StereoImage)chooseLibraryMedia(aParent, new Vector<Media>(libraryImages()), lng("AI.ImageLibraryTitle"));
+	}
+
+	/**
+	 * Window listing medias of the media list (thumbnail + name): OK or a double click chooses one
+	 */
+	Media chooseLibraryMedia(Shell aParent,Vector<Media> aImages,String aTitle) {
 		if(aImages.isEmpty()) {
 			return null;
 		}
 		Shell aShell = new Shell(aParent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.RESIZE);
-		aShell.setText(lng("AI.ImageLibraryTitle"));
+		aShell.setText(aTitle);
 		tde.gui.applyColorFont(aShell);
 		aShell.setLayout(new GridLayout(1, false));
 		org.eclipse.swt.widgets.Table aTable = new org.eclipse.swt.widgets.Table(aShell, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.V_SCROLL);
@@ -2031,12 +2669,13 @@ public class AiClipGUI {
 		});
 		//Thumbnails of the same size (the rows of a table take the height of the first image)
 		final int aTW = 96, aTH = 54;
-		for(StereoImage aM : aImages) {
+		for(Media aM : aImages) {
 			org.eclipse.swt.widgets.TableItem aItem = new org.eclipse.swt.widgets.TableItem(aTable, SWT.NONE);
-			aItem.setText((aM.fileName != null ? aM.fileName : "?")+(aM instanceof StereoMovie ? lng("AI.ImageLibraryVideo") : ""));
+			aItem.setText((aM.fileName != null ? aM.fileName : "?")+(aM instanceof StereoMovie ? lng("AI.ImageLibraryVideo")
+					: aM instanceof AudioMedia ? lng("AI.LibrarySound") : ""));
 			aItem.setData(aM);
 			try {
-				BufferedImage aSrc = aM instanceof StereoMovie ? aM.getThumbAwt() : leftView(aM);
+				BufferedImage aSrc = aM instanceof StereoImage && !(aM instanceof StereoMovie) ? leftView((StereoImage)aM) : aM.getThumbAwt();
 				if(aSrc == null) {
 					continue;
 				}
@@ -2069,11 +2708,11 @@ public class AiClipGUI {
 		tde.gui.applyColorFont(aOk);
 		aOk.setText(lng("AI.Ok"));
 		aOk.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		final StereoImage[] aResult = {null};
+		final Media[] aResult = {null};
 		Runnable aChoose = () -> {
 			int aI = aTable.getSelectionIndex();
 			if(aI >= 0) {
-				aResult[0] = (StereoImage)aTable.getItem(aI).getData();
+				aResult[0] = (Media)aTable.getItem(aI).getData();
 				aShell.dispose();
 			}
 		};
@@ -2165,7 +2804,11 @@ public class AiClipGUI {
 	 * Folder of the generated videos: AI next to the project (~/3Denlive/AI before the first save)
 	 */
 	File outDir() {
-		String aDir = tde.projectDir == null || tde.projectName == null ? tde.tdeDir : tde.projectDir;
+		return outDir(tde);
+	}
+
+	public static File outDir(TDenlive aTDe) {
+		String aDir = aTDe.projectDir == null || aTDe.projectName == null ? aTDe.tdeDir : aTDe.projectDir;
 		return new File(aDir, "AI");
 	}
 
@@ -2198,6 +2841,9 @@ public class AiClipGUI {
 		if(color) {
 			addLabel(shell, "DDColor "+colorModel.id+" - "+lng(ColorGenerator.cpuReason(colorModel) == null ? "AI.MusicOnGpu" : "AI.MusicOnCpu"), 0);
 		}
+		else if(speech) {
+			addLabel(shell, dub && ttsModel == SpeechGenerator.HIBIKI ? ttsModel.name : asrModel.name+(dub ? " + "+ttsModel.name : ""), 0);
+		}
 		else if(music) {
 			String aReason = SoundGenerator.cpuReason(soundModel);
 			addLabel(shell, (SoundGenerator.MUSIC.equals(soundModel.kind) ? "MusicGen " : "")+soundModel.id+" : "+String.format("%.0f s", seconds)
@@ -2216,6 +2862,8 @@ public class AiClipGUI {
 		}
 		statusL = addLabel(shell, lng("AI.Starting"), 0);
 		detailL = addLabel(shell, " ", 0);
+		working(statusL, true);
+		working(detailL, true);
 		bar = new ProgressBar(shell, SWT.SMOOTH | SWT.HORIZONTAL);
 		bar.setMinimum(0);
 		bar.setMaximum(1000);
@@ -2243,8 +2891,12 @@ public class AiClipGUI {
 		center(shell);
 		shell.open();
 		final Shell aShell = shell;
-		if(!music && !color) {
+		if(!music && !color && !speech) {
 			animate();
+		}
+		if(speech) {
+			runSpeech(aRun, aEnding, aShell);
+			return;
 		}
 
 		File aOutDir = outDir();
@@ -2357,14 +3009,93 @@ public class AiClipGUI {
 	}
 
 	/**
+	 * Subtitles or voice translation of the video (thread), then the result window (AiSpeechResultGUI)
+	 */
+	void runSpeech(int aRun,PythonAI aEnding,Shell aShell) {
+		File aOutDir = outDir();
+		String aBase = fileBase(clipName);
+		if(aBase.isEmpty()) {
+			aBase = "AI_Speech_"+new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+		}
+		final String aB = aBase;
+		final SpeechSource aSrc = speechSource();
+		final boolean aDub = dub;
+		Thread aTh = new Thread(() -> {
+			String aError = null;
+			SpeechGenerator.Result aRes = null;
+			try {
+				for(int w = 0;aEnding != null && aEnding.isRunning() && !isCanceled(aRun) && w < 1200;w++) {
+					Thread.sleep(100);
+				}
+				aOutDir.mkdirs();
+				PythonAI.Progress aProgress = new PythonAI.Progress() {
+					@Override
+					public void status(String aKey, String aDetail, long aDoneN, long aTotal) {
+						if(!AiClipGUI.this.isCanceled(aRun)) {
+							showStatus(aKey, aDetail, aDoneN, aTotal);
+						}
+					}
+					@Override
+					public boolean isCanceled() {
+						return AiClipGUI.this.isCanceled(aRun);
+					}
+				};
+				SpeechGenerator aSG = new SpeechGenerator(tde.tdeDir, tde.getWorkCacheDir(), aProgress);
+				generator = aSG;
+				File aIn = new File(aSrc.path);
+				File aOwn = aSrc.srt == null ? null : new File(aSrc.srt);
+				aRes = aDub ? aSG.dub(aIn, aOwn, asrModel, spokenLang, dubLang, ttsModel, dubVoice, aOutDir, aB)
+						: aSG.subtitles(aIn, aOwn, asrModel, spokenLang, subLangs, aOutDir, aB);
+				if(isCanceled(aRun) && aRes != null) {
+					for(File aF : aRes.files) {
+						aF.delete();
+					}
+					if(aRes.voice != null) {
+						aRes.voice.delete();
+					}
+					aRes = null;
+				}
+			}
+			catch(Throwable t) {
+				aError = errorMessage(t);
+			}
+			final boolean aCanceled = isCanceled(aRun);
+			final String aErr = aError;
+			final SpeechGenerator.Result aR = aRes;
+			tde.gui.display.asyncExec(() -> {
+				if(aCanceled) {
+					return;
+				}
+				if(!aShell.isDisposed()) {
+					aShell.dispose();
+				}
+				if(aR != null) {
+					new AiSpeechResultGUI(this, aR, aSrc.media, aSrc.path).open();
+					return;
+				}
+				running = false;
+				if(aErr != null) {
+					message(tde, SWT.ICON_ERROR, aErr);
+				}
+			});
+		}, "AI speech");
+		aTh.start();
+	}
+
+
+	/**
 	 * Message of a failed generation
 	 */
 	String errorMessage(Throwable aT) {
 		aT.printStackTrace(System.err);
 		if(aT instanceof PythonAI.GenerationException) {
 			PythonAI.GenerationException e = (PythonAI.GenerationException)aT;
+			if(speech && ("NOSOUND".equals(e.code) || "NOSPEECH".equals(e.code))) {
+				return lng("NOSOUND".equals(e.code) ? "AI.SpeechNoSound" : "AI.SpeechNoSpeech");
+			}
 			if("OOM".equals(e.code)) {
-				return color ? lng("AI.ColorErrorOom")
+				return speech ? lng("AI.SpeechErrorOom")
+						: color ? lng("AI.ColorErrorOom")
 						: music
 						? lng("AI.MusicErrorOom").replace("%GB%", DepthModel.gb(soundModel.gpuMemory()))
 						: lng("AI.ErrorOom").replace("%GB%", DepthModel.gb(videoModel.gpuMemory));
@@ -2392,7 +3123,7 @@ public class AiClipGUI {
 	 * Language key of the failure message of the kind generated
 	 */
 	String errorKey() {
-		return color ? "AI.ColorError" : !music ? "AI.Error" : SFX.equals(soundModel.kind) ? "AI.SfxError" : "AI.MusicError";
+		return speech ? "AI.SpeechError" : color ? "AI.ColorError" : !music ? "AI.Error" : SFX.equals(soundModel.kind) ? "AI.SfxError" : "AI.MusicError";
 	}
 
 	/**
@@ -2501,7 +3232,14 @@ public class AiClipGUI {
 
 	void showStatus(String aKey,String aDetail,long aDone,long aTotal) {
 		long aNow = System.currentTimeMillis();
-		boolean aSteps = "AI.Generating".equals(aKey) || "AI.GeneratingMusic".equals(aKey) || "AI.GeneratingSfx".equals(aKey);
+		boolean aSteps = "AI.Generating".equals(aKey) || "AI.GeneratingMusic".equals(aKey) || "AI.GeneratingSfx".equals(aKey)
+				|| "AI.Transcribing".equals(aKey) || "AI.Translating".equals(aKey) || "AI.SpeakingTranslation".equals(aKey)
+				|| "AI.TranslatingVoice".equals(aKey);
+		//Another counted step (speech: transcription, translation, voice): its own remaining time
+		if(aSteps && !aKey.equals(stepKeyNow)) {
+			stepKeyNow = aKey;
+			stepStartMS = -1;
+		}
 		if(aSteps && stepStartMS < 0 && aTotal > 0) {
 			stepStartMS = aNow;
 			stepStartDone = aDone;
@@ -2537,6 +3275,9 @@ public class AiClipGUI {
 				statusL.setText(aT);
 				detailL.setText(aD);
 				etaL.setText(aE);
+				working(statusL, true);
+				working(detailL, true);
+				working(etaL, true);
 				if(aBar >= 0) {
 					bar.setSelection(aBar);
 				}

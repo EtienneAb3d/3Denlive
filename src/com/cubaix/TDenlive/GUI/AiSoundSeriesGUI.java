@@ -144,11 +144,14 @@ public class AiSoundSeriesGUI {
 		ai.shell = shell;
 		ai.statusL = ai.addLabel(shell, lng("AI.Starting"), 0);
 		ai.detailL = ai.addLabel(shell, " ", 0);
+		ai.working(ai.statusL, true);
+		ai.working(ai.detailL, true);
 		ai.bar = new ProgressBar(shell, SWT.SMOOTH | SWT.HORIZONTAL);
 		ai.bar.setMinimum(0);
 		ai.bar.setMaximum(1000);
 		ai.bar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		ai.etaL = ai.addLabel(shell, " ", 0);
+		ai.working(ai.etaL, true);
 
 		Composite aButtons = new Composite(shell, SWT.NONE);
 		GridData aBGD = new GridData(GridData.HORIZONTAL_ALIGN_END);

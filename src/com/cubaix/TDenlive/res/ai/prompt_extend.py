@@ -4,7 +4,8 @@
 # Qwen3VLForConditionalGeneration) rewrites the prompt of the user, written in any language, into one detailed
 # English paragraph in the style of the captions Wan2.2 was trained with (as the prompt extension advised by the
 # authors of Wan). With a reference image (first frame of the video), it sees the image and describes it. Music and
-# sound effects panels: the prompt of a sound suited to an image (modes music, sfx; sfx: "prompt|seconds"). bf16 on
+# sound effects panels: the prompt of a sound suited to an image (modes music, sfx; sfx: "prompt|seconds"). Speech
+# panels: translation of subtitles (mode translate, one per line). bf16 on
 # CUDA, MPS or the CPU (--device cpu forces it). The model files are downloaded by 3Denlive before (no network
 # access here).
 # No torchvision in the environment: the processor of transformers (whose video part needs it) is not used; the
@@ -133,6 +134,46 @@ event 4 to 6, a continuous activity (walking, pulling, playing, rustling) or an 
 "a wooden door creaks open slowly|4", "a donkey pulling a sleigh through deep snow, bells jingling|8".
 Answer with that line only."""
 
+# Translation of subtitles (mode translate, one subtitle per line)
+TRANSLATE = """You translate the speech of a video, for its subtitles, from %SOURCE% into %TARGET%.
+- Each numbered line is one sentence of the speech. Answer with exactly the same numbers, one line each, in the \
+same order: "1. translation", "2. translation"... Never merge, split, drop or add lines.
+- Translate faithfully and naturally, as a professional subtitler: the meaning, the tone and the register of the \
+speaker; keep the names; keep it about as short as the original (it is read while the video plays).
+- Write in %TARGET% only: no word of another language, except the names.
+- Answer with the numbered lines only: no comment, no note, no quotes."""
+# Sentences per request to the model
+TRANSLATE_SENTENCES = 12
+
+
+def share(aText, aWeights, aNoSpace):
+	"""aText cut into len(aWeights) parts of lengths in proportion of aWeights: at the space (or, without spaces,
+	after the punctuation) nearest to each limit"""
+	if len(aWeights) <= 1:
+		return [aText]
+	aTotal = float(sum(aWeights)) or 1.0
+	aCuts = []
+	aAcc = 0
+	aPrev = 0
+	for w in aWeights[:-1]:
+		aAcc += w
+		aAim = int(round(len(aText) * aAcc / aTotal))
+		if aNoSpace:
+			aCands = [i + 1 for i, c in enumerate(aText) if c in "、。，,！？!?"]
+			aNear = [i for i in aCands if abs(i - aAim) <= max(4, len(aText) // 6) and i > aPrev]
+			aCut = min(aNear, key=lambda i: abs(i - aAim)) if aNear else max(aPrev, aAim)
+		else:
+			aSpaces = [i for i, c in enumerate(aText) if c == " " and i > aPrev]
+			aCut = min(aSpaces, key=lambda i: abs(i - aAim)) if aSpaces else len(aText)
+		aCuts.append(aCut)
+		aPrev = aCut
+	aParts = []
+	aStart = 0
+	for c in aCuts + [len(aText)]:
+		aParts.append(aText[aStart:c].strip())
+		aStart = c
+	return aParts
+
 # Longest side of the image given to the model (enough to recognize the scene, few image tokens)
 IMAGE_SIDE = 768
 
@@ -201,7 +242,7 @@ def main():
 				out("STEP " + str(min(self.n, aMax)) + " " + str(aMax))
 			return aScores
 
-	def generate(aSystem, aUserText, aImg):
+	def generate(aSystem, aUserText, aImg, aMaxTokens=None, aSample=True, aRaw=False):
 		aUser = ([{"type": "image"}] if aImg is not None else []) + [{"type": "text", "text": aUserText}]
 		aMessages = [
 			{"role": "system", "content": [{"type": "text", "text": aSystem}]},
@@ -218,13 +259,16 @@ def main():
 		aIn = aTok([aText], return_tensors="pt").to(aDevice)
 		with torch.no_grad():
 			# Sampling parameters advised for Qwen3-VL-Instruct
-			aIds = aModel.generate(**aIn, **aExtra, max_new_tokens=aMax, do_sample=True, temperature=0.7, top_p=0.8, top_k=20
-				, logits_processor=LogitsProcessorList([Progress()]))
+			aSampling = {"do_sample": True, "temperature": 0.7, "top_p": 0.8, "top_k": 20} if aSample else {"do_sample": False}
+			aIds = aModel.generate(**aIn, **aExtra, max_new_tokens=aMaxTokens or aMax, **aSampling
+				, logits_processor=LogitsProcessorList([] if aMaxTokens else [Progress()]))
 		if aCuda:
 			out("PEAK llm " + str(torch.cuda.max_memory_reserved(aDevice)))
 		aR = aTok.decode(aIds[0][aIn.input_ids.shape[1]:], skip_special_tokens=True).strip()
 		# Safety: no reasoning block, one paragraph, no surrounding quotes
 		aR = re.sub(r"<think>.*?</think>", "", aR, flags=re.S).strip()
+		if aRaw:
+			return aR
 		return re.sub(r"\s+", " ", aR).strip().strip('"').strip()
 
 	# Layout of the first frame per image (path, date, size)
@@ -255,6 +299,51 @@ def main():
 		print("Prompt: " + aPrompt.replace("\n", " ") + "\nExtended prompt (" + aMode + (", image seen" if aImg is not None else "") + "): " + aR, file=sys.stderr, flush=True)
 		return aR
 
+	def translateBlock(aSystem, aItems, aContext):
+		"""Numbered items translated, as many in the same order; else again one by one"""
+		aUser = ("Previous sentences (context only, do not translate them):\n" + "\n".join(aContext) + "\n\n" if aContext else "") \
+			+ "Sentences to translate:\n" + "\n".join(str(i + 1) + ". " + l for i, l in enumerate(aItems))
+		aAns = generate(aSystem, aUser, None, sum(len(l) for l in aItems) * 3 + 20 * len(aItems) + 50, False, True)
+		aGot = {}
+		for aL in aAns.split("\n"):
+			m = re.match(r"\s*(\d+)[.)]\s*(.*)$", aL)
+			if m and m.group(2).strip():
+				aGot[int(m.group(1))] = m.group(2).strip()
+		if all(i + 1 in aGot for i in range(len(aItems))):
+			return [aGot[i + 1] for i in range(len(aItems))]
+		print("Translation block not aligned, one by one: " + aAns, file=sys.stderr, flush=True)
+		return [re.sub(r"^\s*1[.)]\s*", "", generate(aSystem, "Sentences to translate:\n1. " + l, None, len(l) * 3 + 50, False, True).split("\n")[0]).strip()
+			for l in aItems]
+
+	def translate(aText, aTarget, aSource):
+		"""Lines of aText (one subtitle per line) translated into aTarget, as many lines in the same order. The
+		subtitles are joined into sentences (a sentence often goes on over two subtitles), the sentences translated
+		by numbered blocks with the previous ones as context, then each translated sentence is shared out again
+		between its subtitles in proportion of their lengths"""
+		aLines = [" ".join(l.split()) for l in aText.split("\n")]
+		aSentences = []
+		aCur = []
+		for i, l in enumerate(aLines):
+			aCur.append(i)
+			if l.endswith(tuple(".?!…。？！")) or i == len(aLines) - 1 or len(aCur) >= 4:
+				aSentences.append(aCur)
+				aCur = []
+		aTexts = [" ".join(aLines[i] for i in aS).strip() for aS in aSentences]
+		aSystem = TRANSLATE.replace("%TARGET%", aTarget).replace("%SOURCE%", aSource or "the language of the video")
+		aNoSpace = aTarget in ("Chinese", "Japanese", "Cantonese")
+		out("STATUS Translating")
+		aRes = [""] * len(aLines)
+		for b in range(0, len(aTexts), TRANSLATE_SENTENCES):
+			out("STEP " + str(b) + " " + str(len(aTexts)))
+			aT = translateBlock(aSystem, aTexts[b:b + TRANSLATE_SENTENCES], aTexts[max(0, b - 3):b])
+			for k, aTr in enumerate(aT):
+				aIdx = aSentences[b + k]
+				for i, aPart in zip(aIdx, share(aTr, [len(aLines[i]) for i in aIdx], aNoSpace)):
+					aRes[i] = aPart
+		out("STEP " + str(len(aTexts)) + " " + str(len(aTexts)))
+		print("Translated " + str(len(aLines)) + " subtitles (" + str(len(aTexts)) + " sentences) into " + aTarget, file=sys.stderr, flush=True)
+		return "\n".join(aRes)
+
 	if not aArgs.serve:
 		with open(aArgs.prompt_file, encoding="utf-8") as aF:
 			aR = extend(aF.read().strip(), aArgs.mode, aArgs.image)
@@ -263,7 +352,8 @@ def main():
 		out("DONE " + aArgs.out)
 		return 0
 
-	# Server: one JSON request per line on stdin {"mode": "t2v"|"i2v"|"music"|"sfx", "prompt": "...", "image": path or absent}, until stdin is closed
+	# Server: one JSON request per line on stdin {"mode": "t2v"|"i2v"|"music"|"sfx", "prompt": "...", "image": path or absent}
+	# or {"mode": "translate", "prompt": lines, "target": language, "source": language or ""}, until stdin is closed
 	out("STATUS LlmReady")
 	for aLine in sys.stdin:
 		aLine = aLine.strip()
@@ -271,7 +361,10 @@ def main():
 			continue
 		try:
 			aReq = json.loads(aLine)
-			aR = extend(aReq.get("prompt", "").strip(), aReq.get("mode", "t2v"), aReq.get("image"))
+			if aReq.get("mode") == "translate":
+				aR = translate(aReq.get("prompt", ""), aReq.get("target", "English"), aReq.get("source", ""))
+			else:
+				aR = extend(aReq.get("prompt", "").strip(), aReq.get("mode", "t2v"), aReq.get("image"))
 			out("RESULT " + json.dumps(aR))
 		except Exception as e:
 			traceback.print_exc()

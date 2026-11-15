@@ -131,6 +131,13 @@ public class SubtitlesGUI extends ProcessorGUI implements ShapesEditor.Listener 
 		else if(aSub.targetMedia instanceof Clip && ((Clip)aSub.targetMedia).getMedia() != null
 				&& ((Clip)aSub.targetMedia).getMedia().fileName != null) {
 			aDir = new File(((Clip)aSub.targetMedia).getMedia().fileName).getParent();
+			//Subtitles of this video made by the AI (AiClipGUI): their folder
+			File aAi = com.cubaix.TDenlive.GUI.AiClipGUI.outDir(aTDe);
+			String aBase = new File(((Clip)aSub.targetMedia).getMedia().fileName).getName().replaceAll("[.][A-Za-z0-9]{2,4}$", "");
+			File[] aSrts = aAi.listFiles((d, n) -> n.startsWith(aBase) && n.toLowerCase().endsWith(".srt"));
+			if(aSrts != null && aSrts.length > 0) {
+				aDir = aAi.getPath();
+			}
 		}
 		if(aDir != null && new File(aDir).isDirectory()) {
 			aFD.setFilterPath(aDir);
