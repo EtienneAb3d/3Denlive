@@ -83,6 +83,9 @@ public class DepthmapGUI extends ProcessorGUI {
 			}
 		});
 
+		//Hole filling method per processing level: interpolation or an inpainting model (settings of the clip, not keyed)
+		com.cubaix.TDenlive.GUI.InpaintGUI.addButton(tde, wgt, pl.inpainting);
+
 		lkf = new LabelKeyFrame(tde,wgt,pl,"K") {
 			@Override
 			public void change(int aValue) {

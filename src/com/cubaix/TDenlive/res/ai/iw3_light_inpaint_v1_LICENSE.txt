@@ -1,0 +1,28 @@
+iw3_light_inpaint_v1.onnx: ONNX export (inputs "image" 1x3xHxW RGB 0..1 and "mask" 1x1xHxW, 1 = hole,
+H and W multiples of 64; output "output" 1x3xHxW RGB 0..1) of the model inpaint.light_inpaint_v1 of iw3
+(nunif, https://github.com/nagadomi/nunif), weights iw3_light_inpaint_v1_20250919.pth
+(sha256 8b1a85df321ede3ea45d0b37a7f2c509e941687c062e1d584aab8808c253db6d) of the release
+https://github.com/nagadomi/nunif/releases/tag/0.0.0. License of the weights confirmed by their author:
+https://github.com/nagadomi/nunif/issues/718
+
+The MIT License
+
+Copyright (C) 2019-2023 nagadomi <https://github.com/nagadomi/>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.

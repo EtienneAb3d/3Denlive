@@ -23,6 +23,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Scale;
 
 import com.cubaix.TDenlive.TDenlive;
@@ -61,6 +64,17 @@ public class TimeLineStackGUI extends CanvasPanel {
 	//Mouse moves of less than this from the click (pixels) are not a drag of the clips
 	static final int CLICK_MOVE_PX = 3;
 	Cursor resizeCursor = null;
+	//Rectangle selection (burger menu): armed by the menu, the next drag draws the rectangle (from rectStart)
+	boolean rectMode = false;
+	Point rectStart = null;
+	//Time range selection (burger menu): armed by the menu, the next drag gives the range from the time of
+	//the click; or the drag of an edge of the range, from the other edge: rangeAnchorMS, the fixed time (-1: none)
+	boolean rangeMode = false;
+	long rangeAnchorMS = -1;
+	//Drag of an edge: not moved by a click without a real move
+	boolean rangeEdgeHeld = false;
+	Cursor crossCursor = null;
+	Menu linesMenu = null;
 	Point clickedMousePos = null;
 	Point lastMousePos = null;
 	Thread drawTh = null;
@@ -244,6 +258,194 @@ public class TimeLineStackGUI extends CanvasPanel {
 	}
 
 	/**
+	 * Burger menu of the time lines, below its icon aB (panel coordinates)
+	 */
+	public void showLinesMenu(Rectangle aB) {
+		if(canvas.isDisposed()) {
+			return;
+		}
+		//The menu takes the mouse: its release may never come to the canvas
+		isMouseDown = false;
+		isDrag = false;
+		draggedClip = null;
+		pendingClickClip = null;
+		clickedMousePos = lastMousePos = null;
+		if(linesMenu == null || linesMenu.isDisposed()) {
+			linesMenu = new Menu(canvas);
+		}
+		for(MenuItem aMI : linesMenu.getItems()) {
+			aMI.dispose();
+		}
+		menuItem("selectRight.png", "TimeLine.SelectAfterCursor", "TimeLine.KeysAfterClick", true, () -> {
+			tde.timeLineStack.selectClipsAfterCursor();
+			selectionChanged();
+		});
+		menuItem("selectRect.png", "TimeLine.SelectRect", "TimeLine.KeysRect", true, () -> {
+			rangeMode = false;
+			rectMode = true;
+			canvas.setCursor(crossCursor);
+			canvas.setFocus();
+		});
+		menuItem("clockRange.gif", "TimeLine.SelectTimeRange", "TimeLine.KeysRange", true, () -> {
+			rectMode = false;
+			rangeMode = true;
+			canvas.setCursor(crossCursor);
+			canvas.setFocus();
+		});
+		menuItem("cut.gif", "TimeLine.CutSelected", null, tde.selected.clips.size() > 0, () -> {
+			if(tde.timeLineStack.cutSelectedClips() > 0) {
+				selectionChanged();
+			}
+		});
+		linesMenu.setLocation(canvas.toDisplay(aB.x, aB.y+aB.height));
+		linesMenu.setVisible(true);
+	}
+
+	/**
+	 * Item of the burger menu, with its mouse shortcut (aKeys, null if none: %MOD% = Cmd on macOS, else Ctrl)
+	 */
+	void menuItem(String aIcon,String aText,String aKeys,boolean aEnabled,Runnable aAction) {
+		MenuItem aMI = new MenuItem(linesMenu, SWT.PUSH);
+		aMI.setImage(tde.gui.imgsSwt.getIcon(aIcon));
+		String aLabel = tde.gui.lngs.get(aText);
+		if(aKeys != null) {
+			aLabel += "   ("+tde.gui.lngs.get(aKeys).replace("%MOD%", "cocoa".equals(SWT.getPlatform()) ? "Cmd" : "Ctrl")+")";
+		}
+		aMI.setText(aLabel);
+		aMI.setEnabled(aEnabled);
+		aMI.addListener(SWT.Selection, e -> aAction.run());
+	}
+
+	//Shortcuts of the mouse (see shortcutAt())
+	static final int SHORTCUT_NONE = 0;
+	static final int SHORTCUT_RIGHT = 1;//Ctrl (Cmd on macOS) + Shift + click: the clips right of the click
+	static final int SHORTCUT_RANGE = 2;//Shift + drag on the ruler: a time range
+	static final int SHORTCUT_RECT = 3;//Ctrl (Cmd on macOS) + drag on the lines: a rectangle selection
+	//Mouse over the canvas (null: outside), for the cursor of the modifier keys
+	Point hoverPos = null;
+	Cursor rectCursor = null;
+	Cursor rightCursor = null;
+	Cursor rangeCursor = null;
+
+	/**
+	 * Shortcut that a click at this place with these modifier keys (SWT state mask) does
+	 */
+	int shortcutAt(int aX,int aY,int aState) {
+		TimeLineStack aTLS = tde.timeLineStack;
+		if(aTLS == null || aTLS.rulerBounds == null || aX < tde.config.thumbW
+				|| (aTLS.rangeEraseBounds != null && aTLS.rangeEraseBounds.contains(aX, aY))) {
+			return SHORTCUT_NONE;
+		}
+		boolean aShift = (aState & SWT.SHIFT) != 0;
+		//MOD1: Cmd on macOS (Ctrl there is a right click), Ctrl elsewhere
+		boolean aMod = (aState & SWT.MOD1) != 0;
+		if(aShift && aMod) {
+			return SHORTCUT_RIGHT;
+		}
+		if(aShift && aTLS.rulerBounds.contains(aX, aY)) {
+			return SHORTCUT_RANGE;
+		}
+		if(aMod && aY >= aTLS.rulerBounds.height) {
+			return SHORTCUT_RECT;
+		}
+		return SHORTCUT_NONE;
+	}
+
+	/**
+	 * Cursor of the mouse over the canvas (hoverPos) with these modifier keys: the action a click does
+	 */
+	void updateCursor(int aState) {
+		if(canvas.isDisposed() || hoverPos == null || isMouseDown) {
+			return;
+		}
+		Cursor aCursor;
+		if(rectMode || rangeMode) {
+			aCursor = crossCursor;
+		}
+		else {
+			switch(shortcutAt(hoverPos.x, hoverPos.y, aState)) {
+			case SHORTCUT_RIGHT: aCursor = rightCursor; break;
+			case SHORTCUT_RANGE: aCursor = rangeCursor; break;
+			case SHORTCUT_RECT: aCursor = rectCursor; break;
+			default:
+				//Resize cursor over the edges of the time range and the sides of a clip
+				Clip aHovered = tde.timeLineStack.getClipAt(hoverPos.x, hoverPos.y);
+				aCursor = tde.timeLineStack.rangeEdgeAt(hoverPos.x, hoverPos.y) != 0 ? resizeCursor
+						: aHovered != null && clipDragModeAt(aHovered, hoverPos.x) != CLIP_DRAG_MOVE ? resizeCursor : null;
+			}
+		}
+		if(canvas.getCursor() != aCursor) {
+			canvas.setCursor(aCursor);
+		}
+	}
+
+	/**
+	 * Modifier keys pressed / released (whatever the focus): the cursor follows while the mouse is over the canvas
+	 */
+	void installModifierCursor() {
+		org.eclipse.swt.widgets.Listener aL = e -> {
+			if(hoverPos == null || canvas.isDisposed() || (e.keyCode & SWT.MODIFIER_MASK) == 0) {
+				return;
+			}
+			//The state mask of the event does not include the key itself yet / any more
+			int aState = e.type == SWT.KeyDown ? e.stateMask | e.keyCode : e.stateMask & ~e.keyCode;
+			updateCursor(aState);
+		};
+		tde.gui.display.addFilter(SWT.KeyDown, aL);
+		tde.gui.display.addFilter(SWT.KeyUp, aL);
+		canvas.addListener(SWT.MouseExit, e -> hoverPos = null);
+		canvas.addListener(SWT.Dispose, e -> {
+			tde.gui.display.removeFilter(SWT.KeyDown, aL);
+			tde.gui.display.removeFilter(SWT.KeyUp, aL);
+		});
+	}
+
+	Cursor iconCursor(String aIcon,int aHotX,int aHotY) {
+		return new Cursor(tde.gui.display, tde.gui.imgsSwt.getIcon(aIcon).getImageData(), aHotX, aHotY);
+	}
+
+	/**
+	 * End (or cancel) of the rectangle selection
+	 */
+	void endRectMode() {
+		rectMode = false;
+		rectStart = null;
+		rangeMode = false;
+		rangeAnchorMS = -1;
+		rangeEdgeHeld = false;
+		tde.timeLineStack.selectionRect = null;
+		if(!canvas.isDisposed()) {
+			canvas.setCursor(null);
+		}
+	}
+
+	/**
+	 * Rectangle from the start of the rectangle selection to this point (positive sizes)
+	 */
+	Rectangle rectTo(int aX,int aY) {
+		return new Rectangle(Math.min(rectStart.x, aX), Math.min(rectStart.y, aY)
+				, Math.abs(aX-rectStart.x), Math.abs(aY-rectStart.y));
+	}
+
+	/**
+	 * Views refreshed after a change of the selection of clips made here (menu, rectangle)
+	 */
+	void selectionChanged() {
+		tde.gui.setMultiPropsPanel(TDeGUI.MULTIPROPSPANEL_PROCESSORS);
+		tde.gui.setMultiMonitorPanel(TDeGUI.MULTIMONITORPANEL_MONITOR);
+		tde.gui.playerControlGUI.showClock(tde.timeLineStack.getTimePosMS());
+		tde.gui.monitorGUI.setMedia(tde.timeLineStack);
+		if(tde.selected.clips.size() > 0) {
+			tde.gui.processorGUI.setProcessors(tde.selected.clips.lastElement().getProcessors());
+		}
+		else {
+			tde.gui.processorGUI.clean();
+		}
+		redraw();
+		tde.gui.monitorGUI.redraw();
+	}
+
+	/**
 	 * Remove the selected clips (and their twins) from the time lines
 	 */
 	void trashSelectedClip() {
@@ -256,6 +458,28 @@ public class TimeLineStackGUI extends CanvasPanel {
 		tde.gui.processorGUI.clean();
 		redraw();
 		tde.gui.monitorGUI.redraw();
+	}
+
+	/**
+	 * Trash of a line: removed, after a confirmation when it holds clips
+	 */
+	public void askDeleteLine(VideoTimeLine aTL) {
+		int aN = aTL.clipList.size();
+		if(aN > 0) {
+			MessageBox aMB = new MessageBox(tde.gui.shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
+			aMB.setText(tde.gui.lngs.get("TimeLine.DeleteLineTitle"));
+			aMB.setMessage(tde.gui.lngs.get("TimeLine.DeleteLineNotEmpty").replace("%NAME%", aTL.getName()).replace("%N%", ""+aN));
+			if(aMB.open() != SWT.YES) {
+				return;
+			}
+		}
+		tde.timeLineStack.deleteLine(aTL);
+		tde.gui.processorGUI.clean();
+		redraw();
+		tde.gui.monitorGUI.redraw();
+		if(tde.gui.monitorRulerGUI != null) {
+			tde.gui.monitorRulerGUI.redraw();
+		}
 	}
 
 	/**
@@ -338,9 +562,25 @@ public class TimeLineStackGUI extends CanvasPanel {
 	void createContents(Composite aParent) {
 		createDropTarget();
 		resizeCursor = new Cursor(tde.gui.display, SWT.CURSOR_SIZEWE);
-		canvas.addListener(SWT.Dispose, e -> resizeCursor.dispose());
+		crossCursor = new Cursor(tde.gui.display, SWT.CURSOR_CROSS);
+		rectCursor = iconCursor("cursorRect.png", 0, 0);
+		rightCursor = iconCursor("cursorRight.png", 1, 8);
+		rangeCursor = iconCursor("cursorRange.png", 8, 8);
+		canvas.addListener(SWT.Dispose, e -> {
+			resizeCursor.dispose();
+			crossCursor.dispose();
+			rectCursor.dispose();
+			rightCursor.dispose();
+			rangeCursor.dispose();
+		});
+		installModifierCursor();
 		//SUPPR / DEL (and the delete key of the Mac keyboards, which is a backspace)
 		canvas.addListener(SWT.KeyDown, e -> {
+			if(e.keyCode == SWT.ESC && (rectMode || rangeMode)) {
+				endRectMode();
+				redraw();
+				return;
+			}
 			if(e.keyCode == SWT.DEL || e.keyCode == SWT.BS) {
 				trashSelectedClip();
 			}
@@ -349,6 +589,26 @@ public class TimeLineStackGUI extends CanvasPanel {
 			@Override
 			public void mouseUp(MouseEvent e) {
 				isMouseDown = false;
+				if(rangeAnchorMS >= 0) {
+					//End of the time range selection / of the move of one of its edges
+					TimeLineStack aTLS = tde.timeLineStack;
+					if(!rangeEdgeHeld) {
+						aTLS.setTimeRange(rangeAnchorMS, aTLS.getTimeAtX(e.x), Math.round(CLIP_SNAP_PX/aTLS.pixPerMS));
+					}
+					endRectMode();
+					clickedMousePos = lastMousePos = null;
+					redraw();
+					return;
+				}
+				if(rectStart != null) {
+					//End of the rectangle selection: the clips it crosses
+					Rectangle aR = rectTo(e.x, e.y);
+					endRectMode();
+					tde.timeLineStack.selectClipsInRect(aR, (e.stateMask & SWT.SHIFT) != 0);
+					clickedMousePos = lastMousePos = null;
+					selectionChanged();
+					return;
+				}
 				if(pendingClickClip != null && clickedMousePos != null
 						&& Math.abs(e.x-clickedMousePos.x) < CLICK_MOVE_PX && Math.abs(e.y-clickedMousePos.y) < CLICK_MOVE_PX) {
 					//A click without a move on a clip already selected
@@ -389,6 +649,55 @@ public class TimeLineStackGUI extends CanvasPanel {
 				clickedMousePos = lastMousePos = new Point(e.x,e.y);
 				boolean aShift = (e.stateMask & SWT.SHIFT) != 0;
 				TimeLineStack aTLS = tde.timeLineStack;
+				if(rangeMode) {
+					if(e.button == 1 && e.x >= tde.config.thumbW && aTLS.rulerBounds != null) {
+						//Start of the time range (on the ruler too)
+						rangeAnchorMS = aTLS.snapTimeMS(aTLS.getTimeAtX(e.x), (Clip)null, Math.round(CLIP_SNAP_PX/aTLS.pixPerMS));
+						aTLS.setTimeRange(rangeAnchorMS, rangeAnchorMS, 0);
+						redraw();
+						return;
+					}
+					endRectMode();
+				}
+				int aEdge = rectMode || e.button != 1 ? 0 : aTLS.rangeEdgeAt(e.x, e.y);
+				if(aEdge != 0) {
+					//Move of an edge of the time range: the other one stays
+					rangeAnchorMS = aEdge == 1 ? aTLS.rangeEndMS : aTLS.rangeStartMS;
+					rangeEdgeHeld = true;
+					return;
+				}
+				//Shortcuts without the menu (see shortcutAt(), which gives their cursor)
+				int aShortcut = rectMode ? SHORTCUT_NONE : shortcutAt(e.x, e.y, e.stateMask);
+				if(aShortcut == SHORTCUT_RIGHT) {
+					//Ctrl (Cmd on macOS) + Shift + click: the clips that start at the time clicked or after it
+					aTLS.selectClipsFrom(aTLS.getTimeAtX(e.x));
+					selectionChanged();
+					return;
+				}
+				if(aShortcut == SHORTCUT_RANGE) {
+					//Shift + drag on the ruler: a time range (a click without a move changes nothing)
+					rangeAnchorMS = aTLS.snapTimeMS(aTLS.getTimeAtX(e.x), (Clip)null, Math.round(CLIP_SNAP_PX/aTLS.pixPerMS));
+					rangeEdgeHeld = true;
+					return;
+				}
+				if(aShortcut == SHORTCUT_RECT) {
+					//Ctrl (Cmd on macOS) + drag on the lines (on a clip too): a rectangle selection
+					rectStart = new Point(e.x, e.y);
+					aTLS.selectionRect = rectTo(e.x, e.y);
+					redraw();
+					return;
+				}
+				if(rectMode) {
+					if(e.button == 1 && e.x >= tde.config.thumbW && aTLS.rulerBounds != null && e.y >= aTLS.rulerBounds.height) {
+						//Start of the rectangle selection
+						rectStart = new Point(e.x, e.y);
+						aTLS.selectionRect = rectTo(e.x, e.y);
+						redraw();
+						return;
+					}
+					//Elsewhere (ruler, heads of the lines...): the rectangle selection is canceled
+					endRectMode();
+				}
 				pendingClickClip = null;
 				pendingUnselect = false;
 				draggedClip = null;
@@ -459,7 +768,20 @@ public class TimeLineStackGUI extends CanvasPanel {
 		canvas.addMouseMoveListener(new MouseMoveListener() {
 			@Override
 			public void mouseMove(MouseEvent e) {
-				if(isMouseDown) {
+				if(isMouseDown && rangeAnchorMS >= 0) {
+					if(rangeEdgeHeld && clickedMousePos != null && Math.abs(e.x-clickedMousePos.x) < CLICK_MOVE_PX) {
+						return;
+					}
+					rangeEdgeHeld = false;
+					TimeLineStack aTLS = tde.timeLineStack;
+					aTLS.setTimeRange(rangeAnchorMS, aTLS.getTimeAtX(e.x), Math.round(CLIP_SNAP_PX/aTLS.pixPerMS));
+					redraw();
+				}
+				else if(isMouseDown && rectStart != null) {
+					tde.timeLineStack.selectionRect = rectTo(e.x, e.y);
+					redraw();
+				}
+				else if(isMouseDown) {
 					if(tde.timeLineStack.rulerBounds.contains(clickedMousePos.x,clickedMousePos.y)){
 						isDrag = true;
 						long aTimePos = (int)((e.x - tde.timeLineStack.rulerBounds.x)/tde.timeLineStack.pixPerMS);
@@ -502,12 +824,8 @@ public class TimeLineStackGUI extends CanvasPanel {
 					}
 				}
 				else {
-					//Resize cursor over the sides of a clip
-					Clip aHovered = tde.timeLineStack.getClipAt(e.x, e.y);
-					Cursor aCursor = aHovered != null && clipDragModeAt(aHovered, e.x) != CLIP_DRAG_MOVE ? resizeCursor : null;
-					if(canvas.getCursor() != aCursor) {
-						canvas.setCursor(aCursor);
-					}
+					hoverPos = new Point(e.x, e.y);
+					updateCursor(e.stateMask);
 					//Help message of the icon under the mouse (add a line, line on/off, line sound...)
 					String aKey = tde.timeLineStack.getWidgetTip(e.x, e.y);
 					String aTip = aKey == null ? null : tde.gui.lngs.get("Tip."+aKey);

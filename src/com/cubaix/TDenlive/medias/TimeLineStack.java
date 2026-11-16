@@ -36,6 +36,15 @@ public class TimeLineStack extends Media {
 	BufferedImage finalRight = null;
 	public Rectangle addBounds = null;
 	public Rectangle soundBounds = null;
+	//Burger menu of the time lines (select after the cursor, rectangle selection, cut the selection)
+	public Rectangle menuBounds = null;
+	//Rectangle of a rectangle selection being dragged (panel coordinates), drawn; null if none
+	public volatile Rectangle selectionRect = null;
+	//Selected time range (burger menu): light blue on the time lines, the play starts and stops there; -1 if none
+	public volatile long rangeStartMS = -1;
+	public volatile long rangeEndMS = -1;
+	//Eraser at the start of the time range: removes it
+	public Rectangle rangeEraseBounds = null;
 	public Rectangle rulerBounds = null;
 	//Drop of a media dragged from the media list (see setDropPreview()): where its clip would go, drawn
 	volatile VideoTimeLine dropLine = null;
@@ -130,6 +139,28 @@ public class TimeLineStack extends Media {
 		for(int t = 0;t < aStack.size();t++) {
 			aStack.elementAt(t).setName((aAudio ? "A" : "V")+(t+1));
 		}
+	}
+
+	/**
+	 * Removes a whole line with its clips (and their twins), the others named again by their place.
+	 * The last line of its kind is kept.
+	 */
+	public void deleteLine(VideoTimeLine aTL) {
+		boolean aAudio = aTL instanceof AudioTimeLine;
+		@SuppressWarnings("unchecked")
+		Vector<VideoTimeLine> aStack = aAudio ? (Vector<VideoTimeLine>)(Vector<?>)audioTimeLineStack : videoTimeLineStack;
+		if(!aStack.contains(aTL) || aStack.size() <= 1) {
+			return;
+		}
+		for(Clip aC : new Vector<Clip>(aTL.clipList)) {
+			trashClip(aC);
+		}
+		aStack.remove(aTL);
+		for(int t = 0;t < aStack.size();t++) {
+			aStack.elementAt(t).setName((aAudio ? "A" : "V")+(t+1));
+		}
+		tde.selected.timeLines.remove(aTL);
+		tde.selected.clips.clear();
 	}
 
 	public AudioTimeLine addAudioTimeLine() {
@@ -703,6 +734,8 @@ public class TimeLineStack extends Media {
 		addBounds = new Rectangle(10,8,16,16);
 		aGC.drawImage(tde.gui.imgsSwt.getIcon("sound.gif"), 36, 8);
 		soundBounds = new Rectangle(36,8,16,16);
+		aGC.drawImage(tde.gui.imgsSwt.getIcon("burger.png"), 62, 8);
+		menuBounds = new Rectangle(62,8,16,16);
 
 		aW += tde.config.thumbW;
 		
@@ -793,6 +826,8 @@ public class TimeLineStack extends Media {
 		addBounds = new Rectangle(10,8,16,16);
 		aGC.drawImage(tde.gui.imgsAwt.getIcon("sound.gif"), 36, 8,null);
 		soundBounds = new Rectangle(36,8,16,16);
+		aGC.drawImage(tde.gui.imgsAwt.getIcon("burger.png"), 62, 8,null);
+		menuBounds = new Rectangle(62,8,16,16);
 
 		aW += tde.config.thumbW;
 		
@@ -830,6 +865,7 @@ public class TimeLineStack extends Media {
 		for(int t = videoTimeLineStack.size()-1;t >= 0;t--) {
 			videoTimeLineStack.elementAt(t).canMoveUp = t < videoTimeLineStack.size()-1;
 			videoTimeLineStack.elementAt(t).canMoveDown = t > 0;
+			videoTimeLineStack.elementAt(t).canDelete = videoTimeLineStack.size() > 1;
 			Rectangle aR = videoTimeLineStack.elementAt(t).drawAwt(aGC, aX, aY+aH,aClippingR);
 			aGC.setClip(aClippingR.x,aClippingR.y,aClippingR.width,aClippingR.height);
 			aH += aR.height;
@@ -846,6 +882,7 @@ public class TimeLineStack extends Media {
 		for(int t = audioTimeLineStack.size()-1;t >= 0;t--) {
 			audioTimeLineStack.elementAt(t).canMoveUp = t < audioTimeLineStack.size()-1;
 			audioTimeLineStack.elementAt(t).canMoveDown = t > 0;
+			audioTimeLineStack.elementAt(t).canDelete = audioTimeLineStack.size() > 1;
 			Rectangle aR = audioTimeLineStack.elementAt(t).drawAwt(aGC, aX, aY+aH,aClippingR);
 			aGC.setClip(aClippingR.x,aClippingR.y,aClippingR.width,aClippingR.height);
 			aH += aR.height;
@@ -874,6 +911,32 @@ public class TimeLineStack extends Media {
 			aGC.drawRect(aDropX+1, aDropLine.bounds.y+1, aDropW-2, aDropLine.bounds.height-2);
 			aGC.setStroke(new java.awt.BasicStroke(1));
 		}
+		//Selected time range, from the ruler down to the last line, its eraser at its start on the ruler
+		rangeEraseBounds = null;
+		long aRS = rangeStartMS, aRE = rangeEndMS;
+		if(aRS >= 0 && aRE > aRS) {
+			int aRX = aX+tde.config.thumbW+(int)(aRS*pixPerMS);
+			int aRW = Math.max(1, (int)((aRE-aRS)*pixPerMS));
+			aGC.setColor(new Color(110,170,255,60));
+			aGC.fillRect(aRX, 0, aRW, aY+aH);
+			aGC.setColor(new Color(60,120,230,160));
+			aGC.drawLine(aRX, 0, aRX, aY+aH);
+			aGC.drawLine(aRX+aRW, 0, aRX+aRW, aY+aH);
+			rangeEraseBounds = new Rectangle(aRX+2, Math.max(0, aHC*2-18), 16, 16);
+			aGC.setColor(tde.gui.colorsAwt.WHITE);
+			aGC.fillRoundRect(rangeEraseBounds.x-1, rangeEraseBounds.y-1, 18, 18, 4, 4);
+			aGC.drawImage(tde.gui.imgsAwt.getIcon("eraser.png"), rangeEraseBounds.x, rangeEraseBounds.y, null);
+		}
+		//Rectangle selection being dragged
+		Rectangle aSelR = selectionRect;
+		if(aSelR != null) {
+			aGC.setColor(new Color(0,50,141,40));
+			aGC.fillRect(aSelR.x, aSelR.y, aSelR.width, aSelR.height);
+			aGC.setColor(tde.gui.colorsAwt.CUBAIX_BLUE);
+			aGC.setStroke(new java.awt.BasicStroke(1, java.awt.BasicStroke.CAP_BUTT, java.awt.BasicStroke.JOIN_MITER, 10, new float[] {4,3}, 0));
+			aGC.drawRect(aSelR.x, aSelR.y, aSelR.width, aSelR.height);
+			aGC.setStroke(new java.awt.BasicStroke(1));
+		}
 		aGC.setColor(tde.gui.colorsAwt.CUBAIX_PINK);
 		int aTimePosX = aX + tde.config.thumbW+(int)(requestedTimePosMS*(double)pixPerMS);
 		aGC.drawLine(aTimePosX, aHC*2, aTimePosX, aY+aH);
@@ -894,6 +957,16 @@ public class TimeLineStack extends Media {
 			addAudioTimeLine();
 			return true;
 		}
+		if(rangeEraseBounds != null && rangeEraseBounds.contains(aX,aY)) {
+			clearTimeRange();
+			return true;
+		}
+		if(menuBounds != null && menuBounds.contains(aX,aY)) {
+			//After the mouse down (the menu takes the mouse)
+			Rectangle aMB = menuBounds;
+			tde.gui.display.asyncExec(() -> tde.gui.timeLinesGUI.showLinesMenu(aMB));
+			return true;
+		}
 		if(rulerBounds != null && rulerBounds.contains(aX,aY)) {
 			requestedTimePosMS = (long)((aX - rulerBounds.x)/(double)pixPerMS);
 			return true;
@@ -907,6 +980,11 @@ public class TimeLineStack extends Media {
 			}
 			if(aTL.lineDownBounds != null && aTL.lineDownBounds.contains(aX,aY)) {
 				moveLine(aTL, false);
+				return true;
+			}
+			if(aTL.lineTrashBounds != null && aTL.lineTrashBounds.contains(aX,aY)) {
+				//After the mouse down (a confirmation may be asked)
+				tde.gui.display.asyncExec(() -> tde.gui.timeLinesGUI.askDeleteLine(aTL));
 				return true;
 			}
 		}
@@ -933,6 +1011,15 @@ public class TimeLineStack extends Media {
 		if(soundBounds != null && soundBounds.contains(aX,aY)) {
 			return "AddAudioLine";
 		}
+		if(menuBounds != null && menuBounds.contains(aX,aY)) {
+			return "LinesMenu";
+		}
+		if(rangeEraseBounds != null && rangeEraseBounds.contains(aX,aY)) {
+			return "EraseTimeRange";
+		}
+		if(rangeEdgeAt(aX, aY) != 0) {
+			return "TimeRangeEdge";
+		}
 		if(rulerBounds != null && rulerBounds.contains(aX,aY)) {
 			return "Ruler";
 		}
@@ -949,6 +1036,154 @@ public class TimeLineStack extends Media {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Selects (alone) the clips given, the earliest one as the main selected clip
+	 */
+	void selectClips(Vector<Clip> aClips) {
+		clearSelection();
+		aClips.sort((c1, c2) -> Long.compare(c2.getStartTimeMS(), c1.getStartTimeMS()));
+		for(Clip aC : aClips) {
+			selectClip(aC, true);
+		}
+	}
+
+	/**
+	 * All the clips (video and audio lines) that start at the time cursor or after it are selected alone
+	 * (to move them together). Returns their number
+	 */
+	public int selectClipsAfterCursor() {
+		return selectClipsFrom(getTimePosMS());
+	}
+
+	/**
+	 * All the clips (video and audio lines) that start at aTime or after it are selected alone. Returns their number
+	 */
+	public int selectClipsFrom(long aTime) {
+		Vector<Clip> aClips = new Vector<Clip>();
+		Vector<VideoTimeLine> aTLs = new Vector<VideoTimeLine>(videoTimeLineStack);
+		aTLs.addAll(audioTimeLineStack);
+		for(VideoTimeLine aTL : aTLs) {
+			for(Clip aC : aTL.clipList) {
+				if(aC.getStartTimeMS() >= aTime && !aClips.contains(aC)) {
+					aClips.add(aC);
+				}
+			}
+		}
+		selectClips(aClips);
+		return aClips.size();
+	}
+
+	/**
+	 * Selects the clips drawn across aRect (panel coordinates, edges included). aAdd: added to the selection,
+	 * else the only ones selected. Returns their number
+	 */
+	public int selectClipsInRect(Rectangle aRect,boolean aAdd) {
+		Vector<Clip> aClips = new Vector<Clip>();
+		Vector<VideoTimeLine> aTLs = new Vector<VideoTimeLine>(videoTimeLineStack);
+		aTLs.addAll(audioTimeLineStack);
+		for(VideoTimeLine aTL : aTLs) {
+			for(Clip aC : aTL.clipList) {
+				Rectangle aB = aC.bounds;
+				if(aB != null && !aClips.contains(aC)
+						&& aB.x <= aRect.x+aRect.width && aRect.x <= aB.x+aB.width
+						&& aB.y <= aRect.y+aRect.height && aRect.y <= aB.y+aB.height) {
+					aClips.add(aC);
+				}
+			}
+		}
+		if(!aAdd) {
+			selectClips(aClips);
+			return aClips.size();
+		}
+		aClips.sort((c1, c2) -> Long.compare(c2.getStartTimeMS(), c1.getStartTimeMS()));
+		for(Clip aC : aClips) {
+			selectClip(aC, true);
+		}
+		return aClips.size();
+	}
+
+	/**
+	 * Cuts all the selected clips at the time cursor (those it crosses strictly, see cutClip()): the first parts
+	 * stay selected. Returns the number of clips cut
+	 */
+	public int cutSelectedClips() {
+		long aTime = getTimePosMS();
+		int aN = 0;
+		for(Clip aC : new Vector<Clip>(tde.selected.clips)) {
+			if(cutClip(aC, aTime) != null) {
+				aN++;
+			}
+		}
+		return aN;
+	}
+
+	/**
+	 * Time range between the fixed time aT1 and aT2 (any order), aT2 sticky to the cursor and the edges of the clips
+	 * (aSnapMS away at most); none if empty
+	 */
+	public void setTimeRange(long aT1,long aT2,long aSnapMS) {
+		long[] aLim = timeRangeLimitsMS();
+		aT1 = Math.max(aLim[0], Math.min(aLim[1], aT1));
+		aT2 = Math.max(aLim[0], Math.min(aLim[1], snapTimeMS(Math.max(0, aT2), (Clip)null, aSnapMS)));
+		if(aT1 == aT2) {
+			clearTimeRange();
+			return;
+		}
+		rangeStartMS = Math.min(aT1, aT2);
+		rangeEndMS = Math.max(aT1, aT2);
+	}
+
+	/**
+	 * Limits of the time range: from the start of the earliest clip to the end of the latest one, of the selected
+	 * clips if any, else of all the clips of the montage ({0, 0} without clips)
+	 */
+	public long[] timeRangeLimitsMS() {
+		Vector<Clip> aClips = new Vector<Clip>(tde.selected.clips);
+		if(aClips.size() <= 0) {
+			Vector<VideoTimeLine> aTLs = new Vector<VideoTimeLine>(videoTimeLineStack);
+			aTLs.addAll(audioTimeLineStack);
+			for(VideoTimeLine aTL : aTLs) {
+				aClips.addAll(aTL.clipList);
+			}
+		}
+		long aMin = Long.MAX_VALUE, aMax = 0;
+		for(Clip aC : aClips) {
+			aMin = Math.min(aMin, aC.getStartTimeMS());
+			aMax = Math.max(aMax, aC.getStartTimeMS()+aC.getDurationMS());
+		}
+		return aMin > aMax ? new long[] {0, 0} : new long[] {aMin, aMax};
+	}
+
+	//Distance (pixels) at which the mouse grabs an edge of the time range
+	static final int RANGE_EDGE_PX = 4;
+
+	/**
+	 * Edge of the time range at this place (whole height, ruler included; not on its eraser):
+	 * 1 = its start, 2 = its end, 0 = none
+	 */
+	public int rangeEdgeAt(int aX,int aY) {
+		if(!hasTimeRange() || rulerBounds == null || aX < tde.config.thumbW
+				|| (rangeEraseBounds != null && rangeEraseBounds.contains(aX, aY))) {
+			return 0;
+		}
+		int aSX = rulerBounds.x+(int)(rangeStartMS*pixPerMS);
+		int aEX = rulerBounds.x+(int)(rangeEndMS*pixPerMS);
+		int aDS = Math.abs(aX-aSX), aDE = Math.abs(aX-aEX);
+		if(aDS > RANGE_EDGE_PX && aDE > RANGE_EDGE_PX) {
+			return 0;
+		}
+		//Both near (narrow range): the nearest
+		return aDS <= aDE ? 1 : 2;
+	}
+
+	public void clearTimeRange() {
+		rangeStartMS = rangeEndMS = -1;
+	}
+
+	public boolean hasTimeRange() {
+		return rangeStartMS >= 0 && rangeEndMS > rangeStartMS;
 	}
 
 	/**
@@ -1132,8 +1367,10 @@ public class TimeLineStack extends Media {
 	@Override
 	public void reBuild(int aProcessingMode,long aTime) {
 		workLeft = workRight = finalLeft = finalRight = null;
+		//Copy of the lines: the UI thread may add, move or delete one meanwhile (ConcurrentModificationException)
+		Vector<VideoTimeLine> aLines = new Vector<VideoTimeLine>(videoTimeLineStack);
 		Vector<Thread> aThs = new Vector<Thread>();
-		for(VideoTimeLine aTL : videoTimeLineStack) {
+		for(VideoTimeLine aTL : aLines) {
 			Thread aTh = new Thread(new Runnable() {
 				@Override
 				public void run() {
@@ -1166,7 +1403,7 @@ public class TimeLineStack extends Media {
 						aGL2.setColor(Color.BLACK);
 						aGL2.fillRect(0, 0, aWidthOut, aHeightOut);
 					}
-					for(VideoTimeLine aTL : videoTimeLineStack) {
+					for(VideoTimeLine aTL : aLines) {
 						if(!aTL.isActive) {
 							continue;
 						}
@@ -1217,7 +1454,7 @@ public class TimeLineStack extends Media {
 						aGR2.setColor(Color.BLACK);
 						aGR2.fillRect(0, 0, aWidthOut, aHeightOut);
 					}
-					for(VideoTimeLine aTL : videoTimeLineStack) {
+					for(VideoTimeLine aTL : aLines) {
 						if(!aTL.isActive) {
 							continue;
 						}

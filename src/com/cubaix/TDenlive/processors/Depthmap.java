@@ -36,6 +36,11 @@ public class Depthmap extends Processor {
 	public ComputedDepthmap computed = null;
 	//Show the depth map instead of the result on the monitor (not when rendering, not saved)
 	public boolean showDepth = false;
+	//Holes filled by an inpainting model instead of the interpolation (option, saved), see Inpainting
+	public Inpainting inpainting = new Inpainting(this, aT -> {
+		Key aK = getInterKeyGT(aT);
+		return aK.d+";"+aK.x+";"+aK.p+";"+aK.m+";"+aK.blackIsFront+";"+(computed != null);
+	});
 	
 	public Depthmap(TDenlive aTDe,Media aTargetMedia) {
 		super(aTDe,aTargetMedia);
@@ -86,6 +91,14 @@ public class Depthmap extends Processor {
 					o++;
 					keys.lastElement().time = Long.parseLong(aOs.elementAt(o).text);
 				}
+				if("inpaint".equalsIgnoreCase(aT.tagName)) {
+					o++;
+					inpainting.setOldOption(Boolean.parseBoolean(aOs.elementAt(o).text));
+				}
+				if("inpaintModes".equalsIgnoreCase(aT.tagName)) {
+					o++;
+					inpainting.setModesText(aOs.elementAt(o).text);
+				}
 				if("blackIsFront".equalsIgnoreCase(aT.tagName)) {
 					o++;
 					keys.lastElement().blackIsFront = Boolean.parseBoolean(aOs.elementAt(o).text);
@@ -108,6 +121,9 @@ public class Depthmap extends Processor {
 			aSB.append("							<m>" + aK.m + "</m>\n");
 			aSB.append("							<time>" + aK.time + "</time>\n");
 			aSB.append("							<blackIsFront>" + aK.blackIsFront + "</blackIsFront>\n");
+		}
+		if(inpainting.enabled) {
+			aSB.append("							<inpaintModes>" + inpainting.modesText() + "</inpaintModes>\n");
 		}
 		if(computed != null) {
 			computed.save(aSB, "							");
@@ -353,6 +369,11 @@ public class Depthmap extends Processor {
 			return;
 		}
 		try {
+			//Inpainting of the holes: what to do, time of the parameters (rounded to the frames on the monitor)
+			Inpainting.Plan aPlan = inpainting.plan(aProcessingMode);
+			long aKT = inpainting.snap(aTime, aProcessingMode);
+			long aStartMS = System.currentTimeMillis();
+			inpainting.beginFrame();
 			BufferedImage aBISrc = aMedia.getWorkLeft(aProcessingMode,aTime);
 			//Depth map: the computed one (of the left view), else the right view of the media (2D + depth map)
 			ComputedDepthmap aCD = computed;
@@ -365,14 +386,14 @@ public class Depthmap extends Processor {
 				return;
 			}
 			//Depth map mixed on the source, then converted
-			BufferedImage aBIL = mixDepth(aBISrc, aBIR, getInterKeyGT(aTime).m);
+			BufferedImage aBIL = mixDepth(aBISrc, aBIR, getInterKeyGT(aKT).m);
 			Thread aThL = new Thread(new Runnable() {
 				@Override
 				public void run() {
 					BufferedImage aProcessedBIL = 
 							tde.config.processingHdr[aProcessingMode]?
-							processAwtHdr(aBIL,aBIR,aProcessingMode,aTime,true):
-								processAwtImage(aBIL,aBIR,aProcessingMode,aTime,true);
+							processAwtHdr(aBIL,aBIR,aProcessingMode,aKT,true,aPlan):
+								processAwtImage(aBIL,aBIR,aProcessingMode,aKT,true,aPlan);
 					aMedia.setWorkLeft(aProcessedBIL);
 				}
 			});
@@ -382,14 +403,15 @@ public class Depthmap extends Processor {
 				public void run() {
 					BufferedImage aProcessedBIR = 
 							tde.config.processingHdr[aProcessingMode]?
-									processAwtHdr(aBIL,aBIR,aProcessingMode,aTime,false):
-										processAwtImage(aBIL,aBIR,aProcessingMode,aTime,false);
+									processAwtHdr(aBIL,aBIR,aProcessingMode,aKT,false,aPlan):
+										processAwtImage(aBIL,aBIR,aProcessingMode,aKT,false,aPlan);
 					aMedia.setWorkRight(aProcessedBIR);
 				}
 			});
 			aThR.start();
 			aThL.join();
 			aThR.join();
+			inpainting.endFrame(aProcessingMode, System.currentTimeMillis()-aStartMS);
 		}
 		catch(Throwable t) {
 			t.printStackTrace(System.err);
@@ -447,7 +469,7 @@ public class Depthmap extends Processor {
 		return aOut;
 	}
 
-	BufferedImage processAwtImage(BufferedImage aBI,BufferedImage aDM,int aProcessingMode,long aTime,boolean aIsL) {
+	BufferedImage processAwtImage(BufferedImage aBI,BufferedImage aDM,int aProcessingMode,long aTime,boolean aIsL,Inpainting.Plan aPlan) {
 		int aWidth = aBI.getWidth();
 		int aHeight = aBI.getHeight();
 		BufferedImage aFBI = ImageUtils.createImage(aWidth, aHeight);
@@ -457,6 +479,10 @@ public class Depthmap extends Processor {
 		int[] aDB = ((DataBufferInt)aBI.getRaster().getDataBuffer()).getData();
 		int[] aDMDB = ((DataBufferInt)aDM.getRaster().getDataBuffer()).getData();
 		int[] aFDB = ((DataBufferInt)aFBI.getRaster().getDataBuffer()).getData();
+		//Pixels filled by the interpolation of the edges of the holes, for the inpainting model
+		boolean[] aHoles = aPlan != Inpainting.Plan.NONE ? new boolean[aWidth*aHeight] : null;
+		//Side of the foreground of the holes (Inpainting.side(), weighted by their lengths)
+		long aSide = 0;
 		
 		int aHoleThX = 10+(int)(3*Math.abs(aKey.x));//(int)Math.sqrt(aWidth/1280.0);
 		double aHoleThZ = 0.02/Math.sqrt(aWidth/1280.0);//Remark: 0,007843=2*1/255 = two depthmap layers
@@ -690,8 +716,14 @@ public class Depthmap extends Processor {
 				if(aAlpha > 0.0) {
 					//Something here
 					if(aLastX >= 0 && aLastX < x - 1) {
+						if(aHoles != null) {
+							aSide += (x-aLastX-1)*Inpainting.side(aDLineZ[aLastX], aDLineZ[x]);
+						}
 						//Interpolate
 						for(int ix = aLastX+1;ix < x;ix++) {
+							if(aHoles != null) {
+								aHoles[y*aWidth+ix] = true;
+							}
 							int aAlphaN = (int)((aLastAlpha*(x - ix)+aAlpha*(ix - aLastX))/((double)(x - aLastX)));
 							int aRN = (int)((aLastR*(x - ix)+aR*(ix - aLastX))/((double)(x - aLastX)));
 							int aGN = (int)((aLastG*(x - ix)+aG*(ix - aLastX))/((double)(x - aLastX)));
@@ -710,10 +742,14 @@ public class Depthmap extends Processor {
 			}
 		}
 
+		if(aHoles != null) {
+			//Holes filled by the inpainting model instead of the interpolation (see Inpainting)
+			inpainting.fill(aPlan, inpainting.frame(aDB, aDMDB, aWidth, aHeight, aTime, aIsL, aSide < 0, aProcessingMode), aFDB, aWidth, aHeight, aHoles);
+		}
 		return aFBI;
 	}
 
-	BufferedImage processAwtHdr(BufferedImage aBI,BufferedImage aDM,int aProcessingMode,long aTime,boolean aIsL) {
+	BufferedImage processAwtHdr(BufferedImage aBI,BufferedImage aDM,int aProcessingMode,long aTime,boolean aIsL,Inpainting.Plan aPlan) {
 		int aWidth = aBI.getWidth();
 		int aHeight = aBI.getHeight();
 		BufferedImage aFBI = ImageUtils.createHdr(aWidth, aHeight);
@@ -723,6 +759,10 @@ public class Depthmap extends Processor {
 		float[] aDB = ((DataBufferFloat)aBI.getRaster().getDataBuffer()).getData();
 		float[] aDMDB = ((DataBufferFloat)aDM.getRaster().getDataBuffer()).getData();
 		float[] aFDB = ((DataBufferFloat)aFBI.getRaster().getDataBuffer()).getData();
+		//Pixels filled by the interpolation of the edges of the holes, for the inpainting model
+		boolean[] aHoles = aPlan != Inpainting.Plan.NONE ? new boolean[aWidth*aHeight] : null;
+		//Side of the foreground of the holes (Inpainting.side(), weighted by their lengths)
+		long aSide = 0;
 
 		int aHoleThX = 10+(int)(3*Math.abs(aKey.x));//(int)Math.sqrt(aWidth/1280.0);
 		double aHoleThZ = 0.02/Math.sqrt(aWidth/1280.0);//Remark: 0,007843=2*1/255 = two depthmap layers
@@ -972,8 +1012,14 @@ public class Depthmap extends Processor {
 				if(aAlpha > 0.0) {
 					//Something here
 					if(aLastX >= 0 && aLastX < x - 1) {
+						if(aHoles != null) {
+							aSide += (x-aLastX-1)*Inpainting.side(aDLineZ[aLastX], aDLineZ[x]);
+						}
 						//Interpolate
 						for(int ix = aLastX+1;ix < x;ix++) {
+							if(aHoles != null) {
+								aHoles[y*aWidth+ix] = true;
+							}
 							double aAlphaN = ((aLastAlpha*(x - ix)+aAlpha*(ix - aLastX))/((double)(x - aLastX)));
 							double aRN = ((aLastR*(x - ix)+aR*(ix - aLastX))/((double)(x - aLastX)));
 							double aGN = ((aLastG*(x - ix)+aG*(ix - aLastX))/((double)(x - aLastX)));
@@ -995,6 +1041,10 @@ public class Depthmap extends Processor {
 			}
 		}
 
+		if(aHoles != null) {
+			//Holes filled by the inpainting model instead of the interpolation (see Inpainting)
+			inpainting.fill(aPlan, inpainting.frame(aDB, aDMDB, aWidth, aHeight, aTime, aIsL, aSide < 0, aProcessingMode), aFDB, aWidth, aHeight, aHoles);
+		}
 		return aFBI;
 	}
 }

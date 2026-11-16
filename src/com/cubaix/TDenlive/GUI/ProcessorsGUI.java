@@ -64,6 +64,17 @@ public class ProcessorsGUI extends CompositePanel {
 	public void setProcessors(Vector<Processor> aProcessors) {
 		processors = aProcessors;
 		clean();
+		if(tde.selected.clips.size() > 1) {
+			//Several clips selected: whose processors they would be is not clear, none are shown
+			Label aMsg = new Label(container, SWT.WRAP | SWT.CENTER);
+			tde.gui.applyColorFont(aMsg);
+			aMsg.setText(tde.gui.lngs.get("Processor.SeveralClips").replace("%N%", ""+tde.selected.clips.size()));
+			GridData aGD = new GridData(GridData.FILL_HORIZONTAL);
+			aGD.verticalIndent = 20;
+			aMsg.setLayoutData(aGD);
+			container.layout(true, true);
+			return;
+		}
 		
 		ScrolledComposite aSC = new ScrolledComposite(container, SWT.V_SCROLL);
 		aSC.setBackground(tde.gui.colorsSwt.WHITE);

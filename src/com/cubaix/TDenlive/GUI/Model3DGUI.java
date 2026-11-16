@@ -57,6 +57,7 @@ public class Model3DGUI implements Model3DView.Source {
 	HashSet<Integer> collapsed = new HashSet<Integer>();
 	Spinner[][] spinners = new Spinner[3][3];//Position, rotation, scale × X, Y, Z (local, in the group)
 	Button colorButton = null;
+	Button textureButton = null;
 	Image colorImage = null;
 	Button duplicateButton = null;
 	Button deleteButton = null;
@@ -395,10 +396,11 @@ public class Model3DGUI implements Model3DView.Source {
 			refreshPanel();
 			view.redraw();
 		});
-		Composite aObjButtons = row(aP, 3, true);
+		Composite aObjButtons = row(aP, 2, true);
 		duplicateButton = button(aObjButtons, SWT.PUSH, l("Duplicate"), () -> duplicateSelected());
 		deleteButton = button(aObjButtons, SWT.PUSH, l("Delete"), () -> deleteSelected());
 		colorButton = button(aObjButtons, SWT.PUSH, l("Color"), () -> chooseColor());
+		textureButton = button(aObjButtons, SWT.PUSH, l("Texture"), () -> chooseTexture());
 		Composite aGroupButtons = row(aP, 2, true);
 		groupButton = button(aGroupButtons, SWT.PUSH, l("GroupAction"), () -> groupSelected());
 		ungroupButton = button(aGroupButtons, SWT.PUSH, l("Ungroup"), () -> ungroupSelected());
@@ -666,6 +668,7 @@ public class Model3DGUI implements Model3DView.Source {
 			duplicateButton.setEnabled(aM != null);
 			deleteButton.setEnabled(aM != null);
 			colorButton.setEnabled(aM != null);
+			textureButton.setEnabled(aM != null);
 			groupButton.setEnabled(aM != null);
 			ungroupButton.setEnabled(aM != null && aM.isGroup());
 			if(colorImage != null) {
@@ -937,6 +940,37 @@ public class Model3DGUI implements Model3DView.Source {
 			for(Integer aId : view.selection) {
 				if(model.isUnder(aO, aId)) {
 					aO.color = aColor;
+					break;
+				}
+			}
+		}
+		commit();
+		refreshPanel();
+		view.redraw();
+	}
+
+	/**
+	 * Texture of the selected objects (a group: all its objects), from the popup opened on the main one
+	 */
+	void chooseTexture() {
+		Object3D aM = view.main();
+		if(aM == null) {
+			return;
+		}
+		Object3D aR = new Texture3DGUI(tde, aM).open();
+		if(aR == null) {
+			return;
+		}
+		for(Object3D aO : model.objects) {
+			if(aO.isGroup()) {
+				continue;
+			}
+			for(Integer aId : view.selection) {
+				if(model.isUnder(aO, aId)) {
+					aR.copyTextureTo(aO);
+					if(aR.color != aM.color) {
+						aO.color = aR.color;
+					}
 					break;
 				}
 			}

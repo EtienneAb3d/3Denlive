@@ -83,6 +83,12 @@ public class ProcessorLibGUI extends TreeView {
 			    int rc = messageBox.open();
 				return;
 			}
+			if(tde.selected.clips.size() > 1) {
+				MessageBox messageBox = new MessageBox(tde.gui.shell,SWT.ICON_INFORMATION|SWT.OK);
+			    messageBox.setMessage(tde.gui.lngs.get("Processor.SelectOneClip"));
+			    messageBox.open();
+				return;
+			}
 			Clip aClip = tde.selected.clips.lastElement();
 			//Sound processors only on clips with a sound, image processors not on the audio lines
 			boolean aIsAudioClip = tde.timeLineStack.isAudioClip(aClip);

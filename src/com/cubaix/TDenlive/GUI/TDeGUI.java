@@ -127,11 +127,18 @@ public class TDeGUI {
 		setWaitCursor(true);
 		//Nothing recorded while opening: the project opened is the first state of the history
 		history.loading = true;
+		//No precomputation of the hole filling before the user chose (InpaintGUI.afterOpen())
+		com.cubaix.TDenlive.processors.Inpainting.Precomputer.held = true;
 		Thread aTh = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				tde.openProject(aPath);
-				display.syncExec(() -> history.reset());
+				try {
+					tde.openProject(aPath);
+				}
+				finally {
+					display.syncExec(() -> history.reset());
+					display.asyncExec(() -> InpaintGUI.afterOpen(tde));
+				}
 				setWaitCursor(false);
 			}
 		});
@@ -983,9 +990,18 @@ public class TDeGUI {
 		shell.setCursor(waitCursor);
 		String[] aPaths = null;
 		try {
-			tde.timeLineStack.reBuild(TDConfig.PROCESSING_MODE_RENDER, tde.timeLineStack.getTimePosMS());
-			BufferedImage aBIL = aMedia.getFinalLeft(TDConfig.PROCESSING_MODE_RENDER, tde.timeLineStack.getTimePosMS());
-			BufferedImage aBIR = aMedia.getFinalRight(TDConfig.PROCESSING_MODE_RENDER, tde.timeLineStack.getTimePosMS());
+			BufferedImage aBIL;
+			BufferedImage aBIR;
+			//Not during an image of the AI hole filling precomputation
+			com.cubaix.TDenlive.processors.Inpainting.Precomputer.suspend();
+			try {
+				tde.timeLineStack.reBuild(TDConfig.PROCESSING_MODE_RENDER, tde.timeLineStack.getTimePosMS());
+				aBIL = aMedia.getFinalLeft(TDConfig.PROCESSING_MODE_RENDER, tde.timeLineStack.getTimePosMS());
+				aBIR = aMedia.getFinalRight(TDConfig.PROCESSING_MODE_RENDER, tde.timeLineStack.getTimePosMS());
+			}
+			finally {
+				com.cubaix.TDenlive.processors.Inpainting.Precomputer.resume();
+			}
 			NumberFormat aNF = NumberFormat.getInstance();
 			aNF.setMinimumIntegerDigits(4);
 			aNF.setGroupingUsed(false);
@@ -1044,9 +1060,18 @@ public class TDeGUI {
 		File aOut = null;
 		try {
 			long aTime = tde.timeLineStack.getTimePosMS();
-			tde.timeLineStack.reBuild(TDConfig.PROCESSING_MODE_RENDER, aTime);
-			BufferedImage aBIL = aMedia.getFinalLeft(TDConfig.PROCESSING_MODE_RENDER, aTime);
-			BufferedImage aBIR = aMedia.getFinalRight(TDConfig.PROCESSING_MODE_RENDER, aTime);
+			BufferedImage aBIL;
+			BufferedImage aBIR;
+			//Not during an image of the AI hole filling precomputation
+			com.cubaix.TDenlive.processors.Inpainting.Precomputer.suspend();
+			try {
+				tde.timeLineStack.reBuild(TDConfig.PROCESSING_MODE_RENDER, aTime);
+				aBIL = aMedia.getFinalLeft(TDConfig.PROCESSING_MODE_RENDER, aTime);
+				aBIR = aMedia.getFinalRight(TDConfig.PROCESSING_MODE_RENDER, aTime);
+			}
+			finally {
+				com.cubaix.TDenlive.processors.Inpainting.Precomputer.resume();
+			}
 			if(aBIL == null || aBIR == null) {
 				throw new Exception(lngs.get("Monitor.SnapshotEmpty"));
 			}

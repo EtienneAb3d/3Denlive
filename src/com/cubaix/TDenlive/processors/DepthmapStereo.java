@@ -37,6 +37,11 @@ public class DepthmapStereo extends Processor {
 	public ComputedDepthmap computed = null;
 	//Show the depth map instead of the result on the monitor (not when rendering, not saved)
 	public boolean showDepth = false;
+	//Holes filled by an inpainting model instead of the interpolation (option, saved), see Inpainting
+	public Inpainting inpainting = new Inpainting(this, aT -> {
+		Key aK = getInterKeyGT(aT);
+		return aK.d+";"+aK.x+";"+aK.p+";"+aK.m+";"+aK.blackIsFront+";"+(aK.depthmapClipMedia == null ? (computed != null) : aK.depthmapClipMedia.getMedia().UID);
+	});
 	
 	public DepthmapStereo(TDenlive aTDe,Media aTargetMedia) {
 		super(aTDe,aTargetMedia);
@@ -87,6 +92,14 @@ public class DepthmapStereo extends Processor {
 					o++;
 					keys.lastElement().time = Long.parseLong(aOs.elementAt(o).text);
 				}
+				if("inpaint".equalsIgnoreCase(aT.tagName)) {
+					o++;
+					inpainting.setOldOption(Boolean.parseBoolean(aOs.elementAt(o).text));
+				}
+				if("inpaintModes".equalsIgnoreCase(aT.tagName)) {
+					o++;
+					inpainting.setModesText(aOs.elementAt(o).text);
+				}
 				if("blackIsFront".equalsIgnoreCase(aT.tagName)) {
 					o++;
 					keys.lastElement().blackIsFront = Boolean.parseBoolean(aOs.elementAt(o).text);
@@ -117,6 +130,9 @@ public class DepthmapStereo extends Processor {
 			aSB.append("							<time>" + aK.time + "</time>\n");
 			aSB.append("							<blackIsFront>" + aK.blackIsFront + "</blackIsFront>\n");
 			aSB.append("							<depthmapClipMedia>" + (aK.depthmapClipMedia == null ? -1 : aK.depthmapClipMedia.getMedia().UID) + "</depthmapClipMedia>\n");
+		}
+		if(inpainting.enabled) {
+			aSB.append("							<inpaintModes>" + inpainting.modesText() + "</inpaintModes>\n");
 		}
 		if(computed != null) {
 			computed.save(aSB, "							");
@@ -409,7 +425,12 @@ public class DepthmapStereo extends Processor {
 			return;
 		}
 		try {
-			Key aKey = getInterKeyGT(aTime);
+			//Inpainting of the holes: what to do, time of the parameters (rounded to the frames on the monitor)
+			Inpainting.Plan aPlan = inpainting.plan(aProcessingMode);
+			long aKT = inpainting.snap(aTime, aProcessingMode);
+			long aStartMS = System.currentTimeMillis();
+			inpainting.beginFrame();
+			Key aKey = getInterKeyGT(aKT);
 			//Depth maps of the key, else the computed ones: one per view
 			ComputedDepthmap aCD = computed;
 			Clip aDC = aKey.depthmapClipMedia != null ? aKey.depthmapClipMedia : (aCD != null ? aCD.clip : null);
@@ -433,8 +454,8 @@ public class DepthmapStereo extends Processor {
 				public void run() {
 					BufferedImage aProcessedBIL = 
 							tde.config.processingHdr[aProcessingMode]?
-							processAwtHdr(aBIL,aBIDML,aProcessingMode,aTime,true):
-								processAwtImage(aBIL,aBIDML,aProcessingMode,aTime,true);
+							processAwtHdr(aBIL,aBIDML,aProcessingMode,aKT,true,aPlan):
+								processAwtImage(aBIL,aBIDML,aProcessingMode,aKT,true,aPlan);
 					aMedia.setWorkLeft(aProcessedBIL);
 				}
 			});
@@ -444,21 +465,22 @@ public class DepthmapStereo extends Processor {
 				public void run() {
 					BufferedImage aProcessedBIR = 
 							tde.config.processingHdr[aProcessingMode]?
-									processAwtHdr(aBIR,aBIDMR,aProcessingMode,aTime,false):
-										processAwtImage(aBIR,aBIDMR,aProcessingMode,aTime,false);
+									processAwtHdr(aBIR,aBIDMR,aProcessingMode,aKT,false,aPlan):
+										processAwtImage(aBIR,aBIDMR,aProcessingMode,aKT,false,aPlan);
 					aMedia.setWorkRight(aProcessedBIR);
 				}
 			});
 			aThR.start();
 			aThL.join();
 			aThR.join();
+			inpainting.endFrame(aProcessingMode, System.currentTimeMillis()-aStartMS);
 		}
 		catch(Throwable t) {
 			t.printStackTrace(System.err);
 		}
 	}
 	
-	BufferedImage processAwtImage(BufferedImage aBI,BufferedImage aDM,int aProcessingMode,long aTime,boolean aIsL) {
+	BufferedImage processAwtImage(BufferedImage aBI,BufferedImage aDM,int aProcessingMode,long aTime,boolean aIsL,Inpainting.Plan aPlan) {
 		int aWidth = aBI.getWidth();
 		int aHeight = aBI.getHeight();
 		BufferedImage aFBI = ImageUtils.createImage(aWidth, aHeight);
@@ -468,6 +490,10 @@ public class DepthmapStereo extends Processor {
 		int[] aDB = ((DataBufferInt)aBI.getRaster().getDataBuffer()).getData();
 		int[] aDMDB = ((DataBufferInt)aDM.getRaster().getDataBuffer()).getData();
 		int[] aFDB = ((DataBufferInt)aFBI.getRaster().getDataBuffer()).getData();
+		//Pixels filled by the interpolation of the edges of the holes, for the inpainting model
+		boolean[] aHoles = aPlan != Inpainting.Plan.NONE ? new boolean[aWidth*aHeight] : null;
+		//Side of the foreground of the holes (Inpainting.side(), weighted by their lengths)
+		long aSide = 0;
 		
 		int aHoleThX = 10+(int)(3*Math.abs(aKey.x));//(int)Math.sqrt(aWidth/1280.0);
 		double aHoleThZ = 0.02/Math.sqrt(aWidth/1280.0);//Remark: 0,007843=2*1/255 = two depthmap layers
@@ -661,8 +687,14 @@ public class DepthmapStereo extends Processor {
 				if(aAlpha > 0.0) {
 					//Something here
 					if(aLastX >= 0 && aLastX < x - 1) {
+						if(aHoles != null) {
+							aSide += (x-aLastX-1)*Inpainting.side(aDLineZ[aLastX], aDLineZ[x]);
+						}
 						//Interpolate
 						for(int ix = aLastX+1;ix < x;ix++) {
+							if(aHoles != null) {
+								aHoles[y*aWidth+ix] = true;
+							}
 							int aAlphaN = (int)((aLastAlpha*(x - ix)+aAlpha*(ix - aLastX))/((double)(x - aLastX)));
 							int aRN = (int)((aLastR*(x - ix)+aR*(ix - aLastX))/((double)(x - aLastX)));
 							int aGN = (int)((aLastG*(x - ix)+aG*(ix - aLastX))/((double)(x - aLastX)));
@@ -681,10 +713,14 @@ public class DepthmapStereo extends Processor {
 			}
 		}
 
+		if(aHoles != null) {
+			//Holes filled by the inpainting model instead of the interpolation (see Inpainting)
+			inpainting.fill(aPlan, inpainting.frame(aDB, aDMDB, aWidth, aHeight, aTime, aIsL, aSide < 0, aProcessingMode), aFDB, aWidth, aHeight, aHoles);
+		}
 		return aFBI;
 	}
 
-	BufferedImage processAwtHdr(BufferedImage aBI,BufferedImage aDM,int aProcessingMode,long aTime,boolean aIsL) {
+	BufferedImage processAwtHdr(BufferedImage aBI,BufferedImage aDM,int aProcessingMode,long aTime,boolean aIsL,Inpainting.Plan aPlan) {
 		int aWidth = aBI.getWidth();
 		int aHeight = aBI.getHeight();
 		BufferedImage aFBI = ImageUtils.createHdr(aWidth, aHeight);
@@ -694,6 +730,10 @@ public class DepthmapStereo extends Processor {
 		float[] aDB = ((DataBufferFloat)aBI.getRaster().getDataBuffer()).getData();
 		float[] aDMDB = ((DataBufferFloat)aDM.getRaster().getDataBuffer()).getData();
 		float[] aFDB = ((DataBufferFloat)aFBI.getRaster().getDataBuffer()).getData();
+		//Pixels filled by the interpolation of the edges of the holes, for the inpainting model
+		boolean[] aHoles = aPlan != Inpainting.Plan.NONE ? new boolean[aWidth*aHeight] : null;
+		//Side of the foreground of the holes (Inpainting.side(), weighted by their lengths)
+		long aSide = 0;
 
 		int aHoleThX = 10+(int)(3*Math.abs(aKey.x));//(int)Math.sqrt(aWidth/1280.0);
 		double aHoleThZ = 0.02/Math.sqrt(aWidth/1280.0);//Remark: 0,007843=2*1/255 = two depthmap layers
@@ -901,8 +941,14 @@ public class DepthmapStereo extends Processor {
 				if(aAlpha > 0.0) {
 					//Something here
 					if(aLastX >= 0 && aLastX < x - 1) {
+						if(aHoles != null) {
+							aSide += (x-aLastX-1)*Inpainting.side(aDLineZ[aLastX], aDLineZ[x]);
+						}
 						//Interpolate
 						for(int ix = aLastX+1;ix < x;ix++) {
+							if(aHoles != null) {
+								aHoles[y*aWidth+ix] = true;
+							}
 							double aAlphaN = ((aLastAlpha*(x - ix)+aAlpha*(ix - aLastX))/((double)(x - aLastX)));
 							double aRN = ((aLastR*(x - ix)+aR*(ix - aLastX))/((double)(x - aLastX)));
 							double aGN = ((aLastG*(x - ix)+aG*(ix - aLastX))/((double)(x - aLastX)));
@@ -924,6 +970,10 @@ public class DepthmapStereo extends Processor {
 			}
 		}
 
+		if(aHoles != null) {
+			//Holes filled by the inpainting model instead of the interpolation (see Inpainting)
+			inpainting.fill(aPlan, inpainting.frame(aDB, aDMDB, aWidth, aHeight, aTime, aIsL, aSide < 0, aProcessingMode), aFDB, aWidth, aHeight, aHoles);
+		}
 		return aFBI;
 	}
 }

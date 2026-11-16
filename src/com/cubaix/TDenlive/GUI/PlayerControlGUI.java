@@ -13,6 +13,7 @@ import com.cubaix.TDenlive.TDenlive;
 import com.cubaix.TDenlive.audio.AudioPlayer;
 import com.cubaix.TDenlive.medias.Clip;
 import com.cubaix.TDenlive.medias.Media;
+import com.cubaix.TDenlive.medias.TimeLineStack;
 import com.cubaix.TDenlive.medias.TimeListener;
 import com.cubaix.TDenlive.utils.StringUtils;
 
@@ -75,7 +76,9 @@ public class PlayerControlGUI extends CompositePanel {
 			Media aPlayed = aIsLibMedia ? aShown : tde.timeLineStack;
 			//Cursor position at the click (the requested one: the shown one may not be rendered yet), restored at the stop
 			long aTimePosStart = aPlayed.getRequestedTimePosMS();
-			startPlay(aPlayed, aIsLibMedia, aTimePosStart, aTimePosStart);
+			//A selected time range of the montage: played from its start
+			long aFrom = !aIsLibMedia && tde.timeLineStack.hasTimeRange() ? tde.timeLineStack.rangeStartMS : aTimePosStart;
+			startPlay(aPlayed, aIsLibMedia, aFrom, aTimePosStart);
 		});
 
 		//Two-state pause button, shown while playing or paused: pressed = paused
@@ -398,6 +401,9 @@ public class PlayerControlGUI extends CompositePanel {
 			public void run() {
 				long aTimeStart = System.currentTimeMillis();
 				aPlayed.setRequestedTimePosMS(aFromPos);
+				//Montage with a selected time range: stops at its end (not when played from after it)
+				long aRangeEnd = rangeEndFor(aIsLibMedia, aFromPos);
+				final long aStopMS = aRangeEnd >= 0 ? aRangeEnd : Long.MAX_VALUE;
 				//The sound card gives the time while playing, otherwise the system clock
 				AudioPlayer aAudio = aIsLibMedia ? new AudioPlayer(tde, aPlayed) : new AudioPlayer(tde);
 				boolean aAudioClock = aAudio.start(aFromPos);
@@ -459,7 +465,7 @@ public class PlayerControlGUI extends CompositePanel {
 						}
 					}
 					//Stop at the end of the media, or of the last clip of the montage
-					if(aTimePosNew >= aPlayed.getMaxTimePosMS()) {
+					if(aTimePosNew >= aPlayed.getMaxTimePosMS() || aTimePosNew >= aStopMS) {
 						tde.gui.display.syncExec(new Runnable() {
 							@Override
 							public void run() {
@@ -491,6 +497,17 @@ public class PlayerControlGUI extends CompositePanel {
 			}
 		});
 		aTh.start();
+	}
+
+	/**
+	 * End of the selected time range of the montage where a play from aFromPos stops, -1 if none
+	 */
+	long rangeEndFor(boolean aIsLibMedia,long aFromPos) {
+		TimeLineStack aTLS = tde.timeLineStack;
+		if(aIsLibMedia || aTLS == null || !aTLS.hasTimeRange() || aFromPos >= aTLS.rangeEndMS) {
+			return -1;
+		}
+		return aTLS.rangeEndMS;
 	}
 
 	/**
@@ -572,6 +589,10 @@ public class PlayerControlGUI extends CompositePanel {
 	/**
 	 * Playing state (false: stopped, the pause too), with the buttons (SWT thread)
 	 */
+	public boolean isPlaying() {
+		return playing;
+	}
+
 	void setPlaying(boolean aPlaying) {
 		playing = aPlaying;
 		paused = false;

@@ -6,7 +6,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -18,7 +17,7 @@ import com.cubaix.TDenlive.shapes.Shape;
 public class MediaListControlGUI extends CompositePanel {
 	Composite toolBar = null;
 	CLabel addMedia = null;
-	RGB lastRGB = null;
+	com.cubaix.TDenlive.medias.ColorBck.Fill lastFill = null;
 
 	public MediaListControlGUI(TDenlive aTDe, Composite aParent) {
 		super(aTDe, aParent);
@@ -69,10 +68,10 @@ public class MediaListControlGUI extends CompositePanel {
 			public void mouseUp(MouseEvent arg0) {}
 			@Override
 			public void mouseDown(MouseEvent arg0) {
-				RGB aRGB = new ColorBckGUI(tde, lastRGB).open();
-				if(aRGB != null) {
-					lastRGB = aRGB;
-					tde.mediaList.createColorBck(aRGB.red,aRGB.green,aRGB.blue,TDConfig.PROCESSING_MODE_RENDER);
+				com.cubaix.TDenlive.medias.ColorBck.Fill aFill = new ColorBckGUI(tde, lastFill).open();
+				if(aFill != null) {
+					lastFill = aFill;
+					tde.mediaList.createColorBck(aFill,TDConfig.PROCESSING_MODE_RENDER);
 					tde.gui.mediaListGUI.redraw();
 				}
 			}

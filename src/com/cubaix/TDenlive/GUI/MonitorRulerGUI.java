@@ -200,5 +200,23 @@ public class MonitorRulerGUI {
 		aGC.drawLine(aCX, aH-1, aCX-5, aH-11);
 		aGC.drawLine(aCX, aH-1, aCX+5, aH-11);
 		aGC.drawLine(aCX-5, aH-11, aCX+5, aH-11);
+
+		//AI hole filling of the depth map conversions being precomputed (see processors.Inpainting)
+		int[] aInp = com.cubaix.TDenlive.processors.Inpainting.Precomputer.status();
+		if(aInp != null && aTarget == tde.timeLineStack) {
+			String aText = tde.gui.lngs.get("Inpaint.Precomputing")
+					.replace("%PERCENT%", ""+(100*aInp[0]/Math.max(1, aInp[1])));
+			if(tde.gui.playerControlGUI != null && tde.gui.playerControlGUI.isPlaying()) {
+				aText += " "+tde.gui.lngs.get("Inpaint.Paused");
+			}
+			Point aTP = aGC.textExtent(aText);
+			int aTX = Math.max(0, (aW-aTP.x)/2);
+			aGC.setBackground(tde.gui.colorsSwt.WHITE);
+			aGC.fillRectangle(aTX-4, 0, aTP.x+8, aTP.y);
+			aGC.setForeground(tde.gui.colorsSwt.VIOLET);
+			aGC.drawString(aText, aTX, 0, true);
+			aGC.setBackground(tde.gui.colorsSwt.VIOLET);
+			aGC.fillRectangle(0, aH-3, (int)((long)aW*aInp[0]/Math.max(1, aInp[1])), 3);
+		}
 	}
 }

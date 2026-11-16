@@ -858,7 +858,9 @@ public class Clip extends Media {
 		workLeft = workRight = finalLeft = finalRight = null;
 		long aMediaTime = mediaTimeMS(aTime);
 		media.reBuild(aProcessingMode, aMediaTime);
-		for(Clip aC : pairedClips) {
+		//Copies: the GUI thread may change the lists meanwhile (precomputation, monitor)
+		Vector<Clip> aPaired = new Vector<Clip>(pairedClips);
+		for(Clip aC : aPaired) {
 			if(aC.pairedType == 1) {
 				if(aC.followsOrientation) {
 					aC.followOrientation(media);
@@ -867,11 +869,11 @@ public class Clip extends Media {
 				aC.media.reBuild(aProcessingMode, aMediaTime);
 			}
 		}
-		for(Processor aP : processors) {
+		for(Processor aP : new Vector<Processor>(processors)) {
 			if(aP.isActive) {
 				aP.process2Awt(this,aProcessingMode,aTime);
 				//Also process paired clips
-				for(Clip aC : pairedClips) {
+				for(Clip aC : aPaired) {
 					if(aC.pairedType == 1) {
 						//Depthmap
 						if(";Placer;StereoAligner;".indexOf(";"+aP.getClassName()+";") >= 0) {

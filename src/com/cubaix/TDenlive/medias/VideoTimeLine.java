@@ -33,6 +33,9 @@ public class VideoTimeLine extends Media {
 	//Set by TimeLineStack before drawing: the line is not the top / bottom one of its kind
 	boolean canMoveUp = false;
 	boolean canMoveDown = false;
+	//Trash below the name: removes the whole line (not the last one of its kind), null if not shown
+	Rectangle lineTrashBounds = null;
+	boolean canDelete = false;
 	public static final int SOUND_BAR_H = 16;
 	//Sound of the clips of this line (play and rendering): the left video (the only one for a single file),
 	//the right one of two files (else the single one), or none
@@ -269,6 +272,13 @@ public class VideoTimeLine extends Media {
 			}
 		}
 		
+		//Below the name: remove the whole line
+		lineTrashBounds = null;
+		if(canDelete) {
+			lineTrashBounds = new Rectangle(aClippingR.x+10, aY+28, 16, 16);
+			aGC.drawImage(tde.gui.imgsAwt.getIcon("trash.png"), lineTrashBounds.x, lineTrashBounds.y, 16, 16, null);
+		}
+		
 		//Below the sound icon and the checkbox: move the whole line up / down
 		lineUpBounds = lineDownBounds = null;
 		if(canMoveUp) {
@@ -287,7 +297,8 @@ public class VideoTimeLine extends Media {
 		Rectangle aClippingNew = new Rectangle(aClippingR.x+tde.config.thumbW+2,Math.max(aClippingR.y,aY)
 				,aClippingR.width-tde.config.thumbW, aRowH);
 		int aW = 0;
-		for(Clip aC : clipList) {
+		//Copy: the GUI thread may add or remove clips while drawing
+		for(Clip aC : new Vector<Clip>(clipList)) {
 			Rectangle aR = drawClipAwt(aC, aGC, aStart, aY, aClippingNew);
 			if(aX+aW < aR.x+aR.width) {
 				aW = aR.x+aR.width-aX;
@@ -401,6 +412,9 @@ public class VideoTimeLine extends Media {
 		}
 		if(lineDownBounds != null && lineDownBounds.contains(aX,aY)) {
 			return "LineDown";
+		}
+		if(lineTrashBounds != null && lineTrashBounds.contains(aX,aY)) {
+			return "LineTrash";
 		}
 		return null;
 	}

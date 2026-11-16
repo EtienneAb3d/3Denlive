@@ -176,7 +176,7 @@ public abstract class PythonAI {
 	/**
 	 * aR is the model kept loaded now (another one is unloaded first)
 	 */
-	static void setResident(Resident aR) {
+	public static void setResident(Resident aR) {
 		beforeLoad(aR.residentKey());
 		synchronized(SLOT) {
 			resident = aR;
@@ -187,7 +187,7 @@ public abstract class PythonAI {
 	/**
 	 * aR is no longer loaded (stopped, or ended by itself)
 	 */
-	static void residentGone(Resident aR) {
+	public static void residentGone(Resident aR) {
 		synchronized(SLOT) {
 			if(resident == aR) {
 				resident = null;

@@ -7,6 +7,8 @@ import java.util.Set;
 /**
  * Software renderer of a Model3D: z-buffer (1/z), Gouraud shading with a light tied to the center camera
  * (same lighting for both eyes), supersampling for the anti-aliasing, transparent or opaque background.
+ * A textured object: texture coordinates interpolated with the perspective, an image sampled at the
+ * mipmap level of each triangle (Texture3D), lit by the diffuse factor and the highlight of its vertices.
  */
 public class Renderer3D {
 	public static class Options {
@@ -29,6 +31,27 @@ public class Renderer3D {
 				return -1;
 			}
 			return ids[aY*width+aX]-1;
+		}
+	}
+
+	/**
+	 * Texture of the object being drawn: an image (tex), or a procedural texture between c1 and c2
+	 */
+	static class TexCtx {
+		Texture3D tex;
+		String procedural;
+		int c1, c2;
+		int level;//Mipmap level of the current triangle
+
+		int sample(double aU, double aV) {
+			if(tex != null) {
+				return tex.sample(aU, aV, level);
+			}
+			double aM = com.cubaix.TDenlive.medias.ColorBck.Fill.mix(procedural, aU-Math.floor(aU), 1-(aV-Math.floor(aV)));
+			int aR = (int)(((c1>>16)&0xFF) + (((c2>>16)&0xFF)-((c1>>16)&0xFF))*aM + 0.5);
+			int aG = (int)(((c1>>8)&0xFF) + (((c2>>8)&0xFF)-((c1>>8)&0xFF))*aM + 0.5);
+			int aB = (int)((c1&0xFF) + ((c2&0xFF)-(c1&0xFF))*aM + 0.5);
+			return (aR<<16)|(aG<<8)|aB;
 		}
 	}
 
@@ -111,8 +134,27 @@ public class Renderer3D {
 		//Normals: inverse transpose of the world matrix
 		double[] aNM = Math3D.transpose(Math3D.invert(aMat));
 		double aBr = (aO.color >> 16) & 0xFF, aBg = (aO.color >> 8) & 0xFF, aBb = aO.color & 0xFF;
+		TexCtx aTex = null;
+		if(aO.hasTexture()) {
+			aTex = new TexCtx();
+			if(com.cubaix.TDenlive.medias.ColorBck.Fill.isBitmap(aO.texture)) {
+				aTex.tex = Texture3D.get(aO.texture);
+				if(aTex.tex == null) {
+					//Image missing: the color of the object
+					aTex = null;
+				}
+			}
+			else {
+				aTex.procedural = aO.texture;
+				aTex.c1 = aO.color;
+				aTex.c2 = aO.color2;
+			}
+		}
 		double[] aCx = new double[aN], aCy = new double[aN], aCz = new double[aN];
 		float[] aCr = new float[aN], aCg = new float[aN], aCb = new float[aN];
+		double aTexCos = Math.cos(Math.toRadians(aO.texRot)), aTexSin = Math.sin(Math.toRadians(aO.texRot));
+		//Textured: r = diffuse factor, g = highlight (0..255), u, v
+		float[] aTu = aTex != null ? new float[aN] : null, aTv = aTex != null ? new float[aN] : null;
 		for(int v = 0;v < aN;v++) {
 			double[] aL = {aMesh.pos[v*3], aMesh.pos[v*3+1], aMesh.pos[v*3+2]};
 			double[] aW = Math3D.add(Math3D.apply(aMat, aL), aPos);
@@ -125,6 +167,19 @@ public class Renderer3D {
 			double aDif = Math.max(0, Math3D.dot(aNor, aLight));
 			double aSpec = Math.pow(Math.max(0, Math3D.dot(aNor, aHalf)), 32)*0.35;
 			double aK = 0.28 + 0.72*aDif;
+			if(aTex != null) {
+				aCr[v] = (float)aK;
+				aCg[v] = (float)(255*aSpec);
+				double aTexK = 100/Math.max(1, aO.texScale);
+				//Turned around the middle of the face (the texture turns counterclockwise: its
+				//coordinates turn the other way), then repeated and scaled
+				double aU0 = aMesh.uv[v*2]-0.5, aV0 = aMesh.uv[v*2+1]-0.5;
+				double aU = aTexCos*aU0 + aTexSin*aV0 + 0.5;
+				double aV = -aTexSin*aU0 + aTexCos*aV0 + 0.5;
+				aTu[v] = (float)(aU*aO.texRepU*aTexK + aO.texOffU/100);
+				aTv[v] = (float)(aV*aO.texRepV*aTexK + aO.texOffV/100);
+				continue;
+			}
 			aCr[v] = (float)Math.min(255, aBr*aK + 255*aSpec);
 			aCg[v] = (float)Math.min(255, aBg*aK + 255*aSpec);
 			aCb[v] = (float)Math.min(255, aBb*aK + 255*aSpec);
@@ -133,17 +188,25 @@ public class Renderer3D {
 		double[][] aPoly = new double[8][];
 		for(int t = 0;t < aMesh.nbTris;t++) {
 			int aA = aMesh.tris[t*3], aB = aMesh.tris[t*3+1], aC = aMesh.tris[t*3+2];
-			double[] aVa = {aCx[aA], aCy[aA], aCz[aA], aCr[aA], aCg[aA], aCb[aA]};
-			double[] aVb = {aCx[aB], aCy[aB], aCz[aB], aCr[aB], aCg[aB], aCb[aB]};
-			double[] aVc = {aCx[aC], aCy[aC], aCz[aC], aCr[aC], aCg[aC], aCb[aC]};
+			double[] aVa, aVb, aVc;
+			if(aTex != null) {
+				aVa = new double[] {aCx[aA], aCy[aA], aCz[aA], aCr[aA], aCg[aA], 0, aTu[aA], aTv[aA]};
+				aVb = new double[] {aCx[aB], aCy[aB], aCz[aB], aCr[aB], aCg[aB], 0, aTu[aB], aTv[aB]};
+				aVc = new double[] {aCx[aC], aCy[aC], aCz[aC], aCr[aC], aCg[aC], 0, aTu[aC], aTv[aC]};
+			}
+			else {
+				aVa = new double[] {aCx[aA], aCy[aA], aCz[aA], aCr[aA], aCg[aA], aCb[aA]};
+				aVb = new double[] {aCx[aB], aCy[aB], aCz[aB], aCr[aB], aCg[aB], aCb[aB]};
+				aVc = new double[] {aCx[aC], aCy[aC], aCz[aC], aCr[aC], aCg[aC], aCb[aC]};
+			}
 			if(aVa[2] > Camera3D.NEAR && aVb[2] > Camera3D.NEAR && aVc[2] > Camera3D.NEAR) {
-				drawTri(aCam, aVa, aVb, aVc, aId);
+				drawTri(aCam, aVa, aVb, aVc, aId, aTex);
 				continue;
 			}
 			//Clipped by the near plane
 			int aNP = clipNear(new double[][] {aVa, aVb, aVc}, aPoly);
 			for(int p = 1;p < aNP-1;p++) {
-				drawTri(aCam, aPoly[0], aPoly[p], aPoly[p+1], aId);
+				drawTri(aCam, aPoly[0], aPoly[p], aPoly[p+1], aId, aTex);
 			}
 		}
 	}
@@ -171,9 +234,9 @@ public class Renderer3D {
 	}
 
 	/**
-	 * Triangle of camera points {x, y, z, r, g, b}
+	 * Triangle of camera points {x, y, z, r, g, b}, or textured {x, y, z, diffuse, highlight, -, u, v}
 	 */
-	void drawTri(Camera3D aCam, double[] aA, double[] aB, double[] aC, int aId) {
+	void drawTri(Camera3D aCam, double[] aA, double[] aB, double[] aC, int aId, TexCtx aTex) {
 		double aX0 = aCam.screenX(aA[0], aA[2]), aY0 = aCam.screenY(aA[1], aA[2]);
 		double aX1 = aCam.screenX(aB[0], aB[2]), aY1 = aCam.screenY(aB[1], aB[2]);
 		double aX2 = aCam.screenX(aC[0], aC[2]), aY2 = aCam.screenY(aC[1], aC[2]);
@@ -192,6 +255,17 @@ public class Renderer3D {
 		double aA0 = (aY1-aY2)/aArea, aB0 = (aX2-aX1)/aArea, aC0 = (aX1*aY2-aX2*aY1)/aArea;
 		double aA1 = (aY2-aY0)/aArea, aB1 = (aX0-aX2)/aArea, aC1 = (aX2*aY0-aX0*aY2)/aArea;
 		double aIz0 = 1/aA[2], aIz1 = 1/aB[2], aIz2 = 1/aC[2];
+		//Texture: u/z and v/z are linear on the screen
+		double aUz0 = 0, aUz1 = 0, aUz2 = 0, aVz0 = 0, aVz1 = 0, aVz2 = 0;
+		if(aTex != null) {
+			aUz0 = aA[6]*aIz0; aUz1 = aB[6]*aIz1; aUz2 = aC[6]*aIz2;
+			aVz0 = aA[7]*aIz0; aVz1 = aB[7]*aIz1; aVz2 = aC[7]*aIz2;
+			if(aTex.tex != null) {
+				//Mipmap level: texels of the triangle per pixel of the screen
+				double aTexArea = Math.abs((aB[6]-aA[6])*(aC[7]-aA[7]) - (aC[6]-aA[6])*(aB[7]-aA[7]))*aTex.tex.width()*aTex.tex.height();
+				aTex.level = aTex.tex.level(Math.sqrt(aTexArea/Math.abs(aArea)));
+			}
+		}
 		final double aEps = -1e-7;
 		for(int y = aMinY;y <= aMaxY;y++) {
 			double aPy = y+0.5;
@@ -216,6 +290,18 @@ public class Renderer3D {
 					continue;
 				}
 				zb[i] = aIz;
+				if(aTex != null) {
+					double aZ = 1/(aW0*aIz0 + aW1*aIz1 + aW2*aIz2);
+					int aT = aTex.sample((aW0*aUz0 + aW1*aUz1 + aW2*aUz2)*aZ, (aW0*aVz0 + aW1*aVz1 + aW2*aVz2)*aZ);
+					double aK = aW0*aA[3] + aW1*aB[3] + aW2*aC[3];
+					double aS = aW0*aA[4] + aW1*aB[4] + aW2*aC[4];
+					col[i] = 0xFF000000 | (clamp((int)(((aT>>16)&0xFF)*aK + aS)) << 16)
+							| (clamp((int)(((aT>>8)&0xFF)*aK + aS)) << 8) | clamp((int)((aT&0xFF)*aK + aS));
+					if(idb != null) {
+						idb[i] = aId;
+					}
+					continue;
+				}
 				int aR = (int)(aW0*aA[3] + aW1*aB[3] + aW2*aC[3]);
 				int aG = (int)(aW0*aA[4] + aW1*aB[4] + aW2*aC[4]);
 				int aBl = (int)(aW0*aA[5] + aW1*aB[5] + aW2*aC[5]);

@@ -49,6 +49,8 @@ public class RendererGUI {
 	double outputFPS = 30;
 	boolean playing = false;
 	boolean startAtTimePos = false;
+	//Only the selected time range of the time lines (TimeLineStack.rangeStartMS / rangeEndMS)
+	boolean onlyTimeRange = false;
 	long startTimePos = 0;
 	long endTimePos = 0;
 	long timeStartMS = 0;
@@ -307,6 +309,24 @@ public class RendererGUI {
 			}
 		});
 		aStartPosCB.setText(tde.gui.lngs.get("Renderer.StartAtTimePos"));
+
+		final Button aRangeCB = new Button(shell, SWT.CHECK);
+		tde.gui.applyColorFont(aRangeCB);
+		tde.gui.tip(aRangeCB, "RenderOnlyTimeRange");
+		GridData aRCBGD = new GridData(GridData.FILL_HORIZONTAL);
+		aRCBGD.heightHint = tde.gui.h(20);
+		aRangeCB.setLayoutData(aRCBGD);
+		boolean aHasRange = tde.timeLineStack.hasTimeRange();
+		aRangeCB.setText(tde.gui.lngs.get("Renderer.OnlyTimeRange")
+				+(aHasRange ? " ("+StringUtils.time2Clock(tde.timeLineStack.rangeStartMS)
+						+" - "+StringUtils.time2Clock(tde.timeLineStack.rangeEndMS)+")" : ""));
+		aRangeCB.setEnabled(aHasRange);
+		aRangeCB.setSelection(false);
+		aRangeCB.addListener(SWT.Selection, e -> {
+			onlyTimeRange = aRangeCB.getSelection();
+			//The range gives its own start
+			aStartPosCB.setEnabled(!onlyTimeRange);
+		});
 		Composite aStartStop = new Composite(shell, SWT.NONE);
 		tde.gui.applyColorFont(aStartStop);
 		aStartStop.setLayout(new GridLayout(3, false));
@@ -490,11 +510,21 @@ public class RendererGUI {
 		
 		startTimePos = startAtTimePos?tde.timeLineStack.getTimePosMS():0;
 		endTimePos = tde.timeLineStack.getMaxTimePosMS();
+		if(onlyTimeRange && tde.timeLineStack.hasTimeRange()) {
+			startTimePos = tde.timeLineStack.rangeStartMS;
+			endTimePos = Math.min(endTimePos, tde.timeLineStack.rangeEndMS);
+		}
 		tde.gui.setWaitCursor(true,shell);
 		status.setText(tde.gui.lngs.get("Renderer.MixingAudio"));
 		Thread aTh = new Thread(new Runnable() {
 			@Override
 			public void run() {
+				//No precomputation of the AI hole filling meanwhile: the image it computes, if any, ends first
+				com.cubaix.TDenlive.processors.Inpainting.Precomputer.rendering = true;
+				if(tde.gui.monitorGUI != null) {
+					synchronized(tde.gui.monitorGUI) {
+					}
+				}
 				//Sound track first, mixed into a temporary WAV given to ffmpeg with the images
 				audioWav = null;
 				if(FfmpegEncoder.canHaveAudio(pathOut)) {
@@ -586,6 +616,7 @@ public class RendererGUI {
 			return;
 		}
 		playing = false;
+		com.cubaix.TDenlive.processors.Inpainting.Precomputer.rendering = false;
 		if(renderer != null) {
 			renderer.stop();
 		}

@@ -2,12 +2,14 @@ package com.cubaix.TDenlive.model3d;
 
 /**
  * Triangle mesh of a primitive, in its local frame: fits in the cube -0.5..0.5.
- * One normal per vertex (the flat faces have their own vertices).
+ * One normal per vertex (the flat faces have their own vertices), and texture coordinates
+ * (u to the right, v up; a flat face is 0..1, a round side goes once around).
  */
 public class Mesh3D {
 	static final int SEGS = 32;//Segments of the round shapes
 	public float[] pos = new float[0];
 	public float[] nor = new float[0];
+	public float[] uv = new float[0];
 	public int[] tris = new int[0];
 	public int nbVerts = 0;
 	public int nbTris = 0;
@@ -47,11 +49,14 @@ public class Mesh3D {
 		return aM;
 	}
 
-	int vertex(double aX, double aY, double aZ, double aNx, double aNy, double aNz) {
+	int vertex(double aX, double aY, double aZ, double aNx, double aNy, double aNz, double aU, double aV) {
 		if(nbVerts*3 >= pos.length) {
 			pos = java.util.Arrays.copyOf(pos, Math.max(48, pos.length*2));
 			nor = java.util.Arrays.copyOf(nor, Math.max(48, nor.length*2));
+			uv = java.util.Arrays.copyOf(uv, Math.max(32, pos.length/3*2));
 		}
+		uv[nbVerts*2] = (float)aU;
+		uv[nbVerts*2+1] = (float)aV;
 		double aL = Math.sqrt(aNx*aNx + aNy*aNy + aNz*aNz);
 		if(aL < 1e-12) {
 			aL = 1;
@@ -83,17 +88,23 @@ public class Mesh3D {
 	void trim() {
 		pos = java.util.Arrays.copyOf(pos, nbVerts*3);
 		nor = java.util.Arrays.copyOf(nor, nbVerts*3);
+		uv = java.util.Arrays.copyOf(uv, nbVerts*2);
 		tris = java.util.Arrays.copyOf(tris, nbTris*3);
 	}
 
+	//Texture coordinates of the points of a face: a quad from its bottom left corner, counterclockwise
+	static final double[][] QUAD_UV = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
+	static final double[][] TRI_UV = {{0, 0}, {1, 0}, {0.5, 1}};
+
 	/**
-	 * Flat face of 3 or 4 points (normal from the first three)
+	 * Flat face of 3 or 4 points (normal from the first three), the texture once on it
 	 */
 	void face(double[]... aPts) {
 		double[] aN = Math3D.cross(Math3D.sub(aPts[1], aPts[0]), Math3D.sub(aPts[2], aPts[0]));
 		int[] aIs = new int[aPts.length];
+		double[][] aUV = aPts.length == 3 ? TRI_UV : QUAD_UV;
 		for(int p = 0;p < aPts.length;p++) {
-			aIs[p] = vertex(aPts[p][0], aPts[p][1], aPts[p][2], aN[0], aN[1], aN[2]);
+			aIs[p] = vertex(aPts[p][0], aPts[p][1], aPts[p][2], aN[0], aN[1], aN[2], aUV[p][0], aUV[p][1]);
 		}
 		for(int p = 1;p < aPts.length-1;p++) {
 			tri(aIs[0], aIs[p], aIs[p+1]);
@@ -136,7 +147,8 @@ public class Mesh3D {
 				double aX = Math.sin(aTh)*Math.cos(aPh);
 				double aY = Math.cos(aTh);
 				double aZ = Math.sin(aTh)*Math.sin(aPh);
-				aIs[t][s] = vertex(aX*0.5, aY*0.5, aZ*0.5, aX, aY, aZ);
+				//u turns to the right seen from outside, v up
+				aIs[t][s] = vertex(aX*0.5, aY*0.5, aZ*0.5, aX, aY, aZ, 1-s/(double)SEGS, 1-t/(double)aStacks);
 			}
 		}
 		for(int t = 0;t < aStacks;t++) {
@@ -152,11 +164,11 @@ public class Mesh3D {
 	void disk(double aY, double aR, double aRIn, boolean aUp) {
 		double aNy = aUp ? 1 : -1;
 		if(aRIn <= 0) {
-			int aC = vertex(0, aY, 0, 0, aNy, 0);
+			int aC = diskVertex(0, aY, 0, aUp);
 			int[] aIs = new int[SEGS+1];
 			for(int s = 0;s <= SEGS;s++) {
 				double aA = 2*Math.PI*s/SEGS;
-				aIs[s] = vertex(aR*Math.cos(aA), aY, aR*Math.sin(aA), 0, aNy, 0);
+				aIs[s] = diskVertex(aR*Math.cos(aA), aY, aR*Math.sin(aA), aUp);
 			}
 			for(int s = 0;s < SEGS;s++) {
 				tri(aC, aIs[s], aIs[s+1]);
@@ -167,12 +179,19 @@ public class Mesh3D {
 		int[] aIn = new int[SEGS+1];
 		for(int s = 0;s <= SEGS;s++) {
 			double aA = 2*Math.PI*s/SEGS;
-			aOut[s] = vertex(aR*Math.cos(aA), aY, aR*Math.sin(aA), 0, aNy, 0);
-			aIn[s] = vertex(aRIn*Math.cos(aA), aY, aRIn*Math.sin(aA), 0, aNy, 0);
+			aOut[s] = diskVertex(aR*Math.cos(aA), aY, aR*Math.sin(aA), aUp);
+			aIn[s] = diskVertex(aRIn*Math.cos(aA), aY, aRIn*Math.sin(aA), aUp);
 		}
 		for(int s = 0;s < SEGS;s++) {
 			quad(aIn[s], aOut[s], aOut[s+1], aIn[s+1]);
 		}
+	}
+
+	/**
+	 * Point of a horizontal face, the texture projected from above (front at the bottom) or below
+	 */
+	int diskVertex(double aX, double aY, double aZ, boolean aUp) {
+		return vertex(aX, aY, aZ, 0, aUp ? 1 : -1, 0, aX+0.5, aUp ? 0.5-aZ : 0.5+aZ);
 	}
 
 	/**
@@ -185,8 +204,9 @@ public class Mesh3D {
 		for(int s = 0;s <= SEGS;s++) {
 			double aA = 2*Math.PI*s/SEGS;
 			double aC = Math.cos(aA), aS = Math.sin(aA);
-			aB[s] = vertex(aR*aC, -0.5, aR*aS, aK*aC, 0, aK*aS);
-			aT[s] = vertex(aR*aC, 0.5, aR*aS, aK*aC, 0, aK*aS);
+			double aU = aOutward ? 1-s/(double)SEGS : s/(double)SEGS;
+			aB[s] = vertex(aR*aC, -0.5, aR*aS, aK*aC, 0, aK*aS, aU, 0);
+			aT[s] = vertex(aR*aC, 0.5, aR*aS, aK*aC, 0, aK*aS, aU, 1);
 		}
 		for(int s = 0;s < SEGS;s++) {
 			quad(aB[s], aB[s+1], aT[s+1], aT[s]);
@@ -212,9 +232,10 @@ public class Mesh3D {
 			double aA0 = 2*Math.PI*s/SEGS;
 			double aA1 = 2*Math.PI*(s+1)/SEGS;
 			double aAm = (aA0+aA1)/2;
-			int aI0 = vertex(0.5*Math.cos(aA0), -0.5, 0.5*Math.sin(aA0), Math.cos(aA0), 0.5, Math.sin(aA0));
-			int aI1 = vertex(0.5*Math.cos(aA1), -0.5, 0.5*Math.sin(aA1), Math.cos(aA1), 0.5, Math.sin(aA1));
-			int aIt = vertex(0, 0.5, 0, Math.cos(aAm), 0.5, Math.sin(aAm));
+			double aU0 = 1-s/(double)SEGS, aU1 = 1-(s+1)/(double)SEGS;
+			int aI0 = vertex(0.5*Math.cos(aA0), -0.5, 0.5*Math.sin(aA0), Math.cos(aA0), 0.5, Math.sin(aA0), aU0, 0);
+			int aI1 = vertex(0.5*Math.cos(aA1), -0.5, 0.5*Math.sin(aA1), Math.cos(aA1), 0.5, Math.sin(aA1), aU1, 0);
+			int aIt = vertex(0, 0.5, 0, Math.cos(aAm), 0.5, Math.sin(aAm), (aU0+aU1)/2, 1);
 			tri(aI0, aI1, aIt);
 		}
 		disk(-0.5, 0.5, 0, false);
@@ -231,7 +252,8 @@ public class Mesh3D {
 				double aNx = Math.cos(aV)*Math.cos(aU);
 				double aNy = Math.sin(aV);
 				double aNz = Math.cos(aV)*Math.sin(aU);
-				aIs[u][v] = vertex((aR+aRt*Math.cos(aV))*Math.cos(aU), aRt*aNy, (aR+aRt*Math.cos(aV))*Math.sin(aU), aNx, aNy, aNz);
+				aIs[u][v] = vertex((aR+aRt*Math.cos(aV))*Math.cos(aU), aRt*aNy, (aR+aRt*Math.cos(aV))*Math.sin(aU), aNx, aNy, aNz
+						, 1-u/(double)SEGS, v/(double)aRing);
 			}
 		}
 		for(int u = 0;u < SEGS;u++) {
@@ -462,7 +484,8 @@ public class Mesh3D {
 		for(int aSide = -1;aSide <= 1;aSide += 2) {
 			int[] aIs = new int[4];
 			for(int p = 0;p < 4;p++) {
-				aIs[p] = vertex(aPts[p][0], aPts[p][1], aSide*aZ, 0, 0, aSide);
+				//Texture: one repeat per line height, mirrored on the back
+				aIs[p] = vertex(aPts[p][0], aPts[p][1], aSide*aZ, 0, 0, aSide, aSide*aPts[p][0], aPts[p][1]);
 			}
 			quad(aIs[0], aIs[1], aIs[2], aIs[3]);
 		}
@@ -491,17 +514,22 @@ public class Mesh3D {
 			}
 			aNor[i] = new double[] {aNx, aNy};
 		}
+		//Texture along the contour (u = length) and the thickness (v)
+		double aLen = 0;
 		for(int i = 0;i < aN;i++) {
 			int aJ = (i+1)%aN;
+			double aSegLen = Math.hypot(aC[aJ*2]-aC[i*2], aC[aJ*2+1]-aC[i*2+1])*aK;
+			double aU0 = aLen, aU1 = aLen+aSegLen;
+			aLen = aU1;
 			double[] aN0 = vertexNormal(aNor[(i-1+aN)%aN], aNor[i]);
 			double[] aN1 = vertexNormal(aNor[aJ], aNor[i]);
 			double aX0 = (aC[i*2]-aCx)*aK, aY0 = -(aC[i*2+1]-aCy)*aK;
 			double aX1 = (aC[aJ*2]-aCx)*aK, aY1 = -(aC[aJ*2+1]-aCy)*aK;
 			//AWT y down: the y of the normal is reversed
-			int aA = vertex(aX0, aY0, aZ, aN0[0], -aN0[1], 0);
-			int aB = vertex(aX1, aY1, aZ, aN1[0], -aN1[1], 0);
-			int aCc = vertex(aX1, aY1, -aZ, aN1[0], -aN1[1], 0);
-			int aD = vertex(aX0, aY0, -aZ, aN0[0], -aN0[1], 0);
+			int aA = vertex(aX0, aY0, aZ, aN0[0], -aN0[1], 0, aU0, 2*aZ);
+			int aB = vertex(aX1, aY1, aZ, aN1[0], -aN1[1], 0, aU1, 2*aZ);
+			int aCc = vertex(aX1, aY1, -aZ, aN1[0], -aN1[1], 0, aU1, 0);
+			int aD = vertex(aX0, aY0, -aZ, aN0[0], -aN0[1], 0, aU0, 0);
 			quad(aA, aB, aCc, aD);
 		}
 	}

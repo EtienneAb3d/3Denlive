@@ -3,7 +3,9 @@ package com.cubaix.TDenlive.medias;
 import java.awt.Graphics2D;
 import java.util.Vector;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 
@@ -204,9 +206,9 @@ public class MediaList extends Drawable {
 		tde.updateFirstMediaRatio();
 	}
 	
-	public void createColorBck(int aR,int aG, int aB,int aProcessingMode) {
+	public void createColorBck(ColorBck.Fill aFill,int aProcessingMode) {
 		ColorBck aCB = new ColorBck(tde);
-		aCB.setColor(aR,aG,aB);
+		aCB.setFill(aFill);
 		try {
 			aCB.reloadOrig(aProcessingMode, -1);
 		}
@@ -291,6 +293,136 @@ public class MediaList extends Drawable {
 		return aM instanceof ShapesMedia || aM instanceof Model3DMedia;
 	}
 
+	//Side of the badges drawn on the thumbnails
+	static final int BADGE = 16;
+
+	/**
+	 * Kind of media: 0 image, 1 video, 2 sound, 3 shapes, 4 3D model
+	 */
+	static int kindOf(Media aM) {
+		if(aM instanceof AudioMedia) {
+			return 2;
+		}
+		if(aM instanceof ShapesMedia) {
+			return 3;
+		}
+		if(aM instanceof Model3DMedia) {
+			return 4;
+		}
+		return aM instanceof StereoMovie ? 1 : 0;
+	}
+
+	/**
+	 * A stereo media (two views), else a plain image / video (the same file for both views)
+	 */
+	static boolean isStereo(Media aM) {
+		if(aM instanceof ShapesMedia || aM instanceof Model3DMedia) {
+			//Made in the application with depths
+			return true;
+		}
+		if(aM instanceof ColorBck) {
+			return false;
+		}
+		if(aM instanceof StereoImage) {
+			StereoImage aSI = (StereoImage)aM;
+			return aSI.origStereo != 0 || (aSI.pathR != null && !aSI.pathR.equals(aSI.pathL));
+		}
+		return false;
+	}
+
+	/**
+	 * Badges at the bottom left of the thumbnail: the kind (image, video, sound, shapes and 3D model with the
+	 * icons of their toolbar buttons), then, for the images and
+	 * videos, 2D (plain) or 3D (stereo, anaglyph colors)
+	 */
+	void drawBadges(GC aGC,Media aM,int aX,int aRowY) {
+		org.eclipse.swt.graphics.Image aThumb = aM.getThumbSwt();
+		if(aThumb == null || aThumb.isDisposed()) {
+			return;
+		}
+		Rectangle aTB = aThumb.getBounds();
+		int aY = aRowY + Math.min(aTB.height, tde.config.thumbH) - BADGE - 2;
+		int aBX = aX + 2;
+		int aOldAA = aGC.getAntialias();
+		int aOldAlpha = aGC.getAlpha();
+		int aOldLW = aGC.getLineWidth();
+		org.eclipse.swt.graphics.Font aOldFont = aGC.getFont();
+		try {
+			aGC.setAntialias(SWT.ON);
+			badgeBack(aGC, aBX, aY, BADGE);
+			aGC.setForeground(tde.gui.colorsSwt.WHITE);
+			aGC.setBackground(tde.gui.colorsSwt.WHITE);
+			aGC.setLineWidth(1);
+			switch(kindOf(aM)) {
+			case 3:
+				//Icons of the buttons of the media list toolbar (MediaListControlGUI)
+				aGC.drawImage(tde.gui.imgsSwt.getIcon("colorObjects.png"), aBX, aY);
+				break;
+			case 4:
+				aGC.drawImage(tde.gui.imgsSwt.getIcon("cube3d.png"), aBX, aY);
+				break;
+			case 1:
+				//Video camera: body and lens cone
+				aGC.fillRoundRectangle(aBX+2, aY+5, 8, 7, 2, 2);
+				aGC.fillPolygon(new int[] {aBX+10, aY+8, aBX+14, aY+5, aBX+14, aY+12, aBX+10, aY+9});
+				break;
+			case 2:
+				//Two eighth notes joined by a beam
+				aGC.fillOval(aBX+2, aY+10, 4, 3);
+				aGC.fillOval(aBX+9, aY+9, 4, 3);
+				aGC.setLineWidth(1);
+				aGC.drawLine(aBX+5, aY+11, aBX+5, aY+3);
+				aGC.drawLine(aBX+12, aY+10, aBX+12, aY+2);
+				aGC.fillPolygon(new int[] {aBX+5, aY+3, aBX+12, aY+2, aBX+12, aY+4, aBX+5, aY+5});
+				break;
+			default:
+				//Picture: frame, mountains and sun
+				aGC.drawRectangle(aBX+2, aY+3, 11, 10);
+				aGC.fillPolygon(new int[] {aBX+3, aY+13, aBX+7, aY+7, aBX+10, aY+10, aBX+11, aY+9, aBX+13, aY+13});
+				aGC.fillOval(aBX+9, aY+5, 3, 3);
+				break;
+			}
+			if(kindOf(aM) == 2) {
+				return;
+			}
+			//2D / 3D
+			boolean aStereo = isStereo(aM);
+			String aText = aStereo ? "3D" : "2D";
+			aGC.setFont(tde.gui.fontsSwt.robotoBold);
+			Point aTP = aGC.stringExtent(aText);
+			int aW = Math.max(BADGE, aTP.x+6);
+			int aSX = aBX + BADGE + 2;
+			badgeBack(aGC, aSX, aY, aW);
+			int aTX = aSX + (aW-aTP.x)/2;
+			int aTY = aY + (BADGE-aTP.y)/2;
+			if(aStereo) {
+				//Anaglyph fringes
+				aGC.setForeground(tde.gui.colorsSwt.RED);
+				aGC.drawString(aText, aTX-1, aTY, true);
+				aGC.setForeground(tde.gui.colorsSwt.CYAN);
+				aGC.drawString(aText, aTX+1, aTY, true);
+			}
+			aGC.setForeground(tde.gui.colorsSwt.WHITE);
+			aGC.drawString(aText, aTX, aTY, true);
+		}
+		finally {
+			aGC.setAlpha(aOldAlpha);
+			aGC.setLineWidth(aOldLW);
+			aGC.setAntialias(aOldAA);
+			aGC.setFont(aOldFont);
+		}
+	}
+
+	/**
+	 * Dark translucent back of a badge
+	 */
+	void badgeBack(GC aGC,int aX,int aY,int aW) {
+		aGC.setAlpha(170);
+		aGC.setBackground(tde.gui.colorsSwt.BLACK);
+		aGC.fillRoundRectangle(aX, aY, aW, BADGE, 5, 5);
+		aGC.setAlpha(255);
+	}
+
 	public Rectangle drawSwt(GC aGC,int aX, int aY,Rectangle aClippingR) {
 		int aW = 0;
 		int aH = 0;
@@ -306,6 +438,7 @@ public class MediaList extends Drawable {
 			for(Media aM : mediaList) {
 				int aRowY = aY+aH;
 				Rectangle aR = aM.drawSwt(aGC, aX, aY+aH,aClippingR);
+				drawBadges(aGC, aM, aX, aRowY);
 				//Trash button at the right of the visible part of the row
 				Rectangle aTR = new Rectangle(aClippingR.x+aClippingR.width-aTB.width-TRASH_MARGIN, aRowY+TRASH_MARGIN, aTB.width, aTB.height);
 				aGC.drawImage(aTrash, aTR.x, aTR.y);

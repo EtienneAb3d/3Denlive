@@ -53,6 +53,13 @@ public class Model3DMedia extends StereoImage {
 		if(aO instanceof XmlTag && "Model3D".equalsIgnoreCase(((XmlTag)aO).tagName)) {
 			model = new Model3D();
 			o = model.openProject(aOs, o);
+			//Images of the disk used as textures: found back next to the project if moved
+			for(com.cubaix.TDenlive.model3d.Object3D aObj : model.objects) {
+				if(aObj.textureFile() != null) {
+					aObj.texture = ColorBck.Fill.FILE + findPath(aObj.textureFile());
+					ColorBck.Fill.addFile(aObj.texture);
+				}
+			}
 		}
 		return o;
 	}
@@ -69,8 +76,14 @@ public class Model3DMedia extends StereoImage {
 
 	@Override
 	public Vector<String> getFilePaths() {
-		//No file
-		return new Vector<String>();
+		//No file, but the images of the disk used as textures
+		Vector<String> aPs = new Vector<String>();
+		for(com.cubaix.TDenlive.model3d.Object3D aObj : model.objects) {
+			if(aObj.textureFile() != null && !aPs.contains(aObj.textureFile())) {
+				aPs.add(aObj.textureFile());
+			}
+		}
+		return aPs;
 	}
 
 	@Override

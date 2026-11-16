@@ -2,6 +2,7 @@ package com.cubaix.TDenlive.model3d;
 
 import java.util.Vector;
 
+import com.cubaix.TDenlive.medias.ColorBck;
 import com.cubaix.TDenlive.shapes.Shape;
 import com.cubaix.TDenlive.shapes.ShapeText;
 import com.cubaix.TDenlive.xml.XmlObject;
@@ -37,6 +38,17 @@ public class Object3D {
 	public double rx = 0, ry = 0, rz = 0;
 	public double sx = 1, sy = 1, sz = 1;
 	public int color = 0x4A90D9;
+	//Texture: a texture of the library of the color clips (ColorBck.Fill: procedural between color and
+	//color2, image of the library, image of the disk "file:<path>"), PLAIN = none; repeated texRepU x
+	//texRepV times on a face (or once around a round side), enlarged by texScale %, shifted by texOffU /
+	//texOffV (% of a repeat)
+	public String texture = ColorBck.Fill.PLAIN;
+	public int color2 = 0xFFFFFF;
+	public double texRepU = 1, texRepV = 1;
+	public double texOffU = 0, texOffV = 0;
+	public double texScale = 100;
+	//Rotation of the texture on the faces, degrees counterclockwise around the middle of a face
+	public double texRot = 0;
 	//Text
 	public String text = "Text";
 	public String fontName = ShapeText.DEFAULT_FONT;
@@ -58,12 +70,33 @@ public class Object3D {
 		aO.name = name;
 		copyTransformTo(aO);
 		aO.color = color;
+		copyTextureTo(aO);
 		aO.text = text;
 		aO.fontName = fontName;
 		aO.bold = bold;
 		aO.italic = italic;
 		aO.extrusion = extrusion;
 		return aO;
+	}
+
+	public void copyTextureTo(Object3D aO) {
+		aO.texture = texture;
+		aO.color2 = color2;
+		aO.texRepU = texRepU; aO.texRepV = texRepV;
+		aO.texOffU = texOffU; aO.texOffV = texOffV;
+		aO.texScale = texScale;
+		aO.texRot = texRot;
+	}
+
+	public boolean hasTexture() {
+		return texture != null && !ColorBck.Fill.PLAIN.equals(texture);
+	}
+
+	/**
+	 * Path of an image of the disk used as texture, else null
+	 */
+	public String textureFile() {
+		return texture != null && ColorBck.Fill.isFile(texture) ? texture.substring(ColorBck.Fill.FILE.length()) : null;
 	}
 
 	public void copyTransformTo(Object3D aO) {
@@ -172,6 +205,21 @@ public class Object3D {
 		aSB.append(aIndent+"	<rot>" + rx + ";" + ry + ";" + rz + "</rot>\n");
 		aSB.append(aIndent+"	<scale>" + sx + ";" + sy + ";" + sz + "</scale>\n");
 		aSB.append(aIndent+"	<color>" + color + "</color>\n");
+		if(hasTexture()) {
+			if(textureFile() != null) {
+				//The path alone in its tag: gathered, packed and renamed like the paths of the medias
+				aSB.append(aIndent+"	<texture>file</texture>\n");
+				aSB.append(aIndent+"	<texturePath>" + textureFile() + "</texturePath>\n");
+			}
+			else {
+				aSB.append(aIndent+"	<texture>" + texture + "</texture>\n");
+			}
+			aSB.append(aIndent+"	<color2>" + color2 + "</color2>\n");
+			aSB.append(aIndent+"	<texRepeat>" + texRepU + ";" + texRepV + "</texRepeat>\n");
+			aSB.append(aIndent+"	<texOffset>" + texOffU + ";" + texOffV + "</texOffset>\n");
+			aSB.append(aIndent+"	<texScale>" + texScale + "</texScale>\n");
+			aSB.append(aIndent+"	<texRot>" + texRot + "</texRot>\n");
+		}
 		if(type == TEXT) {
 			aSB.append(aIndent+"	<text>" + Shape.encode(text) + "</text>\n");
 			//Same tag as the shapes: the font is copied with the project (see ProjectFonts)
@@ -230,6 +278,35 @@ public class Object3D {
 			}
 			if("color".equalsIgnoreCase(aT.tagName)) {
 				color = Integer.parseInt(aOs.elementAt(++o).text.trim());
+			}
+			if("texture".equalsIgnoreCase(aT.tagName)) {
+				texture = aOs.elementAt(++o).text.trim();
+				if("file".equals(texture)) {
+					//Its path follows in <texturePath>
+					texture = ColorBck.Fill.FILE;
+				}
+			}
+			if("texturePath".equalsIgnoreCase(aT.tagName)) {
+				texture = ColorBck.Fill.FILE + aOs.elementAt(++o).text.trim();
+			}
+			if("color2".equalsIgnoreCase(aT.tagName)) {
+				color2 = Integer.parseInt(aOs.elementAt(++o).text.trim());
+			}
+			if("texRepeat".equalsIgnoreCase(aT.tagName)) {
+				String[] aVs = aOs.elementAt(++o).text.trim().split(";");
+				texRepU = Double.parseDouble(aVs[0]);
+				texRepV = Double.parseDouble(aVs[1]);
+			}
+			if("texRot".equalsIgnoreCase(aT.tagName)) {
+				texRot = Double.parseDouble(aOs.elementAt(++o).text.trim());
+			}
+			if("texScale".equalsIgnoreCase(aT.tagName)) {
+				texScale = Double.parseDouble(aOs.elementAt(++o).text.trim());
+			}
+			if("texOffset".equalsIgnoreCase(aT.tagName)) {
+				String[] aVs = aOs.elementAt(++o).text.trim().split(";");
+				texOffU = Double.parseDouble(aVs[0]);
+				texOffV = Double.parseDouble(aVs[1]);
 			}
 			if("text".equalsIgnoreCase(aT.tagName)) {
 				text = Shape.decode(aOs.elementAt(++o).text.trim());
