@@ -259,6 +259,15 @@ public class Mesh3D {
 	 * Mesh of a text (lines centered), a line 1 high, the block centered at the origin,
 	 * from z = -aExtrusion/2 to aExtrusion/2. Shared (do not modify)
 	 */
+	/**
+	 * Fonts of the project loaded: the text meshes are built again
+	 */
+	public static void textFontsChanged() {
+		synchronized (TEXT_CACHE) {
+			TEXT_CACHE.clear();
+		}
+	}
+
 	public static Mesh3D text(String aText, String aFont, boolean aBold, boolean aItalic, double aExtrusion) {
 		String aKey = aFont+"\u0000"+aBold+"\u0000"+aItalic+"\u0000"+aExtrusion+"\u0000"+aText;
 		synchronized (TEXT_CACHE) {
@@ -286,8 +295,7 @@ public class Mesh3D {
 		}
 		//Registers the embedded fonts and those of the project
 		com.cubaix.TDenlive.shapes.ShapeText.getFamilies();
-		java.awt.Font aF = new java.awt.Font(aFont == null || aFont.isEmpty() ? com.cubaix.TDenlive.shapes.ShapeText.DEFAULT_FONT : aFont
-				, (aBold ? java.awt.Font.BOLD : 0) | (aItalic ? java.awt.Font.ITALIC : 0), 1).deriveFont(100f);
+		java.awt.Font aF = com.cubaix.TDenlive.shapes.ShapeText.font(aFont, aBold, aItalic, 100f);
 		java.awt.font.FontRenderContext aFRC = new java.awt.font.FontRenderContext(null, true, true);
 		java.awt.font.LineMetrics aLM = aF.getLineMetrics("Hg", aFRC);
 		double aLineH = aLM.getAscent()+aLM.getDescent();

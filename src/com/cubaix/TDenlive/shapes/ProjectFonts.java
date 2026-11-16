@@ -1,7 +1,6 @@
 package com.cubaix.TDenlive.shapes;
 
 import java.awt.Font;
-import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -68,7 +67,8 @@ public class ProjectFonts {
 	}
 
 	/**
-	 * Register the fonts of the project aProjectPath (those already installed keep the installed version)
+	 * Register the fonts of the project aProjectPath: its texts use them, even when a font of the same
+	 * name is installed on the system (see ShapeText.font())
 	 */
 	public static void register(String aProjectPath) {
 		File[] aFs = dirOf(aProjectPath).listFiles();
@@ -76,7 +76,6 @@ public class ProjectFonts {
 			return;
 		}
 		ShapeText.register();
-		GraphicsEnvironment aGE = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		boolean aAdded = false;
 		for(File aF : aFs) {
 			if(!aF.isFile() || !isFontFile(aF)) {
@@ -84,9 +83,7 @@ public class ProjectFonts {
 			}
 			try {
 				Font[] aFonts = Font.createFonts(aF);
-				for(Font aFt : aFonts) {
-					aGE.registerFont(aFt);
-				}
+				ShapeText.addOwn(aFonts);
 				synchronized (REGISTERED) {
 					index(REGISTERED, aF, aFonts);
 				}

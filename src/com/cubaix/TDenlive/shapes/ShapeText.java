@@ -50,22 +50,104 @@ public class ShapeText {
 		}
 	};
 
+	/**
+	 * Fonts loaded from files (embedded in the application, copied with a project): family (lower case,
+	 * default language and English) -> faces by full name. They are used before the fonts of the system:
+	 * registerFont() does nothing when a font of the same name is installed (e.g. another version of
+	 * Roboto on Linux, with other line metrics: the texts would get another size)
+	 */
+	static final Map<String,Map<String,Font>> OWN = new java.util.HashMap<String,Map<String,Font>>();
+
+	/**
+	 * Faces loaded from a file: kept for font(), and registered (for the lists of the families)
+	 */
+	static void addOwn(Font[] aFonts) {
+		GraphicsEnvironment aGE = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		for(Font aFt : aFonts) {
+			try {
+				aGE.registerFont(aFt);
+			}
+			catch(Throwable t) {
+				t.printStackTrace(System.err);
+			}
+			synchronized (OWN) {
+				for(String aFam : new String[] {aFt.getFamily(), aFt.getFamily(java.util.Locale.ENGLISH)}) {
+					//The last loaded replaces a face of the same name (font of the project opened last)
+					OWN.computeIfAbsent(aFam.toLowerCase(java.util.Locale.ROOT), k -> new LinkedHashMap<String,Font>())
+							.put(aFt.getFontName(java.util.Locale.ENGLISH), aFt);
+				}
+			}
+		}
+	}
+
 	static synchronized void register() {
 		if(registered) {
 			return;
 		}
 		registered = true;
-		GraphicsEnvironment aGE = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		for(String aF : EMBEDDED) {
 			try(InputStream aIS = FontsAwt.class.getResourceAsStream("fonts/"+aF)) {
 				if(aIS != null) {
-					aGE.registerFont(Font.createFont(Font.TRUETYPE_FONT, aIS));
+					addOwn(new Font[] {Font.createFont(Font.TRUETYPE_FONT, aIS)});
 				}
 			}
 			catch(Throwable t) {
 				t.printStackTrace(System.err);
 			}
 		}
+	}
+
+	/**
+	 * Score of a face for a style: the bold / italic asked, and the regular weight (lowest is best)
+	 */
+	static int styleScore(Font aFt, boolean aBold, boolean aItalic) {
+		String aN = aFt.getFontName(java.util.Locale.ENGLISH).toLowerCase(java.util.Locale.ROOT);
+		String aFam = aFt.getFamily(java.util.Locale.ENGLISH).toLowerCase(java.util.Locale.ROOT);
+		//Style words of the face name only (not those of the family)
+		String aStyle = aN.startsWith(aFam) ? aN.substring(aFam.length()) : aN;
+		boolean aIsBold = aStyle.matches(".*\\b(bold|heavy|black)\\b.*") && !aStyle.matches(".*\\b(semi|demi)\\s*bold\\b.*");
+		boolean aIsItalic = aStyle.matches(".*\\b(italic|oblique)\\b.*");
+		int aScore = 0;
+		if(aIsBold != aBold) {
+			aScore += 4;
+		}
+		if(aIsItalic != aItalic) {
+			aScore += 2;
+		}
+		//Another weight or width than the regular / bold one
+		if(aStyle.matches(".*\\b(thin|hairline|light|extralight|ultralight|medium|semibold|demibold|extrabold|ultrabold|black|heavy|condensed|narrow|expanded)\\b.*")) {
+			aScore += 1;
+		}
+		return aScore;
+	}
+
+	/**
+	 * Font of a text: the face of a font loaded from a file (embedded, or copied with the project) if its
+	 * family is one of them, else the font of the system of that name. Missing bold / italic: synthesized
+	 */
+	public static Font font(String aName, boolean aBold, boolean aItalic, float aSize) {
+		register();
+		String aFam = aName == null || aName.isEmpty() ? DEFAULT_FONT : aName;
+		int aStyle = (aBold ? Font.BOLD : 0) | (aItalic ? Font.ITALIC : 0);
+		Font aBest = null;
+		synchronized (OWN) {
+			Map<String,Font> aFaces = OWN.get(aFam.toLowerCase(java.util.Locale.ROOT));
+			if(aFaces != null) {
+				int aBestScore = Integer.MAX_VALUE;
+				for(Font aFt : aFaces.values()) {
+					int aS = styleScore(aFt, aBold, aItalic);
+					if(aS < aBestScore) {
+						aBestScore = aS;
+						aBest = aFt;
+					}
+				}
+			}
+		}
+		if(aBest != null) {
+			//A style the face already has is not applied again
+			return aBest.deriveFont(aStyle, aSize);
+		}
+		return new Font(aFam, aStyle, 1).deriveFont(aSize);
 	}
 
 	/**
@@ -78,6 +160,7 @@ public class ShapeText {
 		synchronized (CACHE) {
 			CACHE.clear();
 		}
+		com.cubaix.TDenlive.model3d.Mesh3D.textFontsChanged();
 	}
 
 	/**
@@ -111,8 +194,7 @@ public class ShapeText {
 		register();
 		Layout aL = new Layout();
 		try {
-			Font aF = new Font(aS.fontName == null || aS.fontName.isEmpty() ? DEFAULT_FONT : aS.fontName
-					, (aS.bold ? Font.BOLD : 0) | (aS.italic ? Font.ITALIC : 0), 1).deriveFont(FONT_SIZE);
+			Font aF = font(aS.fontName, aS.bold, aS.italic, FONT_SIZE);
 			String[] aLines = (aS.text == null ? "" : aS.text).replace("\r", "").split("\n", -1);
 			LineMetrics aLM = aF.getLineMetrics("Hg", FRC);
 			double aLineH = aLM.getAscent()+aLM.getDescent();
