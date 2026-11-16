@@ -39,6 +39,7 @@ import org.eclipse.swt.widgets.TreeItem;
 import com.cubaix.TDenlive.TDConfig;
 import com.cubaix.TDenlive.TDenlive;
 import com.cubaix.TDenlive.ai.ColorGenerator;
+import com.cubaix.TDenlive.ai.MaskGenerator;
 import com.cubaix.TDenlive.ai.PromptExtender;
 import com.cubaix.TDenlive.ai.PythonAI;
 import com.cubaix.TDenlive.ai.SoundGenerator;
@@ -64,6 +65,9 @@ import com.cubaix.TDenlive.utils.SubtitleFile;
  * - Video: a 2D video by Wan2.2-TI2V-5B (see ai.WanGenerator), transformer in Q8_0, Q6_K or Q4_K_M; prompt,
  * duration (at most 5 s), reference image, GPU needed. The progress window shows an approximate preview of the
  * video being denoised (animated latent frames).
+ * - Mask: objects of an image or a video (stereo side by side included) delimited by clicks and tracked by SAM 2.1
+ * (see ai.MaskGenerator) in a large editor window (AiMaskGUI), which writes a black and white mask (image or video)
+ * for the Transparency processor.
  * - Subtitles / Voice translation: the speech of a video transcribed (Qwen3-ASR or Parakeet), translated into one or
  * several languages by the LLM, or spoken in another language with the cloned voice (Qwen3-TTS), see
  * ai.SpeechGenerator; result window AiSpeechResultGUI.
@@ -96,6 +100,10 @@ public class AiClipGUI {
 	//Colorization of a photo (COLOR) instead of a generation
 	boolean color = false;
 	ColorGenerator.Model colorModel = ColorGenerator.MODELSCOPE;
+	//Mask of objects (MASK): the editor window instead of a generation
+	boolean mask = false;
+	MaskGenerator.Model maskModel = MaskGenerator.TINY;
+	AiMaskGUI.Source maskSrc = new AiMaskGUI.Source();
 	//Speech of a video (SUBS: subtitles, DUB: voice translation) instead of a generation
 	boolean speech = false;
 	boolean dub = false;
@@ -360,6 +368,7 @@ public class AiClipGUI {
 			aPanels[k] = panel(aStack);
 			aChecks[k] = VIDEO.equals(KINDS[k]) ? createVideoPanel(aPanels[k])
 					: COLOR.equals(KINDS[k]) ? createColorPanel(aPanels[k])
+					: MASK.equals(KINDS[k]) ? createMaskPanel(aPanels[k])
 					: SUBS.equals(KINDS[k]) || DUB.equals(KINDS[k]) ? createSpeechPanel(aPanels[k], DUB.equals(KINDS[k]))
 					: createSoundPanel(aPanels[k], KINDS[k]);
 		}
@@ -423,15 +432,19 @@ public class AiClipGUI {
 			}
 			int k = kindIndex(kind);
 			color = COLOR.equals(kind);
+			mask = MASK.equals(kind);
 			dub = DUB.equals(kind);
 			speech = dub || SUBS.equals(kind);
-			music = !VIDEO.equals(kind) && !color && !speech;
+			music = !VIDEO.equals(kind) && !color && !mask && !speech;
 			if(music) {
 				soundModel = (SoundGenerator.Model)aPanels[k].getData(MODEL);
 			}
 			aSL.topControl = aPanels[k];
 			aShell.setText(lng(KIND_TITLES[k]));
 			aOk.setEnabled(!VIDEO.equals(kind) || WanGenerator.isPlatformSupported());
+			//The mask opens its editor
+			aOk.setText(lng(mask ? "AI.MaskOpen" : "AI.Generate"));
+			aButtons.layout(true);
 			aStack.layout(true, true);
 		};
 		SelectionAdapter aKindL = new SelectionAdapter() {
@@ -480,12 +493,14 @@ public class AiClipGUI {
 	static final String KIND_DATA = "AiClipGUI.kind";
 	//Colorization of a black and white photo (DDColor, see ai.ColorGenerator)
 	static final String COLOR = "color";
+	//Mask of objects delimited and tracked (SAM 2.1, see ai.MaskGenerator and AiMaskGUI)
+	static final String MASK = "mask";
 	//Speech of a video: subtitles in one or several languages, voice translation (see ai.SpeechGenerator)
 	static final String SUBS = "subtitles";
 	static final String DUB = "dub";
-	static final String[] KINDS = {VIDEO, COLOR, MUSIC, SFX, SUBS, DUB};
-	static final String[] KIND_KEYS = {"AI.KindVideo", "AI.KindColor", "AI.KindMusic", "AI.KindSfx", "AI.KindSubs", "AI.KindDub"};
-	static final String[] KIND_TITLES = {"AI.Title", "AI.ColorTitle", "AI.MusicTitle", "AI.SfxTitle", "AI.SubsTitle", "AI.DubTitle"};
+	static final String[] KINDS = {VIDEO, COLOR, MASK, MUSIC, SFX, SUBS, DUB};
+	static final String[] KIND_KEYS = {"AI.KindVideo", "AI.KindColor", "AI.KindMask", "AI.KindMusic", "AI.KindSfx", "AI.KindSubs", "AI.KindDub"};
+	static final String[] KIND_TITLES = {"AI.Title", "AI.ColorTitle", "AI.MaskTitle", "AI.MusicTitle", "AI.SfxTitle", "AI.SubsTitle", "AI.DubTitle"};
 	//Data of a sound panel: its model chosen
 	static final String MODEL = "AiClipGUI.model";
 
@@ -1447,6 +1462,179 @@ public class AiClipGUI {
 			}
 			tde.config.aiColorModel = colorModel == ColorGenerator.MODELSCOPE ? "" : colorModel.id;
 		};
+	}
+
+	/**
+	 * Mask panel (SAM 2.1): what it does, its models with their memory and where they run, the licence; the image
+	 * or video (a file, stereo side by side or not, or a media of the library), the name of the mask, downloads.
+	 * OK opens the editor (AiMaskGUI).
+	 * @return the check of the OK button: sets prompt (left null when the form is not valid)
+	 */
+	Runnable createMaskPanel(Composite aPanel) {
+		if(!MaskGenerator.isPlatformSupported()) {
+			Label aU = addLabel(aPanel, lng("AI.UnsupportedAll"), 0);
+			aU.setForeground(tde.gui.colorsSwt.RED);
+			return () -> {};
+		}
+		Composite[] aCols = columns(aPanel);
+		Composite aLeft = aCols[0];
+		Composite aRight = aCols[1];
+		Label aIntro = addLabel(aLeft, lng("AI.MaskIntro"), 0);
+		aIntro.setFont(tde.gui.fontsSwt.robotoBold);
+		addLabel(aLeft, lng("AI.GenMaskDesc"), 0);
+
+		MaskGenerator.Model aDefault = MaskGenerator.defaultModel();
+		MaskGenerator.Model aChosen = MaskGenerator.byId(tde.config.aiMaskModel);
+		maskModel = aChosen != null ? aChosen : aDefault;
+		Choice[] aChoices = new Choice[MaskGenerator.MODELS.length];
+		for(int m = 0;m < aChoices.length;m++) {
+			MaskGenerator.Model aM = MaskGenerator.MODELS[m];
+			Choice aC = aChoices[m] = new Choice();
+			aC.model = aM;
+			aC.advised = aM == aDefault;
+			aC.name = lng("AI.MaskModelName").replace("%NAME%", aM.name).replace("%PARAMS%", aM.params)
+					.replace("%GB%", gb(aM.downloadSize()))+downloaded(aM.isDownloaded(tde.tdeDir));
+			aC.details = lng("AI.Mask"+aM.id+"Note").replace("%GB%", gb(aM.gpuMemory));
+		}
+		Label[] aWhere = {null};
+		Label[] aDownload = {null};
+		Runnable aShow = () -> {
+			String aReason = MaskGenerator.cpuReason(maskModel);
+			aWhere[0].setText(aReason == null ? lng("AI.MaskOnGpu") : lng("AI.MaskOnCpu"));
+			long aBytes = maskModel.bytesToDownload(tde.tdeDir)+PythonAI.envBytesToInstall(tde.tdeDir);
+			aDownload[0].setText(aBytes > 0 ? lng("AI.MusicDownload").replace("%GB%", gb(aBytes)) : lng("AI.MusicReady"));
+			aPanel.layout(true, true);
+		};
+		createModelChoice(aLeft, aChoices, maskModel, aM -> {
+			maskModel = (MaskGenerator.Model)aM;
+			aShow.run();
+		});
+		aWhere[0] = addLabel(aLeft, " \n ", 0);
+		((GridData)aWhere[0].getLayoutData()).verticalIndent = 8;
+
+		Text aName = createNameField(aRight, MASK);
+		aName.setMessage(lng("AI.MaskNameHint"));
+		createMaskSourceRow(aRight);
+		Label aNote = addLabel(aRight, lng("AI.MaskNote"), 0);
+		((GridData)aNote.getLayoutData()).verticalIndent = 8;
+		aDownload[0] = addLabel(aRight, " \n ", 0);
+		addLabel(aRight, lng("AI.MaskLicence"), 0);
+		labelWidth = 560;
+		aShow.run();
+		return () -> {
+			boolean aOk = maskSrc.left != null || (maskSrc.path != null && new File(maskSrc.path).isFile());
+			if(!aOk) {
+				message(tde, SWT.ICON_INFORMATION, lng("AI.MaskNoSource"));
+				return;
+			}
+			prompt = maskSrc.shownName();
+			clipName = aName.getText().trim();
+			tde.config.aiMaskModel = maskModel == aDefault ? "" : maskModel.id;
+		};
+	}
+
+	/**
+	 * Row of the image or video of the mask: name, Choose (a file), From the library (an image or a video of the
+	 * media list: its stereo layout known), and the side by side checkbox for a file
+	 */
+	void createMaskSourceRow(Composite aParent) {
+		Label aL = addLabel(aParent, lng("AI.MaskSource"), 0);
+		((GridData)aL.getLayoutData()).verticalIndent = 8;
+		Composite aRow = new Composite(aParent, SWT.NONE);
+		tde.gui.applyColorFont(aRow);
+		aRow.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		GridLayout aRGL = new GridLayout(3, false);
+		tde.gui.applyNoMargin(aRGL);
+		aRow.setLayout(aRGL);
+		Label aNameL = new Label(aRow, SWT.WRAP);
+		tde.gui.applyColorFont(aNameL);
+		GridData aNGD = new GridData(GridData.FILL_HORIZONTAL);
+		aNGD.widthHint = 260;
+		aNameL.setLayoutData(aNGD);
+		Button aChoose = new Button(aRow, SWT.PUSH);
+		tde.gui.applyColorFont(aChoose);
+		aChoose.setText(lng("AI.ImageChoose"));
+		Button aLib = new Button(aRow, SWT.PUSH);
+		tde.gui.applyColorFont(aLib);
+		aLib.setText(lng("AI.ImageLibrary"));
+		aLib.setEnabled(!libraryImages().isEmpty());
+		Button aSbs = new Button(aParent, SWT.CHECK);
+		tde.gui.applyColorFont(aSbs);
+		aSbs.setText(lng("AI.MaskSbs"));
+		aSbs.setToolTipText(lng("AI.MaskSbsTip"));
+		Runnable aShow = () -> {
+			boolean aHas = maskSrc.left != null || maskSrc.path != null;
+			String aKind = !aHas ? "" : maskSrc.video ? lng("AI.ImageLibraryVideo") : "";
+			String aStereo = aHas && maskSrc.isStereo() ? " - "+lng("AI.MaskStereo") : "";
+			aNameL.setText(aHas ? maskSrc.shownName()+aKind+aStereo : lng("AI.MaskSourceNone"));
+			aNameL.setFont(aHas ? tde.gui.fontsSwt.robotoBold : aChoose.getFont());
+			//A media of the library knows its layout
+			aSbs.setEnabled(aHas && maskSrc.media == null);
+			aSbs.setSelection(maskSrc.layout == AiMaskGUI.Source.SBS_P);
+			aRow.layout(true);
+			aParent.layout(true, true);
+		};
+		aChoose.addListener(SWT.Selection, e -> {
+			FileDialog aFD = new FileDialog(aParent.getShell(), SWT.OPEN);
+			aFD.setText(lng("AI.MaskSource"));
+			aFD.setFilterNames(new String[] {lng("AI.ImageFilter")});
+			String aExts = "*.jpg;*.jpeg;*.png;*.bmp;*.gif;"+VIDEO_EXTS;
+			aFD.setFilterExtensions(new String[] {aExts+aExts.toUpperCase()});
+			String aDir = lastImageDir != null ? lastImageDir : (tde.lastDir != null ? tde.lastDir : tde.tdeDir);
+			aFD.setFilterPath(aDir);
+			String aPath = aFD.open();
+			if(aPath != null) {
+				lastImageDir = new File(aPath).getParent();
+				boolean aWasSbs = aSbs.getSelection();
+				maskSrc = new AiMaskGUI.Source();
+				maskSrc.path = aPath;
+				maskSrc.video = isVideoFile(aPath);
+				maskSrc.layout = aWasSbs ? AiMaskGUI.Source.SBS_P : AiMaskGUI.Source.MONO;
+				aShow.run();
+			}
+		});
+		aLib.addListener(SWT.Selection, e -> {
+			StereoImage aM = (StereoImage)chooseLibraryMedia(aParent.getShell(), new Vector<Media>(libraryImages()), lng("AI.MaskLibraryTitle"));
+			if(aM != null) {
+				maskSrc = maskSource(aM);
+				aShow.run();
+			}
+		});
+		aSbs.addListener(SWT.Selection, e -> {
+			if(maskSrc.media == null) {
+				maskSrc.layout = aSbs.getSelection() ? AiMaskGUI.Source.SBS_P : AiMaskGUI.Source.MONO;
+				aShow.run();
+			}
+		});
+		aShow.run();
+	}
+
+	/**
+	 * Source of the mask from a media of the library: a video with its file(s) and its stereo layout, a still
+	 * image with its views as loaded (before rotation: the mask follows the orientation of the clip)
+	 */
+	static AiMaskGUI.Source maskSource(StereoImage aM) {
+		AiMaskGUI.Source aS = new AiMaskGUI.Source();
+		aS.media = aM;
+		aS.name = aM.fileName;
+		String aL = aM.getPathL();
+		String aR = aM.getPathR();
+		boolean aTwo = aR != null && aL != null && !aR.equals(aL);
+		if(aM instanceof StereoMovie) {
+			aS.video = true;
+			aS.path = aL;
+			aS.pathR = aR;
+			aS.layout = aM.origStereo == 1 ? AiMaskGUI.Source.SBS_X : aM.origStereo == 2 ? AiMaskGUI.Source.SBS_P
+					: aTwo ? AiMaskGUI.Source.TWO : AiMaskGUI.Source.MONO;
+		}
+		else {
+			aS.path = aL;
+			aS.left = aM.loadedLeft;
+			boolean aStereo = aM.origStereo != 0 || aTwo || (aL != null && aL.toLowerCase().endsWith(".mpo"));
+			aS.right = aStereo ? aM.loadedRight : null;
+			aS.layout = aStereo && aS.right != null ? AiMaskGUI.Source.TWO : AiMaskGUI.Source.MONO;
+		}
+		return aS;
 	}
 
 	/**
@@ -2825,6 +3013,11 @@ public class AiClipGUI {
 		//Music and sound effects: generated in series, several ahead, listened and kept in the same window
 		if(music && !color) {
 			new AiSoundSeriesGUI(this, aEnding).open();
+			return;
+		}
+		//Mask: its editor window (running until it is closed)
+		if(mask) {
+			new AiMaskGUI(this, maskSrc, maskModel, clipName.isEmpty() ? null : clipName).open();
 			return;
 		}
 		stepStartMS = -1;

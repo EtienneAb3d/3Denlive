@@ -18,6 +18,7 @@ import com.cubaix.TDenlive.TDConfig;
 import com.cubaix.TDenlive.TDenlive;
 import com.cubaix.TDenlive.GUI.Drawable;
 import com.cubaix.TDenlive.processors.DepthmapStereo;
+import com.cubaix.TDenlive.processors.Transparency;
 import com.cubaix.TDenlive.processors.Processor;
 import com.cubaix.TDenlive.utils.ImageUtils;
 import com.cubaix.TDenlive.utils.StringUtils;
@@ -622,7 +623,7 @@ public class TimeLineStack extends Media {
 	}
 
 	/**
-	 * Clips whose DepthmapStereo uses aMedia as depth map (in one of its keys)
+	 * Clips whose DepthmapStereo uses aMedia as depth map, or whose Transparency uses it as mask (in one of its keys)
 	 */
 	public Vector<Clip> depthUsesOf(Media aMedia) {
 		Vector<Clip> aClips = new Vector<Clip>();
@@ -634,6 +635,9 @@ public class TimeLineStack extends Media {
 					if(aP instanceof DepthmapStereo && ((DepthmapStereo)aP).usesDepthMedia(aMedia) && !aClips.contains(aC)) {
 						aClips.add(aC);
 					}
+					if(aP instanceof Transparency && ((Transparency)aP).usesMaskMedia(aMedia) && !aClips.contains(aC)) {
+						aClips.add(aC);
+					}
 				}
 			}
 		}
@@ -642,13 +646,16 @@ public class TimeLineStack extends Media {
 
 	/**
 	 * aMedia leaves the media list: its clips are removed from the time lines (with their twins),
-	 * and the DepthmapStereo keys that use it as depth map no longer use it
+	 * and the DepthmapStereo / Transparency keys that use it as depth map / mask no longer use it
 	 */
 	public void releaseMedia(Media aMedia) {
 		for(Clip aC : depthUsesOf(aMedia)) {
 			for(Processor aP : new Vector<Processor>(aC.getProcessors())) {
 				if(aP instanceof DepthmapStereo) {
 					((DepthmapStereo)aP).releaseDepthMedia(aMedia);
+				}
+				if(aP instanceof Transparency) {
+					((Transparency)aP).releaseMaskMedia(aMedia);
 				}
 			}
 		}

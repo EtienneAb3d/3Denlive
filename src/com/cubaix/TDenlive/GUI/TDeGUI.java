@@ -1030,6 +1030,62 @@ public class TDeGUI {
 	}
 
 	/**
+	 * Snapshot of the monitor at the time cursor in the final quality (RENDER mode), both views side by side in a
+	 * PNG of Snapshots/ next to the project (~/3Denlive/Snapshots before the first save), added to the media list
+	 * as a parallel stereo image (camera button left of the full screen one)
+	 */
+	public void snapshotToLibrary() {
+		if(monitorGUI == null || monitorGUI.media == null) {
+			return;
+		}
+		PlayerControlGUI.pauseForEdit(tde);
+		Media aMedia = monitorGUI.media;
+		shell.setCursor(waitCursor);
+		File aOut = null;
+		try {
+			long aTime = tde.timeLineStack.getTimePosMS();
+			tde.timeLineStack.reBuild(TDConfig.PROCESSING_MODE_RENDER, aTime);
+			BufferedImage aBIL = aMedia.getFinalLeft(TDConfig.PROCESSING_MODE_RENDER, aTime);
+			BufferedImage aBIR = aMedia.getFinalRight(TDConfig.PROCESSING_MODE_RENDER, aTime);
+			if(aBIL == null || aBIR == null) {
+				throw new Exception(lngs.get("Monitor.SnapshotEmpty"));
+			}
+			File aDir = new File(tde.projectDir == null || tde.projectName == null ? tde.tdeDir : tde.projectDir, "Snapshots");
+			aDir.mkdirs();
+			NumberFormat aNF = NumberFormat.getInstance();
+			aNF.setMinimumIntegerDigits(4);
+			aNF.setGroupingUsed(false);
+			String aPrefix = tde.projectName == null ? "3De_" : tde.projectName.replaceAll("(?i)([.]3de)+$", "")+"_";
+			for(int i = 1;i < 100000;i++) {
+				aOut = new File(aDir, aPrefix+"Snapshot_"+aNF.format(i)+".png");
+				if(!aOut.exists()) {
+					break;
+				}
+			}
+			//8 bits per channel (also from an HDR rendering), the alpha of the montage kept
+			BufferedImage aBI = ImageUtils.createImage(aBIL.getWidth()+aBIR.getWidth(), Math.max(aBIL.getHeight(), aBIR.getHeight()));
+			Graphics aG = aBI.getGraphics();
+			aG.drawImage(aBIL, 0, 0, null);
+			aG.drawImage(aBIR, aBIL.getWidth(), 0, null);
+			aG.dispose();
+			ImageUtils.saveImage(aOut.getAbsolutePath(), aBI);
+			tde.mediaList.loadImageP(aOut.getAbsolutePath(), TDConfig.PROCESSING_MODE_RENDER, 0);
+			if(mediaListGUI != null) {
+				mediaListGUI.redraw();
+			}
+		}
+		catch(Throwable t) {
+			t.printStackTrace(System.err);
+			shell.setCursor(null);
+			MessageBox aMB = new MessageBox(shell,SWT.ICON_ERROR|SWT.OK);
+			aMB.setMessage(lngs.get("Monitor.SnapshotError")+"\n"+(t.getMessage() == null ? t.toString() : t.getMessage()));
+			aMB.open();
+			return;
+		}
+		shell.setCursor(null);
+	}
+
+	/**
 	 * New mixer in the view mode of the monitor (anaglyph, side by side...), its default mode
 	 * when the monitor is not created yet (web page shown in its place)
 	 */

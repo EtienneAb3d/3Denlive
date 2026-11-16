@@ -59,6 +59,8 @@ public class TDConfig {
 	public String aiVideoModel = "";
 	//Colorization model chosen ("": the advised one)
 	public String aiColorModel = "";
+	//Model of the AI masks (SAM 2.1, "" = the one advised for the hardware)
+	public String aiMaskModel = "";
 	//Speech panels (subtitles, voice translation): speech recognition and voice models ("": the advised ones),
 	//language spoken ("": recognized), subtitle languages (English names, comma separated; "-": the spoken one),
 	//language of the voice translation, original sound kept under the voice
@@ -164,6 +166,11 @@ public class TDConfig {
 						aiColorModel = aOs.elementAt(o) instanceof XmlTag ? "" : aOs.elementAt(o).text.trim();
 						continue;
 					}
+					if("aiMaskModel".equalsIgnoreCase(aT.tagName)) {
+						o++;
+						aiMaskModel = aOs.elementAt(o) instanceof XmlTag ? "" : aOs.elementAt(o).text.trim();
+						continue;
+					}
 					if("aiSfxClean".equalsIgnoreCase(aT.tagName)) {
 						o++;
 						aiSfxClean = !(aOs.elementAt(o) instanceof XmlTag) && "true".equalsIgnoreCase(aOs.elementAt(o).text.trim());
@@ -258,6 +265,7 @@ public class TDConfig {
 			aOut.write("<aiSfxModel>"+aiSfxModel+"</aiSfxModel>\n");
 			aOut.write("<aiSfxClean>"+aiSfxClean+"</aiSfxClean>\n");
 			aOut.write("<aiColorModel>"+aiColorModel+"</aiColorModel>\n");
+			aOut.write("<aiMaskModel>"+aiMaskModel+"</aiMaskModel>\n");
 			aOut.write("<aiAsrModel>"+aiAsrModel+"</aiAsrModel>\n");
 			aOut.write("<aiTtsModel>"+aiTtsModel+"</aiTtsModel>\n");
 			aOut.write("<aiSpokenLang>"+aiSpokenLang+"</aiSpokenLang>\n");

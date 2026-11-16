@@ -47,7 +47,7 @@ public class MonitorControlGUI extends CompositePanel {
 		aTB.heightHint = tde.gui.h(25);
 		toolBar.setLayoutData(aTB);
 		tde.gui.applyColorFont(toolBar);
-		GridLayout aGL = new GridLayout(10, false);
+		GridLayout aGL = new GridLayout(11, false);
 		tde.gui.applyNoMargin(aGL);
 		toolBar.setLayout(aGL);
 		
@@ -363,6 +363,18 @@ public class MonitorControlGUI extends CompositePanel {
 		aSpaceGD.heightHint = tde.gui.h(25);
 		aSpace.setLayoutData(aSpaceGD);
 		
+		//Snapshot of the view in the final quality, added to the media list
+		Label aSnapshot = new Label(toolBar,SWT.NONE);
+		aSnapshot.setImage(tde.gui.imgsSwt.getIcon("camera.png"));
+		aSnapshot.setAlignment(SWT.CENTER);
+		GridData aSnapshotGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
+		aSnapshotGD.widthHint = 32;
+		aSnapshotGD.heightHint = tde.gui.h(25);
+		aSnapshot.setLayoutData(aSnapshotGD);
+		tde.gui.applyColorFont(aSnapshot);
+		tde.gui.tip(aSnapshot, "Snapshot");
+		aSnapshot.addListener(SWT.MouseDown, e -> tde.gui.snapshotToLibrary());
+
 		Label aFullScreen = new Label(toolBar,SWT.NONE);
 		aFullScreen.setImage(tde.gui.imgsSwt.getIcon("screen.png"));
 		aFullScreen.setAlignment(SWT.CENTER);

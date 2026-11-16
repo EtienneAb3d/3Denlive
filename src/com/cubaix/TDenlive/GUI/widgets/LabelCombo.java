@@ -85,6 +85,14 @@ public abstract class LabelCombo extends Widget {
 		});
 	}
 
+	/**
+	 * Help of the combo: the "Tip.<aKey>" language entry
+	 */
+	public LabelCombo tip(String aKey) {
+		tde.gui.tip(combo, aKey);
+		return this;
+	}
+
 	public void select(String aVal) {
 		for(int v = 0;v < valTexts.size();v++) {
 			if(valTexts.elementAt(v)[0].equals(aVal)) {

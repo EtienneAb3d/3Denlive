@@ -185,8 +185,8 @@
 <EntrySet label="MediaTrash">
 	<entry label="Title">Supprimer un média</entry>
 	<entry label="Used">Le média %s est utilisé par %n clip(s) des lignes de temps : ils seront aussi supprimés des lignes de temps.</entry>
-	<entry label="UsedDepthOnly">Le média %s est utilisé comme carte de profondeur par %d clip(s) des lignes de temps : ils ne l'utiliseront plus.</entry>
-	<entry label="Depth">Il est aussi utilisé comme carte de profondeur par %n clip(s), qui ne l'utiliseront plus.</entry>
+	<entry label="UsedDepthOnly">Le média %s est utilisé comme carte de profondeur ou comme masque par %d clip(s) des lignes de temps : ils ne l'utiliseront plus.</entry>
+	<entry label="Depth">Il est aussi utilisé comme carte de profondeur ou comme masque par %n clip(s), qui ne l'utiliseront plus.</entry>
 	<entry label="Confirm">Le supprimer quand même ?</entry>
 </EntrySet>
 <EntrySet label="Glasses">
@@ -223,6 +223,8 @@
 <EntrySet label="Monitor">AnamorphW
 	<entry label="Fast">Rapide</entry>
 	<entry label="Quality">Qualité</entry>
+	<entry label="SnapshotEmpty">Aucune image à cette position.</entry>
+	<entry label="SnapshotError">La vue n'a pas pu être capturée :</entry>
 </EntrySet>
 <EntrySet label="MediaProps">AnamorphW
 	<entry label="AnamorphW">Largeur</entry>
@@ -838,6 +840,81 @@
 	<entry label="DownloadingColorModel">Téléchargement du modèle de colorisation :</entry>
 	<entry label="LoadingColorModel">Chargement du modèle de colorisation...</entry>
 	<entry label="Colorizing">Colorisation de la photo</entry>
+	<entry label="KindMask">Masque</entry>
+	<entry label="MaskTitle">Masque IA (SAM 2.1)</entry>
+	<entry label="MaskIntro">Délimite des objets dans une image ou une vidéo (stéréo côte à côte comprise) et les suit dans la vidéo, avec SAM 2.1 (Meta), sur cet ordinateur : sur le GPU s'il y en a un, sinon sur le CPU (bien plus lent). Rien n'est envoyé sur le réseau.</entry>
+	<entry label="GenMaskDesc">Dans une grande prévisualisation, cliquez sur chaque objet à garder : sa délimitation apparaît en couleur par-dessus l'image, et d'autres clics la corrigent. Les objets sont ensuite suivis dans toute la vidéo. Le résultat est un masque noir et blanc (blanc = les objets) ajouté à la liste des médias : choisissez-le comme masque dans le traitement Transparence d'un clip pour ne garder que ces objets (ou pour les retirer, avec Inverser).</entry>
+	<entry label="MaskModelName">%NAME% : %PARAMS% de paramètres, %GB% Go à télécharger</entry>
+	<entry label="MaskTinyNote">Le plus rapide (environ 3 images par seconde et par vue sur un Mac Apple Silicon, bien plus sur un GPU NVIDIA), contours un peu moins précis. Environ %GB% Go de mémoire.</entry>
+	<entry label="MaskSmallNote">À peine plus lent que Tiny, un peu plus précis. Environ %GB% Go de mémoire.</entry>
+	<entry label="MaskBasePlusNote">Bon compromis entre précision et vitesse. Environ %GB% Go de mémoire.</entry>
+	<entry label="MaskLargeNote">Le plus précis (objets fins, objets cachés un moment), le plus lent. Environ %GB% Go de mémoire.</entry>
+	<entry label="MaskOnGpu">S'exécute sur le GPU.</entry>
+	<entry label="MaskOnCpu">S'exécute sur le CPU : le suivi dans une vidéo est lent (plusieurs secondes par image).</entry>
+	<entry label="MaskNameHint">Nom du masque (vide : le nom de la source suivi de « (masque) »)</entry>
+	<entry label="MaskSource">Image ou vidéo à délimiter (un fichier ou un média de la bibliothèque) :</entry>
+	<entry label="MaskSourceNone">Aucune image ou vidéo choisie</entry>
+	<entry label="MaskStereo">stéréo</entry>
+	<entry label="MaskSbs">Stéréo côte à côte (vue gauche à gauche)</entry>
+	<entry label="MaskSbsTip">Le fichier contient les deux vues côte à côte : chaque objet est délimité et suivi dans les deux vues. Un média stéréo de la bibliothèque est reconnu tout seul.</entry>
+	<entry label="MaskLibraryTitle">Image ou vidéo de la bibliothèque</entry>
+	<entry label="MaskNote">Le masque garde la disposition de la source (une source stéréo donne un masque stéréo, ses deux vues côte à côte), sa taille et, pour une vidéo, chacune de ses images.</entry>
+	<entry label="MaskLicence">SAM 2.1 (Meta, 2024), licence Apache-2.0 : usage commercial autorisé. SAM 3 n'est pas proposé : ses poids ne se téléchargent qu'avec une autorisation de Meta, sous une licence propre.</entry>
+	<entry label="MaskNoSource">Choisissez d'abord l'image ou la vidéo à délimiter.</entry>
+	<entry label="MaskOpen">Délimiter les objets...</entry>
+	<entry label="MaskEditorTitle">Masque IA : %NAME%</entry>
+	<entry label="MaskHelp">Choisissez un outil, puis délimitez l'objet sélectionné sur l'image (la première action crée l'objet 1) : quelques points, une boîte autour de lui, puis le pinceau et la gomme pour retoucher les bords. « Nouvel objet » pour en délimiter un autre.</entry>
+	<entry label="MaskHelpStereo">Choisissez un outil, puis délimitez l'objet sélectionné sur l'image (la première action crée l'objet 1) : quelques points, une boîte autour de lui, puis le pinceau et la gomme pour retoucher les bords. Ce qui est fait dans une vue est reporté dans l'autre, et une action dans l'autre vue la corrige. « Nouvel objet » pour en délimiter un autre.</entry>
+	<entry label="MaskObjects">Objets :</entry>
+	<entry label="MaskObject">Objet %N%</entry>
+	<entry label="MaskNewObject">Nouvel objet</entry>
+	<entry label="MaskDeleteObject">Supprimer</entry>
+	<entry label="MaskUndoPoint">Annuler la dernière action</entry>
+	<entry label="MaskTrack">Suivre dans la vidéo</entry>
+	<entry label="MaskTrackTip">Suit les objets délimités dans toute la vidéo, en avant puis en arrière depuis la première image cliquée. Corrigez ensuite d'un clic une image où le suivi s'est trompé, puis suivez à nouveau.</entry>
+	<entry label="MaskStop">Arrêter</entry>
+	<entry label="MaskName">Nom du masque dans la liste des médias :</entry>
+	<entry label="MaskOut">Masque noir et blanc à la taille de la source (blanc = les objets).</entry>
+	<entry label="MaskOutStereo">Masque stéréo noir et blanc, les deux vues côte à côte, à la taille de la source (blanc = les objets).</entry>
+	<entry label="MaskCreate">Créer le masque</entry>
+	<entry label="MaskSuffix">(masque)</entry>
+	<entry label="MaskReady">Cliquez sur un objet pour le délimiter.</entry>
+	<entry label="MaskComputing">Délimitation...</entry>
+	<entry label="MaskPointDone">Délimité. Cliquez encore pour corriger, ou suivez les objets dans la vidéo.</entry>
+	<entry label="MaskPointDoneImage">Délimité. Cliquez encore pour corriger, ou créez le masque.</entry>
+	<entry label="MaskObjectDeleted">Objet supprimé.</entry>
+	<entry label="MaskPreparing">Préparation des images de la vidéo</entry>
+	<entry label="MaskTracking">Suivi des objets : image</entry>
+	<entry label="MaskTracked">Suivi terminé. Vérifiez avec le curseur ; là où le résultat est faux, corrigez l'image (points, boîte, pinceau) puis relancez le suivi. Créez ensuite le masque.</entry>
+	<entry label="MaskStopped">Suivi arrêté.</entry>
+	<entry label="MaskWriting">Écriture du masque : image</entry>
+	<entry label="WritingMask">Écriture du masque</entry>
+	<entry label="MaskLoading">Ajout du masque à la liste des médias...</entry>
+	<entry label="MaskAdded">Masque « %NAME% » ajouté à la liste des médias. Dans le traitement Transparence d'un clip, choisissez-le dans la liste Masque.</entry>
+	<entry label="MaskCloseConfirm">Le masque n'a pas été créé : les objets délimités seront perdus. Fermer quand même ?</entry>
+	<entry label="MaskError">La délimitation a échoué :</entry>
+	<entry label="MaskErrorOom">Pas assez de mémoire GPU : fermez les autres applications qui utilisent le GPU, ou choisissez un modèle plus petit.</entry>
+	<entry label="LoadingMaskModel">Chargement du modèle de délimitation...</entry>
+	<entry label="DownloadingMaskModel">Téléchargement du modèle de délimitation :</entry>
+	<entry label="MaskBgTransparency">Transparence de l'image : %P% %</entry>
+	<entry label="MaskBgTransparencyTip">Estompe l'image sous les objets : à 100 %, on ne voit plus que le masque (les objets dans leurs couleurs sur fond noir).</entry>
+	<entry label="MaskTools">Outil :</entry>
+	<entry label="MaskToolPoints">Points</entry>
+	<entry label="MaskToolPointsTip">Clic : ajoute l'endroit à l'objet. Maj+clic ou clic droit : le retire. Peu de points suffisent ; contre un débordement, préférez un point de retrait.</entry>
+	<entry label="MaskToolBox">Boîte</entry>
+	<entry label="MaskToolBoxTip">Glissez un rectangle autour de l'objet : la consigne la plus fiable du modèle. Des points peuvent la compléter.</entry>
+	<entry label="MaskToolBrush">Pinceau</entry>
+	<entry label="MaskToolBrushTip">Peignez le masque de l'objet sur cette image, à partir du masque affiché (Maj ou clic droit : gomme). Le masque peint est gardé tel quel et sert de référence au suivi.</entry>
+	<entry label="MaskToolEraser">Gomme</entry>
+	<entry label="MaskToolEraserTip">Effacez une partie du masque de l'objet sur cette image. Tout effacer indique que l'objet n'est pas visible sur cette image.</entry>
+	<entry label="MaskBrushSize">Taille du pinceau : %N% px</entry>
+	<entry label="MaskHelpVideo">Pour affiner le suivi, ajoutez des points, des boîtes ou des retouches au pinceau sur n'importe quelle image de la vidéo, là où le résultat est faux (un objet qui tourne, se cache ou réapparaît...) : chaque image ainsi corrigée sert de référence au suivi. Relancez ensuite le suivi pour tenir compte de ces corrections : « Reprendre ici » recalcule seulement de l'image affichée (ou de la première image modifiée) jusqu'à la fin.</entry>
+	<entry label="MaskRetrack">Modifié sur cette image. Pour propager cette correction : « Reprendre ici » (à partir de cette image, plus rapide) ou « Suivre dans la vidéo » (toute la vidéo).</entry>
+	<entry label="MaskResume">Reprendre ici</entry>
+	<entry label="MaskResumeTip">Reprend le suivi à partir de l'image affichée jusqu'à la fin de la vidéo, sans recalculer les images avant (plus rapide). Si une image a été modifiée plus tôt, le suivi reprend à cette image ; après un arrêt, les images pas encore suivies sont ajoutées.</entry>
+	<entry label="MaskResuming">Reprise du suivi : image</entry>
+	<entry label="MaskResumeFrom">Reprise du suivi à partir de l'image %N% (première image modifiée)...</entry>
+	<entry label="MaskResumeFull">Suivi de toute la vidéo : la reprise n'était pas possible (premier suivi, objet ajouté ou supprimé).</entry>
 	<entry label="MusicIntro">Génère un morceau de musique instrumentale à partir d'une description, avec MusicGen (Meta), sur cet ordinateur : sur le GPU s'il y en a un, sinon sur le CPU (plus lent). Rien n'est envoyé sur le réseau.</entry>
 	<entry label="SfxIntro">Génère un bruitage ou une ambiance à partir d'une description, avec Woosh (Sony AI), sur cet ordinateur : sur le GPU s'il y en a un, sinon sur le CPU (plus lent). Rien n'est envoyé sur le réseau.</entry>
 	<entry label="MusicPrompt">Décrivez la musique à générer (genre, instruments, ambiance, tempo...), de préférence en anglais :</entry>
@@ -1069,6 +1146,9 @@ Calculer les cartes de profondeur des deux vues à partir du clip (intelligence 
 	<entry label="BevelLetter">B</entry>
 	<entry label="X">Position stéréo</entry>
 	<entry label="Invert">Inverser</entry>
+	<entry label="Mask">Masque</entry>
+	<entry label="MaskNone">(luminance ci-dessous)</entry>
+	<entry label="MaskMix">Mélange du masque (violet) avec l'image</entry>
 </EntrySet>
 <EntrySet label="Chromakey">
 	<entry label="Tolerance">Tolérance</entry>
@@ -1185,6 +1265,7 @@ Calculer les cartes de profondeur des deux vues à partir du clip (intelligence 
 	<entry label="EdgesOff">Afficher les contours (aide à vérifier l'alignement gauche / droite)</entry>
 	<entry label="EdgesOn">Masquer les contours</entry>
 	<entry label="SaveView">Enregistrer l'image courante en pleine qualité dans le dossier de rendu (PNG gauche, droite, parallèle et croisé)</entry>
+	<entry label="Snapshot">Créer une vue de l'affichage en qualité finale (les deux vues côte à côte) et l'ajouter à la bibliothèque</entry>
 	<entry label="FullScreen">Présentation en plein écran</entry>
 	<entry label="Status">Vitesse de calcul de la prévisualisation (images par seconde)</entry>
 	<entry label="GridNone">Pas de grille</entry>
@@ -1343,6 +1424,8 @@ Calculer les cartes de profondeur des deux vues à partir du clip (intelligence 
 	<entry label="TransOpacity">Opacité du clip (ou avancement de la transition avec un masque de luminance)</entry>
 	<entry label="TransBevel">Douceur du bord de la transition</entry>
 	<entry label="TransX">Profondeur du masque de transition</entry>
+	<entry label="TransMask">Masque de la liste des médias (par exemple un masque IA) au lieu de la luminance, qui est alors masquée : blanc = visible, noir = transparent. Il suit le temps et les deux vues du clip ; l'opacité et « Inverser » s'y appliquent, le biseau adoucit ses bords et la position stéréo le décale en profondeur.</entry>
+	<entry label="TransMaskMix">Mélange l'image avec le masque affiché en violet (noir là où il est noir) : 0 = l'image masquée, 100 = le masque seul, pour vérifier sa forme et sa place.</entry>
 	<entry label="FrameOpacity">Opacité du cadre</entry>
 	<entry label="FrameX">Profondeur du cadre</entry>
 	<entry label="ChromaTolerance">Écart de couleur encore rendu transparent</entry>

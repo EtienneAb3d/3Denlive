@@ -10,6 +10,11 @@ import com.cubaix.TDenlive.medias.TimeListener;
 public abstract class Widget extends TimeListener{
 	public TDenlive tde = null;
 	Composite container = null;
+
+	/** The composite of the widget (to show / hide it) */
+	public Composite getContainer() {
+		return container;
+	}
 	
 	public Widget(TDenlive aTDe, Composite aParent) {
 		tde = aTDe;

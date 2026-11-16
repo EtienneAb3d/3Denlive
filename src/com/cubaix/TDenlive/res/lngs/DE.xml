@@ -185,8 +185,8 @@
 <EntrySet label="MediaTrash">
 	<entry label="Title">Medium entfernen</entry>
 	<entry label="Used">Das Medium %s wird von %n Clip(s) der Zeitleisten verwendet: Diese werden ebenfalls aus den Zeitleisten entfernt.</entry>
-	<entry label="UsedDepthOnly">Das Medium %s wird von %d Clip(s) der Zeitleisten als Tiefenkarte verwendet: Diese werden es nicht mehr verwenden.</entry>
-	<entry label="Depth">Es wird außerdem von %n Clip(s) als Tiefenkarte verwendet, die es nicht mehr verwenden werden.</entry>
+	<entry label="UsedDepthOnly">Das Medium %s wird von %d Clip(s) der Zeitleisten als Tiefenkarte oder Maske verwendet: Diese werden es nicht mehr verwenden.</entry>
+	<entry label="Depth">Es wird außerdem von %n Clip(s) als Tiefenkarte oder Maske verwendet, die es nicht mehr verwenden werden.</entry>
 	<entry label="Confirm">Trotzdem entfernen?</entry>
 </EntrySet>
 <EntrySet label="Glasses">
@@ -223,6 +223,8 @@
 <EntrySet label="Monitor">AnamorphW
 	<entry label="Fast">Schnell</entry>
 	<entry label="Quality">Qualität</entry>
+	<entry label="SnapshotEmpty">Kein Bild an dieser Position.</entry>
+	<entry label="SnapshotError">Die Ansicht konnte nicht aufgenommen werden:</entry>
 </EntrySet>
 <EntrySet label="MediaProps">
 	<entry label="AnamorphW">Breite</entry>
@@ -838,6 +840,81 @@
 	<entry label="DownloadingColorModel">Herunterladen des Kolorierungsmodells:</entry>
 	<entry label="LoadingColorModel">Laden des Kolorierungsmodells...</entry>
 	<entry label="Colorizing">Kolorierung des Fotos</entry>
+	<entry label="KindMask">Maske</entry>
+	<entry label="MaskTitle">KI-Maske (SAM 2.1)</entry>
+	<entry label="MaskIntro">Grenzt Objekte in einem Bild oder Video ab (auch Stereo nebeneinander) und verfolgt sie im Video, mit SAM 2.1 (Meta), auf diesem Computer: auf der GPU, falls vorhanden, sonst auf der CPU (viel langsamer). Es wird nichts über das Netzwerk gesendet.</entry>
+	<entry label="GenMaskDesc">Klicken Sie in einer großen Vorschau auf jedes Objekt, das bleiben soll: seine Abgrenzung erscheint farbig über dem Bild, weitere Klicks korrigieren sie. Die Objekte werden dann im ganzen Video verfolgt. Das Ergebnis ist eine Schwarz-Weiß-Maske (Weiß = die Objekte), die der Medienliste hinzugefügt wird: Wählen Sie sie als Maske im Effekt Transparenz eines Clips, um nur diese Objekte zu behalten (oder sie mit Umkehren zu entfernen).</entry>
+	<entry label="MaskModelName">%NAME%: %PARAMS% Parameter, %GB% GB herunterzuladen</entry>
+	<entry label="MaskTinyNote">Am schnellsten (etwa 3 Bilder pro Sekunde und Ansicht auf einem Mac mit Apple Silicon, viel mehr auf einer NVIDIA-GPU), etwas ungenauere Konturen. Etwa %GB% GB Speicher.</entry>
+	<entry label="MaskSmallNote">Kaum langsamer als Tiny, etwas genauer. Etwa %GB% GB Speicher.</entry>
+	<entry label="MaskBasePlusNote">Guter Kompromiss zwischen Genauigkeit und Geschwindigkeit. Etwa %GB% GB Speicher.</entry>
+	<entry label="MaskLargeNote">Am genauesten (dünne Objekte, zeitweise verdeckte Objekte), am langsamsten. Etwa %GB% GB Speicher.</entry>
+	<entry label="MaskOnGpu">Läuft auf der GPU.</entry>
+	<entry label="MaskOnCpu">Läuft auf der CPU: Die Verfolgung in einem Video ist langsam (mehrere Sekunden pro Bild).</entry>
+	<entry label="MaskNameHint">Name der Maske (leer: der Name der Quelle, gefolgt von „(Maske)“)</entry>
+	<entry label="MaskSource">Abzugrenzendes Bild oder Video (eine Datei oder ein Medium der Bibliothek):</entry>
+	<entry label="MaskSourceNone">Kein Bild oder Video gewählt</entry>
+	<entry label="MaskStereo">Stereo</entry>
+	<entry label="MaskSbs">Stereo nebeneinander (linke Ansicht links)</entry>
+	<entry label="MaskSbsTip">Die Datei enthält beide Ansichten nebeneinander: Jedes Objekt wird in beiden Ansichten abgegrenzt und verfolgt. Ein Stereomedium der Bibliothek wird von selbst erkannt.</entry>
+	<entry label="MaskLibraryTitle">Bild oder Video der Bibliothek</entry>
+	<entry label="MaskNote">Die Maske behält die Anordnung der Quelle (eine Stereoquelle ergibt eine Stereomaske, ihre beiden Ansichten nebeneinander), ihre Größe und bei einem Video jedes seiner Bilder.</entry>
+	<entry label="MaskLicence">SAM 2.1 (Meta, 2024), Lizenz Apache-2.0: kommerzielle Nutzung erlaubt. SAM 3 wird nicht angeboten: Seine Gewichte sind nur mit einer Genehmigung von Meta und unter einer eigenen Lizenz herunterladbar.</entry>
+	<entry label="MaskNoSource">Wählen Sie zuerst das abzugrenzende Bild oder Video.</entry>
+	<entry label="MaskOpen">Objekte abgrenzen...</entry>
+	<entry label="MaskEditorTitle">KI-Maske: %NAME%</entry>
+	<entry label="MaskHelp">Wählen Sie ein Werkzeug und grenzen Sie dann das gewählte Objekt im Bild ab (die erste Aktion erzeugt Objekt 1): einige Punkte, ein Rahmen darum, dann Pinsel und Radierer zum Nachbessern der Ränder. „Neues Objekt“, um ein weiteres abzugrenzen.</entry>
+	<entry label="MaskHelpStereo">Wählen Sie ein Werkzeug und grenzen Sie dann das gewählte Objekt im Bild ab (die erste Aktion erzeugt Objekt 1): einige Punkte, ein Rahmen darum, dann Pinsel und Radierer zum Nachbessern der Ränder. Was in einer Ansicht getan wird, wird in die andere übertragen, und eine Aktion in der anderen Ansicht korrigiert sie. „Neues Objekt“, um ein weiteres abzugrenzen.</entry>
+	<entry label="MaskObjects">Objekte:</entry>
+	<entry label="MaskObject">Objekt %N%</entry>
+	<entry label="MaskNewObject">Neues Objekt</entry>
+	<entry label="MaskDeleteObject">Löschen</entry>
+	<entry label="MaskUndoPoint">Letzte Aktion rückgängig</entry>
+	<entry label="MaskTrack">Im Video verfolgen</entry>
+	<entry label="MaskTrackTip">Verfolgt die abgegrenzten Objekte im ganzen Video, vorwärts und dann rückwärts ab dem ersten angeklickten Bild. Korrigieren Sie danach mit einem Klick ein Bild, in dem die Verfolgung falsch lag, und verfolgen Sie erneut.</entry>
+	<entry label="MaskStop">Anhalten</entry>
+	<entry label="MaskName">Name der Maske in der Medienliste:</entry>
+	<entry label="MaskOut">Schwarz-Weiß-Maske in der Größe der Quelle (Weiß = die Objekte).</entry>
+	<entry label="MaskOutStereo">Schwarz-Weiß-Stereomaske, beide Ansichten nebeneinander, in der Größe der Quelle (Weiß = die Objekte).</entry>
+	<entry label="MaskCreate">Maske erstellen</entry>
+	<entry label="MaskSuffix">(Maske)</entry>
+	<entry label="MaskReady">Klicken Sie auf ein Objekt, um es abzugrenzen.</entry>
+	<entry label="MaskComputing">Abgrenzung...</entry>
+	<entry label="MaskPointDone">Abgegrenzt. Klicken Sie erneut zum Korrigieren, oder verfolgen Sie die Objekte im Video.</entry>
+	<entry label="MaskPointDoneImage">Abgegrenzt. Klicken Sie erneut zum Korrigieren, oder erstellen Sie die Maske.</entry>
+	<entry label="MaskObjectDeleted">Objekt gelöscht.</entry>
+	<entry label="MaskPreparing">Vorbereitung der Bilder des Videos</entry>
+	<entry label="MaskTracking">Verfolgung der Objekte: Bild</entry>
+	<entry label="MaskTracked">Verfolgung beendet. Prüfen Sie mit dem Regler; wo das Ergebnis falsch ist, korrigieren Sie das Bild (Punkte, Rahmen, Pinsel) und verfolgen Sie erneut. Erstellen Sie dann die Maske.</entry>
+	<entry label="MaskStopped">Verfolgung angehalten.</entry>
+	<entry label="MaskWriting">Schreiben der Maske: Bild</entry>
+	<entry label="WritingMask">Schreiben der Maske</entry>
+	<entry label="MaskLoading">Die Maske wird der Medienliste hinzugefügt...</entry>
+	<entry label="MaskAdded">Maske „%NAME%“ der Medienliste hinzugefügt. Wählen Sie sie im Effekt Transparenz eines Clips in der Liste Maske.</entry>
+	<entry label="MaskCloseConfirm">Die Maske wurde nicht erstellt: Die abgegrenzten Objekte gehen verloren. Trotzdem schließen?</entry>
+	<entry label="MaskError">Die Abgrenzung ist fehlgeschlagen:</entry>
+	<entry label="MaskErrorOom">Nicht genug GPU-Speicher: Schließen Sie die anderen Anwendungen, die die GPU nutzen, oder wählen Sie ein kleineres Modell.</entry>
+	<entry label="LoadingMaskModel">Laden des Abgrenzungsmodells...</entry>
+	<entry label="DownloadingMaskModel">Herunterladen des Abgrenzungsmodells:</entry>
+	<entry label="MaskBgTransparency">Transparenz des Bildes: %P% %</entry>
+	<entry label="MaskBgTransparencyTip">Blendet das Bild unter den Objekten aus: Bei 100 % ist nur noch die Maske zu sehen (die Objekte in ihren Farben auf Schwarz).</entry>
+	<entry label="MaskTools">Werkzeug:</entry>
+	<entry label="MaskToolPoints">Punkte</entry>
+	<entry label="MaskToolPointsTip">Klick: fügt die Stelle dem Objekt hinzu. Umschalt+Klick oder Rechtsklick: entfernt sie. Wenige Punkte genügen; gegen ein Überlaufen besser einen Entfernen-Punkt setzen.</entry>
+	<entry label="MaskToolBox">Rahmen</entry>
+	<entry label="MaskToolBoxTip">Ziehen Sie ein Rechteck um das Objekt: die zuverlässigste Vorgabe für das Modell. Punkte können ihn ergänzen.</entry>
+	<entry label="MaskToolBrush">Pinsel</entry>
+	<entry label="MaskToolBrushTip">Malen Sie die Maske des Objekts auf diesem Bild, ausgehend von der angezeigten Maske (Umschalt oder Rechtsklick: Radierer). Die gemalte Maske bleibt unverändert und dient der Verfolgung als Referenz.</entry>
+	<entry label="MaskToolEraser">Radierer</entry>
+	<entry label="MaskToolEraserTip">Löschen Sie einen Teil der Maske des Objekts auf diesem Bild. Alles zu löschen bedeutet, dass das Objekt auf diesem Bild nicht sichtbar ist.</entry>
+	<entry label="MaskBrushSize">Pinselgröße: %N% px</entry>
+	<entry label="MaskHelpVideo">Um die Verfolgung zu verfeinern, fügen Sie auf beliebigen Bildern des Videos, wo das Ergebnis falsch ist (ein Objekt, das sich dreht, verschwindet oder wieder auftaucht...), Punkte, Rahmen oder Pinselkorrekturen hinzu: Jedes so korrigierte Bild dient der Verfolgung als Referenz. Verfolgen Sie danach erneut, um diese Korrekturen zu berücksichtigen: „Hier fortsetzen“ berechnet nur ab dem angezeigten Bild (oder dem ersten geänderten Bild) bis zum Ende neu.</entry>
+	<entry label="MaskRetrack">Auf diesem Bild geändert. Um diese Korrektur zu übertragen: „Hier fortsetzen“ (ab diesem Bild, schneller) oder „Im Video verfolgen“ (das ganze Video).</entry>
+	<entry label="MaskResume">Hier fortsetzen</entry>
+	<entry label="MaskResumeTip">Setzt die Verfolgung ab dem angezeigten Bild bis zum Ende des Videos fort, ohne die Bilder davor neu zu berechnen (schneller). Wurde ein früheres Bild geändert, beginnt die Verfolgung bei diesem Bild; nach einem Anhalten werden die noch nicht verfolgten Bilder hinzugefügt.</entry>
+	<entry label="MaskResuming">Fortsetzung der Verfolgung: Bild</entry>
+	<entry label="MaskResumeFrom">Fortsetzung der Verfolgung ab Bild %N% (erstes geändertes Bild)...</entry>
+	<entry label="MaskResumeFull">Das ganze Video wurde verfolgt: Fortsetzen war nicht möglich (erste Verfolgung, Objekt hinzugefügt oder gelöscht).</entry>
 	<entry label="MusicIntro">Generiert ein Instrumentalstück aus einer Beschreibung mit MusicGen (Meta) auf diesem Computer: auf der GPU, falls vorhanden, sonst auf der CPU (langsamer). Es wird nichts über das Netzwerk gesendet.</entry>
 	<entry label="SfxIntro">Generiert einen Soundeffekt oder eine Atmosphäre aus einer Beschreibung mit Woosh (Sony AI) auf diesem Computer: auf der GPU, falls vorhanden, sonst auf der CPU (langsamer). Es wird nichts über das Netzwerk gesendet.</entry>
 	<entry label="MusicPrompt">Beschreiben Sie die zu generierende Musik (Genre, Instrumente, Stimmung, Tempo...), vorzugsweise auf Englisch:</entry>
@@ -1069,6 +1146,9 @@ Die Tiefenkarten beider Ansichten aus dem Clip berechnen (künstliche Intelligen
 	<entry label="BevelLetter">A</entry>
 	<entry label="X">Stereo-Position</entry>
 	<entry label="Invert">Umkehren</entry>
+	<entry label="Mask">Maske</entry>
+	<entry label="MaskNone">(Luma unten)</entry>
+	<entry label="MaskMix">Mischung der Maske (violett) mit dem Bild</entry>
 </EntrySet>
 <EntrySet label="Chromakey">
 	<entry label="Tolerance">Toleranz</entry>
@@ -1185,6 +1265,7 @@ Die Tiefenkarten beider Ansichten aus dem Clip berechnen (künstliche Intelligen
 	<entry label="EdgesOff">Kanten anzeigen (hilft beim Prüfen der Ausrichtung links / rechts)</entry>
 	<entry label="EdgesOn">Kanten ausblenden</entry>
 	<entry label="SaveView">Aktuelles Bild in voller Qualität im Render-Ordner speichern (links, rechts, Parallelblick und Kreuzblick als PNG)</entry>
+	<entry label="Snapshot">Eine Ansicht der Anzeige in Endqualität erstellen (beide Ansichten nebeneinander) und der Bibliothek hinzufügen</entry>
 	<entry label="FullScreen">Vollbildpräsentation</entry>
 	<entry label="Status">Geschwindigkeit der Vorschauberechnung (Bilder pro Sekunde)</entry>
 	<entry label="GridNone">Kein Raster</entry>
@@ -1343,6 +1424,8 @@ Die Tiefenkarten beider Ansichten aus dem Clip berechnen (künstliche Intelligen
 	<entry label="TransOpacity">Deckkraft des Clips (oder Fortschritt des Übergangs mit einer Luma-Maske)</entry>
 	<entry label="TransBevel">Weichheit der Übergangskante</entry>
 	<entry label="TransX">Tiefe der Übergangsmaske</entry>
+	<entry label="TransMask">Maske aus der Medienliste (zum Beispiel eine KI-Maske) statt der Luma, die dann ausgeblendet wird: Weiß = sichtbar, Schwarz = transparent. Sie folgt der Zeit und beiden Ansichten des Clips; Deckkraft und „Umkehren“ gelten für sie, die Fase macht ihre Ränder weich und die Stereoposition verschiebt sie in der Tiefe.</entry>
+	<entry label="TransMaskMix">Mischt das Bild mit der violett dargestellten Maske (schwarz, wo sie schwarz ist): 0 = das maskierte Bild, 100 = nur die Maske, um ihre Form und Lage zu prüfen.</entry>
 	<entry label="FrameOpacity">Deckkraft des Rahmens</entry>
 	<entry label="FrameX">Tiefe des Rahmens</entry>
 	<entry label="ChromaTolerance">Farbabstand, der noch transparent gemacht wird</entry>

@@ -185,8 +185,8 @@
 <EntrySet label="MediaTrash">
 	<entry label="Title">Remove a media</entry>
 	<entry label="Used">The media %s is used by %n clip(s) of the time lines: they will be removed from the time lines too.</entry>
-	<entry label="UsedDepthOnly">The media %s is used as depth map by %d clip(s) of the time lines: they will no longer use it.</entry>
-	<entry label="Depth">It is also used as depth map by %n clip(s), which will no longer use it.</entry>
+	<entry label="UsedDepthOnly">The media %s is used as depth map or mask by %d clip(s) of the time lines: they will no longer use it.</entry>
+	<entry label="Depth">It is also used as depth map or mask by %n clip(s), which will no longer use it.</entry>
 	<entry label="Confirm">Remove it anyway?</entry>
 </EntrySet>
 <EntrySet label="Glasses">
@@ -223,6 +223,8 @@
 <EntrySet label="Monitor">AnamorphW
 	<entry label="Fast">Fast</entry>
 	<entry label="Quality">Quality</entry>
+	<entry label="SnapshotEmpty">No image at this position.</entry>
+	<entry label="SnapshotError">The view could not be captured:</entry>
 </EntrySet>
 <EntrySet label="MediaProps">
 	<entry label="AnamorphW">Width</entry>
@@ -838,6 +840,81 @@
 	<entry label="DownloadingColorModel">Downloading the colorization model:</entry>
 	<entry label="LoadingColorModel">Loading the colorization model...</entry>
 	<entry label="Colorizing">Colorizing the photo</entry>
+	<entry label="KindMask">Mask</entry>
+	<entry label="MaskTitle">AI mask (SAM 2.1)</entry>
+	<entry label="MaskIntro">Delimits objects in an image or a video (side by side stereo included) and tracks them in the video, with SAM 2.1 (Meta), on this computer: on the GPU if there is one, else on the CPU (much slower). Nothing is sent over the network.</entry>
+	<entry label="GenMaskDesc">In a large preview, click each object to keep: its outline appears in color over the image, and more clicks correct it. The objects are then tracked over the whole video. The result is a black and white mask (white = the objects) added to the media list: choose it as the mask of the Transparency processor of a clip to keep only these objects (or to remove them, with Invert).</entry>
+	<entry label="MaskModelName">%NAME%: %PARAMS% parameters, %GB% GB to download</entry>
+	<entry label="MaskTinyNote">The fastest (about 3 frames per second and per view on an Apple Silicon Mac, much more on an NVIDIA GPU), slightly less precise outlines. About %GB% GB of memory.</entry>
+	<entry label="MaskSmallNote">Hardly slower than Tiny, a little more precise. About %GB% GB of memory.</entry>
+	<entry label="MaskBasePlusNote">Good balance of precision and speed. About %GB% GB of memory.</entry>
+	<entry label="MaskLargeNote">The most precise (thin objects, objects hidden for a while), the slowest. About %GB% GB of memory.</entry>
+	<entry label="MaskOnGpu">Runs on the GPU.</entry>
+	<entry label="MaskOnCpu">Runs on the CPU: tracking in a video is slow (several seconds per frame).</entry>
+	<entry label="MaskNameHint">Name of the mask (empty: the name of the source followed by "(mask)")</entry>
+	<entry label="MaskSource">Image or video to delimit (a file or a media of the library):</entry>
+	<entry label="MaskSourceNone">No image or video chosen</entry>
+	<entry label="MaskStereo">stereo</entry>
+	<entry label="MaskSbs">Side by side stereo (left view on the left)</entry>
+	<entry label="MaskSbsTip">The file holds both views side by side: each object is delimited and tracked in both views. A stereo media of the library is recognized by itself.</entry>
+	<entry label="MaskLibraryTitle">Image or video of the library</entry>
+	<entry label="MaskNote">The mask keeps the layout of the source (a stereo source gives a stereo mask, its two views side by side), its size and, for a video, each of its frames.</entry>
+	<entry label="MaskLicence">SAM 2.1 (Meta, 2024), Apache-2.0 licence: commercial use allowed. SAM 3 is not offered: its weights can only be downloaded with an authorization of Meta, under its own licence.</entry>
+	<entry label="MaskNoSource">First choose the image or the video to delimit.</entry>
+	<entry label="MaskOpen">Delimit the objects...</entry>
+	<entry label="MaskEditorTitle">AI mask: %NAME%</entry>
+	<entry label="MaskHelp">Choose a tool, then delimit the selected object on the image (the first action creates object 1): a few points, a box around it, then the brush and the eraser to touch up the edges. "New object" to delimit another one.</entry>
+	<entry label="MaskHelpStereo">Choose a tool, then delimit the selected object on the image (the first action creates object 1): a few points, a box around it, then the brush and the eraser to touch up the edges. What is done in one view is carried over to the other, and an action in the other view corrects it. "New object" to delimit another one.</entry>
+	<entry label="MaskObjects">Objects:</entry>
+	<entry label="MaskObject">Object %N%</entry>
+	<entry label="MaskNewObject">New object</entry>
+	<entry label="MaskDeleteObject">Delete</entry>
+	<entry label="MaskUndoPoint">Undo the last action</entry>
+	<entry label="MaskTrack">Track in the video</entry>
+	<entry label="MaskTrackTip">Tracks the delimited objects over the whole video, forward then backward from the first frame clicked. Then correct with a click a frame where the tracking went wrong, and track again.</entry>
+	<entry label="MaskStop">Stop</entry>
+	<entry label="MaskName">Name of the mask in the media list:</entry>
+	<entry label="MaskOut">Black and white mask at the size of the source (white = the objects).</entry>
+	<entry label="MaskOutStereo">Black and white stereo mask, both views side by side, at the size of the source (white = the objects).</entry>
+	<entry label="MaskCreate">Create the mask</entry>
+	<entry label="MaskSuffix">(mask)</entry>
+	<entry label="MaskReady">Click an object to delimit it.</entry>
+	<entry label="MaskComputing">Delimiting...</entry>
+	<entry label="MaskPointDone">Delimited. Click again to correct, or track the objects in the video.</entry>
+	<entry label="MaskPointDoneImage">Delimited. Click again to correct, or create the mask.</entry>
+	<entry label="MaskObjectDeleted">Object deleted.</entry>
+	<entry label="MaskPreparing">Preparing the frames of the video</entry>
+	<entry label="MaskTracking">Tracking the objects: frame</entry>
+	<entry label="MaskTracked">Tracking done. Check with the slider; where the result is wrong, correct the frame (points, box, brush) then track again. Then create the mask.</entry>
+	<entry label="MaskStopped">Tracking stopped.</entry>
+	<entry label="MaskWriting">Writing the mask: frame</entry>
+	<entry label="WritingMask">Writing the mask</entry>
+	<entry label="MaskLoading">Adding the mask to the media list...</entry>
+	<entry label="MaskAdded">Mask "%NAME%" added to the media list. In the Transparency processor of a clip, choose it in the Mask list.</entry>
+	<entry label="MaskCloseConfirm">The mask was not created: the delimited objects will be lost. Close anyway?</entry>
+	<entry label="MaskError">The delimitation failed:</entry>
+	<entry label="MaskErrorOom">Not enough GPU memory: close the other applications using the GPU, or choose a smaller model.</entry>
+	<entry label="LoadingMaskModel">Loading the delimitation model...</entry>
+	<entry label="DownloadingMaskModel">Downloading the delimitation model:</entry>
+	<entry label="MaskBgTransparency">Transparency of the image: %P% %</entry>
+	<entry label="MaskBgTransparencyTip">Fades the image under the objects: at 100 %, only the mask is seen (the objects in their colors on black).</entry>
+	<entry label="MaskTools">Tool:</entry>
+	<entry label="MaskToolPoints">Points</entry>
+	<entry label="MaskToolPointsTip">Click: adds the place to the object. Shift+click or right click: removes it. A few points are enough; against an overflow, prefer a removal point.</entry>
+	<entry label="MaskToolBox">Box</entry>
+	<entry label="MaskToolBoxTip">Drag a rectangle around the object: the most reliable prompt of the model. Points can complete it.</entry>
+	<entry label="MaskToolBrush">Brush</entry>
+	<entry label="MaskToolBrushTip">Paint the mask of the object on this frame, starting from the mask shown (Shift or right click: eraser). The painted mask is kept as it is and is the reference of the tracking.</entry>
+	<entry label="MaskToolEraser">Eraser</entry>
+	<entry label="MaskToolEraserTip">Erase a part of the mask of the object on this frame. Erasing everything tells that the object is not visible on this frame.</entry>
+	<entry label="MaskBrushSize">Brush size: %N% px</entry>
+	<entry label="MaskHelpVideo">To refine the tracking, add points, boxes or brush touch-ups on any frame of the video where the result is wrong (an object that turns, hides or comes back...): each frame corrected that way is a reference of the tracking. Then track again to take these corrections into account: "Resume here" only computes again from the frame shown (or the first frame changed) to the end.</entry>
+	<entry label="MaskRetrack">Changed on this frame. To carry this correction over: "Resume here" (from this frame, faster) or "Track in the video" (the whole video).</entry>
+	<entry label="MaskResume">Resume here</entry>
+	<entry label="MaskResumeTip">Resumes the tracking from the frame shown to the end of the video, without computing the frames before again (faster). If a frame was changed earlier, the tracking resumes at that frame; after a stop, the frames not tracked yet are added.</entry>
+	<entry label="MaskResuming">Resuming the tracking: frame</entry>
+	<entry label="MaskResumeFrom">Resuming the tracking from frame %N% (first frame changed)...</entry>
+	<entry label="MaskResumeFull">The whole video was tracked: resuming was not possible (first tracking, object added or deleted).</entry>
 	<entry label="MusicIntro">Generates a piece of instrumental music from a description, with MusicGen (Meta), on this computer: on the GPU when there is one, else on the CPU (slower). Nothing is sent over the network.</entry>
 	<entry label="SfxIntro">Generates a sound effect or an ambience from a description, with Woosh (Sony AI), on this computer: on the GPU when there is one, else on the CPU (slower). Nothing is sent over the network.</entry>
 	<entry label="MusicPrompt">Describe the music to generate (genre, instruments, mood, tempo...), preferably in English:</entry>
@@ -1069,6 +1146,9 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="BevelLetter">B</entry>
 	<entry label="X">Stereo position</entry>
 	<entry label="Invert">Invert</entry>
+	<entry label="Mask">Mask</entry>
+	<entry label="MaskNone">(luma below)</entry>
+	<entry label="MaskMix">Mix of the mask (violet) with the image</entry>
 </EntrySet>
 <EntrySet label="Chromakey">
 	<entry label="Tolerance">Tolerance</entry>
@@ -1185,6 +1265,7 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="EdgesOff">Show the edges (helps to check the left / right alignment)</entry>
 	<entry label="EdgesOn">Hide the edges</entry>
 	<entry label="SaveView">Save the current image in full quality in the render folder (left, right, parallel and crossed PNG)</entry>
+	<entry label="Snapshot">Create a view of the display in final quality (both views side by side) and add it to the library</entry>
 	<entry label="FullScreen">Full screen presentation</entry>
 	<entry label="Status">Preview computation speed (frames per second)</entry>
 	<entry label="GridNone">No grid</entry>
@@ -1343,6 +1424,8 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="TransOpacity">Opacity of the clip (or progress of the transition with a luma mask)</entry>
 	<entry label="TransBevel">Softness of the edge of the transition</entry>
 	<entry label="TransX">Depth of the transition mask</entry>
+	<entry label="TransMask">Mask of the media list (an AI mask for instance) instead of the luma, which is then hidden: white = visible, black = transparent. It follows the time and both views of the clip; the opacity and "Invert" apply to it, the bevel softens its edges and the stereo position moves it in depth.</entry>
+	<entry label="TransMaskMix">Mixes the image with the mask shown in violet (black where it is black): 0 = the masked image, 100 = the mask alone, to check its shape and place.</entry>
 	<entry label="FrameOpacity">Opacity of the frame</entry>
 	<entry label="FrameX">Depth of the frame</entry>
 	<entry label="ChromaTolerance">Color distance still made transparent</entry>

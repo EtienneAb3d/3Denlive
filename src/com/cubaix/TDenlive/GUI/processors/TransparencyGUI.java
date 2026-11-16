@@ -1,5 +1,7 @@
 package com.cubaix.TDenlive.GUI.processors;
 
+import java.util.Vector;
+
 import org.eclipse.nebula.widgets.tablecombo.TableCombo;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -15,9 +17,12 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.TableItem;
 
 import com.cubaix.TDenlive.TDenlive;
+import com.cubaix.TDenlive.GUI.widgets.LabelCombo;
 import com.cubaix.TDenlive.GUI.widgets.LabelKeyFrame;
 import com.cubaix.TDenlive.GUI.widgets.LabelScale;
+import com.cubaix.TDenlive.medias.AudioMedia;
 import com.cubaix.TDenlive.medias.Clip;
+import com.cubaix.TDenlive.medias.Media;
 import com.cubaix.TDenlive.processors.Processor;
 import com.cubaix.TDenlive.processors.Transparency;
 import com.cubaix.TDenlive.utils.Luma;
@@ -31,6 +36,11 @@ public class TransparencyGUI extends ProcessorGUI {
 	LabelScale bevelLS = null;
 	LabelScale xLS = null;
 	Button invB = null;
+	//Mask of the media list (AI mask...), "": the luma
+	LabelCombo maskLC = null;
+	//Mix of the mask in violet with the image (only with a mask of the media list)
+	Label mixL = null;
+	LabelScale mixLS = null;
 	
 	public TransparencyGUI(TDenlive aTDe, Composite aParent,Processor aP) {
 		super(aTDe, aParent,aP);
@@ -63,6 +73,9 @@ public class TransparencyGUI extends ProcessorGUI {
 					bevelLS.setSelection((int)(tr.getBevel(aValue)*10000));
 					xLS.setSelection((int)(tr.getX(aValue)*40000));
 					invB.setSelection(tr.getInvert(aValue));
+					maskLC.select(maskUID(aValue));
+					mixLS.setSelection((int)Math.round(tr.getM(aValue)*100));
+					showLuma(tr.getMaskClip(aValue) == null);
 				}
 			}
 			@Override
@@ -90,6 +103,33 @@ public class TransparencyGUI extends ProcessorGUI {
 			}
 		}.tip("TransOpacity");
 		
+		//Mask taken from the media list instead of the luma (white visible, black transparent)
+		Vector<String[]> aMasks = new Vector<String[]>();
+		aMasks.add(new String[] {"", tde.gui.lngs.get("Transparency.MaskNone")});
+		for(Media aMedia : tde.mediaList.mediaList) {
+			if(aMedia instanceof AudioMedia) {
+				continue;
+			}
+			String aFileName = aMedia.fileName == null ? "?" : aMedia.fileName;
+			if(aFileName.indexOf(" / ") > 0) {
+				aFileName = aFileName.substring(0,aFileName.indexOf(" / "));
+			}
+			if(aFileName.length() > 25) {
+				aFileName = aFileName.substring(0,22)+"...";
+			}
+			aMasks.add(new String[] {""+aMedia.UID, aFileName});
+		}
+		maskLC = new LabelCombo(tde,wgt,tde.gui.lngs.get("Transparency.Mask"),aMasks,maskUID(aSelectedKey)) {
+			@Override
+			public void change(String aValue) {
+				lkf.edit(aEK -> tr.setMaskMedia(aEK, aValue));
+				//The luma is not used with a mask of the media list
+				showLuma(aValue == null || aValue.isEmpty());
+				tde.gui.monitorGUI.redraw();
+			}
+		};
+		maskLC.tip("TransMask");
+
 		lumaC = new TableCombo(wgt, SWT.NONE);
 		tde.gui.applyColorFont(lumaC);
 		tde.gui.tip(lumaC, "LumaChoice");
@@ -180,10 +220,68 @@ public class TransparencyGUI extends ProcessorGUI {
 		invB.setText(tde.gui.lngs.get("Transparency.Invert"));
 		invB.setSelection(tr.getInvert(aSelectedKey));
 
+		mixL = new Label(wgt,SWT.NONE);
+		tde.gui.applyColorFont(mixL);
+		mixL.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		mixL.setText(tde.gui.lngs.get("Transparency.MaskMix"));
+		mixLS = new LabelScale(tde,wgt,"M",0,0,100,(int)Math.round(tr.getM(aSelectedKey)*100)) {
+			@Override
+			public void change(int aValue) {
+				if(lkf.getSelection() >= 0) {
+					lkf.edit(aEK -> tr.setM(aEK, aValue/100.0));
+					tde.gui.monitorGUI.redraw();
+				}
+			}
+		}.tip("TransMaskMix");
+		//Shown with a mask of the media list only (showLuma())
+		for(org.eclipse.swt.widgets.Control aC : new org.eclipse.swt.widgets.Control[] {mixL, mixLS.getContainer()}) {
+			((GridData)aC.getLayoutData()).exclude = true;
+			aC.setVisible(false);
+		}
+
 		lkf.change(lkf.displayKey(lkf.getSelection()));
 		tde.timeLineStack.addTimeListener(this);
 	}
 	
+	/**
+	 * The luma list shown only without a mask of the media list (it is not used then)
+	 */
+	void showLuma(boolean aShow) {
+		if(lumaC == null || lumaC.isDisposed()) {
+			return;
+		}
+		GridData aGD = (GridData)lumaC.getLayoutData();
+		if(aGD.exclude == !aShow && lumaC.getVisible() == aShow) {
+			return;
+		}
+		aGD.exclude = !aShow;
+		lumaC.setVisible(aShow);
+		//The mix of the mask: the other way round
+		for(org.eclipse.swt.widgets.Control aC : new org.eclipse.swt.widgets.Control[] {mixL, mixLS == null ? null : mixLS.getContainer()}) {
+			if(aC != null && !aC.isDisposed()) {
+				((GridData)aC.getLayoutData()).exclude = aShow;
+				aC.setVisible(!aShow);
+			}
+		}
+		wgt.layout(true, true);
+		//The box of the processor and the list of the processors take the new height
+		Composite aBox = container.getParent();
+		if(aBox != null) {
+			aBox.layout(true, true);
+			if(aBox.getParent() != null) {
+				aBox.getParent().layout(true);
+			}
+		}
+	}
+
+	/**
+	 * UID of the mask media of the key aKey, "" if none
+	 */
+	String maskUID(int aKey) {
+		Clip aC = tr.getMaskClip(aKey);
+		return aC == null || aC.getMedia() == null ? "" : ""+aC.getMedia().UID;
+	}
+
 	@Override
 	public void timeChanged(long aTimeNew) {
 		super.timeChanged(aTimeNew);
@@ -206,6 +304,9 @@ public class TransparencyGUI extends ProcessorGUI {
 				bevelLS.setSelection((int)(tr.getBevel(aShow)*10000));
 				xLS.setSelection((int)(tr.getX(aShow)*40000));
 				invB.setSelection(tr.getInvert(aShow));
+				maskLC.select(maskUID(aShow));
+				mixLS.setSelection((int)Math.round(tr.getM(aShow)*100));
+				showLuma(tr.getMaskClip(aShow) == null);
 				lkf.checkAddMode(tde.timeLineStack.getTimePosMS());
 			}
 		});

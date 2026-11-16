@@ -185,8 +185,8 @@
 <EntrySet label="MediaTrash">
 	<entry label="Title">Rimuovi un media</entry>
 	<entry label="Used">Il media %s è usato da %n clip delle linee temporali: verranno rimosse anche dalle linee temporali.</entry>
-	<entry label="UsedDepthOnly">Il media %s è usato come mappa di profondità da %d clip delle linee temporali: non lo useranno più.</entry>
-	<entry label="Depth">È usato anche come mappa di profondità da %n clip, che non lo useranno più.</entry>
+	<entry label="UsedDepthOnly">Il media %s è usato come mappa di profondità o maschera da %d clip delle linee temporali: non lo useranno più.</entry>
+	<entry label="Depth">È usato anche come mappa di profondità o maschera da %n clip, che non lo useranno più.</entry>
 	<entry label="Confirm">Rimuoverlo comunque?</entry>
 </EntrySet>
 <EntrySet label="Glasses">
@@ -223,6 +223,8 @@
 <EntrySet label="Monitor">AnamorphW
 	<entry label="Fast">Veloce</entry>
 	<entry label="Quality">Qualità</entry>
+	<entry label="SnapshotEmpty">Nessuna immagine in questa posizione.</entry>
+	<entry label="SnapshotError">Impossibile catturare la vista:</entry>
 </EntrySet>
 <EntrySet label="MediaProps">
 	<entry label="AnamorphW">Larghezza</entry>
@@ -838,6 +840,81 @@
 	<entry label="DownloadingColorModel">Download del modello di colorazione:</entry>
 	<entry label="LoadingColorModel">Caricamento del modello di colorazione...</entry>
 	<entry label="Colorizing">Colorazione della foto</entry>
+	<entry label="KindMask">Maschera</entry>
+	<entry label="MaskTitle">Maschera IA (SAM 2.1)</entry>
+	<entry label="MaskIntro">Delimita oggetti in un'immagine o in un video (stereo affiancato compreso) e li segue nel video, con SAM 2.1 (Meta), su questo computer: sulla GPU se presente, altrimenti sulla CPU (molto più lento). Nulla viene inviato in rete.</entry>
+	<entry label="GenMaskDesc">In un'anteprima grande, fai clic su ogni oggetto da tenere: il suo contorno appare a colori sopra l'immagine, e altri clic lo correggono. Gli oggetti vengono poi seguiti in tutto il video. Il risultato è una maschera in bianco e nero (bianco = gli oggetti) aggiunta alla lista dei media: sceglila come maschera nell'effetto Trasparenza di una clip per tenere solo quegli oggetti (o per toglierli, con Inverti).</entry>
+	<entry label="MaskModelName">%NAME%: %PARAMS% parametri, %GB% GB da scaricare</entry>
+	<entry label="MaskTinyNote">Il più veloce (circa 3 immagini al secondo per vista su un Mac Apple Silicon, molte di più su una GPU NVIDIA), contorni un po' meno precisi. Circa %GB% GB di memoria.</entry>
+	<entry label="MaskSmallNote">Appena più lento di Tiny, un po' più preciso. Circa %GB% GB di memoria.</entry>
+	<entry label="MaskBasePlusNote">Buon compromesso tra precisione e velocità. Circa %GB% GB di memoria.</entry>
+	<entry label="MaskLargeNote">Il più preciso (oggetti sottili, oggetti nascosti per un momento), il più lento. Circa %GB% GB di memoria.</entry>
+	<entry label="MaskOnGpu">Viene eseguito sulla GPU.</entry>
+	<entry label="MaskOnCpu">Viene eseguito sulla CPU: il tracciamento in un video è lento (diversi secondi per immagine).</entry>
+	<entry label="MaskNameHint">Nome della maschera (vuoto: il nome della sorgente seguito da «(maschera)»)</entry>
+	<entry label="MaskSource">Immagine o video da delimitare (un file o un media della libreria):</entry>
+	<entry label="MaskSourceNone">Nessuna immagine o video scelto</entry>
+	<entry label="MaskStereo">stereo</entry>
+	<entry label="MaskSbs">Stereo affiancato (vista sinistra a sinistra)</entry>
+	<entry label="MaskSbsTip">Il file contiene le due viste affiancate: ogni oggetto viene delimitato e seguito nelle due viste. Un media stereo della libreria viene riconosciuto da solo.</entry>
+	<entry label="MaskLibraryTitle">Immagine o video della libreria</entry>
+	<entry label="MaskNote">La maschera conserva la disposizione della sorgente (una sorgente stereo dà una maschera stereo, le due viste affiancate), la sua dimensione e, per un video, ognuna delle sue immagini.</entry>
+	<entry label="MaskLicence">SAM 2.1 (Meta, 2024), licenza Apache-2.0: uso commerciale consentito. SAM 3 non è proposto: i suoi pesi si scaricano solo con un'autorizzazione di Meta, con una licenza propria.</entry>
+	<entry label="MaskNoSource">Scegli prima l'immagine o il video da delimitare.</entry>
+	<entry label="MaskOpen">Delimita gli oggetti...</entry>
+	<entry label="MaskEditorTitle">Maschera IA: %NAME%</entry>
+	<entry label="MaskHelp">Scegli uno strumento, poi delimita l'oggetto selezionato sull'immagine (la prima azione crea l'oggetto 1): alcuni punti, un riquadro attorno, poi il pennello e la gomma per ritoccare i bordi. «Nuovo oggetto» per delimitarne un altro.</entry>
+	<entry label="MaskHelpStereo">Scegli uno strumento, poi delimita l'oggetto selezionato sull'immagine (la prima azione crea l'oggetto 1): alcuni punti, un riquadro attorno, poi il pennello e la gomma per ritoccare i bordi. Ciò che si fa in una vista viene riportato nell'altra, e un'azione nell'altra vista la corregge. «Nuovo oggetto» per delimitarne un altro.</entry>
+	<entry label="MaskObjects">Oggetti:</entry>
+	<entry label="MaskObject">Oggetto %N%</entry>
+	<entry label="MaskNewObject">Nuovo oggetto</entry>
+	<entry label="MaskDeleteObject">Elimina</entry>
+	<entry label="MaskUndoPoint">Annulla l'ultima azione</entry>
+	<entry label="MaskTrack">Segui nel video</entry>
+	<entry label="MaskTrackTip">Segue gli oggetti delimitati in tutto il video, in avanti e poi all'indietro dalla prima immagine cliccata. Poi correggi con un clic un'immagine in cui il tracciamento ha sbagliato, e segui di nuovo.</entry>
+	<entry label="MaskStop">Ferma</entry>
+	<entry label="MaskName">Nome della maschera nella lista dei media:</entry>
+	<entry label="MaskOut">Maschera in bianco e nero alla dimensione della sorgente (bianco = gli oggetti).</entry>
+	<entry label="MaskOutStereo">Maschera stereo in bianco e nero, le due viste affiancate, alla dimensione della sorgente (bianco = gli oggetti).</entry>
+	<entry label="MaskCreate">Crea la maschera</entry>
+	<entry label="MaskSuffix">(maschera)</entry>
+	<entry label="MaskReady">Fai clic su un oggetto per delimitarlo.</entry>
+	<entry label="MaskComputing">Delimitazione...</entry>
+	<entry label="MaskPointDone">Delimitato. Fai clic di nuovo per correggere, o segui gli oggetti nel video.</entry>
+	<entry label="MaskPointDoneImage">Delimitato. Fai clic di nuovo per correggere, o crea la maschera.</entry>
+	<entry label="MaskObjectDeleted">Oggetto eliminato.</entry>
+	<entry label="MaskPreparing">Preparazione delle immagini del video</entry>
+	<entry label="MaskTracking">Tracciamento degli oggetti: immagine</entry>
+	<entry label="MaskTracked">Tracciamento finito. Controlla con il cursore; dove il risultato è sbagliato, correggi l'immagine (punti, riquadro, pennello) e rilancia il tracciamento. Poi crea la maschera.</entry>
+	<entry label="MaskStopped">Tracciamento fermato.</entry>
+	<entry label="MaskWriting">Scrittura della maschera: immagine</entry>
+	<entry label="WritingMask">Scrittura della maschera</entry>
+	<entry label="MaskLoading">Aggiunta della maschera alla lista dei media...</entry>
+	<entry label="MaskAdded">Maschera «%NAME%» aggiunta alla lista dei media. Nell'effetto Trasparenza di una clip, sceglila nella lista Maschera.</entry>
+	<entry label="MaskCloseConfirm">La maschera non è stata creata: gli oggetti delimitati andranno persi. Chiudere comunque?</entry>
+	<entry label="MaskError">La delimitazione non è riuscita:</entry>
+	<entry label="MaskErrorOom">Memoria GPU insufficiente: chiudi le altre applicazioni che usano la GPU, o scegli un modello più piccolo.</entry>
+	<entry label="LoadingMaskModel">Caricamento del modello di delimitazione...</entry>
+	<entry label="DownloadingMaskModel">Download del modello di delimitazione:</entry>
+	<entry label="MaskBgTransparency">Trasparenza dell'immagine: %P% %</entry>
+	<entry label="MaskBgTransparencyTip">Sfuma l'immagine sotto gli oggetti: al 100 % si vede solo la maschera (gli oggetti nei loro colori su fondo nero).</entry>
+	<entry label="MaskTools">Strumento:</entry>
+	<entry label="MaskToolPoints">Punti</entry>
+	<entry label="MaskToolPointsTip">Clic: aggiunge il punto all'oggetto. Maiusc+clic o clic destro: lo toglie. Pochi punti bastano; contro uno sconfinamento, meglio un punto di rimozione.</entry>
+	<entry label="MaskToolBox">Riquadro</entry>
+	<entry label="MaskToolBoxTip">Trascina un rettangolo attorno all'oggetto: l'indicazione più affidabile per il modello. Dei punti possono completarlo.</entry>
+	<entry label="MaskToolBrush">Pennello</entry>
+	<entry label="MaskToolBrushTip">Dipingi la maschera dell'oggetto su questa immagine, partendo dalla maschera mostrata (Maiusc o clic destro: gomma). La maschera dipinta resta com'è e fa da riferimento al tracciamento.</entry>
+	<entry label="MaskToolEraser">Gomma</entry>
+	<entry label="MaskToolEraserTip">Cancella una parte della maschera dell'oggetto su questa immagine. Cancellare tutto indica che l'oggetto non è visibile in questa immagine.</entry>
+	<entry label="MaskBrushSize">Dimensione del pennello: %N% px</entry>
+	<entry label="MaskHelpVideo">Per affinare il tracciamento, aggiungi punti, riquadri o ritocchi a pennello su qualsiasi immagine del video dove il risultato è sbagliato (un oggetto che ruota, si nasconde o ricompare...): ogni immagine così corretta fa da riferimento al tracciamento. Poi rilancia il tracciamento per tenere conto di queste correzioni: «Riprendi da qui» ricalcola solo dall'immagine mostrata (o dalla prima immagine modificata) fino alla fine.</entry>
+	<entry label="MaskRetrack">Modificato su questa immagine. Per propagare questa correzione: «Riprendi da qui» (da questa immagine, più veloce) o «Segui nel video» (tutto il video).</entry>
+	<entry label="MaskResume">Riprendi da qui</entry>
+	<entry label="MaskResumeTip">Riprende il tracciamento dall'immagine mostrata fino alla fine del video, senza ricalcolare le immagini precedenti (più veloce). Se un'immagine precedente è stata modificata, il tracciamento riprende da quell'immagine; dopo un arresto, vengono aggiunte le immagini non ancora seguite.</entry>
+	<entry label="MaskResuming">Ripresa del tracciamento: immagine</entry>
+	<entry label="MaskResumeFrom">Ripresa del tracciamento dall'immagine %N% (prima immagine modificata)...</entry>
+	<entry label="MaskResumeFull">È stato seguito tutto il video: la ripresa non era possibile (primo tracciamento, oggetto aggiunto o eliminato).</entry>
 	<entry label="MusicIntro">Genera un brano di musica strumentale da una descrizione, con MusicGen (Meta), su questo computer: sulla GPU se presente, altrimenti sulla CPU (più lento). Nulla viene inviato in rete.</entry>
 	<entry label="SfxIntro">Genera un effetto sonoro o un ambiente da una descrizione, con Woosh (Sony AI), su questo computer: sulla GPU se presente, altrimenti sulla CPU (più lento). Nulla viene inviato in rete.</entry>
 	<entry label="MusicPrompt">Descrivi la musica da generare (genere, strumenti, atmosfera, tempo...), preferibilmente in inglese:</entry>
@@ -1069,6 +1146,9 @@ Calcolare le mappe di profondità delle due viste dalla clip (intelligenza artif
 	<entry label="BevelLetter">S</entry>
 	<entry label="X">Posizione stereo</entry>
 	<entry label="Invert">Inverti</entry>
+	<entry label="Mask">Maschera</entry>
+	<entry label="MaskNone">(luma qui sotto)</entry>
+	<entry label="MaskMix">Miscela della maschera (viola) con l'immagine</entry>
 </EntrySet>
 <EntrySet label="Chromakey">
 	<entry label="Tolerance">Tolleranza</entry>
@@ -1185,6 +1265,7 @@ Calcolare le mappe di profondità delle due viste dalla clip (intelligenza artif
 	<entry label="EdgesOff">Mostra i contorni (aiuta a verificare l'allineamento sinistra / destra)</entry>
 	<entry label="EdgesOn">Nascondi i contorni</entry>
 	<entry label="SaveView">Salva l'immagine corrente in piena qualità nella cartella di rendering (PNG sinistra, destra, parallela e incrociata)</entry>
+	<entry label="Snapshot">Creare una vista della visualizzazione in qualità finale (le due viste affiancate) e aggiungerla alla libreria</entry>
 	<entry label="FullScreen">Presentazione a schermo intero</entry>
 	<entry label="Status">Velocità di calcolo dell'anteprima (fotogrammi al secondo)</entry>
 	<entry label="GridNone">Nessuna griglia</entry>
@@ -1343,6 +1424,8 @@ Calcolare le mappe di profondità delle due viste dalla clip (intelligenza artif
 	<entry label="TransOpacity">Opacità della clip (o avanzamento della transizione con una maschera luma)</entry>
 	<entry label="TransBevel">Morbidezza del bordo della transizione</entry>
 	<entry label="TransX">Profondità della maschera di transizione</entry>
+	<entry label="TransMask">Maschera della lista dei media (per esempio una maschera IA) al posto della luma, che viene allora nascosta: bianco = visibile, nero = trasparente. Segue il tempo e le due viste della clip; l'opacità e «Inverti» si applicano ad essa, lo smusso ne ammorbidisce i bordi e la posizione stereo la sposta in profondità.</entry>
+	<entry label="TransMaskMix">Miscela l'immagine con la maschera mostrata in viola (nero dove è nera): 0 = l'immagine mascherata, 100 = solo la maschera, per verificarne forma e posizione.</entry>
 	<entry label="FrameOpacity">Opacità della cornice</entry>
 	<entry label="FrameX">Profondità della cornice</entry>
 	<entry label="ChromaTolerance">Distanza di colore ancora resa trasparente</entry>
