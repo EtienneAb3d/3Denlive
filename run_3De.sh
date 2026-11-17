@@ -82,6 +82,28 @@ case "$CONFIG" in
 	*) export GTK_OVERLAY_SCROLLING=0
 	   export GDK_BACKEND="${GDK_BACKEND:-x11}" ;; # JavaFX (web pages without WebKitGTK) needs X11
 esac
+# Started from a snap application (VS Code installed as a snap...): its GTK / GIO module paths point to
+# modules built against the libc of the snap, which make the WebKit network process crash (no page loads).
+# Removed whenever they point into a snap (SNAP itself is not always passed on).
+for V in GTK_PATH GTK_EXE_PREFIX GTK_IM_MODULE_FILE GIO_MODULE_DIR GDK_PIXBUF_MODULE_FILE GDK_PIXBUF_MODULEDIR LOCPATH GSETTINGS_SCHEMA_DIR LD_LIBRARY_PATH LD_PRELOAD; do
+	eval "SNAP_V=\${$V:-}"
+	case "$SNAP_V" in
+		*/snap/*) unset "$V"; echo "Snap environment: $V removed" >&2 ;;
+	esac
+done
+for V in $(env | sed -n 's/^\([A-Za-z_][A-Za-z0-9_]*\)_VSCODE_SNAP_ORIG=.*/\1/p'); do
+	eval "export $V=\"\${${V}_VSCODE_SNAP_ORIG}\""
+done
+case "${XDG_DATA_DIRS:-}" in
+	*/snap/*) SNAP_V=""
+		OLD_IFS="$IFS"; IFS=:
+		for D in $XDG_DATA_DIRS; do
+			case "$D" in */snap/*) ;; *) SNAP_V="${SNAP_V:+$SNAP_V:}$D" ;; esac
+		done
+		IFS="$OLD_IFS"
+		export XDG_DATA_DIRS="$SNAP_V"; echo "Snap environment: XDG_DATA_DIRS cleaned" >&2 ;;
+esac
+unset SNAP_V
 
 LOG_DIR="$ROOT/log"
 LOG_FILE="$LOG_DIR/3De.log"

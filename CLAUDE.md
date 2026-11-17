@@ -33,7 +33,7 @@ Dev run: start from `distrib/`, with `src/` on the classpath. The language XML f
 cd distrib && java -XstartOnFirstThread -Xmx4G -XX:G1PeriodicGCInterval=30000 --enable-native-access=ALL-UNNAMED -cp "../bin:../src:*:MacSilicon/swt.jar" -Djava.library.path=MacSilicon/lib com.cubaix.TDenlive.TDenlive
 ```
 
-On Linux, drop `-XstartOnFirstThread`, use the `Linux/` jar and libs, and set `GTK_OVERLAY_SCROLLING=0`. The README has the per-platform variants.
+On Linux, drop `-XstartOnFirstThread`, use the `Linux/` jar and libs, and set `GTK_OVERLAY_SCROLLING=0`. The README has the per-platform variants. Started from a snap application (VS Code installed as a snap), the environment carries the snap's `GIO_MODULE_DIR`, `GTK_PATH`, `LOCPATH`... whose modules, built against the snap's libc, make the `WebKitNetworkProcess` crash (`undefined symbol: __libc_pthread_init`: no web page loads, "offline" message): the Linux launchers and `run_3De.sh` unset those that point into a snap (`SNAP` itself is not always passed on), drop the snap folders of `XDG_DATA_DIRS` and restore the `*_VSCODE_SNAP_ORIG` variables; `utils.SnapEnv.clean()`, first in `main()` on Linux, does the same in the native environment of the process (libc `unsetenv` / `setenv` through the FFM API, before GTK starts), for the VS Code launch configuration.
 
 `./Install-Dev.sh` downloads two kinds of binaries into gitignored folders:
 - ffmpeg into `distrib/ffmpeg/`. The binaries are not in Git or in the jar because they are 60 to 180 MB each. The files are named `ffmpeg-<os.arch><suffix>`: `ffmpeg-amd64`, `ffmpeg-amd64.exe`, `ffmpeg-x86_64-osx`, `ffmpeg-aarch64-osx`. `SOURCES.txt` records where each one came from.

@@ -496,6 +496,8 @@ public class TDenlive {
 		//native window system: on macOS its initialization from a worker thread otherwise needs the
 		//main thread, which SWT holds, and both threads deadlock
 		System.setProperty("java.awt.headless", "true");
+		//Snap GTK / GIO paths (VS Code installed as a snap) removed before GTK starts: WebKit crashes otherwise
+		com.cubaix.TDenlive.utils.SnapEnv.clean();
 		try {
 			new TDenlive().start(args.length > 0 ? args[0] : null);
 			System.exit(0);//Force exit, because of possible threads keeping it alive

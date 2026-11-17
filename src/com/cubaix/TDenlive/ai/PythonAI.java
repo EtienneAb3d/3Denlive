@@ -273,15 +273,73 @@ public abstract class PythonAI {
 		return isWindows() ? new File(aDir, "Scripts\\python.exe") : new File(new File(aDir, "bin"), "python");
 	}
 
+	/**
+	 * Marker: version, then the PyTorch build installed ("cuda" / "cpu", probed when missing: older markers),
+	 * then "driver" if the NVIDIA driver answered at the installation. A CPU PyTorch installed while the
+	 * NVIDIA driver did not answer (driver broken by a kernel update...) is installed again once it answers:
+	 * --torch-backend=auto only sees the GPU through the driver.
+	 */
 	public static boolean isEnvInstalled(String aTdeDir,Env aEnv) {
 		try {
 			File aM = getEnvMarker(aTdeDir, aEnv);
-			return aM.isFile() && getEnvPython(aTdeDir, aEnv).isFile()
-					&& aEnv.version.equals(new String(Files.readAllBytes(aM.toPath()), StandardCharsets.UTF_8).trim());
+			if(!aM.isFile() || !getEnvPython(aTdeDir, aEnv).isFile()) {
+				return false;
+			}
+			String[] aL = new String(Files.readAllBytes(aM.toPath()), StandardCharsets.UTF_8).trim().split("\\R");
+			if(!aEnv.version.equals(aL[0].trim())) {
+				return false;
+			}
+			if(!DepthEstimator.useGpuRuntime()) {
+				return true;
+			}
+			String aBackend = aL.length > 1 ? aL[1].trim() : null;
+			if("cuda".equals(aBackend) || (aL.length > 2 && "driver".equals(aL[2].trim()))) {
+				return true;
+			}
+			if(DepthEstimator.bestGpu() == null) {
+				//Driver still not answering: nothing better to install
+				return true;
+			}
+			if(aBackend == null) {
+				aBackend = torchBackend(aTdeDir, aEnv);
+				if(aBackend == null) {
+					return true;
+				}
+				Files.write(aM.toPath(), (aEnv.version+"\n"+aBackend+"\n").getBytes(StandardCharsets.UTF_8));
+				if("cuda".equals(aBackend)) {
+					return true;
+				}
+			}
+			System.err.println("AI: environment "+aEnv.name+" has a CPU PyTorch and the NVIDIA driver now answers: installed again");
+			return false;
 		}
 		catch(Throwable t) {
 			return false;
 		}
+	}
+
+	/**
+	 * "cuda" or "cpu" for the PyTorch of an environment, null if it can't be told
+	 */
+	static String torchBackend(String aTdeDir,Env aEnv) {
+		try {
+			Process aP = new ProcessBuilder(getEnvPython(aTdeDir, aEnv).getAbsolutePath(), "-I", "-c"
+					, "import torch;print('TORCH', 'cuda' if torch.version.cuda else 'cpu')").redirectErrorStream(true).start();
+			String aOut = new String(aP.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+			if(!aP.waitFor(120, java.util.concurrent.TimeUnit.SECONDS)) {
+				aP.destroyForcibly();
+				return null;
+			}
+			for(String aL : aOut.split("\\R")) {
+				if(aL.startsWith("TORCH ")) {
+					return aL.substring(6).trim();
+				}
+			}
+		}
+		catch(Throwable t) {
+			t.printStackTrace(System.err);
+		}
+		return null;
 	}
 
 	/**
@@ -622,7 +680,15 @@ public abstract class PythonAI {
 		if(canceled()) {
 			return false;
 		}
-		Files.write(getEnvMarker(tdeDir, aE).toPath(), aE.version.getBytes(StandardCharsets.UTF_8));
+		String aMarker = aE.version+"\n";
+		if(DepthEstimator.useGpuRuntime()) {
+			String aBackend = torchBackend(tdeDir, aE);
+			if(aBackend != null) {
+				aMarker += aBackend+"\n"+(DepthEstimator.bestGpu() != null ? "driver\n" : "");
+				System.out.println("AI: environment "+aE.name+" installed with PyTorch "+aBackend);
+			}
+		}
+		Files.write(getEnvMarker(tdeDir, aE).toPath(), aMarker.getBytes(StandardCharsets.UTF_8));
 		return true;
 	}
 
