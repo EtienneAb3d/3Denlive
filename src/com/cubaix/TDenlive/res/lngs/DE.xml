@@ -1680,7 +1680,7 @@ Die Tiefenkarten beider Ansichten aus dem Clip berechnen (künstliche Intelligen
 	<entry label="AlignH">Höhenunterschied zwischen linker und rechter Ansicht</entry>
 	<entry label="AlignR">Drehungsunterschied zwischen linker und rechter Ansicht</entry>
 	<entry label="DepthZ">Durch die Tiefenkarte erzeugte Tiefenintensität</entry>
-	<entry label="DepthX">Verteilung des Versatzes zwischen linker und rechter Ansicht (Stereo-Position)</entry>
+	<entry label="DepthX">Position der Hintergründe</entry>
 	<entry label="DepthP">Perspektive: Versatz wächst mit dem Abstand zur Bildmitte</entry>
 	<entry label="DepthM">Mischung der Tiefenkarte mit dem Quellbild vor der 3D-Umwandlung: 0 = nur Quellbild, 100 = nur Tiefenkarte (in Stereo umgewandelt)</entry>
 	<entry label="PlaceX">Horizontale Position des Bildes</entry>

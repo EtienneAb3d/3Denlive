@@ -172,12 +172,12 @@ public class Clip extends Media {
 			if(aO instanceof XmlTag) {
 				XmlTag aT = (XmlTag)aO;
 				if("/Processors".equalsIgnoreCase(aT.tagName)) {
-					//The speed processor goes first: the keys of the processors below it are in media time
+					//The speed processor after the head ones and the depth map one (placed again just below)
 					Speed aSP = getSpeedProcessor(false);
 					if(aSP != null) {
 						placeSpeedProcessor(aSP);
 					}
-					//Projects made before the rule: the depth map processor goes first
+					//Projects made before the rule: the depth map processor goes first, before the speed processor
 					Processor aDP = getDepthProcessor();
 					if(aDP != null) {
 						placeDepthProcessor(aDP);
@@ -1268,33 +1268,42 @@ public class Clip extends Media {
 	}
 
 	/**
-	 * The speed processor changes the time of the processors below it: always the first one after the
-	 * mandatory TimeController, and unmovable, so all the others are below it
+	 * The speed processor: right after the mandatory head processors (isHeadProcessor()) and the depth map
+	 * processor, and unmovable, so all the others are below it. Its position does not change the time of the
+	 * keys (keyTimeAt(): media time for all), only the chain of the images
 	 */
 	void placeSpeedProcessor(Processor aP) {
 		processors.remove(aP);
 		int aPos = 0;
-		while(aPos < processors.size() && processors.elementAt(aPos) instanceof TimeController) {
+		while(aPos < processors.size()
+				&& (isHeadProcessor(processors.elementAt(aPos)) || isDepthProcessor(processors.elementAt(aPos)))) {
 			aPos++;
 		}
 		processors.add(aPos, aP);
 	}
 
 	/**
-	 * The depth map processor builds the views from the media: always the first one after the
-	 * mandatory TimeController (and Shapes), and unmovable (see Processor.isUnmovable)
+	 * The depth map processor builds the views from the media: always the first one after the mandatory
+	 * head processors (isHeadProcessor()), before the speed processor (the signatures of the inpainting
+	 * precomputation, made of the processors before it, don't depend on the speed), and unmovable
+	 * (see Processor.isUnmovable)
 	 */
 	void placeDepthProcessor(Processor aP) {
 		processors.remove(aP);
 		int aPos = 0;
-		while(aPos < processors.size()
-				&& (processors.elementAt(aPos) instanceof TimeController
-						|| processors.elementAt(aPos) instanceof Speed
-						|| processors.elementAt(aPos) instanceof com.cubaix.TDenlive.processors.Objects3D
-						|| (processors.elementAt(aPos) instanceof Shapes && !(processors.elementAt(aPos) instanceof Subtitles)))) {
+		while(aPos < processors.size() && isHeadProcessor(processors.elementAt(aPos))) {
 			aPos++;
 		}
 		processors.add(aPos, aP);
+	}
+
+	/**
+	 * The mandatory processors at the head of the list: TimeController, Shapes (not Subtitles), Objects3D
+	 */
+	static boolean isHeadProcessor(Processor aP) {
+		return aP instanceof TimeController
+				|| aP instanceof com.cubaix.TDenlive.processors.Objects3D
+				|| (aP instanceof Shapes && !(aP instanceof Subtitles));
 	}
 
 	/**

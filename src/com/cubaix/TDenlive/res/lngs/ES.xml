@@ -1680,7 +1680,7 @@
 	<entry label="AlignH">Diferencia de alto entre las vistas izquierda y derecha</entry>
 	<entry label="AlignR">Diferencia de rotación entre las vistas izquierda y derecha</entry>
 	<entry label="DepthZ">Intensidad de la profundidad dada por el mapa de profundidad</entry>
-	<entry label="DepthX">Distribución del desplazamiento entre las vistas izquierda y derecha (posición estéreo)</entry>
+	<entry label="DepthX">Posición de los fondos</entry>
 	<entry label="DepthP">Perspectiva: desplazamiento que crece con la distancia al centro de la imagen</entry>
 	<entry label="DepthM">Mezcla del mapa de profundidad sobre la imagen original antes de la conversión 3D: 0 = solo la imagen original, 100 = solo el mapa de profundidad (convertido a estéreo)</entry>
 	<entry label="PlaceX">Posición horizontal de la imagen</entry>

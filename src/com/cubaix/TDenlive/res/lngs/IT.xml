@@ -1680,7 +1680,7 @@ Calcolare le mappe di profondità delle due viste dalla clip (intelligenza artif
 	<entry label="AlignH">Differenza di altezza tra la vista sinistra e destra</entry>
 	<entry label="AlignR">Differenza di rotazione tra la vista sinistra e destra</entry>
 	<entry label="DepthZ">Intensità della profondità data dalla mappa di profondità</entry>
-	<entry label="DepthX">Distribuzione dello scostamento tra la vista sinistra e destra (posizione stereo)</entry>
+	<entry label="DepthX">Posizione degli sfondi</entry>
 	<entry label="DepthP">Prospettiva: scostamento crescente con la distanza dal centro dell'immagine</entry>
 	<entry label="DepthM">Miscela della mappa di profondità sull'immagine sorgente prima della conversione 3D: 0 = solo immagine sorgente, 100 = solo mappa di profondità (convertita in stereo)</entry>
 	<entry label="PlaceX">Posizione orizzontale dell'immagine</entry>

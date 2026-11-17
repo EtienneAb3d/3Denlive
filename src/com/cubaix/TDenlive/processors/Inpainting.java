@@ -32,7 +32,8 @@ import com.cubaix.TDenlive.medias.VideoTimeLine;
  * interpolation of their edges fills (uncovered behind the foreground) are filled by the inpainting model
  * (depth.Inpainter) instead. The interpolation is done first; whatever the mode, the model runs on the image
  * reduced to the work resolution (workSize()), and its result, enlarged, fills the holes of the image at its size
- * (no margin; the hole pixels of a reduced pixel that is not a hole (less than HOLE_SHARE) keep the interpolation).
+ * (no margin; a reduced pixel with at least one hole pixel is a hole, so that no hole keeps the interpolation;
+ * the interpolation only remains when the model gives nothing: cache miss, failure).
  * The cache, the index and the temporal smoothing are at the reduced size.
  * Results cached by content: key = hash of the source view, its depth map, the parameters at the time and the
  * size; value = the replaced pixels (files of a temporary folder, deleted at the end of the application).
@@ -74,12 +75,6 @@ public class Inpainting {
 	//Last failure of the model
 	volatile long failedMS = 0;
 
-	//Share of hole pixels that makes a pixel of the reduced image a hole (a hole edge moved by a pixel from one
-	//image to the next does not change it)
-	static final double HOLE_SHARE = 0.3;
-	//Share of the interpolation always kept in the filled pixels (the model, enlarged from the work resolution,
-	//may be blurred or wrong)
-	static final float INTERP_MIX = 0.3f;
 
 	static File cacheDir = null;
 	static final Set<String> cached = ConcurrentHashMap.newKeySet();
@@ -441,7 +436,7 @@ public class Inpainting {
 	}
 
 	/**
-	 * Reduction of the image to aSW x aSH: a reduced pixel is a hole when HOLE_SHARE of its pixels at least are
+	 * Reduction of the image to aSW x aSH: a reduced pixel is a hole when one of its pixels at least is
 	 * (in aSHoles); its color (aSRGB, if not null) = the average of its non hole pixels
 	 */
 	static void reduce(int aW,int aH,boolean[] aHoles,Color aColor,int aSW,int aSH,boolean[] aSHoles,float[] aSRGB) {
@@ -471,7 +466,7 @@ public class Inpainting {
 					}
 				}
 				int sp = sy*aSW+sx;
-				boolean aHole = aN == 0 || (aNH > 0 && aNH >= HOLE_SHARE*(aNH+aN));
+				boolean aHole = aNH > 0 || aN == 0;
 				aSHoles[sp] = aHole;
 				if(aSRGB != null && !aHole) {
 					aSRGB[sp*3] = (float)(aR/aN);
@@ -489,7 +484,7 @@ public class Inpainting {
 
 	/**
 	 * The patch of the image reduced to the work resolution, as planned, enlarged to the hole pixels of the
-	 * image (aW x aH) whose reduced pixel is in it (the others keep the interpolation)
+	 * image (aW x aH), without interpolation
 	 */
 	void fillScaled(Plan aPlan,Frame aF,int aW,int aH,boolean[] aHoles,Color aColor,Writer aOut) throws Exception {
 		int aSW = aF.w;
@@ -542,10 +537,6 @@ public class Inpainting {
 				double aFX = (x+0.5)*aSW/aW-0.5;
 				//From the pixels of the patch only (the others are not filled by the model)
 				Inpainter.maskedBilinear(aImg, aIn, true, aSW, aSH, aFX, aFY, sx, sy, aPix, 0);
-				//Mixed with the interpolation (the color of the pixel now)
-				for(int c = 0;c < 3;c++) {
-					aPix[c] = (1-INTERP_MIX)*aPix[c]+INTERP_MIX*aColor.at(p, c);
-				}
 				aOut.set(p, aPix[0], aPix[1], aPix[2]);
 			}
 		}

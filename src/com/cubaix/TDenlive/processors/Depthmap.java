@@ -532,7 +532,8 @@ public class Depthmap extends Processor {
 					continue;
 				}
 
-				double aZ = aLineZSrc[x] = (aKey.blackIsFront?1:-1)*((((aDMR+aDMG+aDMB)/(3.0*255))-aMin)/(aMax-aMin)-0.5);
+				//Z in [0,1]: 0 = the nearest point, at the screen plane (zero parallax), everything else behind
+				double aZ = aLineZSrc[x] = (aKey.blackIsFront?1:-1)*((((aDMR+aDMG+aDMB)/(3.0*255))-aMin)/(aMax-aMin)-0.5)+0.5;
 				double aDx = -(int)((aIsL?-1+aKey.x:+1+aKey.x)*
 						(aKey.d*aZ)
 						*aWidth
@@ -604,7 +605,8 @@ public class Depthmap extends Processor {
 							int aRN = (int)((aDMBR*(aEndX - ix)+aDMER*(ix - aBegX))/((double)(aEndX - aBegX)));
 							int aGN = (int)((aDMBG*(aEndX - ix)+aDMEG*(ix - aBegX))/((double)(aEndX - aBegX)));
 							int aBN = (int)((aDMBB*(aEndX - ix)+aDMEB*(ix - aBegX))/((double)(aEndX - aBegX)));
-							aFDB[y*aWidth+ix] = (aAlphaN<<24)|(aRN<<16)|(aGN<<8)|aBN;
+							//With the inpainting model: a hole for it (the depth stays interpolated: nothing behind shows through)
+							aFDB[y*aWidth+ix] = aHoles != null ? 0 : (aAlphaN<<24)|(aRN<<16)|(aGN<<8)|aBN;
 						}
 					}
 				}
@@ -811,7 +813,8 @@ public class Depthmap extends Processor {
 					continue;
 				}
 
-				double aZ = (aKey.blackIsFront?1:-1)*((((aDMR+aDMG+aDMB)/3.0)-aMin)/(aMax-aMin)-0.5);
+				//Z in [0,1]: 0 = the nearest point, at the screen plane (zero parallax), everything else behind
+				double aZ = (aKey.blackIsFront?1:-1)*((((aDMR+aDMG+aDMB)/3.0)-aMin)/(aMax-aMin)-0.5)+0.5;
 				int aDx = -(int)((aIsL?-1+aKey.x:+1+aKey.x)*
 						(aKey.d*aZ)
 						*aWidth
@@ -888,10 +891,11 @@ public class Depthmap extends Processor {
 							double aRN = ((aDMBR*(aEndX - ix)+aDMER*(ix - aBegX))/((double)(aEndX - aBegX)));
 							double aGN = ((aDMBG*(aEndX - ix)+aDMEG*(ix - aBegX))/((double)(aEndX - aBegX)));
 							double aBN = ((aDMBB*(aEndX - ix)+aDMEB*(ix - aBegX))/((double)(aEndX - aBegX)));
-							aFDB[y*aWidth*4+ix*4] = (float)aRN;
-							aFDB[y*aWidth*4+ix*4+1] = (float)aGN;
-							aFDB[y*aWidth*4+ix*4+2] = (float)aBN;
-							aFDB[y*aWidth*4+ix*4+3] = (float)aAlphaN;
+							//With the inpainting model: a hole for it (the depth stays interpolated: nothing behind shows through)
+							aFDB[y*aWidth*4+ix*4] = aHoles != null ? 0 : (float)aRN;
+							aFDB[y*aWidth*4+ix*4+1] = aHoles != null ? 0 : (float)aGN;
+							aFDB[y*aWidth*4+ix*4+2] = aHoles != null ? 0 : (float)aBN;
+							aFDB[y*aWidth*4+ix*4+3] = aHoles != null ? 0 : (float)aAlphaN;
 						}
 					}
 				}

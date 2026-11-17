@@ -1680,7 +1680,7 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="AlignH">Height difference between the left and right views</entry>
 	<entry label="AlignR">Rotation difference between the left and right views</entry>
 	<entry label="DepthZ">Depth intensity given by the depth map</entry>
-	<entry label="DepthX">Distribution of the shift between the left and right views (stereo position)</entry>
+	<entry label="DepthX">Position of the backgrounds</entry>
 	<entry label="DepthP">Perspective: shift growing with the distance to the image center</entry>
 	<entry label="DepthM">Mix of the depth map on the source image before the 3D conversion: 0 = source image only, 100 = depth map only (converted to stereo)</entry>
 	<entry label="PlaceX">Horizontal position of the image</entry>

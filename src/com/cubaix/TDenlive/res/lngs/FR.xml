@@ -1680,7 +1680,7 @@ Calculer les cartes de profondeur des deux vues à partir du clip (intelligence 
 	<entry label="AlignH">Différence de hauteur entre les vues gauche et droite</entry>
 	<entry label="AlignR">Différence de rotation entre les vues gauche et droite</entry>
 	<entry label="DepthZ">Intensité de la profondeur donnée par la carte de profondeur</entry>
-	<entry label="DepthX">Répartition du décalage entre les vues gauche et droite (position stéréo)</entry>
+	<entry label="DepthX">Position des arrière-plans</entry>
 	<entry label="DepthP">Perspective : décalage croissant avec la distance au centre de l'image</entry>
 	<entry label="DepthM">Fusion de la carte de profondeur sur l'image source avant la conversion 3D : 0 = image source seule, 100 = carte de profondeur seule (convertie en stéréo)</entry>
 	<entry label="PlaceX">Position horizontale de l'image</entry>

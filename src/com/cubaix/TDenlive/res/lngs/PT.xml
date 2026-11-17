@@ -1680,7 +1680,7 @@ Calcular os mapas de profundidade das duas vistas a partir do clipe (inteligênc
 	<entry label="AlignH">Diferença de altura entre as vistas esquerda e direita</entry>
 	<entry label="AlignR">Diferença de rotação entre as vistas esquerda e direita</entry>
 	<entry label="DepthZ">Intensidade da profundidade dada pelo mapa de profundidade</entry>
-	<entry label="DepthX">Distribuição do desvio entre as vistas esquerda e direita (posição estéreo)</entry>
+	<entry label="DepthX">Posição dos fundos</entry>
 	<entry label="DepthP">Perspetiva: desvio que aumenta com a distância ao centro da imagem</entry>
 	<entry label="DepthM">Mistura do mapa de profundidade na imagem de origem antes da conversão 3D: 0 = apenas a imagem de origem, 100 = apenas o mapa de profundidade (convertido em estéreo)</entry>
 	<entry label="PlaceX">Posição horizontal da imagem</entry>
