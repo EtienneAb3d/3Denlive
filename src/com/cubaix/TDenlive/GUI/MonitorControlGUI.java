@@ -100,6 +100,7 @@ public class MonitorControlGUI extends CompositePanel {
 		tde.gui.applyColorFont(processingRes);
 		tde.gui.tip(processingRes, "WorkRes");
 		processingRes.setItems(TDConfig.RESNAMES);
+		aResGD.widthHint = tde.gui.comboW(processingRes, 80);
 		processingRes.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {

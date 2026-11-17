@@ -131,6 +131,7 @@ public class RendererGUI {
 		tde.gui.applyColorFont(aProcessingRes);
 		tde.gui.tip(aProcessingRes, "RenderProcessingRes");
 		aProcessingRes.setItems(TDConfig.RESNAMES);
+		aResGD.widthHint = tde.gui.comboW(aProcessingRes, 80);
 		aProcessingRes.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
@@ -180,6 +181,7 @@ public class RendererGUI {
 		tde.gui.applyColorFont(aOutRes);
 		tde.gui.tip(aOutRes, "RenderOutputRes");
 		aOutRes.setItems(TDConfig.RESNAMES);
+		aORGD.widthHint = tde.gui.comboW(aOutRes, 80);
 		aOutRes.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {

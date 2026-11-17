@@ -186,6 +186,7 @@ public class SettingsGUI {
 		tde.gui.applyColorFont(processingRes);
 		tde.gui.tip(processingRes, "ModeRes");
 		processingRes.setItems(TDConfig.RESNAMES);
+		aResGD.widthHint = tde.gui.comboW(processingRes, 80);
 		processingRes.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {

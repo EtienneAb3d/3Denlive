@@ -1137,6 +1137,30 @@ public class TDeGUI {
 		return aDesignH + Math.max(0, textH - DESIGN_TEXT_H);
 	}
 
+	//Width hint of a combo that shows its longest item whole (the drop down list of macOS is as wide as the combo):
+	//text of the widest item in the combo's font + room for the arrow and the margins, at least aMinW
+	public int comboW(org.eclipse.swt.widgets.Combo aCombo, int aMinW) {
+		int aTextW = 0;
+		GC aGC = new GC(aCombo);
+		try {
+			aGC.setFont(aCombo.getFont());
+			for(String aItem : aCombo.getItems()) {
+				aTextW = Math.max(aTextW, aGC.textExtent(aItem).x);
+			}
+		}
+		finally {
+			aGC.dispose();
+		}
+		int aW = aTextW + 40;
+		try {
+			aW = Math.max(aW, aCombo.computeSize(SWT.DEFAULT, SWT.DEFAULT).x);
+		}
+		catch(Throwable t) {
+			t.printStackTrace(System.err);
+		}
+		return Math.max(aMinW, aW);
+	}
+
 	int measureTextH() {
 		GC aGC = new GC(display);
 		try {
