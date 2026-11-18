@@ -92,14 +92,14 @@ public class TDConfig {
 			,false//ALIGN
 	};
 	public String[] processingResNames = new String[] {
-			RESSHORTNAMES[RES_HD]//WORK HD
+			RESSHORTNAMES[RES_DVD]//WORK DVD
 			,RESSHORTNAMES[RES_FULLHD]//FULLSCREEN FullHD
 			,RESSHORTNAMES[RES_4K]//RENDER 4K
 			,"VARIABLE"//ALIGN
 	};
 	public int[] processingResValues = new int[] {
 			//SD=576, HD=720, FullHD=1080, QuadHD=1440, UHD=2160, 8K=4320
-			RESVALUES[RES_HD]//WORK HD
+			RESVALUES[RES_DVD]//WORK DVD
 			,RESVALUES[RES_FULLHD]//FULLSCREEN FullHD
 			,RESVALUES[RES_4K]//RENDER 4K
 			,RESVALUES[RES_HD]//ALIGN

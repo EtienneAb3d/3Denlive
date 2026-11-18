@@ -443,6 +443,13 @@
 	<entry label="Quality">Quality</entry>
 	<entry label="SnapshotEmpty">No image at this position.</entry>
 	<entry label="SnapshotError">The view could not be captured:</entry>
+	<entry label="RangeClipNoRange">Select a passage of the time lines first: a time range on the ruler (Shift + drag) or one or more clips.</entry>
+	<entry label="RangeClipTitle">Video of the selection</entry>
+	<entry label="RangeClipProgress">%DONE% / %TOTAL% images</entry>
+	<entry label="RangeClipLoading">Adding to the library...</entry>
+	<entry label="RangeClipError">The video of the selection could not be made:</entry>
+	<entry label="RangeClipCancel">Cancel</entry>
+	<entry label="WorkCopies">Computing the work copies of the videos at the monitor resolution (%N%)...</entry>
 </EntrySet>
 <EntrySet label="MediaProps">
 	<entry label="AnamorphW">Width</entry>
@@ -1456,7 +1463,17 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="OutputFPS">Video FPS</entry>
 	<entry label="FFmpegVideoOpts">Add FFmpeg video parameters (https://ffmpeg.org/ffmpeg.html)</entry>
 	<entry label="FFmpegVideoOptsEx">Example: -b:v 6000k -maxrate:v 9000k -minrate:v 0</entry>
-	<entry label="OutputFile">Output file (may also be like "3De_%04d_P.png")</entry>
+	<entry label="OutputFile">Output file, without format suffix (may also be like "3De_%04d.png")</entry>
+	<entry label="Formats">Formats to generate in one pass (suffix added to the file name):</entry>
+	<entry label="FormatP">Parallel (_P)</entry>
+	<entry label="FormatX">Crossed (_X)</entry>
+	<entry label="FormatLeft">Left (_Left)</entry>
+	<entry label="FormatRight">Right (_Right)</entry>
+	<entry label="FormatA">Anaglyph (_A)</entry>
+	<entry label="FormatDubois">Anaglyph Dubois (_Dubois)</entry>
+	<entry label="NoFormat">Check at least one format to generate.</entry>
+	<entry label="Anaglyph444">Anaglyphs with colors at full resolution (H.264 4:4:4, separate encoder)</entry>
+	<entry label="Anaglyph444Note">Better anaglyphs: standard videos (4:2:0) store the colors at half resolution, which blurs the separation of the eyes (ghost images, colored fringes on the edges). Less portable: a 4:4:4 video plays in Chrome, Edge and VLC on a computer, but not in Safari, on iPhone / iPad, on most phones, TVs and video players, nor on many hardware decoders. Larger files.</entry>
 	<entry label="StartAtTimePos">Start at the current time cursor</entry>
 	<entry label="OnlyTimeRange">Only the selected time range</entry>
 	<entry label="MixingAudio">Mixing the sound...</entry>
@@ -1532,6 +1549,7 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="EdgesOn">Hide the edges</entry>
 	<entry label="SaveView">Save the current image in full quality in the render folder (left, right, parallel and crossed PNG)</entry>
 	<entry label="Snapshot">Create a view of the display in final quality (both views side by side) and add it to the library</entry>
+	<entry label="RangeClip">Render the time range selected on the ruler, or else the selected clips alone, in final quality (both views side by side, with the sound) and add the video to the library</entry>
 	<entry label="FullScreen">Full screen presentation</entry>
 	<entry label="Status">Preview computation speed (frames per second)</entry>
 	<entry label="GridNone">No grid</entry>
@@ -1631,7 +1649,9 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="RenderOutputRes">Resolution of the output video</entry>
 	<entry label="RenderFPS">Frames per second of the output video</entry>
 	<entry label="RenderFFmpegOpts">Extra ffmpeg parameters for the video encoding (optional)</entry>
-	<entry label="RenderOutputFile">Path of the output file. With a pattern like "3De_%04d_P.png", an image sequence is written</entry>
+	<entry label="RenderOutputFile">Path of the output file, without the format suffix (_P, _X...) added for each format checked. With a pattern like "3De_%04d.png", image sequences are written</entry>
+	<entry label="RenderFormats">Each format checked gives its own file, all made in the same pass. The page of the stereo player opens the parallel one, else the crossed one, else an anaglyph (anaglyphs can not be converted to the other formats)</entry>
+	<entry label="RenderAnaglyph444">Only for the anaglyph videos (_A, _Dubois), encoded by their own ffmpeg process: the other formats stay in standard 4:2:0</entry>
 	<entry label="RenderStartAtTimePos">Render from the time cursor instead of the beginning</entry>
 	<entry label="RenderOnlyTimeRange">Render only the time range selected on the time lines (burger menu of the time lines)</entry>
 	<entry label="RenderProcess">Start the rendering</entry>

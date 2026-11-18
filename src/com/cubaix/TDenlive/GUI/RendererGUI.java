@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -44,7 +45,16 @@ public class RendererGUI {
 	TDenlive tde = null;
 	Shell shell = null;
 	
+	//Output path without the format suffix: FfmpegEncoder.FORMAT_SUFFIXES are added before its extension
 	String pathOut = null;
+	//Formats to generate (parallel by default)
+	boolean[] formatsOn = new boolean[FfmpegEncoder.FORMAT_SUFFIXES.length];
+	//Anaglyphs in H.264 4:4:4 (separate encoder), enabled when an anaglyph is checked
+	boolean anaglyph444 = false;
+	Button anaglyph444CB = null;
+	//Files of the rendering in progress, with their formats
+	String[] pathsOut = null;
+	int[] formatsOut = null;
 	int outputRes = 720;
 	double outputFPS = 30;
 	boolean playing = false;
@@ -80,9 +90,14 @@ public class RendererGUI {
 		aNF.setGroupingUsed(false);
 		//Named after the project once saved, 3De_ before
 		String aPrefix = tde.projectName == null ? "3De_" : tde.projectName.replaceAll("(?i)([.]3de)+$", "")+"_";
+		formatsOn[FfmpegEncoder.FORMAT_P] = true;
 		for(int i = 1;i < 10000;i++) {
-			pathOut = tde.renderDir+File.separatorChar+aPrefix+aNF.format(i)+"_P.mp4";
-			if(new File(pathOut).exists()) {
+			pathOut = tde.renderDir+File.separatorChar+aPrefix+aNF.format(i)+".mp4";
+			boolean aTaken = false;
+			for(String aSuffix : FfmpegEncoder.FORMAT_SUFFIXES) {
+				aTaken |= new File(withSuffix(pathOut, aSuffix)).exists();
+			}
+			if(aTaken) {
 				continue;
 			}
 			break;
@@ -96,7 +111,7 @@ public class RendererGUI {
 		shell = new Shell(tde.gui.display);
 		shell.setText("3Denlive");
 		shell.setLayout(new GridLayout(1, false));
-		shell.setSize(600, 600+THUMB_H);
+		shell.setSize(600, 760+THUMB_H);
 		tde.gui.applyColorFont(shell);
 		shell.setImage(tde.gui.imgsSwt.getIcon("3Denlive32.png"));
 		
@@ -292,6 +307,52 @@ public class RendererGUI {
 			}
 		});
 		aOutT.setText(pathOut);
+
+		//Formats generated in the same pass, 3 per row
+		final CLabel aFormatsL = new CLabel(shell,SWT.NONE);
+		aFormatsL.setText(tde.gui.lngs.get("Renderer.Formats"));
+		tde.gui.applyColorFont(aFormatsL);
+		tde.gui.tip(aFormatsL, "RenderFormats");
+		GridData aFLGD = new GridData(GridData.FILL_HORIZONTAL);
+		aFLGD.heightHint = tde.gui.h(20);
+		aFormatsL.setLayoutData(aFLGD);
+		Composite aFormatsC = new Composite(shell, SWT.NONE);
+		tde.gui.applyColorFont(aFormatsC);
+		aFormatsC.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		GridLayout aFCGL = new GridLayout(3, true);
+		aFCGL.marginHeight = 0;
+		aFormatsC.setLayout(aFCGL);
+		for(int f = 0;f < FfmpegEncoder.FORMAT_SUFFIXES.length;f++) {
+			final int aF = f;
+			final Button aFCB = new Button(aFormatsC, SWT.CHECK);
+			tde.gui.applyColorFont(aFCB);
+			tde.gui.tip(aFCB, "RenderFormats");
+			GridData aFCBGD = new GridData(GridData.FILL_HORIZONTAL);
+			aFCBGD.heightHint = tde.gui.h(20);
+			aFCB.setLayoutData(aFCBGD);
+			aFCB.setText(tde.gui.lngs.get(FfmpegEncoder.FORMAT_LABELS[f]));
+			aFCB.setSelection(formatsOn[f]);
+			aFCB.addListener(SWT.Selection, e -> {
+				formatsOn[aF] = aFCB.getSelection();
+				updateAnaglyph444();
+			});
+		}
+		anaglyph444CB = new Button(shell, SWT.CHECK);
+		tde.gui.applyColorFont(anaglyph444CB);
+		tde.gui.tip(anaglyph444CB, "RenderAnaglyph444");
+		anaglyph444CB.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		anaglyph444CB.setText(tde.gui.lngs.get("Renderer.Anaglyph444"));
+		anaglyph444CB.setSelection(anaglyph444);
+		anaglyph444CB.addListener(SWT.Selection, e -> anaglyph444 = anaglyph444CB.getSelection());
+		//Quality and portability of the result
+		final Label aA444Note = new Label(shell, SWT.WRAP);
+		tde.gui.applyColorFont(aA444Note);
+		aA444Note.setText(tde.gui.lngs.get("Renderer.Anaglyph444Note"));
+		GridData aANGD = new GridData(GridData.FILL_HORIZONTAL);
+		aANGD.widthHint = 560;
+		aANGD.horizontalIndent = 20;
+		aA444Note.setLayoutData(aANGD);
+		updateAnaglyph444();
 		
 		final Button aStartPosCB = new Button(shell, SWT.CHECK);
 		tde.gui.applyColorFont(aStartPosCB);
@@ -497,6 +558,27 @@ public class RendererGUI {
 			//Not twice
 			return;
 		}
+		//One file per format checked
+		int aNbF = 0;
+		for(boolean aOn : formatsOn) {
+			aNbF += aOn ? 1 : 0;
+		}
+		if(aNbF <= 0) {
+			MessageBox aMB = new MessageBox(shell,SWT.ICON_WARNING|SWT.OK);
+			aMB.setMessage(tde.gui.lngs.get("Renderer.NoFormat"));
+			aMB.open();
+			return;
+		}
+		pathsOut = new String[aNbF];
+		formatsOut = new int[aNbF];
+		for(int f = 0, o = 0;f < formatsOn.length;f++) {
+			if(formatsOn[f]) {
+				formatsOut[o] = f;
+				pathsOut[o++] = withSuffix(pathOut, FfmpegEncoder.FORMAT_SUFFIXES[f]);
+			}
+		}
+		final String[] aPathsOut = pathsOut;
+		final int[] aFormatsOut = formatsOut;
 
 		playing = true;
 		doneButton.setEnabled(false);
@@ -552,8 +634,8 @@ public class RendererGUI {
 					}
 					return;
 				}
-				renderer = new Renderer(tde,aWidth,aHeight,outputFPS,ffmpegVideoOpts,pathOut
-						,audioWav == null ? null : audioWav.getAbsolutePath());
+				renderer = new Renderer(tde,aWidth,aHeight,outputFPS,ffmpegVideoOpts,aPathsOut,aFormatsOut
+						,audioWav == null ? null : audioWav.getAbsolutePath(), anaglyph444);
 				timeStartMS = System.currentTimeMillis();
 				countFrames = 0;
 				tde.timeLineStack.setTimePosMS(startTimePos);
@@ -584,6 +666,111 @@ public class RendererGUI {
 		aTh.start();
 	}
 	
+	/**
+	 * Opens the pages in the browser, one after the other (a browser launched by the first one gets the next ones
+	 * as tabs), the most suited last so that its tab is in front.
+	 */
+	static void openPages(java.util.List<File> aHtmls) {
+		if(aHtmls.isEmpty()) {
+			return;
+		}
+		Thread aTh = new Thread(() -> {
+			for(int i = aHtmls.size()-1;i >= 0;i--) {
+				BrowserControl.openFile(aHtmls.get(i));
+				try {
+					Thread.sleep(i == aHtmls.size()-1 ? 1500 : 400);
+				}
+				catch(Throwable t) {
+					t.printStackTrace(System.err);
+				}
+			}
+		}, "3De-OpenPages");
+		aTh.setDaemon(true);
+		aTh.start();
+	}
+
+		void updateAnaglyph444() {
+		if(anaglyph444CB == null || anaglyph444CB.isDisposed()) {
+			return;
+		}
+		boolean aAna = false;
+		for(int f = 0;f < formatsOn.length;f++) {
+			aAna |= formatsOn[f] && FfmpegEncoder.isAnaglyph(f);
+		}
+		anaglyph444CB.setEnabled(aAna);
+	}
+
+	/**
+	 * aPath with the suffix of a format before its extension (".../3De_0001.mp4" -> ".../3De_0001_P.mp4"); a
+	 * format suffix already at the end of the name is replaced, not doubled.
+	 */
+	static String withSuffix(String aPath, String aSuffix) {
+		int aSep = Math.max(aPath.lastIndexOf('/'), aPath.lastIndexOf(File.separatorChar));
+		int aDot = aPath.lastIndexOf('.');
+		if(aDot <= aSep) {
+			aDot = aPath.length();
+		}
+		String aStem = aPath.substring(0, aDot);
+		for(String aS : FfmpegEncoder.FORMAT_SUFFIXES) {
+			if(aStem.length() > aSep+1+aS.length() && aStem.toLowerCase().endsWith(aS.toLowerCase())) {
+				aStem = aStem.substring(0, aStem.length()-aS.length());
+				break;
+			}
+		}
+		return aStem+aSuffix+aPath.substring(aDot);
+	}
+
+	/** First image of the video of a format, from the first parallel image (left view | right view) */
+	static BufferedImage previewFor(int aFormat, BufferedImage aP) {
+		if(aP == null) {
+			return null;
+		}
+		int aW = aP.getWidth()/2, aH = aP.getHeight();
+		BufferedImage aOut = new BufferedImage(aFormat == FfmpegEncoder.FORMAT_P || aFormat == FfmpegEncoder.FORMAT_X ? 2*aW : aW
+				, aH, BufferedImage.TYPE_INT_RGB);
+		Graphics2D aG = aOut.createGraphics();
+		switch(FfmpegEncoder.FORMAT_SUFFIXES[aFormat]) {
+		case "_P":
+			aG.drawImage(aP, 0, 0, null);
+			break;
+		case "_X"://Views swapped
+			aG.drawImage(aP, 0, 0, aW, aH, aW, 0, 2*aW, aH, null);
+			aG.drawImage(aP, aW, 0, 2*aW, aH, 0, 0, aW, aH, null);
+			break;
+		case "_Left":
+			aG.drawImage(aP, 0, 0, aW, aH, 0, 0, aW, aH, null);
+			break;
+		case "_Right":
+			aG.drawImage(aP, 0, 0, aW, aH, aW, 0, 2*aW, aH, null);
+			break;
+		default://Anaglyphs, as the stereo3d filter of ffmpeg (arcc, arcd)
+			boolean aDubois = FfmpegEncoder.FORMAT_SUFFIXES[aFormat].equals("_Dubois");
+			for(int y = 0;y < aH;y++) {
+				for(int x = 0;x < aW;x++) {
+					int aL = aP.getRGB(x, y), aR = aP.getRGB(x+aW, y);
+					int lr = (aL>>16)&0xFF, lg = (aL>>8)&0xFF, lb = aL&0xFF;
+					int rr = (aR>>16)&0xFF, rg = (aR>>8)&0xFF, rb = aR&0xFF;
+					int r, g, b;
+					if(aDubois) {
+						r = clamp(0.456*lr+0.500*lg+0.176*lb-0.043*rr-0.088*rg-0.002*rb);
+						g = clamp(-0.040*lr-0.038*lg-0.016*lb+0.378*rr+0.734*rg-0.018*rb);
+						b = clamp(-0.015*lr-0.021*lg-0.005*lb-0.072*rr-0.113*rg+1.226*rb);
+					}
+					else {
+						r = lr; g = rg; b = rb;
+					}
+					aOut.setRGB(x, y, (r<<16)|(g<<8)|b);
+				}
+			}
+		}
+		aG.dispose();
+		return aOut;
+	}
+
+	static int clamp(double aV) {
+		return (int)Math.max(0, Math.min(255, Math.round(aV)));
+	}
+
 	void updateStatus() {
 		NumberFormat aNF = NumberFormat.getInstance();
 		aNF.setMinimumFractionDigits(3);
@@ -626,12 +813,37 @@ public class RendererGUI {
 			audioWav.delete();
 			audioWav = null;
 		}
-		//Page to view the video with the stereo player (not for image sequences)
-		File aHtml = null;
-		if(renderer != null && FfmpegEncoder.canHaveAudio(pathOut) && new File(pathOut).exists()) {
-			aHtml = HtmlViewer.writeVideoPage(tde, pathOut);
+		//One page per video made to view it with the stereo player (not for image sequences), each with its preview
+		//(its first frame, in its layout), in the order of preference of the formats (parallel, crossed...)
+		java.util.ArrayList<File> aHtmls = new java.util.ArrayList<File>();
+		StringBuffer aDone = new StringBuffer();
+		if(renderer != null && pathsOut != null) {
+			for(String aPath : pathsOut) {
+				aDone.append(aPath).append("\n");
+			}
+			if(FfmpegEncoder.canHaveAudio(pathOut)) {
+				for(int aF : FfmpegEncoder.VIEWER_ORDER) {
+					for(int o = 0;o < formatsOut.length;o++) {
+						if(formatsOut[o] != aF || !new File(pathsOut[o]).exists()) {
+							continue;
+						}
+						BufferedImage aPreview = null;
+						try {
+							aPreview = previewFor(aF, renderer.firstP);
+						}
+						catch(Throwable t) {
+							t.printStackTrace(System.err);
+						}
+						File aHtml = HtmlViewer.writeVideoPage(tde, pathsOut[o], FfmpegEncoder.FORMAT_LAYOUTS[aF], aPreview);
+						if(aHtml != null) {
+							aHtmls.add(aHtml);
+							aDone.append(aHtml.getAbsolutePath()).append("\n");
+						}
+					}
+				}
+			}
 		}
-		final File aHtmlF = aHtml;
+		final String aDoneS = aDone.length() > 0 ? aDone.toString().trim() : pathOut;
 		NumberFormat aNF = NumberFormat.getInstance();
 		aNF.setMinimumFractionDigits(3);
 		aNF.setMaximumFractionDigits(3);
@@ -650,11 +862,9 @@ public class RendererGUI {
 				}
 				tde.gui.setWaitCursor(false,shell);
 				MessageBox messageBox = new MessageBox(shell,SWT.ICON_INFORMATION|SWT.OK);
-			    messageBox.setMessage(aHtmlF == null ? pathOut : pathOut+"\n"+aHtmlF.getAbsolutePath());
+			    messageBox.setMessage(aDoneS);
 			    messageBox.open();
-			    if(aHtmlF != null) {
-			    	BrowserControl.openFile(aHtmlF);
-			    }
+			    openPages(aHtmls);
 			}
 		});
 	}

@@ -443,6 +443,13 @@
 	<entry label="Quality">Qualità</entry>
 	<entry label="SnapshotEmpty">Nessuna immagine in questa posizione.</entry>
 	<entry label="SnapshotError">Impossibile catturare la vista:</entry>
+	<entry label="RangeClipNoRange">Selezionare prima un passaggio della timeline: un intervallo di tempo sul righello (Maiusc + trascinare) o una o più clip.</entry>
+	<entry label="RangeClipTitle">Video della selezione</entry>
+	<entry label="RangeClipProgress">%DONE% / %TOTAL% immagini</entry>
+	<entry label="RangeClipLoading">Aggiunta alla libreria...</entry>
+	<entry label="RangeClipError">Impossibile creare il video della selezione:</entry>
+	<entry label="RangeClipCancel">Annulla</entry>
+	<entry label="WorkCopies">Calcolo delle copie di lavoro dei video alla risoluzione del monitor (%N%)...</entry>
 </EntrySet>
 <EntrySet label="MediaProps">
 	<entry label="AnamorphW">Larghezza</entry>
@@ -1456,7 +1463,17 @@ Calcolare le mappe di profondità delle due viste dalla clip (intelligenza artif
 	<entry label="OutputFPS">FPS video</entry>
 	<entry label="FFmpegVideoOpts">Aggiungi parametri video FFmpeg (https://ffmpeg.org/ffmpeg.html)</entry>
 	<entry label="FFmpegVideoOptsEx">Esempio: -b:v 6000k -maxrate:v 9000k -minrate:v 0</entry>
-	<entry label="OutputFile">File di uscita (può anche essere del tipo "3De_%04d_P.png")</entry>
+	<entry label="OutputFile">File di uscita, senza suffisso di formato (può anche essere come "3De_%04d.png")</entry>
+	<entry label="Formats">Formati da generare in un solo passaggio (suffisso aggiunto al nome del file):</entry>
+	<entry label="FormatP">Parallelo (_P)</entry>
+	<entry label="FormatX">Incrociato (_X)</entry>
+	<entry label="FormatLeft">Sinistra (_Left)</entry>
+	<entry label="FormatRight">Destra (_Right)</entry>
+	<entry label="FormatA">Anaglifo (_A)</entry>
+	<entry label="FormatDubois">Anaglifo Dubois (_Dubois)</entry>
+	<entry label="NoFormat">Selezionare almeno un formato da generare.</entry>
+	<entry label="Anaglyph444">Anaglifi con i colori a piena risoluzione (H.264 4:4:4, codificatore separato)</entry>
+	<entry label="Anaglyph444Note">Anaglifi di qualità migliore: i video standard (4:2:0) conservano i colori a metà risoluzione, il che confonde la separazione degli occhi (immagini fantasma, frange colorate sui contorni). Meno portabile: un video 4:4:4 si riproduce in Chrome, Edge e VLC su computer, ma non in Safari, su iPhone / iPad, sulla maggior parte di telefoni, televisori e lettori video, né su molti decodificatori hardware. File più grandi.</entry>
 	<entry label="StartAtTimePos">Inizia dal cursore temporale corrente</entry>
 	<entry label="OnlyTimeRange">Solo l'intervallo di tempo selezionato</entry>
 	<entry label="MixingAudio">Missaggio dell'audio...</entry>
@@ -1532,6 +1549,7 @@ Calcolare le mappe di profondità delle due viste dalla clip (intelligenza artif
 	<entry label="EdgesOn">Nascondi i contorni</entry>
 	<entry label="SaveView">Salva l'immagine corrente in piena qualità nella cartella di rendering (PNG sinistra, destra, parallela e incrociata)</entry>
 	<entry label="Snapshot">Creare una vista della visualizzazione in qualità finale (le due viste affiancate) e aggiungerla alla libreria</entry>
+	<entry label="RangeClip">Generare l'intervallo di tempo selezionato sul righello, o altrimenti solo le clip selezionate, in qualità finale (le due viste affiancate, con il suono) e aggiungere il video alla libreria</entry>
 	<entry label="FullScreen">Presentazione a schermo intero</entry>
 	<entry label="Status">Velocità di calcolo dell'anteprima (fotogrammi al secondo)</entry>
 	<entry label="GridNone">Nessuna griglia</entry>
@@ -1631,7 +1649,9 @@ Calcolare le mappe di profondità delle due viste dalla clip (intelligenza artif
 	<entry label="RenderOutputRes">Risoluzione del video di uscita</entry>
 	<entry label="RenderFPS">Fotogrammi al secondo del video di uscita</entry>
 	<entry label="RenderFFmpegOpts">Parametri ffmpeg aggiuntivi per la codifica video (facoltativi)</entry>
-	<entry label="RenderOutputFile">Percorso del file di uscita. Con un modello del tipo "3De_%04d_P.png" viene scritta una sequenza di immagini</entry>
+	<entry label="RenderOutputFile">Percorso del file di uscita, senza il suffisso di formato (_P, _X...) aggiunto per ogni formato selezionato. Con un modello come "3De_%04d.png", vengono scritte sequenze di immagini</entry>
+	<entry label="RenderFormats">Ogni formato selezionato dà il proprio file, tutti fatti nello stesso passaggio. La pagina del lettore stereo apre il parallelo, altrimenti l'incrociato, altrimenti un anaglifo (gli anaglifi non possono essere convertiti negli altri formati)</entry>
+	<entry label="RenderAnaglyph444">Solo per i video anaglifi (_A, _Dubois), codificati dal proprio processo ffmpeg: gli altri formati restano in 4:2:0 standard</entry>
 	<entry label="RenderStartAtTimePos">Esegui il rendering dal cursore temporale invece che dall'inizio</entry>
 	<entry label="RenderOnlyTimeRange">Generare solo l'intervallo di tempo selezionato sulle linee temporali (menu hamburger delle linee temporali)</entry>
 	<entry label="RenderProcess">Avvia il rendering</entry>

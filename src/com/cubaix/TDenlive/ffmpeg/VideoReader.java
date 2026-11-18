@@ -46,30 +46,184 @@ public class VideoReader {
 			origWidth = aBI.getWidth();
 			origHeight = aBI.getHeight();
 			
-			String aPathWork = StringUtils.path2workingcopy(path, tde == null ? null : tde.getWorkCacheDir());
-			//Empty work copy left by a failed encoding (before 1.2.26): made again
-			if(new File(aPathWork).isFile() && new File(aPathWork).length() == 0) {
-				new File(aPathWork).delete();
+			if(new File(workPath()).length() > 0) {
+				//Its size checked in the background (one image decoded), not to slow down the loading
+				Thread aTh = new Thread(this::checkWorkCopy, "3De-WorkCopyCheck");
+				aTh.setDaemon(true);
+				aTh.start();
 			}
-			if(!new File(aPathWork).exists() && !new File(StringUtils.path2processing(aPathWork)).exists()) {
-				int aWorkWidth = origWidth;
-				int aWorkHeight = origHeight;
-				if(origHeight > TDConfig.RESVALUES[TDConfig.RES_DVD]) {
-					aWorkHeight = TDConfig.RESVALUES[TDConfig.RES_DVD];
-					aWorkWidth = (int)(aWorkHeight*origWidth/(double)origHeight);
-				}
-				//libx264 refuses odd sizes (1280x704 -> 1047x576)
-				aWorkWidth = Math.max(2, aWorkWidth / 2 * 2);
-				aWorkHeight = Math.max(2, aWorkHeight / 2 * 2);
-				double aWorkFps = origFps;
-				if(aWorkFps > 15) {
-					aWorkFps = 15;
-				}
-				new FfmpegTranscoder().createWorkCopy(path, aPathWork, aWorkWidth, aWorkHeight, aWorkFps);
+			else {
+				checkWorkCopy();
 			}
 		}
 		//Don't keep the RENDER quality
 		stopFeed();
+		synchronized(READERS) {
+			READERS.add(this);
+		}
+	}
+
+	//Readers of the videos opened (work copies checked again when the work resolution changes)
+	static final java.util.Set<VideoReader> READERS = java.util.Collections.newSetFromMap(new java.util.WeakHashMap<VideoReader, Boolean>());
+	//Work copies being made in this session (the end checks them again)
+	static final java.util.Set<String> MAKING = new java.util.HashSet<String>();
+
+	/** Number of work copies being made */
+	public static int workCopiesInProgress() {
+		synchronized(MAKING) {
+			return MAKING.size();
+		}
+	}
+
+	String workPath() {
+		return StringUtils.path2workingcopy(path, tde == null ? null : tde.getWorkCacheDir());
+	}
+
+	int workRes() {
+		return tde == null ? TDConfig.RESVALUES[TDConfig.RES_DVD] : tde.config.processingResValues[TDConfig.PROCESSING_MODE_WORK];
+	}
+
+	/**
+	 * Work resolution of the monitor at least that of the original: the work copy keeps the size of the original
+	 * (only its frame rate reduced to 15 fps), read as it is (no upscale)
+	 */
+	boolean useOriginal() {
+		return workRes() >= origHeight;
+	}
+
+	/**
+	 * Size of the work copy: the height of the work resolution of the monitor (processingResValues[WORK]),
+	 * never enlarged, even sides (libx264 refuses odd sizes: 1280x704 -> 1047x576)
+	 */
+	int[] workSize() {
+		int aH = Math.min(origHeight, workRes());
+		int aW = (int)Math.round(aH*origWidth/(double)origHeight);
+		return new int[] {Math.max(2, aW / 2 * 2), Math.max(2, aH / 2 * 2)};
+	}
+
+	/**
+	 * Makes the work copy again when it is missing or not at the work size (workSize()), else nothing. Always at
+	 * 15 fps at most, whatever the work resolution (at the size of the original when it is not above).
+	 * Meanwhile the original is read, resized (see read() and evalResize()).
+	 */
+	void checkWorkCopy() {
+		if(origHeight <= 0 || origWidth <= 0) {
+			return;
+		}
+		String aPathWork = workPath();
+		int[] aSize = workSize();
+		synchronized(MAKING) {
+			if(MAKING.contains(aPathWork)) {
+				//Checked again at its end
+				return;
+			}
+			File aW = new File(aPathWork);
+			if(aW.length() > 0 && videoHeight(aPathWork) == aSize[1]) {
+				return;
+			}
+			MAKING.add(aPathWork);
+		}
+		//Shown over the monitor while copies are made (MonitorGUI.drawWorkCopies())
+		redrawMonitor();
+		//The readers of that video stop reading the old copy, deleted
+		for(VideoReader aVR : readersOf(path)) {
+			aVR.restartFeed();
+		}
+		new File(aPathWork).delete();
+		new File(StringUtils.path2processing(aPathWork)).delete();//Left by a session stopped while making it
+		if(tde != null) {
+			new File(StringUtils.oldWorkingCopy(path, tde.getWorkCacheDir())).delete();
+		}
+		double aWorkFps = Math.min(15, origFps > 0 ? origFps : 15);
+		System.out.println("Work copy "+aSize[0]+"x"+aSize[1]+": "+path);
+		new FfmpegTranscoder().createWorkCopy(path, aPathWork, aSize[0], aSize[1], aWorkFps, () -> {
+			synchronized(MAKING) {
+				MAKING.remove(aPathWork);
+			}
+			//The readers take the new copy; checked again if the resolution changed meanwhile
+			for(VideoReader aVR : readersOf(path)) {
+				aVR.restartFeed();
+			}
+			if(new File(aPathWork).length() > 0) {
+				checkWorkCopy();
+			}
+			redrawMonitor();
+		});
+	}
+
+	/** Height of the first image of a video, -1 if none */
+	static int videoHeight(String aPath) {
+		FfmpegDecoder aD = null;
+		try {
+			aD = new FfmpegDecoder(aPath, 0, 1, FfmpegDecoder.FILESIZE, FfmpegDecoder.FILEFPS);
+			BufferedImage aBI = aD.getImg();
+			return aBI == null ? -1 : aBI.getHeight();
+		}
+		catch(Throwable t) {
+			t.printStackTrace(System.err);
+			return -1;
+		}
+		finally {
+			if(aD != null) {
+				aD.stop();
+			}
+		}
+	}
+
+	static java.util.List<VideoReader> readersOf(String aPath) {
+		java.util.ArrayList<VideoReader> aL = new java.util.ArrayList<VideoReader>();
+		synchronized(READERS) {
+			for(VideoReader aVR : READERS) {
+				if(aVR.path != null && aVR.path.equals(aPath)) {
+					aL.add(aVR);
+				}
+			}
+		}
+		return aL;
+	}
+
+	/** Next image decoded again from the file now in place (work copy made or removed) */
+	void restartFeed() {
+		synchronized(buffer) {
+			stopFeed();
+			buffer.clear();
+		}
+	}
+
+	void redrawMonitor() {
+		if(tde == null || tde.gui == null || tde.gui.display == null || tde.gui.display.isDisposed()) {
+			return;
+		}
+		tde.gui.display.asyncExec(() -> {
+			if(tde.gui.monitorGUI != null) {
+				tde.gui.monitorGUI.redraw();
+			}
+		});
+	}
+
+	/**
+	 * The work resolution of the monitor changed: the work copies of the videos opened that are not at the
+	 * new size are made again (in the background)
+	 */
+	public static void workResChanged() {
+		java.util.ArrayList<VideoReader> aL;
+		synchronized(READERS) {
+			aL = new java.util.ArrayList<VideoReader>(READERS);
+		}
+		Thread aTh = new Thread(() -> {
+			java.util.HashSet<String> aDone = new java.util.HashSet<String>();
+			for(VideoReader aVR : aL) {
+				if(aVR.path != null && aDone.add(aVR.path)) {
+					aVR.checkWorkCopy();
+				}
+			}
+			for(VideoReader aVR : aL) {
+				aVR.redrawMonitor();
+				break;
+			}
+		}, "3De-WorkCopies");
+		aTh.setDaemon(true);
+		aTh.start();
 	}
 	
 	public void read(int aProcessingMode,long aTimeOffset,int aNbFrames,String aResize,double aFps) {
@@ -177,17 +331,13 @@ public class VideoReader {
 			//Allways in original size when rendering, for best quality
 			return FfmpegDecoder.FILESIZE;
 		}
-		int aRes = tde.config.processingResValues[aProcessingMode];
-		if(origHeight < TDConfig.RESVALUES[TDConfig.RES_DVD]) {
-			//No need to upscale
+		//At the size of the work copy (the original resized while it is made)
+		if(useOriginal()) {
+			//No need to upscale: the original as it is
 			return FfmpegDecoder.FILESIZE;
 		}
-		if(origHeight > TDConfig.RESVALUES[TDConfig.RES_DVD]) {
-			//Can downscale
-			int aWidth = (int)(TDConfig.RESVALUES[TDConfig.RES_DVD]*origWidth/(double)origHeight);
-			return aWidth+"x"+TDConfig.RESVALUES[TDConfig.RES_DVD];
-		}
-		return FfmpegDecoder.FILESIZE;
+		int[] aSize = workSize();
+		return aSize[0]+"x"+aSize[1];
 	}
 	
 	public BufferedImage getImage(int aProcessingMode,long aTimeOffset) {

@@ -16,24 +16,27 @@ public class StringUtils {
 		return null;
 	}
 	/**
-	 * Low resolution copy of a video used for the work preview, in the work folder of the project
-	 * (TDenlive.getWorkCacheDir()): <video>_<key>_3De_WorkCopy.mp4, the key telling apart the videos
-	 * of the same name in different folders.
-	 * A work copy made by 1.0.15 and before, next to the video, is still used if there is no other.
+	 * Copy of a video used for the work preview (VideoReader: at the work resolution of the monitor, 15 fps),
+	 * in the work folder of the project (TDenlive.getWorkCacheDir()): <video>_<key>_3De_WorkCopyHQ.mp4, the key
+	 * telling apart the videos of the same name in different folders.
+	 * The copies of 1.11.6 and before (_3De_WorkCopy.mp4, 576 lines at 300 kbit/s, next to the video before
+	 * 1.0.16) are no longer used: see oldWorkingCopy().
 	 */
 	public static String path2workingcopy(String aPath,String aWorkCacheDir) {
 		File aIn = new File(aPath);
 		String aBase = aIn.getName().replaceAll("[.][^.]*$", "");
-		String aLegacy = new File(aIn.getParentFile(), aBase+"_3De_WorkCopy.mp4").getPath();
 		if(aWorkCacheDir == null) {
-			return aLegacy;
+			return new File(aIn.getParentFile(), aBase+"_3De_WorkCopyHQ.mp4").getPath();
 		}
 		String aKey = Integer.toHexString(aIn.getAbsolutePath().hashCode());
-		String aWork = new File(aWorkCacheDir, aBase.replaceAll("[^A-Za-z0-9._-]", "_")+"_"+aKey+"_3De_WorkCopy.mp4").getPath();
-		if(!new File(aWork).exists() && !new File(path2processing(aWork)).exists() && new File(aLegacy).isFile()) {
-			return aLegacy;
-		}
-		return aWork;
+		return new File(aWorkCacheDir, aBase.replaceAll("[^A-Za-z0-9._-]", "_")+"_"+aKey+"_3De_WorkCopyHQ.mp4").getPath();
+	}
+
+	/**
+	 * Work copy of the same video made by 1.11.6 and before in the work folder (deleted when a new one is made)
+	 */
+	public static String oldWorkingCopy(String aPath,String aWorkCacheDir) {
+		return path2workingcopy(aPath, aWorkCacheDir).replaceAll("_3De_WorkCopyHQ[.]mp4$", "_3De_WorkCopy.mp4");
 	}
 	
 	public static String time2Ffmpeg(long aTimeMS) {

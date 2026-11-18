@@ -17,6 +17,11 @@ public class FfmpegTranscoder extends Ffmpeg {
 	}
 
 	public void createWorkCopy(String aPathIn,String aPathWork,int aWidth,int aHeight,double aFps) {
+		createWorkCopy(aPathIn, aPathWork, aWidth, aHeight, aFps, null);
+	}
+
+	/** aDone (may be null) runs in the thread of the encoding once it is over, made or failed */
+	public void createWorkCopy(String aPathIn,String aPathWork,int aWidth,int aHeight,double aFps,Runnable aDone) {
 		Thread aTh = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -52,8 +57,11 @@ public class FfmpegTranscoder extends Ffmpeg {
 					aCmdA.add("-s"); aCmdA.add(aWidth+"x"+aHeight);
 					aCmdA.add("-r"); aCmdA.add(""+aFps);
 					aCmdA.add("-an"); //No audio
-					aCmdA.add("-b:v"); aCmdA.add("300k");
+					//Constant quality (a fixed 300 kbit/s gave blocks at the work resolution of the monitor)
 					aCmdA.add("-vcodec"); aCmdA.add("libx264");
+					aCmdA.add("-crf"); aCmdA.add("18");
+					aCmdA.add("-preset"); aCmdA.add("veryfast");
+					aCmdA.add("-pix_fmt"); aCmdA.add("yuv420p");
 					aCmdA.add(StringUtils.path2processing(aPW));
 					String[] aCmd = new String[aCmdA.size()];
 					StringBuffer aCmdSB = new StringBuffer();
@@ -75,6 +83,9 @@ public class FfmpegTranscoder extends Ffmpeg {
 						//Failed: no work copy, the original is read
 						System.err.println("Work copy failed (ffmpeg exit "+aExit+"): "+aPI);
 						aProcessing.delete();
+						if(aDone != null) {
+							aDone.run();
+						}
 						return;
 					}
 					Files.move(Paths.get(StringUtils.path2processing(aPW.replaceAll("\"", "")))
@@ -87,6 +98,14 @@ public class FfmpegTranscoder extends Ffmpeg {
 				}
 				catch(Throwable t) {
 					t.printStackTrace(System.err);
+				}
+				if(aDone != null) {
+					try {
+						aDone.run();
+					}
+					catch(Throwable t) {
+						t.printStackTrace(System.err);
+					}
 				}
 			}
 		});

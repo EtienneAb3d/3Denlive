@@ -1,11 +1,18 @@
 package com.cubaix.TDenlive.utils;
 
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 
 import com.cubaix.TDenlive.TDenlive;
 
@@ -18,12 +25,34 @@ import com.cubaix.TDenlive.TDenlive;
 public class HtmlViewer {
 	/** Page of a parallel (side-by-side) video: the player alone. Returns the page, null on error. */
 	public static File writeVideoPage(TDenlive aTDe, String aVideoPath) {
+		return writeVideoPage(aTDe, aVideoPath, "sbs", null);
+	}
+
+	/**
+	 * Page of a video: the player alone. aLayout = layout of the video for the player (sbs, crossed, mono,
+	 * anaglyph: FfmpegEncoder.FORMAT_LAYOUTS). aPreview = an image of the video in its layout (its first frame),
+	 * written as <video>.preview.jpg: the player shows it without reading the video until it is played; null:
+	 * none. Returns the page, null on error.
+	 */
+	public static File writeVideoPage(TDenlive aTDe, String aVideoPath, String aLayout, BufferedImage aPreview) {
 		try {
 			File aVideo = new File(aVideoPath);
 			File aHtml = htmlFile(aVideo);
+			File aPreviewFile = new File(aHtml.getParentFile(), aHtml.getName().replaceAll("[.]html$", "")+".preview.jpg");
+			if(aPreview != null) {
+				writeJpg(aPreview, aPreviewFile);
+			}
+			else {
+				//Not the preview of an older rendering of the same name
+				aPreviewFile.delete();
+			}
 			StringBuffer aSB = new StringBuffer();
 			header(aTDe, aSB);
-			aSB.append("<div class=\"view\"><div class=\"stereo-player\" data-src=\"").append(src(aVideo)).append("\"></div></div>\n");
+			aSB.append("<div class=\"view\"><div class=\"stereo-player\" data-src=\"").append(src(aVideo)).append("\"");
+			if(aLayout != null && !aLayout.equals("sbs")) {
+				aSB.append(" data-layout=\"").append(esc(aLayout)).append("\"");
+			}
+			aSB.append("></div></div>\n");
 			footer(aSB);
 			Files.writeString(aHtml.toPath(), aSB.toString(), StandardCharsets.UTF_8);
 			return aHtml;
@@ -59,6 +88,30 @@ public class HtmlViewer {
 		catch(Throwable t) {
 			t.printStackTrace(System.err);
 			return null;
+		}
+	}
+
+	static void writeJpg(BufferedImage aImg, File aFile) throws Exception {
+		//JPEG without alpha
+		BufferedImage aRGB = aImg;
+		if(aImg.getType() != BufferedImage.TYPE_3BYTE_BGR && aImg.getType() != BufferedImage.TYPE_INT_RGB) {
+			aRGB = new BufferedImage(aImg.getWidth(), aImg.getHeight(), BufferedImage.TYPE_INT_RGB);
+			java.awt.Graphics2D aG = aRGB.createGraphics();
+			aG.drawImage(aImg, 0, 0, null);
+			aG.dispose();
+		}
+		ImageWriter aW = ImageIO.getImageWritersByFormatName("jpg").next();
+		ImageWriteParam aP = aW.getDefaultWriteParam();
+		aP.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+		aP.setCompressionQuality(0.9f);
+		//The stream doesn't truncate an existing file
+		aFile.delete();
+		try(ImageOutputStream aOS = ImageIO.createImageOutputStream(aFile)) {
+			aW.setOutput(aOS);
+			aW.write(null, new IIOImage(aRGB, null, null), aP);
+		}
+		finally {
+			aW.dispose();
 		}
 	}
 

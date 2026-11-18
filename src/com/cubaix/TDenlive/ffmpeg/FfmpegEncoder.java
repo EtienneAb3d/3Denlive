@@ -18,10 +18,33 @@ import javax.imageio.ImageIO;
 import com.cubaix.TDenlive.TDenlive;
 
 public class FfmpegEncoder extends Ffmpeg {
+	/**
+	 * Output formats, all made from the parallel stream in the same pass (ffmpeg filter graph): suffix of the
+	 * file name (before its extension), ffmpeg filter (null: the stream as is), layout for the stereo player.
+	 */
+	public static final String[] FORMAT_SUFFIXES = {"_P", "_X", "_Left", "_Right", "_A", "_Dubois"};
+	public static final String[] FORMAT_LABELS = {"Renderer.FormatP", "Renderer.FormatX", "Renderer.FormatLeft"
+			, "Renderer.FormatRight", "Renderer.FormatA", "Renderer.FormatDubois"};
+	static final String[] FORMAT_FILTERS = {null, "stereo3d=sbsl:sbsr", "stereo3d=sbsl:ml", "stereo3d=sbsl:mr"
+			, "format=rgb24,stereo3d=sbsl:arcc", "format=rgb24,stereo3d=sbsl:arcd"};
+	public static final String[] FORMAT_LAYOUTS = {"sbs", "crossed", "mono", "mono", "anaglyph", "anaglyph"};
+	public static final int FORMAT_P = 0;
+	public static final int FORMAT_X = 1;
+	public static boolean isAnaglyph(int aFormat) {
+		return FORMAT_LAYOUTS[aFormat].equals("anaglyph");
+	}
+	/** Formats by preference for the stereo player page: parallel, crossed (recomposed in every mode), then the
+	 * anaglyphs (3D, but shown as they are), then the single views */
+	public static final int[] VIEWER_ORDER = {0, 1, 5, 4, 2, 3};
+
 	TDenlive tde = null;
 	Process p = null;
 	String ffmpegVideoOpts = "";
 	String pathOut = null;
+	String[] pathsOut = null;//One per format
+	int[] formats = null;
+	//Colors at full resolution (H.264 High 4:4:4): for the anaglyphs, whose eyes are in the colors
+	boolean full444 = false;
 	String audioPathIn = null;//Mixed sound track (WAV), null if none
 	public int width = 1280;
 	public int height = 720;
@@ -34,8 +57,27 @@ public class FfmpegEncoder extends Ffmpeg {
 			,int aWidth,int aHeight
 			,double aFps,String aFfmpegVideoOpts
 			,String aPathOut,String aAudioPathIn) {
+		this(aTDe, aWidth, aHeight, aFps, aFfmpegVideoOpts, new String[] {aPathOut}, new int[] {FORMAT_P}, aAudioPathIn);
+	}
+
+	/** Several outputs from the same parallel images: aPathsOut[i] in the format aFormats[i] (FORMAT_SUFFIXES) */
+	public FfmpegEncoder(TDenlive aTDe
+			,int aWidth,int aHeight
+			,double aFps,String aFfmpegVideoOpts
+			,String[] aPathsOut,int[] aFormats,String aAudioPathIn) {
+		this(aTDe, aWidth, aHeight, aFps, aFfmpegVideoOpts, aPathsOut, aFormats, aAudioPathIn, false);
+	}
+
+	/** aFull444: H.264 in 4:4:4 (colors not subsampled) instead of 4:2:0 */
+	public FfmpegEncoder(TDenlive aTDe
+			,int aWidth,int aHeight
+			,double aFps,String aFfmpegVideoOpts
+			,String[] aPathsOut,int[] aFormats,String aAudioPathIn,boolean aFull444) {
 		tde = aTDe;
-		pathOut = aPathOut;
+		full444 = aFull444;
+		pathsOut = aPathsOut;
+		formats = aFormats;
+		pathOut = aPathsOut[0];
 		audioPathIn = aAudioPathIn;
 		width = aWidth;
 		height = aHeight;
@@ -55,32 +97,59 @@ public class FfmpegEncoder extends Ffmpeg {
 //			aCmdA.add("-c:a"); aCmdA.add("copy");
 			aCmdA.add("-c:v"); aCmdA.add("bmp");
 			aCmdA.add("-i"); aCmdA.add("pipe:0");
-			boolean aWithAudio = audioPathIn != null && canHaveAudio(pathOut);
-			if(aWithAudio) {
+			if(audioPathIn != null) {
 				aCmdA.add("-i"); aCmdA.add(audioPathIn);
-				aCmdA.add("-map"); aCmdA.add("0:v:0");
-				aCmdA.add("-map"); aCmdA.add("1:a:0");
 			}
-			aCmdA.add("-s"); aCmdA.add((width*2)+"x"+height);
-			aCmdA.add("-r"); aCmdA.add(""+fps);
-			aCmdA.add("-y"); //Overwrite the output file (if it exists)
-//			aCmdA.add("-threads"); aCmdA.add("auto");
-			if(pathOut.endsWith(".mp4")) {
-				aCmdA.add("-c:v"); aCmdA.add("libx264");
-				aCmdA.add("-x264opts"); aCmdA.add("frame-packing=3");
-				aCmdA.add("-pix_fmt"); aCmdA.add("yuva420p");
+			//Parallel stream split into the formats asked
+			int aN = pathsOut.length;
+			StringBuffer aGraph = new StringBuffer("[0:v]");
+			if(aN > 1) {
+				aGraph.append("split=").append(aN);
+				for(int o = 0;o < aN;o++) {
+					aGraph.append("[s").append(o).append("]");
+				}
+			}
+			else {
+				aGraph.append("null[s0]");
+			}
+			for(int o = 0;o < aN;o++) {
+				String aF = FORMAT_FILTERS[formats[o]];
+				aGraph.append(";[s").append(o).append("]")
+					//A single view (or an anaglyph) is half the width: even sizes for the 4:2:0 encoding
+					.append(aF == null ? "null" : aF+",crop=trunc(iw/2)*2:trunc(ih/2)*2")
+					.append("[o").append(o).append("]");
+			}
+			aCmdA.add("-filter_complex"); aCmdA.add(aGraph.toString());
+			String aOpts = ffmpegVideoOpts == null ? "" : ffmpegVideoOpts.replaceAll("[ \n\r\t]+", " ").trim();
+			for(int o = 0;o < aN;o++) {
+				//Output options are given again for each output
+				String aPath = pathsOut[o];
+				boolean aWithAudio = audioPathIn != null && canHaveAudio(aPath);
+				aCmdA.add("-map"); aCmdA.add("[o"+o+"]");
 				if(aWithAudio) {
-					aCmdA.add("-c:a"); aCmdA.add("aac");
-					aCmdA.add("-b:a"); aCmdA.add("192k");
+					aCmdA.add("-map"); aCmdA.add("1:a:0");
 				}
-			}
-			if(ffmpegVideoOpts != null && !ffmpegVideoOpts.trim().isEmpty()) {
-				ffmpegVideoOpts = ffmpegVideoOpts.replaceAll("[ \n\r\t]+", " ").trim();
-				for(String aC : ffmpegVideoOpts.split(" ")) {
-					aCmdA.add(aC);
+				aCmdA.add("-r"); aCmdA.add(""+fps);
+				aCmdA.add("-y"); //Overwrite the output file (if it exists)
+				if(aPath.toLowerCase().endsWith(".mp4")) {
+					aCmdA.add("-c:v"); aCmdA.add("libx264");
+					if(formats[o] == FORMAT_P) {
+						//Side by side, left first (no flag for right first: none for the crossed one)
+						aCmdA.add("-x264opts"); aCmdA.add("frame-packing=3");
+					}
+					aCmdA.add("-pix_fmt"); aCmdA.add(full444 ? "yuv444p" : "yuv420p");
+					if(aWithAudio) {
+						aCmdA.add("-c:a"); aCmdA.add("aac");
+						aCmdA.add("-b:a"); aCmdA.add("192k");
+					}
 				}
+				if(!aOpts.isEmpty()) {
+					for(String aC : aOpts.split(" ")) {
+						aCmdA.add(aC);
+					}
+				}
+				aCmdA.add(aPath);
 			}
-			aCmdA.add(pathOut);
 			String[] aCmd = new String[aCmdA.size()];
 			StringBuffer aCmdSB = new StringBuffer();
 			for(int c = 0;c < aCmdA.size();c++) {
@@ -122,6 +191,17 @@ public class FfmpegEncoder extends Ffmpeg {
 	public void addImg(BufferedImage aBI) {
 		try {
 			ImageIO.write(aBI, "bmp", os);
+			os.flush();
+		}
+		catch(Throwable t) {
+			t.printStackTrace(System.err);
+		}
+	}
+
+	/** An image already written as BMP (the same bytes for several encoders) */
+	public void addBmp(byte[] aBmp) {
+		try {
+			os.write(aBmp);
 			os.flush();
 		}
 		catch(Throwable t) {

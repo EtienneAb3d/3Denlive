@@ -47,7 +47,7 @@ public class MonitorControlGUI extends CompositePanel {
 		aTB.heightHint = tde.gui.h(25);
 		toolBar.setLayoutData(aTB);
 		tde.gui.applyColorFont(toolBar);
-		GridLayout aGL = new GridLayout(11, false);
+		GridLayout aGL = new GridLayout(12, false);
 		tde.gui.applyNoMargin(aGL);
 		toolBar.setLayout(aGL);
 		
@@ -105,15 +105,25 @@ public class MonitorControlGUI extends CompositePanel {
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
 				tde.config.processingResNames[TDConfig.PROCESSING_MODE_WORK] = TDConfig.RESSHORTNAMES[processingRes.getSelectionIndex()];
+				int aOld = tde.config.processingResValues[TDConfig.PROCESSING_MODE_WORK];
 				tde.config.processingResValues[TDConfig.PROCESSING_MODE_WORK] = TDConfig.RESVALUES[processingRes.getSelectionIndex()];
 				processingRes.setText(TDConfig.RESSHORTNAMES[processingRes.getSelectionIndex()]);//Doesn't work if READ_ONLY !
+				if(aOld != tde.config.processingResValues[TDConfig.PROCESSING_MODE_WORK]) {
+					//Work copies of the videos at the new size
+					com.cubaix.TDenlive.ffmpeg.VideoReader.workResChanged();
+				}
 				tde.gui.monitorGUI.redraw();
 			}
 			@Override
 			public void widgetDefaultSelected(SelectionEvent arg0) {
 				tde.config.processingResNames[TDConfig.PROCESSING_MODE_WORK] = TDConfig.RESSHORTNAMES[processingRes.getSelectionIndex()];
+				int aOld = tde.config.processingResValues[TDConfig.PROCESSING_MODE_WORK];
 				tde.config.processingResValues[TDConfig.PROCESSING_MODE_WORK] = TDConfig.RESVALUES[processingRes.getSelectionIndex()];
 				processingRes.setText(TDConfig.RESSHORTNAMES[processingRes.getSelectionIndex()]);//Doesn't work if READ_ONLY !
+				if(aOld != tde.config.processingResValues[TDConfig.PROCESSING_MODE_WORK]) {
+					//Work copies of the videos at the new size
+					com.cubaix.TDenlive.ffmpeg.VideoReader.workResChanged();
+				}
 				tde.gui.monitorGUI.redraw();
 			}
 		});
@@ -375,6 +385,18 @@ public class MonitorControlGUI extends CompositePanel {
 		tde.gui.applyColorFont(aSnapshot);
 		tde.gui.tip(aSnapshot, "Snapshot");
 		aSnapshot.addListener(SWT.MouseDown, e -> tde.gui.snapshotToLibrary());
+
+		//Video of the selected time range in the final quality, added to the media list
+		Label aRangeClip = new Label(toolBar,SWT.NONE);
+		aRangeClip.setImage(tde.gui.imgsSwt.getIcon("videoCamera.png"));
+		aRangeClip.setAlignment(SWT.CENTER);
+		GridData aRangeClipGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
+		aRangeClipGD.widthHint = 32;
+		aRangeClipGD.heightHint = tde.gui.h(25);
+		aRangeClip.setLayoutData(aRangeClipGD);
+		tde.gui.applyColorFont(aRangeClip);
+		tde.gui.tip(aRangeClip, "RangeClip");
+		aRangeClip.addListener(SWT.MouseDown, e -> RangeClipGUI.start(tde));
 
 		Label aFullScreen = new Label(toolBar,SWT.NONE);
 		aFullScreen.setImage(tde.gui.imgsSwt.getIcon("screen.png"));

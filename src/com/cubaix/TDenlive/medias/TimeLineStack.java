@@ -43,6 +43,8 @@ public class TimeLineStack extends Media {
 	//Selected time range (burger menu): light blue on the time lines, the play starts and stops there; -1 if none
 	public volatile long rangeStartMS = -1;
 	public volatile long rangeEndMS = -1;
+	//Only these clips give images and sound (rendering of the selected clips, RangeClipGUI); null: all
+	public volatile java.util.Set<Clip> soloClips = null;
 	//Eraser at the start of the time range: removes it
 	public Rectangle rangeEraseBounds = null;
 	public Rectangle rulerBounds = null;

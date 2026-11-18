@@ -18,7 +18,11 @@ public class Renderer extends Processor {
 	FfmpegEncoder ffmpeg = null;
 	Vector<BufferedImage[]> waitingPairs = new Vector<BufferedImage[]>();
 	Vector<BufferedImage> waitingPs = new Vector<BufferedImage>();
-	String pathOut = null;
+	String[] pathsOut = null;//One per format
+	int[] formats = null;
+	//Anaglyphs in 4:4:4: their own ffmpeg process (ffmpegAna), given the same images
+	boolean anaglyph444 = false;
+	FfmpegEncoder ffmpegAna = null;
 	String audioPathIn = null;
 	int width = 1280;
 	int height = 720;
@@ -27,24 +31,39 @@ public class Renderer extends Processor {
 	boolean processing = false;
 	public int encoded = 0;
 	boolean encoding = false;
+	//First parallel image, for the preview of the stereo player page
+	public volatile BufferedImage firstP = null;
 	
+	/** aPathsOut[i] in the format aFormats[i] (FfmpegEncoder.FORMAT_SUFFIXES), all in one pass */
 	public Renderer(TDenlive aTDe
 			,int aWidth,int aHeight
 			,double aFps,String aFfmpegVideoOpts
-			,String aPathOut,String aAudioPathIn) {
+			,String[] aPathsOut,int[] aFormats,String aAudioPathIn,boolean aAnaglyph444) {
 		super(aTDe, null);
 		audioPathIn = aAudioPathIn;
 		width = aWidth;
 		height = aHeight;
 		fps = aFps;
 		ffmpegVideoOpts = aFfmpegVideoOpts;
-		pathOut = aPathOut;
+		pathsOut = aPathsOut;
+		formats = aFormats;
+		anaglyph444 = aAnaglyph444;
 		start();
 	}
 
 	void start() {
         try {
-        	ffmpeg = new FfmpegEncoder(tde,width,height,fps,ffmpegVideoOpts,pathOut,audioPathIn);
+        	//The anaglyphs go to a separate encoder in 4:4:4 when asked, the other formats to the main one
+        	java.util.ArrayList<Integer> aMain = new java.util.ArrayList<Integer>(), aAna = new java.util.ArrayList<Integer>();
+        	for(int o = 0;o < formats.length;o++) {
+        		(anaglyph444 && FfmpegEncoder.isAnaglyph(formats[o]) ? aAna : aMain).add(o);
+        	}
+        	if(!aMain.isEmpty()) {
+        		ffmpeg = encoder(aMain, false);
+        	}
+        	if(!aAna.isEmpty()) {
+        		ffmpegAna = encoder(aAna, true);
+        	}
         	
         	processing = true;
         	
@@ -80,6 +99,9 @@ public class Renderer extends Processor {
 							catch(Throwable t) {
 								t.printStackTrace(System.err);
 							}
+							if(firstP == null) {
+								firstP = aP;
+							}
 							synchronized (waitingPs) {
 								waitingPs.add(aP);
 							}
@@ -113,7 +135,16 @@ public class Renderer extends Processor {
 						        	aP = waitingPs.remove(0);
 								}
 								encoded++;
-								ffmpeg.addImg(aP);
+								//Written as BMP once for all the encoders
+								java.io.ByteArrayOutputStream aBOS = new java.io.ByteArrayOutputStream(3*aP.getWidth()*aP.getHeight()+1024);
+								javax.imageio.ImageIO.write(aP, "bmp", aBOS);
+								byte[] aBmp = aBOS.toByteArray();
+								if(ffmpeg != null) {
+									ffmpeg.addBmp(aBmp);
+								}
+								if(ffmpegAna != null) {
+									ffmpegAna.addBmp(aBmp);
+								}
 					        	encoding = false;
 							}
 							Thread.sleep(10);
@@ -132,6 +163,17 @@ public class Renderer extends Processor {
 		}
     }
 	
+	/** Encoder of the outputs aIdx of pathsOut / formats */
+	FfmpegEncoder encoder(java.util.List<Integer> aIdx, boolean aFull444) {
+		String[] aPaths = new String[aIdx.size()];
+		int[] aFormats = new int[aIdx.size()];
+		for(int i = 0;i < aPaths.length;i++) {
+			aPaths[i] = pathsOut[aIdx.get(i)];
+			aFormats[i] = formats[aIdx.get(i)];
+		}
+		return new FfmpegEncoder(tde,width,height,fps,ffmpegVideoOpts,aPaths,aFormats,audioPathIn,aFull444);
+	}
+
 	public void addPair(BufferedImage aL,BufferedImage aR) {
 		boolean aCanAdd = false;
 		while(!aCanAdd) {
@@ -175,7 +217,12 @@ public class Renderer extends Processor {
 		}
 		try {
 			processing = false;
-			ffmpeg.stop();
+			if(ffmpeg != null) {
+				ffmpeg.stop();
+			}
+			if(ffmpegAna != null) {
+				ffmpegAna.stop();
+			}
 		}
 		catch(Throwable t) {
 			t.printStackTrace(System.err);

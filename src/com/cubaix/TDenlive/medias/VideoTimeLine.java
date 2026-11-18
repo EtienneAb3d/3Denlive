@@ -333,7 +333,7 @@ public class VideoTimeLine extends Media {
 			return;
 		}
 		for(Clip aC : new Vector<Clip>(clipList)) {
-			if(!aC.soundOn) {
+			if(!aC.soundOn || !plays(aC)) {
 				continue;
 			}
 			aC.soundRight = soundSource == SOUND_RIGHT;
@@ -346,6 +346,14 @@ public class VideoTimeLine extends Media {
 		}
 	}
 	
+	/**
+	 * False for a clip left out of a rendering of some clips only (TimeLineStack.soloClips, RangeClipGUI)
+	 */
+	boolean plays(Clip aC) {
+		java.util.Set<Clip> aSolo = tde.timeLineStack == null ? null : tde.timeLineStack.soloClips;
+		return aSolo == null || aSolo.contains(aC);
+	}
+
 	public boolean isSoundMuted() {
 		return soundSource == SOUND_MUTE;
 	}
@@ -390,7 +398,7 @@ public class VideoTimeLine extends Media {
 		}
 		for(Clip aC : new Vector<Clip>(clipList)) {
 			aC.soundRight = soundSource == SOUND_RIGHT;
-			if(aC.soundOn && aC.hasSound()) {
+			if(aC.soundOn && plays(aC) && aC.hasSound()) {
 				return true;
 			}
 		}
@@ -464,6 +472,9 @@ public class VideoTimeLine extends Media {
 	@Override
 	public void reBuild(int aProcessingMode, long aTime) {
 		for(Clip aClip : clipList) {//In fact, should be only one
+			if(!plays(aClip)) {
+				continue;
+			}
 			aClip.reBuild(aProcessingMode, aTime);
 		}
 	}
@@ -494,6 +505,9 @@ public class VideoTimeLine extends Media {
 	public BufferedImage getFinalLeft(int aProcessingMode,long aTime) {
 		BufferedImage aBI = null;
 		for(Clip aClip : clipList) {//In fact, should be only one, otherwise the last is overlapping
+			if(!plays(aClip)) {
+				continue;
+			}
 			BufferedImage aCBI = aClip.getFinalLeft(aProcessingMode, aTime);
 			if(aCBI != null) {
 				aBI = aCBI;
@@ -506,6 +520,9 @@ public class VideoTimeLine extends Media {
 	public BufferedImage getFinalRight(int aProcessingMode,long aTime) {
 		BufferedImage aBI = null;
 		for(Clip aClip : clipList) {//In fact, should be only one, otherwise the last is overlapping
+			if(!plays(aClip)) {
+				continue;
+			}
 			BufferedImage aCBI = aClip.getFinalRight(aProcessingMode, aTime);
 			if(aCBI != null) {
 				aBI = aCBI;
@@ -518,6 +535,9 @@ public class VideoTimeLine extends Media {
 	public float getAlpha(long aTime) {
 		float aAlpha = -1.0f;
 		for(Clip aClip : clipList) {//In fact, should be only one, otherwise the last is overlapping
+			if(!plays(aClip)) {
+				continue;
+			}
 			float aCA = aClip.getAlpha(aTime);
 			if(aCA >= 0) {
 				aAlpha = aCA;

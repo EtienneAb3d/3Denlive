@@ -443,6 +443,13 @@
 	<entry label="Quality">Calidad</entry>
 	<entry label="SnapshotEmpty">No hay imagen en esta posición.</entry>
 	<entry label="SnapshotError">No se pudo capturar la vista:</entry>
+	<entry label="RangeClipNoRange">Seleccione primero un pasaje de la línea de tiempo: un intervalo de tiempo en la regla (Mayús + arrastrar) o uno o varios clips.</entry>
+	<entry label="RangeClipTitle">Vídeo de la selección</entry>
+	<entry label="RangeClipProgress">%DONE% / %TOTAL% imágenes</entry>
+	<entry label="RangeClipLoading">Añadiendo a la biblioteca...</entry>
+	<entry label="RangeClipError">No se pudo crear el vídeo de la selección:</entry>
+	<entry label="RangeClipCancel">Cancelar</entry>
+	<entry label="WorkCopies">Calculando las copias de trabajo de los vídeos a la resolución del monitor (%N%)...</entry>
 </EntrySet>
 <EntrySet label="MediaProps">
 	<entry label="AnamorphW">Ancho</entry>
@@ -1456,7 +1463,17 @@
 	<entry label="OutputFPS">FPS del vídeo</entry>
 	<entry label="FFmpegVideoOpts">Añadir parámetros de vídeo de FFmpeg (https://ffmpeg.org/ffmpeg.html)</entry>
 	<entry label="FFmpegVideoOptsEx">Ejemplo: -b:v 6000k -maxrate:v 9000k -minrate:v 0</entry>
-	<entry label="OutputFile">Archivo de salida (también puede ser como "3De_%04d_P.png")</entry>
+	<entry label="OutputFile">Archivo de salida, sin sufijo de formato (también puede ser como "3De_%04d.png")</entry>
+	<entry label="Formats">Formatos a generar en una sola pasada (sufijo añadido al nombre del archivo):</entry>
+	<entry label="FormatP">Paralelo (_P)</entry>
+	<entry label="FormatX">Cruzado (_X)</entry>
+	<entry label="FormatLeft">Izquierda (_Left)</entry>
+	<entry label="FormatRight">Derecha (_Right)</entry>
+	<entry label="FormatA">Anaglifo (_A)</entry>
+	<entry label="FormatDubois">Anaglifo Dubois (_Dubois)</entry>
+	<entry label="NoFormat">Marque al menos un formato a generar.</entry>
+	<entry label="Anaglyph444">Anaglifos con los colores a resolución completa (H.264 4:4:4, codificador aparte)</entry>
+	<entry label="Anaglyph444Note">Anaglifos de mejor calidad: los vídeos estándar (4:2:0) guardan los colores a media resolución, lo que difumina la separación de los ojos (imágenes fantasma, franjas de color en los bordes). Menos portable: un vídeo 4:4:4 se reproduce en Chrome, Edge y VLC en un ordenador, pero no en Safari, en iPhone / iPad, en la mayoría de los teléfonos, televisores y reproductores de vídeo, ni en muchos decodificadores de hardware. Archivos más grandes.</entry>
 	<entry label="StartAtTimePos">Empezar en el cursor de tiempo actual</entry>
 	<entry label="OnlyTimeRange">Solo el rango de tiempo seleccionado</entry>
 	<entry label="MixingAudio">Mezclando el sonido...</entry>
@@ -1532,6 +1549,7 @@
 	<entry label="EdgesOn">Ocultar los bordes</entry>
 	<entry label="SaveView">Guardar la imagen actual en calidad completa en la carpeta de renderizado (PNG izquierda, derecha, paralela y cruzada)</entry>
 	<entry label="Snapshot">Crear una vista de la pantalla en calidad final (las dos vistas lado a lado) y añadirla a la biblioteca</entry>
+	<entry label="RangeClip">Generar el intervalo de tiempo seleccionado en la regla, o si no los clips seleccionados solos, en calidad final (las dos vistas lado a lado, con el sonido) y añadir el vídeo a la biblioteca</entry>
 	<entry label="FullScreen">Presentación a pantalla completa</entry>
 	<entry label="Status">Velocidad de cálculo de la vista previa (fotogramas por segundo)</entry>
 	<entry label="GridNone">Sin rejilla</entry>
@@ -1631,7 +1649,9 @@
 	<entry label="RenderOutputRes">Resolución del vídeo de salida</entry>
 	<entry label="RenderFPS">Fotogramas por segundo del vídeo de salida</entry>
 	<entry label="RenderFFmpegOpts">Parámetros adicionales de ffmpeg para la codificación del vídeo (opcional)</entry>
-	<entry label="RenderOutputFile">Ruta del archivo de salida. Con un patrón como "3De_%04d_P.png", se escribe una secuencia de imágenes</entry>
+	<entry label="RenderOutputFile">Ruta del archivo de salida, sin el sufijo de formato (_P, _X...) añadido para cada formato marcado. Con un modelo como "3De_%04d.png", se escriben secuencias de imágenes</entry>
+	<entry label="RenderFormats">Cada formato marcado da su propio archivo, todos hechos en la misma pasada. La página del reproductor estéreo abre el paralelo, si no el cruzado, si no un anaglifo (los anaglifos no se pueden convertir a los otros formatos)</entry>
+	<entry label="RenderAnaglyph444">Solo para los vídeos anaglifos (_A, _Dubois), codificados por su propio proceso ffmpeg: los demás formatos quedan en 4:2:0 estándar</entry>
 	<entry label="RenderStartAtTimePos">Renderizar desde el cursor de tiempo en lugar del principio</entry>
 	<entry label="RenderOnlyTimeRange">Generar solo el rango de tiempo seleccionado en las líneas de tiempo (menú hamburguesa de las líneas de tiempo)</entry>
 	<entry label="RenderProcess">Iniciar el renderizado</entry>

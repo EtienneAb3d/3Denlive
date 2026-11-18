@@ -191,16 +191,26 @@ public class SettingsGUI {
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
 				tde.config.processingResNames[aMode] = TDConfig.RESSHORTNAMES[processingRes.getSelectionIndex()];
+				int aOld = tde.config.processingResValues[aMode];
 				tde.config.processingResValues[aMode] = TDConfig.RESVALUES[processingRes.getSelectionIndex()];
 				processingRes.setText(TDConfig.RESSHORTNAMES[processingRes.getSelectionIndex()]);//Doesn't work if READ_ONLY !
 				tde.config.saveGeneral(tde.configPath);
+				if(aMode == TDConfig.PROCESSING_MODE_WORK && aOld != tde.config.processingResValues[aMode]) {
+					//Work copies of the videos at the new size
+					com.cubaix.TDenlive.ffmpeg.VideoReader.workResChanged();
+				}
 			}
 			@Override
 			public void widgetDefaultSelected(SelectionEvent arg0) {
 				tde.config.processingResNames[aMode] = TDConfig.RESSHORTNAMES[processingRes.getSelectionIndex()];
+				int aOld = tde.config.processingResValues[aMode];
 				tde.config.processingResValues[aMode] = TDConfig.RESVALUES[processingRes.getSelectionIndex()];
 				processingRes.setText(TDConfig.RESSHORTNAMES[processingRes.getSelectionIndex()]);//Doesn't work if READ_ONLY !
 				tde.config.saveGeneral(tde.configPath);
+				if(aMode == TDConfig.PROCESSING_MODE_WORK && aOld != tde.config.processingResValues[aMode]) {
+					//Work copies of the videos at the new size
+					com.cubaix.TDenlive.ffmpeg.VideoReader.workResChanged();
+				}
 			}
 		});
 		processingRes.setText(tde.config.processingResNames[aMode]);

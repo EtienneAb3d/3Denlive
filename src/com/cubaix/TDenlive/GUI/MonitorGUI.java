@@ -468,9 +468,30 @@ public class MonitorGUI {
 		Image aI = new Image(tde.gui.display, aClientR.width, aClientR.height);
 		GC aGCDL = new GC(aI);
 		drawDbl(aGCDL);
+		drawWorkCopies(aGCDL, aClientR);
 		aGCDL.dispose();
 		aGC.drawImage(aI, aClientR.x, aClientR.y);
 		aI.dispose();
+	}
+
+	/**
+	 * Message over the top left corner while work copies of videos are made (VideoReader): the images shown come
+	 * meanwhile from the original videos, reduced
+	 */
+	void drawWorkCopies(GC aGC,Rectangle aR) {
+		int aN = com.cubaix.TDenlive.ffmpeg.VideoReader.workCopiesInProgress();
+		if(aN <= 0) {
+			return;
+		}
+		String aMsg = tde.gui.lngs.get("Monitor.WorkCopies").replace("%N%", ""+aN);
+		org.eclipse.swt.graphics.Point aE = aGC.textExtent(aMsg);
+		int aPad = 6;
+		aGC.setAlpha(170);
+		aGC.setBackground(tde.gui.colorsSwt.BLACK);
+		aGC.fillRoundRectangle(aR.x+8, aR.y+8, aE.x+2*aPad, aE.y+2*aPad, 8, 8);
+		aGC.setAlpha(255);
+		aGC.setForeground(tde.gui.colorsSwt.WHITE);
+		aGC.drawText(aMsg, aR.x+8+aPad, aR.y+8+aPad, true);
 	}
 
 	void drawDbl(GC aGC) {
