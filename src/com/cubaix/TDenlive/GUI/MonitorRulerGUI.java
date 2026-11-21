@@ -41,7 +41,8 @@ public class MonitorRulerGUI {
 		canvas.addListener(SWT.Paint, e -> draw(e.gc));
 		canvas.addListener(SWT.Resize, e -> canvas.redraw());
 		canvas.addListener(SWT.MouseDown, e -> {
-			if(e.button != 1) {
+			if(e.button != 1 || (tde.gui.monitorGUI != null && tde.gui.monitorGUI.isRendering())) {
+				//Not while a rendering moves the cursor
 				return;
 			}
 			dragging = true;

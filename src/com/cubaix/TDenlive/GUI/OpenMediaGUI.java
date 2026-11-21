@@ -390,9 +390,9 @@ public class OpenMediaGUI {
 	String fileChoose(String filterPath,boolean aAudio) {
 		FileDialog aFD = new FileDialog (shell, SWT.OPEN);
 		String [] filterNames = new String [] {aAudio ? "Sound Files" : "Image Files", "All Files (*)"};
-		String aExts = aAudio ? AUDIO_EXTS : "*.gif;*.png;*.xpm;*.jpg;*.jpeg;*.tiff;*.mpo;"
+		String aExts = aAudio ? AUDIO_EXTS : "*.gif;*.png;*.xpm;*.jpg;*.jpeg;*.webp;*.tiff;*.mpo;"
 				+ "*.mp4;*.mpg;*.mpeg;*.avi;*.mov;*.mkv;*.vob;*.ogv;*.wmv;*.ts;*.mts;*.m2ts;*.flv;*.dv;"
-				+ "*.svg;";
+				+ "*.svg;*.ply;";
 		String [] filterExtensions = new String [] {aExts+aExts.toUpperCase(), "*"};
 //		String platform = SWT.getPlatform();
 //		if (platform.equals("win32")) {

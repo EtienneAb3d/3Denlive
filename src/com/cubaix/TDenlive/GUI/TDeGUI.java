@@ -123,6 +123,7 @@ public class TDeGUI {
 	public void openProject(String aPath) {
 		tde.projectDir = tde.lastDir = new File(aPath).getAbsoluteFile().getParent();
 		tde.projectName = new File(aPath).getName();
+		updateTitle();
 
 		setWaitCursor(true);
 		//Nothing recorded while opening: the project opened is the first state of the history
@@ -230,6 +231,7 @@ public class TDeGUI {
 		String aOldWorkCacheDir = tde.getWorkCacheDir();
 		tde.projectDir = tde.lastDir = new File(aPath).getParent();
 		tde.projectName = new File(aPath).getName();
+		updateTitle();
 
 		if(!tde.saveProject(aPath)) {
 			MessageBox aMB = new MessageBox(shell, SWT.ICON_ERROR|SWT.OK);
@@ -359,7 +361,7 @@ public class TDeGUI {
 		installHoverFrames();
 				
 		shell = new Shell(display,SWT.SHELL_TRIM);
-		shell.setText("3Denlive "+tde.TDeVersion);
+		updateTitle();
 		shell.setSize (800, 600);
 		shell.setMaximized(true);
 		shell.setBackground(colorsSwt.WHITE);
@@ -405,6 +407,15 @@ public class TDeGUI {
 	/**
 	 * Change the interface language (saved in the config), and build the main window contents again in it
 	 */
+	//Title of the main window: the application, then [the project name], or [New project] before the first save
+	public void updateTitle() {
+		if(shell == null || shell.isDisposed()) {
+			return;
+		}
+		String aName = tde.projectName == null ? lngs.get("Generic.Untitled") : tde.projectName.replaceAll("(?i)([.]3de)+$", "");
+		shell.setText("3Denlive "+tde.TDeVersion+" ["+aName+"]");
+	}
+
 	public void setLanguage(String aLng) {
 		String aOldLng = tde.config.lng;
 		if(aLng == null || aLng.equalsIgnoreCase(aOldLng)) {
@@ -435,6 +446,7 @@ public class TDeGUI {
 		}
 		tde.config.saveGeneral(tde.configPath);
 		rebuildContents();
+		updateTitle();
 	}
 
 	/**

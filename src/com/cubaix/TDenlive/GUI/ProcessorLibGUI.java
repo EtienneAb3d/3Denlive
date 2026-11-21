@@ -29,6 +29,7 @@ public class ProcessorLibGUI extends TreeView {
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.AdaptColor"), "ColorAdapter",true);
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.Depthmap"), "Depthmap",true);
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.DepthmapStereo"), "DepthmapStereo",true);
+		createProcessor(aFolder,tde.gui.lngs.get("Processor.Scene3D"), "Scene3D",true);
 		aFolder = createFolder(tree, tde.gui.lngs.get("Processor.Colors"));
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.HueSaturation"), "HueSaturation",true);
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.BrightnessContrast"), "BrightnessContrast",true);
@@ -117,11 +118,22 @@ public class ProcessorLibGUI extends TreeView {
 			    messageBox.open();
 				return;
 			}
+			//2D => 3D scene: an image or a video of a file
+			if("Scene3D".equals(aTI.getData()) && !com.cubaix.TDenlive.depth.ComputedScenes.isConvertible(aClip.getMedia())) {
+				MessageBox messageBox = new MessageBox(tde.gui.shell,SWT.ICON_INFORMATION|SWT.OK);
+			    messageBox.setMessage(tde.gui.lngs.get("SceneConvert.NotConvertible"));
+			    messageBox.open();
+				return;
+			}
 			Processor aNewP = aClip.addProcessor((String)aTI.getData());
 			tde.gui.monitorGUI.redraw();
 			//A depth map processor on a clip without depth map: propose to compute it
 			if(aNewP != null) {
 				tde.gui.display.asyncExec(() -> DepthmapConvertGUI.checkNewProcessor(tde, aClip, aNewP));
+			}
+			//2D => 3D scene: its scenes computed at once (asked)
+			if(aNewP instanceof com.cubaix.TDenlive.processors.Scene3D) {
+				tde.gui.display.asyncExec(() -> SceneConvertGUI.checkNewProcessor(tde, aClip, (com.cubaix.TDenlive.processors.Scene3D)aNewP));
 			}
 			//Subtitles: choose their file at once
 			if(aNewP instanceof Subtitles) {

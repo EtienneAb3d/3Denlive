@@ -73,7 +73,9 @@ public class Inpainter implements PythonAI.Resident, AutoCloseable {
 	static final int OVERLAP = 64;
 	//LIGHT: sides of its input multiple of
 	static final int MOD = 64;
-	static final String KEY = "inpaint "+ENGINE.name().toLowerCase();
+	static String key(Engine aEngine) {
+		return "inpaint "+aEngine.name().toLowerCase();
+	}
 	public static final String TAG = "inpaint";
 
 	static final Object LOCK = new Object();
@@ -83,6 +85,8 @@ public class Inpainter implements PythonAI.Resident, AutoCloseable {
 	static long lastErrorMS = 0;
 	static final long RETRY_MS = 60000;
 
+	//Model of this instance (child: given as its second argument)
+	Engine engine = ENGINE;
 	//Child process (parent side)
 	Process worker = null;
 	DataInputStream workerIn = null;
@@ -100,38 +104,46 @@ public class Inpainter implements PythonAI.Resident, AutoCloseable {
 	Object session = null;
 
 	public static File getFile(String aTdeDir) {
-		return new File(DepthModel.getModelsDir(aTdeDir), ENGINE.fileName);
+		return getFile(aTdeDir, ENGINE);
+	}
+
+	public static File getFile(String aTdeDir,Engine aEngine) {
+		return new File(DepthModel.getModelsDir(aTdeDir), aEngine.fileName);
 	}
 
 	/**
 	 * The model file is there (embedded model: copied from the jar if missing)
 	 */
 	public static boolean isDownloaded(String aTdeDir) {
-		File aF = getFile(aTdeDir);
-		if(aF.isFile() && aF.length() == ENGINE.size) {
+		return isDownloaded(aTdeDir, ENGINE);
+	}
+
+	public static boolean isDownloaded(String aTdeDir,Engine aEngine) {
+		File aF = getFile(aTdeDir, aEngine);
+		if(aF.isFile() && aF.length() == aEngine.size) {
 			return true;
 		}
-		return ENGINE.url == null && extract(aTdeDir);
+		return aEngine.url == null && extract(aTdeDir, aEngine);
 	}
 
 	/**
 	 * Copy of the embedded model into the Models folder
 	 * @return true if done
 	 */
-	static synchronized boolean extract(String aTdeDir) {
-		File aF = getFile(aTdeDir);
-		if(aF.isFile() && aF.length() == ENGINE.size) {
+	static synchronized boolean extract(String aTdeDir,Engine aEngine) {
+		File aF = getFile(aTdeDir, aEngine);
+		if(aF.isFile() && aF.length() == aEngine.size) {
 			return true;
 		}
 		File aTmp = new File(aF.getParentFile(), aF.getName()+".part");
-		try(java.io.InputStream aIS = Inpainter.class.getResourceAsStream("/com/cubaix/TDenlive/res/ai/"+ENGINE.fileName)) {
+		try(java.io.InputStream aIS = Inpainter.class.getResourceAsStream("/com/cubaix/TDenlive/res/ai/"+aEngine.fileName)) {
 			if(aIS == null) {
-				System.err.println("Inpainting: embedded model missing: "+ENGINE.fileName);
+				System.err.println("Inpainting: embedded model missing: "+aEngine.fileName);
 				return false;
 			}
 			aF.getParentFile().mkdirs();
 			java.nio.file.Files.copy(aIS, aTmp.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-			if(aTmp.length() != ENGINE.size) {
+			if(aTmp.length() != aEngine.size) {
 				System.err.println("Inpainting: embedded model of an unexpected size: "+aTmp.length());
 				aTmp.delete();
 				return false;
@@ -151,17 +163,25 @@ public class Inpainter implements PythonAI.Resident, AutoCloseable {
 	 * The model and ONNX Runtime are there
 	 */
 	public static boolean isReady(String aTdeDir) {
-		return isDownloaded(aTdeDir) && DepthEstimator.isOrtDownloaded(aTdeDir);
+		return isReady(aTdeDir, ENGINE);
+	}
+
+	public static boolean isReady(String aTdeDir,Engine aEngine) {
+		return isDownloaded(aTdeDir, aEngine) && DepthEstimator.isOrtDownloaded(aTdeDir);
 	}
 
 	/**
 	 * The model will run on the GPU: a GPU usable by ONNX Runtime (Apple Silicon, NVIDIA) with enough memory
 	 */
 	public static boolean willUseGpu() {
+		return willUseGpu(ENGINE);
+	}
+
+	public static boolean willUseGpu(Engine aEngine) {
 		String aOs = System.getProperty("os.name").toLowerCase();
 		boolean aProvider = aOs.contains("mac") || DepthEstimator.useGpuRuntime();
 		long aFree = PythonAI.availableGpuMemory();
-		return aProvider && (aFree < 0 || aFree >= ENGINE.gpuMemory);
+		return aProvider && (aFree < 0 || aFree >= aEngine.gpuMemory);
 	}
 
 	/**
@@ -169,25 +189,33 @@ public class Inpainter implements PythonAI.Resident, AutoCloseable {
 	 * (GPU or CPU), LaMa only on a GPU (gpuCapable())
 	 */
 	public static boolean capable() {
-		if(!ENGINE.gpuOnly) {
-			return DepthEstimator.isPlatformSupported();
-		}
-		return gpuCapable();
+		return capable(ENGINE);
 	}
 
-	//GPU able to run the model (computed once, false if the model ended on the CPU), null if not known yet
-	static volatile Boolean gpuCapable = null;
+	public static boolean capable(Engine aEngine) {
+		if(!aEngine.gpuOnly) {
+			return DepthEstimator.isPlatformSupported();
+		}
+		return gpuCapable(aEngine);
+	}
+
+	//GPU able to run the model, per engine (computed once, false if the model ended on the CPU), absent if not known yet
+	static final Map<Engine,Boolean> gpuCapable = new java.util.concurrent.ConcurrentHashMap<Engine,Boolean>();
 
 	/**
 	 * This machine runs the model on its GPU (platform of ONNX Runtime, Apple Silicon or NVIDIA GPU with
 	 * the GPU memory of the engine free at the first check, and not fallen back to the CPU)
 	 */
 	public static boolean gpuCapable() {
-		Boolean aC = gpuCapable;
+		return gpuCapable(ENGINE);
+	}
+
+	public static boolean gpuCapable(Engine aEngine) {
+		Boolean aC = gpuCapable.get(aEngine);
 		if(aC == null) {
-			aC = DepthEstimator.isPlatformSupported() && willUseGpu();
-			gpuCapable = aC;
-			System.out.println("Inpainting on the GPU: "+(aC ? "possible" : "not possible (interpolation)"));
+			aC = DepthEstimator.isPlatformSupported() && willUseGpu(aEngine);
+			gpuCapable.put(aEngine, aC);
+			System.out.println("Inpainting "+aEngine.label+" on the GPU: "+(aC ? "possible" : "not possible"));
 		}
 		return aC;
 	}
@@ -197,38 +225,53 @@ public class Inpainter implements PythonAI.Resident, AutoCloseable {
 	 * @return false if canceled
 	 */
 	public static boolean download(String aTdeDir,Downloader.Progress aRuntime,Downloader.Progress aModel) throws Exception {
+		return download(aTdeDir, ENGINE, aRuntime, aModel);
+	}
+
+	public static boolean download(String aTdeDir,Engine aEngine,Downloader.Progress aRuntime,Downloader.Progress aModel) throws Exception {
 		if(!DepthEstimator.isOrtDownloaded(aTdeDir)) {
 			if(!Downloader.download(DepthEstimator.ortUrl(), DepthEstimator.getOrtJar(aTdeDir), DepthEstimator.ortSize(), aRuntime)) {
 				return false;
 			}
 		}
-		if(ENGINE.url == null) {
-			if(!extract(aTdeDir)) {
-				throw new Exception("Inpainting model not available: "+ENGINE.fileName);
+		if(aEngine.url == null) {
+			if(!extract(aTdeDir, aEngine)) {
+				throw new Exception("Inpainting model not available: "+aEngine.fileName);
 			}
 			return true;
 		}
-		return Downloader.download(ENGINE.url, getFile(aTdeDir), ENGINE.size, aModel);
+		return Downloader.download(aEngine.url, getFile(aTdeDir, aEngine), aEngine.size, aModel);
 	}
 
 	/**
 	 * The shared inpainter, started if needed (the model kept loaded before, if another one, is unloaded)
 	 */
 	public static Inpainter shared(String aTdeDir) throws Exception {
+		return shared(aTdeDir, ENGINE);
+	}
+
+	/**
+	 * The shared inpainter with the model aEngine (another engine loaded before is stopped)
+	 */
+	public static Inpainter shared(String aTdeDir,Engine aEngine) throws Exception {
 		synchronized(LOCK) {
-			if(shared != null && shared.residentAlive()) {
+			if(shared != null && shared.residentAlive() && shared.engine == aEngine) {
 				return shared;
+			}
+			if(shared != null && shared.engine != aEngine) {
+				shared.close();
+				lastError = null;
 			}
 			shared = null;
 			if(lastError != null && System.currentTimeMillis()-lastErrorMS < RETRY_MS) {
 				throw new Exception(lastError);
 			}
-			if(!isReady(aTdeDir)) {
+			if(!isReady(aTdeDir, aEngine)) {
 				throw new Exception("Inpainting model not downloaded");
 			}
 			try {
-				PythonAI.beforeLoad(KEY);
-				Inpainter aI = new Inpainter(aTdeDir);
+				PythonAI.beforeLoad(key(aEngine));
+				Inpainter aI = new Inpainter(aTdeDir, aEngine);
 				PythonAI.setResident(aI);
 				shared = aI;
 				lastError = null;
@@ -254,7 +297,8 @@ public class Inpainter implements PythonAI.Resident, AutoCloseable {
 	/**
 	 * Start the child JVM and load the model in it
 	 */
-	Inpainter(String aTdeDir) throws Exception {
+	Inpainter(String aTdeDir,Engine aEngine) throws Exception {
+		engine = aEngine;
 		String aJava = ProcessHandle.current().info().command().orElse("java");
 		Vector<String> aCmd = new Vector<String>();
 		aCmd.add(aJava);
@@ -265,6 +309,7 @@ public class Inpainter implements PythonAI.Resident, AutoCloseable {
 		aCmd.add(System.getProperty("java.class.path"));
 		aCmd.add(Inpainter.class.getName());
 		aCmd.add(aTdeDir);
+		aCmd.add(aEngine.name());
 		ProcessBuilder aPB = new ProcessBuilder(aCmd);
 		aPB.redirectError(ProcessBuilder.Redirect.INHERIT);
 		System.out.println("Inpainting worker: "+String.join(" ", aCmd));
@@ -282,15 +327,15 @@ public class Inpainter implements PythonAI.Resident, AutoCloseable {
 			close();
 			throw t instanceof Exception ? (Exception)t : new Exception(t);
 		}
-		System.out.println("Inpainting model "+ENGINE.label+" loaded ("+provider+(cpuReason != null ? ", "+cpuReason : "")+")");
-		if(!isGpu() && ENGINE.gpuOnly) {
+		System.out.println("Inpainting model "+engine.label+" loaded ("+provider+(cpuReason != null ? ", "+cpuReason : "")+")");
+		if(!isGpu() && engine.gpuOnly) {
 			//On the CPU: too slow, the holes stay interpolated
-			gpuCapable = false;
+			gpuCapable.put(engine, false);
 		}
 	}
 
 	/**
-	 * Child JVM: arg tdeDir (the model of ENGINE). Protocol on stdin / stdout (DataStream), logs on stderr:
+	 * Child JVM: args tdeDir and the name of the engine (default ENGINE). Protocol on stdin / stdout (DataStream), logs on stderr:
 	 * - after the loading: answer, state;
 	 * - request: number of tiles (-1: end), width and height of the tiles, per tile w*h*3 bytes RGB + w*h bytes
 	 * mask (1 = hole); answer: answer, per tile w*h*3 bytes RGB; state.
@@ -302,6 +347,9 @@ public class Inpainter implements PythonAI.Resident, AutoCloseable {
 		System.setProperty("java.awt.headless", "true");
 		DataOutputStream aOut = new DataOutputStream(new BufferedOutputStream(aStdout, 1 << 20));
 		Inpainter aI = new Inpainter();
+		if(aArgs.length > 1) {
+			aI.engine = Engine.valueOf(aArgs[1]);
+		}
 		try {
 			try {
 				aI.load(aArgs[0]);
@@ -370,12 +418,12 @@ public class Inpainter implements PythonAI.Resident, AutoCloseable {
 		envC = aCL.loadClass("ai.onnxruntime.OrtEnvironment");
 		Class<?> aOptsC = aCL.loadClass("ai.onnxruntime.OrtSession$SessionOptions");
 		env = DepthEstimator.invoke(envC.getMethod("getEnvironment"), null);
-		String aPath = getFile(aTdeDir).getAbsolutePath();
+		String aPath = getFile(aTdeDir, engine).getAbsolutePath();
 		long[] aBest = DepthEstimator.bestGpu();
 		gpuFree = aBest == null ? -1 : aBest[1];
 		int aDevice = aBest == null ? 0 : (int)aBest[0];
 		boolean aCudaFailed = false;
-		if(gpuFree >= 0 && gpuFree < ENGINE.gpuMemory) {
+		if(gpuFree >= 0 && gpuFree < engine.gpuMemory) {
 			cpuReason = DepthEstimator.CPU_REASON_GPU_MEMORY;
 		}
 		else {
@@ -421,7 +469,7 @@ public class Inpainter implements PythonAI.Resident, AutoCloseable {
 	void createCpuSession(String aTdeDir) throws Exception {
 		Class<?> aOptsC = envC.getClassLoader().loadClass("ai.onnxruntime.OrtSession$SessionOptions");
 		Object aOpts = aOptsC.getConstructor().newInstance();
-		session = DepthEstimator.invoke(envC.getMethod("createSession", String.class, aOptsC), env, getFile(aTdeDir).getAbsolutePath(), aOpts);
+		session = DepthEstimator.invoke(envC.getMethod("createSession", String.class, aOptsC), env, getFile(aTdeDir, engine).getAbsolutePath(), aOpts);
 		provider = "CPU";
 	}
 
@@ -451,8 +499,8 @@ public class Inpainter implements PythonAI.Resident, AutoCloseable {
 	 * TILE x TILE), through the model
 	 */
 	byte[] runOnce(byte[] aRGB,byte[] aMask,int aW,int aH) throws Exception {
-		int aPW = ENGINE.resamples ? aW : (aW+MOD-1)/MOD*MOD;
-		int aPH = ENGINE.resamples ? aH : (aH+MOD-1)/MOD*MOD;
+		int aPW = engine.resamples ? aW : (aW+MOD-1)/MOD*MOD;
+		int aPH = engine.resamples ? aH : (aH+MOD-1)/MOD*MOD;
 		int aPPlane = aPW*aPH;
 		FloatBuffer aIB = ByteBuffer.allocateDirect(3*aPPlane*4).order(ByteOrder.nativeOrder()).asFloatBuffer();
 		for(int c = 0;c < 3;c++) {
@@ -488,7 +536,7 @@ public class Inpainter implements PythonAI.Resident, AutoCloseable {
 			float[] aO = new float[3*aPPlane];
 			aOFB.get(aO);
 			//Output scaled to 0..1 then to bytes, cropped to the tile
-			float aScale = ENGINE.outScale*255;
+			float aScale = engine.outScale*255;
 			byte[] aRes = new byte[3*aW*aH];
 			for(int c = 0;c < 3;c++) {
 				for(int y = 0;y < aH;y++) {
@@ -578,7 +626,7 @@ public class Inpainter implements PythonAI.Resident, AutoCloseable {
 		if(!aAny) {
 			return;
 		}
-		if(!aFlip || ENGINE.resamples) {
+		if(!aFlip || engine.resamples) {
 			fillTiles(aRGB, aW, aH, aHoles);
 			return;
 		}
@@ -622,8 +670,8 @@ public class Inpainter implements PythonAI.Resident, AutoCloseable {
 		int aTW = Math.min(TILE, aSW);
 		int aTH = Math.min(TILE, aSH);
 		//Size given to the model: LaMa TILE x TILE (the tile resampled), else the tile itself
-		int aMW = ENGINE.resamples ? TILE : aTW;
-		int aMH = ENGINE.resamples ? TILE : aTH;
+		int aMW = engine.resamples ? TILE : aTW;
+		int aMH = engine.resamples ? TILE : aTH;
 		int[] aXs = tilePositions(aSW, aTW);
 		int[] aYs = tilePositions(aSH, aTH);
 		Vector<int[]> aTiles = new Vector<int[]>();
@@ -782,7 +830,7 @@ public class Inpainter implements PythonAI.Resident, AutoCloseable {
 	//PythonAI.Resident
 	@Override
 	public String residentKey() {
-		return KEY;
+		return key(engine);
 	}
 
 	@Override
@@ -803,7 +851,7 @@ public class Inpainter implements PythonAI.Resident, AutoCloseable {
 
 	@Override
 	public long residentMemory() {
-		return isGpu() ? ENGINE.gpuMemory : 0;
+		return isGpu() ? engine.gpuMemory : 0;
 	}
 
 	@Override

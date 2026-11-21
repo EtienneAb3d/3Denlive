@@ -1413,7 +1413,7 @@ public class TimeLineStack extends Media {
 						if(_TRACE_COMPOSE) {
 							//TEMPORARY trace (gray clip not shown after a drop)
 							StringBuilder aTr = new StringBuilder("COMPOSE t="+aTime+" mode="+aProcessingMode+" line="+aTL.getName()+" clips=");
-							for(Clip aC : aTL.clipList) {
+							for(Clip aC : new Vector<Clip>(aTL.clipList)) {
 								aTr.append("[uid="+aC.UID+" "+aC.media.getClass().getSimpleName()+" start="+aC.getStartTimeMS()+" dur="+aC.getDurationMS()
 									+" alpha="+aC.getAlpha(aTime)+" procs="+aC.getProcessors().size()+"]");
 							}

@@ -61,8 +61,28 @@ public class ProcessorsGUI extends CompositePanel {
 	//Processors shown (of the selected clip)
 	Vector<Processor> processors = null;
 
+	//Processors expanded by the user during the session, by class: applied to the processors of each clip shown
+	//(a class never toggled: collapsed, so the first clip shows its processors collapsed)
+	static final java.util.HashMap<Class<?>, Boolean> EXPANDED = new java.util.HashMap<>();
+	//Clip whose processors were shown last: shown again (move, add, undo...), their own states are kept
+	Object shownClip = null;
+
+	static void rememberExpanded(Processor aP) {
+		EXPANDED.put(aP.getClass(), aP.isExpended);
+	}
+
 	public void setProcessors(Vector<Processor> aProcessors) {
 		processors = aProcessors;
+		Object aClip = aProcessors == null || aProcessors.isEmpty() ? null : aProcessors.elementAt(0).targetMedia;
+		if(aClip != null && aClip != shownClip) {
+			for(Processor aP : aProcessors) {
+				Boolean aE = EXPANDED.get(aP.getClass());
+				aP.isExpended = aE != null && aE;
+			}
+		}
+		if(aClip != null) {
+			shownClip = aClip;
+		}
 		clean();
 		if(tde.selected.clips.size() > 1) {
 			//Several clips selected: whose processors they would be is not clear, none are shown
@@ -134,6 +154,7 @@ public class ProcessorsGUI extends CompositePanel {
 						createProcessorGUI(aBox, aP);
 						
 						aP.isExpended = true;
+						rememberExpanded(aP);
 						
 						aContainer.layout(true);
 					}
@@ -143,6 +164,7 @@ public class ProcessorsGUI extends CompositePanel {
 						aBox.setData(null);
 
 						aP.isExpended = false;
+						rememberExpanded(aP);
 
 						aContainer.layout(true);
 					}
@@ -160,6 +182,7 @@ public class ProcessorsGUI extends CompositePanel {
 				aAllUp.addListener(SWT.MouseDown,e -> {
 					for(Processor p : aProcessors) {
 						p.isExpended = false;
+						rememberExpanded(p);
 					}
 					tde.gui.processorGUI.setProcessors(((Clip)aP.targetMedia).getProcessors());
 					tde.gui.monitorGUI.redraw();
@@ -299,6 +322,10 @@ public class ProcessorsGUI extends CompositePanel {
 		}
 		if("Subtitles".equals(aClassP)) {
 			aBox.setData(new SubtitlesGUI(tde, aBox,aP));
+			return;
+		}
+		if("SceneCamera".equals(aClassP) || "Scene3D".equals(aClassP)) {
+			aBox.setData(new com.cubaix.TDenlive.GUI.processors.SceneCameraGUI(tde, aBox,aP));
 			return;
 		}
 		if("Objects3D".equals(aClassP)) {

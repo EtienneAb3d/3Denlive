@@ -42,6 +42,8 @@ import com.cubaix.TDenlive.ai.ColorGenerator;
 import com.cubaix.TDenlive.ai.MaskGenerator;
 import com.cubaix.TDenlive.ai.PromptExtender;
 import com.cubaix.TDenlive.ai.PythonAI;
+import com.cubaix.TDenlive.ai.SceneGenerator;
+import com.cubaix.TDenlive.model3d.SmartFill;
 import com.cubaix.TDenlive.ai.SoundGenerator;
 import com.cubaix.TDenlive.ai.SpeechGenerator;
 import com.cubaix.TDenlive.ai.WanGenerator;
@@ -68,6 +70,9 @@ import com.cubaix.TDenlive.utils.SubtitleFile;
  * - Mask: objects of an image or a video (stereo side by side included) delimited by clicks and tracked by SAM 2.1
  * (see ai.MaskGenerator) in a large editor window (AiMaskGUI), which writes a black and white mask (image or video)
  * for the Transparency processor.
+ * - 3D scene: a photo turned into a scene of 3D Gaussians by Depth Pro or Flash3D (see ai.SceneGenerator), explored with a pair
+ * of stereo cameras in AiSceneGUI (spacing and screen plane set by sliders, the pair moved in the scene), whose views
+ * are added to the media list; a scene saved before (.ply) can be opened again.
  * - Subtitles / Voice translation: the speech of a video transcribed (Qwen3-ASR or Parakeet), translated into one or
  * several languages by the LLM, or spoken in another language with the cloned voice (Qwen3-TTS), see
  * ai.SpeechGenerator; result window AiSpeechResultGUI.
@@ -104,6 +109,12 @@ public class AiClipGUI {
 	boolean mask = false;
 	MaskGenerator.Model maskModel = MaskGenerator.TINY;
 	AiMaskGUI.Source maskSrc = new AiMaskGUI.Source();
+	//3D scene of a photo (SCENE): the viewer AiSceneGUI after the computation, or at once for a scene saved before
+	boolean scene = false;
+	SceneGenerator.Detail sceneDetail = SceneGenerator.FINE;
+	SceneGenerator.Model sceneModel = SceneGenerator.MODELS[0];
+	//Scene file to open instead of a computation (button of the panel), else null
+	String scenePly = null;
 	//Speech of a video (SUBS: subtitles, DUB: voice translation) instead of a generation
 	boolean speech = false;
 	boolean dub = false;
@@ -150,6 +161,8 @@ public class AiClipGUI {
 	RefImage videoImg = new RefImage();
 	//Black and white photo of the colorization panel
 	RefImage colorImg = new RefImage();
+	//Photo of the 3D scene panel
+	RefImage sceneImg = new RefImage();
 	//Images of the music and sound effects panels (a prompt suited to them proposed by the LLM)
 	RefImage musicImg = new RefImage();
 	RefImage sfxImg = new RefImage();
@@ -369,6 +382,7 @@ public class AiClipGUI {
 			aChecks[k] = VIDEO.equals(KINDS[k]) ? createVideoPanel(aPanels[k])
 					: COLOR.equals(KINDS[k]) ? createColorPanel(aPanels[k])
 					: MASK.equals(KINDS[k]) ? createMaskPanel(aPanels[k])
+					: SCENE.equals(KINDS[k]) ? createScenePanel(aPanels[k])
 					: SUBS.equals(KINDS[k]) || DUB.equals(KINDS[k]) ? createSpeechPanel(aPanels[k], DUB.equals(KINDS[k]))
 					: createSoundPanel(aPanels[k], KINDS[k]);
 		}
@@ -392,6 +406,7 @@ public class AiClipGUI {
 			}
 		});
 		Button aOk = new Button(aButtons, SWT.PUSH);
+		formOkB = aOk;
 		aOk.setText(lng("AI.Generate"));
 		aOk.setImage(tde.gui.imgsSwt.getIcon("checked.gif"));
 		tde.gui.applyColorFont(aOk);
@@ -400,6 +415,9 @@ public class AiClipGUI {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				prompt = null;
+				if(!SCENE.equals(kind)) {
+					scenePly = null;
+				}
 				aChecks[kindIndex(kind)].run();
 				if(prompt != null) {
 					//The form leaves the LLM of the video prompt (still loaded: unloaded only if the generation loads
@@ -433,9 +451,10 @@ public class AiClipGUI {
 			int k = kindIndex(kind);
 			color = COLOR.equals(kind);
 			mask = MASK.equals(kind);
+			scene = SCENE.equals(kind);
 			dub = DUB.equals(kind);
 			speech = dub || SUBS.equals(kind);
-			music = !VIDEO.equals(kind) && !color && !mask && !speech;
+			music = !VIDEO.equals(kind) && !color && !mask && !scene && !speech;
 			if(music) {
 				soundModel = (SoundGenerator.Model)aPanels[k].getData(MODEL);
 			}
@@ -495,12 +514,16 @@ public class AiClipGUI {
 	static final String COLOR = "color";
 	//Mask of objects delimited and tracked (SAM 2.1, see ai.MaskGenerator and AiMaskGUI)
 	static final String MASK = "mask";
+	//Navigable 3D scene of a photo (Depth Pro or Flash3D, see ai.SceneGenerator and AiSceneGUI)
+	static final String SCENE = "scene";
 	//Speech of a video: subtitles in one or several languages, voice translation (see ai.SpeechGenerator)
 	static final String SUBS = "subtitles";
 	static final String DUB = "dub";
-	static final String[] KINDS = {VIDEO, COLOR, MASK, MUSIC, SFX, SUBS, DUB};
-	static final String[] KIND_KEYS = {"AI.KindVideo", "AI.KindColor", "AI.KindMask", "AI.KindMusic", "AI.KindSfx", "AI.KindSubs", "AI.KindDub"};
-	static final String[] KIND_TITLES = {"AI.Title", "AI.ColorTitle", "AI.MaskTitle", "AI.MusicTitle", "AI.SfxTitle", "AI.SubsTitle", "AI.DubTitle"};
+	static final String[] KINDS = {VIDEO, COLOR, MASK, SCENE, MUSIC, SFX, SUBS, DUB};
+	static final String[] KIND_KEYS = {"AI.KindVideo", "AI.KindColor", "AI.KindMask", "AI.KindScene", "AI.KindMusic", "AI.KindSfx", "AI.KindSubs", "AI.KindDub"};
+	static final String[] KIND_TITLES = {"AI.Title", "AI.ColorTitle", "AI.MaskTitle", "AI.SceneTitle", "AI.MusicTitle", "AI.SfxTitle", "AI.SubsTitle", "AI.DubTitle"};
+	//OK button of the form (the panel of the 3D scene validates it to open a saved scene)
+	Button formOkB = null;
 	//Data of a sound panel: its model chosen
 	static final String MODEL = "AiClipGUI.model";
 
@@ -1465,6 +1488,222 @@ public class AiClipGUI {
 	}
 
 	/**
+	 * 3D scene panel: what it does, the model (Depth Pro or Flash3D) and the detail of the scene with where it runs; the photo (image row,
+	 * required), name, downloads, licences, and a button opening a scene saved before (.ply) in the viewer
+	 * @return the check of the OK button: sets prompt (left null when the form is not valid)
+	 */
+	Runnable createScenePanel(Composite aPanel) {
+		if(!SceneGenerator.isPlatformSupported()) {
+			Label aU = addLabel(aPanel, lng("AI.UnsupportedAll"), 0);
+			aU.setForeground(tde.gui.colorsSwt.RED);
+			return () -> {};
+		}
+		Composite[] aCols = columns(aPanel);
+		Composite aLeft = aCols[0];
+		Composite aRight = aCols[1];
+		Label aIntro = addLabel(aLeft, lng("AI.SceneIntro"), 0);
+		aIntro.setFont(tde.gui.fontsSwt.robotoBold);
+		addLabel(aLeft, lng("AI.GenSceneDesc"), 0);
+
+		//Model (its notes), then the detail (Gaussians of the model), where it runs, the downloads and the licence
+		//(right column): updated when the model changes
+		sceneModel = SceneGenerator.modelById(tde.config.aiSceneModel);
+		SceneGenerator.Detail aChosen = SceneGenerator.detailById(tde.config.aiSceneDetail);
+		sceneDetail = aChosen != null ? aChosen : SceneGenerator.FINE;
+		Vector<Runnable> aModelChanged = new Vector<Runnable>();
+		Label aML = addLabel(aLeft, lng("AI.SceneModel"), 0);
+		((GridData)aML.getLayoutData()).verticalIndent = 8;
+		for(SceneGenerator.Model aM : SceneGenerator.MODELS) {
+			Button aR = new Button(aLeft, SWT.RADIO);
+			tde.gui.applyColorFont(aR);
+			boolean aAdvised = aM == SceneGenerator.MODELS[0];
+			aR.setText(lng(aM.key())+(aAdvised ? " "+lng("AI.MusicAdvised") : ""));
+			if(aAdvised) {
+				aR.setFont(tde.gui.fontsSwt.robotoBold);
+			}
+			aR.setSelection(aM == sceneModel);
+			aR.setEnabled(aM.isSupported());
+			aR.addSelectionListener(new SelectionAdapter() {
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					if(aR.getSelection() && sceneModel != aM) {
+						sceneModel = aM;
+						for(Runnable aRun : aModelChanged) {
+							aRun.run();
+						}
+						//Longer texts: the window grows if needed
+						Shell aSh = aPanel.getShell();
+						aSh.layout(true, true);
+						org.eclipse.swt.graphics.Point aNeed = aSh.computeSize(aSh.getSize().x, SWT.DEFAULT);
+						if(aNeed.y > aSh.getSize().y) {
+							aSh.setSize(aSh.getSize().x, aNeed.y);
+						}
+					}
+				}
+			});
+			addLabel(aLeft, lng(aM.key()+"Note"), 20);
+		}
+		//Model filling the holes of the views (model3d.SmartFill): downloaded when chosen (refused: back to the
+		//previous one); not possible here: disabled
+		SmartFill.Model aFillNow = SmartFill.modelById(tde.config.aiSceneFill);
+		Label aFL = addLabel(aLeft, lng("AI.SceneFill"), 0);
+		((GridData)aFL.getLayoutData()).verticalIndent = 8;
+		Vector<Button> aFillBs = new Vector<Button>();
+		for(SmartFill.Model aM : SmartFill.MODELS) {
+			Button aR = new Button(aLeft, SWT.RADIO);
+			tde.gui.applyColorFont(aR);
+			boolean aDefault = aM == SmartFill.DEFAULT_MODEL;
+			aR.setText(lng(aM.key())+(aDefault ? " "+lng("AI.SceneFillDefault") : ""));
+			if(aDefault) {
+				aR.setFont(tde.gui.fontsSwt.robotoBold);
+			}
+			aR.setEnabled(aM.capable());
+			aR.setSelection(aM == aFillNow);
+			aR.setData(aM);
+			aFillBs.add(aR);
+			aR.addSelectionListener(new SelectionAdapter() {
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					SmartFill.Model aOld = SmartFill.modelById(tde.config.aiSceneFill);
+					if(!aR.getSelection() || aOld == aM) {
+						return;
+					}
+					if(FillModelGUI.ensure(tde, aPanel.getShell(), aM)) {
+						tde.config.aiSceneFill = aM == SmartFill.DEFAULT_MODEL ? "" : aM.id;
+					}
+					else {
+						for(Button aB : aFillBs) {
+							aB.setSelection(aB.getData() == aOld);
+						}
+					}
+				}
+			});
+			addLabel(aLeft, lng(aM.key()+"Note")+(aM.capable() ? "" : " "+lng("AI.SceneFillNotHere")), 20);
+		}
+		Label aDL = addLabel(aLeft, lng("AI.SceneDetail"), 0);
+		((GridData)aDL.getLayoutData()).verticalIndent = 8;
+		for(SceneGenerator.Detail aD : SceneGenerator.DETAILS) {
+			Button aR = new Button(aLeft, SWT.RADIO);
+			tde.gui.applyColorFont(aR);
+			boolean aAdvised = aD == SceneGenerator.FINE;
+			Runnable aText = () -> aR.setText(lng("AI.SceneDetail"+aD.id).replace("%N%", String.format("%,d", aD.gaussians(sceneModel)))
+					+(aAdvised ? " "+lng("AI.MusicAdvised") : ""));
+			aText.run();
+			aModelChanged.add(aText);
+			if(aAdvised) {
+				aR.setFont(tde.gui.fontsSwt.robotoBold);
+			}
+			aR.setSelection(aD == sceneDetail);
+			aR.addSelectionListener(new SelectionAdapter() {
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					if(aR.getSelection()) {
+						sceneDetail = aD;
+					}
+				}
+			});
+			addLabel(aLeft, lng("AI.SceneDetail"+aD.id+"Note"), 20);
+		}
+		Label aWhere = addLabel(aLeft, "", 0);
+		((GridData)aWhere.getLayoutData()).verticalIndent = 8;
+		Runnable aWhereText = () -> aWhere.setText(lng(SceneGenerator.cpuReason(sceneModel) == null ? "AI.SceneOnGpu" : "AI.SceneOnCpu")
+				.replace("%GB%", gb(sceneModel.gpuMemory)));
+		aWhereText.run();
+		aModelChanged.add(aWhereText);
+
+		Text aName = createNameField(aRight, SCENE);
+		createImageRow(aRight, null, sceneImg, lng("AI.SceneImage"), () -> {});
+		//Interpolation (the mesh of the visible Gaussians, else the Gaussians), then the smart filling (kept in 3De.conf)
+		Composite aFillRow = new Composite(aRight, SWT.NONE);
+		tde.gui.applyColorFont(aFillRow);
+		aFillRow.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		GridLayout aFRGL = new GridLayout(4, false);
+		tde.gui.applyNoMargin(aFRGL);
+		aFillRow.setLayout(aFRGL);
+		Button aDepth = new Button(aFillRow, SWT.CHECK);
+		tde.gui.applyColorFont(aDepth);
+		aDepth.setText(lng("AI.SceneDepth"));
+		aDepth.setToolTipText(lng("AI.SceneDepthTip"));
+		aDepth.setSelection(tde.config.aiSceneDepth);
+		aDepth.addListener(SWT.Selection, e -> tde.config.aiSceneDepth = aDepth.getSelection());
+		Button aInterp = new Button(aFillRow, SWT.CHECK);
+		tde.gui.applyColorFont(aInterp);
+		aInterp.setText(lng("AI.SceneInterp"));
+		aInterp.setToolTipText(lng("AI.SceneInterpTip"));
+		aInterp.setSelection(tde.config.aiSceneInterp);
+		aInterp.addListener(SWT.Selection, e -> tde.config.aiSceneInterp = aInterp.getSelection());
+		Button aCut = new Button(aFillRow, SWT.CHECK);
+		tde.gui.applyColorFont(aCut);
+		aCut.setText(lng("AI.SceneCut"));
+		aCut.setToolTipText(lng("AI.SceneCutTip"));
+		aCut.setSelection(tde.config.aiSceneCut);
+		aCut.addListener(SWT.Selection, e -> tde.config.aiSceneCut = aCut.getSelection());
+		Button aFill = new Button(aFillRow, SWT.CHECK);
+		tde.gui.applyColorFont(aFill);
+		aFill.setText(lng("AI.SceneSmartFill"));
+		aFill.setToolTipText(lng("AI.SceneSmartFillTip"));
+		aFill.setSelection(tde.config.aiSceneSmartFill);
+		aFill.addListener(SWT.Selection, e -> tde.config.aiSceneSmartFill = aFill.getSelection());
+		Label aNote = addLabel(aRight, lng("AI.SceneNote"), 0);
+		((GridData)aNote.getLayoutData()).verticalIndent = 8;
+		Label aDownload = addLabel(aRight, "", 0);
+		Label aLicence = addLabel(aRight, "", 0);
+		Runnable aDownloadText = () -> {
+			long aBytes = SceneGenerator.bytesToDownload(tde.tdeDir, sceneModel);
+			aDownload.setText(aBytes > 0 ? lng("AI.MusicDownload").replace("%GB%", gb(aBytes)) : lng("AI.MusicReady"));
+			aLicence.setText(lng(sceneModel.licenceKey));
+		};
+		aDownloadText.run();
+		aModelChanged.add(aDownloadText);
+		Button aOpen = new Button(aRight, SWT.PUSH);
+		tde.gui.applyColorFont(aOpen);
+		aOpen.setText(lng("AI.SceneOpen"));
+		GridData aOGD = new GridData();
+		aOGD.verticalIndent = 8;
+		aOpen.setLayoutData(aOGD);
+		aOpen.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				FileDialog aFD = new FileDialog(aPanel.getShell(), SWT.OPEN);
+				aFD.setText(lng("AI.SceneOpen"));
+				aFD.setFilterNames(new String[] {lng("AI.SceneFilter")});
+				aFD.setFilterExtensions(new String[] {"*.ply;*.PLY"});
+				File aDir = outDir();
+				aFD.setFilterPath(aDir.isDirectory() ? aDir.getAbsolutePath() : tde.tdeDir);
+				String aPath = aFD.open();
+				if(aPath != null && formOkB != null && !formOkB.isDisposed()) {
+					scenePly = aPath;
+					formOkB.notifyListeners(SWT.Selection, new org.eclipse.swt.widgets.Event());
+				}
+			}
+		});
+		labelWidth = 560;
+		return () -> {
+			tde.config.aiSceneDetail = sceneDetail == SceneGenerator.FINE ? "" : sceneDetail.id;
+			tde.config.aiSceneModel = sceneModel == SceneGenerator.MODELS[0] ? "" : sceneModel.id;
+			if(scenePly != null) {
+				prompt = new File(scenePly).getName();
+				return;
+			}
+			if(sceneImg.path != null && !new File(sceneImg.path).isFile()) {
+				sceneImg.path = null;
+				sceneImg.name = null;
+			}
+			if(sceneImg.path == null) {
+				message(tde, SWT.ICON_INFORMATION, lng("AI.SceneNoImage"));
+				return;
+			}
+			String aSrc = sceneImg.name != null ? sceneImg.name : new File(sceneImg.path).getName();
+			prompt = lng("AI.ScenePrompt").replace("%NAME%", aSrc);
+			clipName = aName.getText().trim();
+			if(clipName.isEmpty()) {
+				//The name of the photo, in 3D
+				clipName = aSrc.replaceAll("[.][A-Za-z0-9]{2,4}$", "")+" "+lng("AI.SceneSuffix");
+			}
+		};
+	}
+
+	/**
 	 * Mask panel (SAM 2.1): what it does, its models with their memory and where they run, the licence; the image
 	 * or video (a file, stereo side by side or not, or a media of the library), the name of the mask, downloads.
 	 * OK opens the editor (AiMaskGUI).
@@ -1578,7 +1817,7 @@ public class AiClipGUI {
 			FileDialog aFD = new FileDialog(aParent.getShell(), SWT.OPEN);
 			aFD.setText(lng("AI.MaskSource"));
 			aFD.setFilterNames(new String[] {lng("AI.ImageFilter")});
-			String aExts = "*.jpg;*.jpeg;*.png;*.bmp;*.gif;"+VIDEO_EXTS;
+			String aExts = "*.jpg;*.jpeg;*.png;*.webp;*.bmp;*.gif;"+VIDEO_EXTS;
 			aFD.setFilterExtensions(new String[] {aExts+aExts.toUpperCase()});
 			String aDir = lastImageDir != null ? lastImageDir : (tde.lastDir != null ? tde.lastDir : tde.tdeDir);
 			aFD.setFilterPath(aDir);
@@ -2664,7 +2903,8 @@ public class AiClipGUI {
 			aThumb.setImage(null);
 			aRemove.setEnabled(aRef.path != null);
 			if(aRef.path == null) {
-				aName.setText(lng("AI.ImageNone"));
+				//Video: generated from the text alone; the others: nothing chosen yet
+				aName.setText(lng(aRef == videoImg ? "AI.ImageNone" : aRef == sceneImg ? "AI.SceneImageNone" : "AI.ImageNoneChosen"));
 				if(aSizeL != null) {
 					setOrientation(tde.config.outRatio > 0 && tde.config.outRatio < 1);
 				}
@@ -2710,7 +2950,7 @@ public class AiClipGUI {
 				FileDialog aFD = new FileDialog(aShell.getShell(), SWT.OPEN);
 				aFD.setText(lng("AI.Image"));
 				aFD.setFilterNames(new String[] {lng("AI.ImageFilter")});
-				String aExts = "*.jpg;*.jpeg;*.png;*.bmp;*.gif;"+VIDEO_EXTS;
+				String aExts = "*.jpg;*.jpeg;*.png;*.webp;*.bmp;*.gif;"+VIDEO_EXTS;
 				aFD.setFilterExtensions(new String[] {aExts+aExts.toUpperCase()});
 				String aDir = lastImageDir != null ? lastImageDir : (tde.lastDir != null ? tde.lastDir : tde.tdeDir);
 				aFD.setFilterPath(aDir);
@@ -3020,6 +3260,16 @@ public class AiClipGUI {
 			new AiMaskGUI(this, maskSrc, maskModel, clipName.isEmpty() ? null : clipName).open();
 			return;
 		}
+		//3D scene saved before: the viewer at once (not a generation: other AI clips can be made meanwhile)
+		if(scene && scenePly != null) {
+			String aPly = scenePly;
+			scenePly = null;
+			running = false;
+			if(!new AiSceneGUI(tde, new File(aPly)).open()) {
+				again();
+			}
+			return;
+		}
 		stepStartMS = -1;
 		stepStartDone = 0;
 		lastUpdateMS = 0;
@@ -3033,6 +3283,10 @@ public class AiClipGUI {
 		addLabel(shell, prompt.length() > 200 ? prompt.substring(0, 200)+"..." : prompt, 0).setFont(tde.gui.fontsSwt.robotoBold);
 		if(color) {
 			addLabel(shell, "DDColor "+colorModel.id+" - "+lng(ColorGenerator.cpuReason(colorModel) == null ? "AI.MusicOnGpu" : "AI.MusicOnCpu"), 0);
+		}
+		else if(scene) {
+			addLabel(shell, lng(sceneModel.key())+" - "+lng("AI.SceneDetail"+sceneDetail.id).replace("%N%", String.format("%,d", sceneDetail.gaussians(sceneModel)))
+					+" - "+lng(SceneGenerator.cpuReason(sceneModel) == null ? "AI.MusicOnGpu" : "AI.MusicOnCpu"), 0);
 		}
 		else if(speech) {
 			addLabel(shell, dub && ttsModel == SpeechGenerator.HIBIKI ? ttsModel.name : asrModel.name+(dub ? " + "+ttsModel.name : ""), 0);
@@ -3084,7 +3338,7 @@ public class AiClipGUI {
 		center(shell);
 		shell.open();
 		final Shell aShell = shell;
-		if(!music && !color && !speech) {
+		if(!music && !color && !scene && !speech) {
 			animate();
 		}
 		if(speech) {
@@ -3093,16 +3347,16 @@ public class AiClipGUI {
 		}
 
 		File aOutDir = outDir();
-		String aExt = music ? ".wav" : color ? ".png" : ".mp4";
+		String aExt = music ? ".wav" : color ? ".png" : scene ? ".ply" : ".mp4";
 		String aBase = fileBase(clipName);
 		if(aBase.isEmpty()) {
-			aBase = (music ? (SoundGenerator.SFX.equals(soundModel.kind) ? "AI_Sfx_" : "AI_Music_") : color ? "AI_Color_" : "AI_")+new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+			aBase = (music ? (SoundGenerator.SFX.equals(soundModel.kind) ? "AI_Sfx_" : "AI_Music_") : color ? "AI_Color_" : scene ? "AI_Scene_" : "AI_")+new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 		}
 		//A name already taken in the folder: name_2, name_3...
 		aBase = freeBase(aOutDir, aBase, aExt);
 		File aOut = new File(aOutDir, aBase+aExt);
 		File aPromptFile = new File(aOutDir, aBase+".txt");
-		String aRef = color ? colorImg.path : videoImg.path;
+		String aRef = color ? colorImg.path : scene ? sceneImg.path : videoImg.path;
 		//The result window shows the colorized photo in its ratio
 		if(color) {
 			try {
@@ -3147,7 +3401,12 @@ public class AiClipGUI {
 							return AiClipGUI.this.isCanceled(aRun);
 						}
 					};
-					if(color) {
+					if(scene) {
+						SceneGenerator aSG = new SceneGenerator(tde.tdeDir, sceneModel, aProgress);
+						generator = aSG;
+						aDone = aSG.generate(new File(aRef), sceneDetail, aOut) && !isCanceled(aRun);
+					}
+					else if(color) {
 						ColorGenerator aCG = new ColorGenerator(tde.tdeDir, colorModel, aProgress);
 						generator = aCG;
 						aDone = aCG.colorize(new File[] {new File(aRef)}, new File[] {aOut}) && !isCanceled(aRun);
@@ -3184,6 +3443,13 @@ public class AiClipGUI {
 						}
 						if(!aShell.isDisposed()) {
 							aShell.dispose();
+						}
+						if(aOk && scene) {
+							//The scene stays in the AI folder (opened again with the button of the panel); the viewer
+							//is not a generation: other AI clips can be made meanwhile
+							running = false;
+							new AiSceneGUI(tde, aOut).open();
+							return;
 						}
 						if(aOk) {
 							//Still running until the result is added or discarded
@@ -3289,6 +3555,7 @@ public class AiClipGUI {
 			if("OOM".equals(e.code)) {
 				return speech ? lng("AI.SpeechErrorOom")
 						: color ? lng("AI.ColorErrorOom")
+						: scene ? lng("AI.SceneErrorOom")
 						: music
 						? lng("AI.MusicErrorOom").replace("%GB%", DepthModel.gb(soundModel.gpuMemory()))
 						: lng("AI.ErrorOom").replace("%GB%", DepthModel.gb(videoModel.gpuMemory));
@@ -3316,7 +3583,7 @@ public class AiClipGUI {
 	 * Language key of the failure message of the kind generated
 	 */
 	String errorKey() {
-		return speech ? "AI.SpeechError" : color ? "AI.ColorError" : !music ? "AI.Error" : SFX.equals(soundModel.kind) ? "AI.SfxError" : "AI.MusicError";
+		return speech ? "AI.SpeechError" : color ? "AI.ColorError" : scene ? "AI.SceneError" : !music ? "AI.Error" : SFX.equals(soundModel.kind) ? "AI.SfxError" : "AI.MusicError";
 	}
 
 	/**

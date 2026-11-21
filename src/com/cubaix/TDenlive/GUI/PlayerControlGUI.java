@@ -167,7 +167,10 @@ public class PlayerControlGUI extends CompositePanel {
 		aRight.setBackground(tde.gui.colorsSwt.WHITE);
 		tde.gui.tip(aRight, "NextFrame");
 		aRight.addListener(SWT.MouseDown,e -> {
-			tde.timeLineStack.setRequestedTimePosMS(tde.timeLineStack.getRequestedTimePosMS()+(int)(1000.0/tde.config.outFps));
+			long aNext = tde.timeLineStack.getRequestedTimePosMS()+(int)(1000.0/tde.config.outFps);
+			//The 3D scenes of the next image filled from those of the image shown (F/F+1 carry-over)
+			com.cubaix.TDenlive.model3d.SmartFill.carryNext(aNext);
+			tde.timeLineStack.setRequestedTimePosMS(aNext);
 			tde.gui.monitorGUI.redraw();
 		});
 		Label aEnd = new Label(toolBar,SWT.NONE);
@@ -302,7 +305,8 @@ public class PlayerControlGUI extends CompositePanel {
 	}
 
 	/**
-	 * Move the montage time cursor by aDir times the step in seconds (in the montage bounds)
+	 * Move by aDir times the step in seconds (in its bounds) the time of the library media shown in the monitor
+	 * (played or not), otherwise of the montage. While playing, the play goes on from the new position.
 	 */
 	void stepBy(int aDir) {
 		double aSec;
@@ -312,8 +316,28 @@ public class PlayerControlGUI extends CompositePanel {
 		catch(Throwable t) {
 			return;
 		}
-		long aTime = tde.timeLineStack.getRequestedTimePosMS() + aDir*Math.round(aSec*1000);
-		goToTime(Math.max(0, Math.min(aTime, Math.max(0, tde.timeLineStack.getMaxTimePosMS()-1))));
+		Media aShown = tde.gui.monitorGUI.getMedia();
+		Media aTarget = aShown != null && aShown != tde.timeLineStack && tde.mediaList.mediaList.contains(aShown)
+				? aShown : tde.timeLineStack;
+		long aTime = aTarget.getRequestedTimePosMS() + aDir*Math.round(aSec*1000);
+		aTime = Math.max(0, Math.min(aTime, Math.max(0, aTarget.getMaxTimePosMS()-1)));
+		if(playing && aTarget == playedMedia) {
+			//The playing thread sets the time from its own clock: the play is started again from there
+			startPlay(playedMedia, playedIsLib, aTime, returnPosMS);
+			return;
+		}
+		if(aTarget == tde.timeLineStack) {
+			if(aDir > 0) {
+				//The 3D scenes of the image reached filled from those of the image shown (F/F+1 carry-over)
+				com.cubaix.TDenlive.model3d.SmartFill.carryNext(aTime);
+			}
+			goToTime(aTime);
+		}
+		else {
+			aTarget.setRequestedTimePosMS(aTime);
+			tde.gui.monitorGUI.redraw();
+			showClock(aTime);
+		}
 	}
 
 	/**

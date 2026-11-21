@@ -248,7 +248,7 @@ public class TextureLibrary {
 	void loadImage() {
 		FileDialog aFD = new FileDialog(parent.getShell(), SWT.OPEN);
 		aFD.setText(tde.gui.lngs.get("ColorBck.LoadImage"));
-		String aExts = "*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.tif;*.tiff;*.pgm";
+		String aExts = "*.jpg;*.jpeg;*.png;*.webp;*.bmp;*.gif;*.tif;*.tiff;*.pgm";
 		aFD.setFilterExtensions(new String[] {aExts + ";" + aExts.toUpperCase(), "*"});
 		String aDir = ColorBck.Fill.isFile(texture) ? new java.io.File(texture.substring(ColorBck.Fill.FILE.length())).getParent() : tde.lastDir;
 		if(aDir != null) {

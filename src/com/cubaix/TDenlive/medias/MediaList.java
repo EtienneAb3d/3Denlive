@@ -18,6 +18,8 @@ import com.cubaix.TDenlive.xml.XmlTag;
 public class MediaList extends Drawable {
 	static final String VIDEO_FILE_RE = ".*[.](mpg|mpeg|mp4|avi|mov|mkv|flv|vob|ogv|ts|m2s|m2ts|divx|dvx|wmv)";
 	static final String SVG_FILE_RE = ".*[.]svg";
+	//3D scenes of Gaussians (3D Gaussian Splatting PLY), see SceneMedia
+	public static final String SCENE_FILE_RE = ".*[.]ply";
 	public static final String AUDIO_FILE_RE = ".*[.](mp3|wav|wave|ogg|oga|opus|flac|aac|m4a|wma|aif|aiff|ac3|mka)";
 	public Vector<Media> mediaList = new Vector<Media>();
 	//Trash buttons of the medias, where they were drawn last (control coordinates)
@@ -67,6 +69,11 @@ public class MediaList extends Drawable {
 					Model3DMedia aMM = new Model3DMedia(tde);
 					mediaList.add(aMM);
 					o = aMM.openProject(aOs, o);
+				}
+				if("SceneMedia".equalsIgnoreCase(aT.tagName)) {
+					SceneMedia aSM = new SceneMedia(tde);
+					mediaList.add(aSM);
+					o = aSM.openProject(aOs, o);
 				}
 				if("StereoImage".equalsIgnoreCase(aT.tagName)) {
 					StereoImage aSI = new StereoImage(tde);
@@ -119,6 +126,10 @@ public class MediaList extends Drawable {
 	}
 	
 	public void loadImageLR(String aPathL,String aPathR,int aProcessingMode,long aTime) throws Exception {
+		if(aPathL.toLowerCase().matches(SCENE_FILE_RE)) {
+			loadScene(aPathL, null);
+			return;
+		}
 		if(aPathL.toLowerCase().matches(AUDIO_FILE_RE)) {
 			//A sound file, whatever the stereo format asked
 			loadAudio(aPathL);
@@ -140,6 +151,11 @@ public class MediaList extends Drawable {
 	}
 
 	public void loadImageX(String aPath,int aProcessingMode,long aTime) throws Exception {
+		if(aPath.toLowerCase().matches(SCENE_FILE_RE)) {
+			//A 3D scene, whatever the stereo format asked
+			loadScene(aPath, null);
+			return;
+		}
 		if(aPath.toLowerCase().matches(AUDIO_FILE_RE)) {
 			//A sound file, whatever the stereo format asked
 			loadAudio(aPath);
@@ -161,6 +177,11 @@ public class MediaList extends Drawable {
 	}
 
 	public void loadImageP(String aPath,int aProcessingMode,long aTime) throws Exception {
+		if(aPath.toLowerCase().matches(SCENE_FILE_RE)) {
+			//A 3D scene, whatever the stereo format asked
+			loadScene(aPath, null);
+			return;
+		}
 		if(aPath.toLowerCase().matches(AUDIO_FILE_RE)) {
 			//A sound file, whatever the stereo format asked
 			loadAudio(aPath);
@@ -182,6 +203,11 @@ public class MediaList extends Drawable {
 	}
 
 	public void loadImageMPO(String aPath) throws Exception {
+		if(aPath.toLowerCase().matches(SCENE_FILE_RE)) {
+			//A 3D scene, whatever the stereo format asked
+			loadScene(aPath, null);
+			return;
+		}
 		if(aPath.toLowerCase().matches(AUDIO_FILE_RE)) {
 			//A sound file, whatever the stereo format asked
 			loadAudio(aPath);
@@ -230,6 +256,41 @@ public class MediaList extends Drawable {
 		}
 		mediaList.add(aSM);
 		tde.updateFirstMediaRatio();
+	}
+
+	/**
+	 * Add a 3D scene (PLY of Gaussians) with the view aCam (null: the viewpoint of its photo)
+	 * @return the media
+	 */
+	public SceneMedia loadScene(String aPath,com.cubaix.TDenlive.model3d.StereoCam aCam) throws Exception {
+		return loadScene(aPath, aCam, true);
+	}
+
+	/**
+	 * Same, with the smart filling of the pixels not covered or not (model3d.SmartFill)
+	 */
+	public SceneMedia loadScene(String aPath,com.cubaix.TDenlive.model3d.StereoCam aCam,boolean aSmartFill) throws Exception {
+		return loadScene(aPath, aCam, aSmartFill, com.cubaix.TDenlive.model3d.SmartFill.DEFAULT_COS);
+	}
+
+	/**
+	 * Same, with the thresholding of the smart filling (|cos| of the triangles)
+	 */
+	public SceneMedia loadScene(String aPath,com.cubaix.TDenlive.model3d.StereoCam aCam,boolean aSmartFill,double aCos) throws Exception {
+		SceneMedia aSM = new SceneMedia(tde);
+		aSM.smartFill = aSmartFill;
+		aSM.cosCut = aCos;
+		aSM.cutView = tde.config.aiSceneCut;
+		aSM.fillModel = com.cubaix.TDenlive.model3d.SmartFill.forProcessor(tde.config.aiSceneFill).id;
+		aSM.interp = tde.config.aiSceneInterp;
+		aSM.depthView = tde.config.aiSceneDepth;
+		if(aCam != null) {
+			aSM.cam = aCam.copy();
+		}
+		aSM.loadImageLR(aPath, aPath, TDConfig.PROCESSING_MODE_WORK, 0);
+		mediaList.add(aSM);
+		tde.updateFirstMediaRatio();
+		return aSM;
 	}
 
 	public void createModel3D(com.cubaix.TDenlive.model3d.Model3D aModel) {
@@ -306,7 +367,7 @@ public class MediaList extends Drawable {
 		if(aM instanceof ShapesMedia) {
 			return 3;
 		}
-		if(aM instanceof Model3DMedia) {
+		if(aM instanceof Model3DMedia || aM instanceof SceneMedia) {
 			return 4;
 		}
 		return aM instanceof StereoMovie ? 1 : 0;
@@ -316,7 +377,7 @@ public class MediaList extends Drawable {
 	 * A stereo media (two views), else a plain image / video (the same file for both views)
 	 */
 	static boolean isStereo(Media aM) {
-		if(aM instanceof ShapesMedia || aM instanceof Model3DMedia) {
+		if(aM instanceof ShapesMedia || aM instanceof Model3DMedia || aM instanceof SceneMedia) {
 			//Made in the application with depths
 			return true;
 		}

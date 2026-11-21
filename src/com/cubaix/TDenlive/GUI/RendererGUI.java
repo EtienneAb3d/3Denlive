@@ -1,5 +1,7 @@
 package com.cubaix.TDenlive.GUI;
 
+import com.cubaix.TDenlive.processors.TwoPassRender;
+
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -587,6 +589,8 @@ public class RendererGUI {
 		progress = null;
 		if(tde.gui.monitorGUI != null) {
 			tde.gui.monitorGUI.setMedia(null);
+			//The images produced are shown in the monitor
+			tde.gui.monitorGUI.setRendering(true);
 		}
 		int aHeight = outputRes;
 		int aWidth = (int)(tde.config.outRatio * outputRes);
@@ -638,28 +642,43 @@ public class RendererGUI {
 						,audioWav == null ? null : audioWav.getAbsolutePath(), anaglyph444);
 				timeStartMS = System.currentTimeMillis();
 				countFrames = 0;
-				tde.timeLineStack.setTimePosMS(startTimePos);
-				tde.timeLineStack.setRequestedTimePosMS(startTimePos);
-				while(playing) {
-					tde.timeLineStack.reBuild(TDConfig.PROCESSING_MODE_RENDER, tde.timeLineStack.getTimePosMS());
-					BufferedImage aL = tde.timeLineStack.getFinalLeft(TDConfig.PROCESSING_MODE_RENDER, tde.timeLineStack.getTimePosMS());
-					BufferedImage aR = tde.timeLineStack.getFinalRight(TDConfig.PROCESSING_MODE_RENDER, tde.timeLineStack.getTimePosMS());
-					renderer.addPair(aL, aR);
+				keyPass = null;
+				//Keyframes at TwoPassRender.KEY_FPS first, then the output at its rate (processors.TwoPassRender)
+				TwoPassRender.run(tde, renderer, startTimePos, endTimePos, outputFPS, () -> playing
+						, (aPass, aIndex, aTotal, aTimeMS, aL, aR, aKey) -> {
 					lastL = aL;
 					lastR = aR;
+					if(aPass == 1) {
+						keyPass = new int[] {aIndex+1, aTotal};
+					}
+					else if(keyPass != null) {
+						//Output pass: its speed measured from its start
+						keyPass = null;
+						timeStartMS = System.currentTimeMillis();
+					}
+					if(tde.gui.monitorGUI != null) {
+						tde.gui.monitorGUI.showRendered(aL, aR);
+					}
+					//The time cursor (time lines and ruler of the monitor) on the image just produced
 					tde.gui.display.asyncExec(new Runnable() {
 						@Override
 						public void run() {
 							updateStatus();
+							if(playing) {
+								tde.timeLineStack.setRequestedTimePosMS(aTimeMS);
+							}
 							tde.gui.timeLinesGUI.redraw();
+							if(tde.gui.monitorRulerGUI != null) {
+								tde.gui.monitorRulerGUI.redraw();
+							}
 						}
 					});
-					countFrames++;
-					tde.timeLineStack.setTimePosMS(startTimePos+(int)(1000*countFrames/outputFPS));
-					if(tde.timeLineStack.getTimePosMS() >= endTimePos) {
-						stop();
+					if(aPass == 2) {
+						countFrames++;
 					}
-				}
+				});
+				//End of the rendering (nothing when stopped by the user meanwhile)
+				stop();
 				tde.timeLineStack.setTimePosMS(startTimePos);
 			}
 		});
@@ -771,7 +790,20 @@ public class RendererGUI {
 		return (int)Math.max(0, Math.min(255, Math.round(aV)));
 	}
 
+	//Pass of the keyframes in progress: {done, total}, null in the output pass
+	volatile int[] keyPass = null;
+
 	void updateStatus() {
+		int[] aKP = keyPass;
+		if(aKP != null) {
+			status.setText(tde.gui.lngs.get("Renderer.KeyPass").replace("%FPS%", TwoPassRender.keyFpsText()).replace("%DONE%", ""+aKP[0]).replace("%TOTAL%", ""+aKP[1]));
+			progress = (aKP[1] <= 0 ? 0 : 100*aKP[0]/aKP[1])+"% ("+TwoPassRender.keyFpsText()+" fps)";
+			updateThumb();
+			if(thumbCanvas != null && !thumbCanvas.isDisposed()) {
+				thumbCanvas.redraw();
+			}
+			return;
+		}
 		NumberFormat aNF = NumberFormat.getInstance();
 		aNF.setMinimumFractionDigits(3);
 		aNF.setMaximumFractionDigits(3);
@@ -856,8 +888,10 @@ public class RendererGUI {
 					doneButton.setEnabled(true);
 				}
 				tde.timeLineStack.setTimePosMS(startTimePos);
+				tde.timeLineStack.setRequestedTimePosMS(startTimePos);
 				tde.gui.timeLinesGUI.redraw();
 				if(tde.gui.monitorGUI != null) {
+					tde.gui.monitorGUI.setRendering(false);
 					tde.gui.monitorGUI.setMedia(tde.timeLineStack);
 				}
 				tde.gui.setWaitCursor(false,shell);

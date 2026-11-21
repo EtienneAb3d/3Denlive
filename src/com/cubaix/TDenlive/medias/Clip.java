@@ -82,6 +82,10 @@ public class Clip extends Media {
 			//Mandatory: moves the objects of the model, with keys
 			processors.add(new com.cubaix.TDenlive.processors.Objects3D(tde,this));
 		}
+		if(media instanceof SceneMedia) {
+			//Mandatory: moves the stereo cameras in the scene, with keys
+			processors.add(new com.cubaix.TDenlive.processors.SceneCamera(tde,this));
+		}
 		if(!(media instanceof AudioMedia)) {
 			processors.add(new StereoAligner(tde,this));
 		}
@@ -182,6 +186,20 @@ public class Clip extends Media {
 					if(aDP != null) {
 						placeDepthProcessor(aDP);
 					}
+					//Clips of 3D scenes: their cameras (a project edited by hand...)
+					if(media instanceof SceneMedia) {
+						boolean aHas = false;
+						for(Processor aP : processors) {
+							aHas |= aP instanceof com.cubaix.TDenlive.processors.SceneCamera;
+						}
+						if(!aHas) {
+							int aPos = 0;
+							while(aPos < processors.size() && processors.elementAt(aPos) instanceof TimeController) {
+								aPos++;
+							}
+							processors.add(aPos, new com.cubaix.TDenlive.processors.SceneCamera(tde,this));
+						}
+					}
 					//Clips of 3D models made before the processor of their objects
 					if(media instanceof Model3DMedia) {
 						boolean aHas = false;
@@ -223,6 +241,16 @@ public class Clip extends Media {
 				}
 				if("Objects3D".equalsIgnoreCase(aT.tagName)) {
 					com.cubaix.TDenlive.processors.Objects3D aP = new com.cubaix.TDenlive.processors.Objects3D(tde,this);
+					processors.add(aP);
+					o = aP.openProject(aOs, o);
+				}
+				if("SceneCamera".equalsIgnoreCase(aT.tagName)) {
+					com.cubaix.TDenlive.processors.SceneCamera aP = new com.cubaix.TDenlive.processors.SceneCamera(tde,this);
+					processors.add(aP);
+					o = aP.openProject(aOs, o);
+				}
+				if("Scene3D".equalsIgnoreCase(aT.tagName)) {
+					com.cubaix.TDenlive.processors.Scene3D aP = new com.cubaix.TDenlive.processors.Scene3D(tde,this);
 					processors.add(aP);
 					o = aP.openProject(aOs, o);
 				}
@@ -1248,11 +1276,11 @@ public class Clip extends Media {
 	}
 	
 	public static boolean isDepthProcessorName(String aName) {
-		return "Depthmap".equalsIgnoreCase(aName) || "DepthmapStereo".equalsIgnoreCase(aName);
+		return "Depthmap".equalsIgnoreCase(aName) || "DepthmapStereo".equalsIgnoreCase(aName) || "Scene3D".equalsIgnoreCase(aName);
 	}
 
 	public static boolean isDepthProcessor(Processor aP) {
-		return aP instanceof Depthmap || aP instanceof DepthmapStereo;
+		return aP instanceof Depthmap || aP instanceof DepthmapStereo || aP instanceof com.cubaix.TDenlive.processors.Scene3D;
 	}
 
 	/**
@@ -1303,6 +1331,7 @@ public class Clip extends Media {
 	static boolean isHeadProcessor(Processor aP) {
 		return aP instanceof TimeController
 				|| aP instanceof com.cubaix.TDenlive.processors.Objects3D
+				|| aP instanceof com.cubaix.TDenlive.processors.SceneCamera
 				|| (aP instanceof Shapes && !(aP instanceof Subtitles));
 	}
 
@@ -1336,6 +1365,9 @@ public class Clip extends Media {
 		}
 		if("DepthmapStereo".equalsIgnoreCase(aProcessorName)) {
 			processors.add(new DepthmapStereo(tde,this));
+		}
+		if("Scene3D".equalsIgnoreCase(aProcessorName)) {
+			processors.add(new com.cubaix.TDenlive.processors.Scene3D(tde,this));
 		}
 		if("Placer".equals(aProcessorName)) {
 			processors.add(new Placer(tde, this));

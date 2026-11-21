@@ -460,7 +460,7 @@ public class VideoTimeLine extends Media {
 	@Override
 	public long getMaxTimePosMS() {
 		long aMax = 0;
-		for(Clip aClip : clipList) {//In fact, should be only one
+		for(Clip aClip : new Vector<Clip>(clipList)) {//In fact, should be only one
 			long aMaxC = aClip.getMaxTimePosMS();
 			if(aMaxC > aMax) {
 				aMax = aMaxC;
@@ -471,7 +471,7 @@ public class VideoTimeLine extends Media {
 
 	@Override
 	public void reBuild(int aProcessingMode, long aTime) {
-		for(Clip aClip : clipList) {//In fact, should be only one
+		for(Clip aClip : new Vector<Clip>(clipList)) {//Copy: the UI thread may move a clip to another line meanwhile (ConcurrentModificationException)
 			if(!plays(aClip)) {
 				continue;
 			}
@@ -504,7 +504,7 @@ public class VideoTimeLine extends Media {
 	@Override
 	public BufferedImage getFinalLeft(int aProcessingMode,long aTime) {
 		BufferedImage aBI = null;
-		for(Clip aClip : clipList) {//In fact, should be only one, otherwise the last is overlapping
+		for(Clip aClip : new Vector<Clip>(clipList)) {//In fact, should be only one, otherwise the last is overlapping
 			if(!plays(aClip)) {
 				continue;
 			}
@@ -519,7 +519,7 @@ public class VideoTimeLine extends Media {
 	@Override
 	public BufferedImage getFinalRight(int aProcessingMode,long aTime) {
 		BufferedImage aBI = null;
-		for(Clip aClip : clipList) {//In fact, should be only one, otherwise the last is overlapping
+		for(Clip aClip : new Vector<Clip>(clipList)) {//In fact, should be only one, otherwise the last is overlapping
 			if(!plays(aClip)) {
 				continue;
 			}
@@ -534,7 +534,7 @@ public class VideoTimeLine extends Media {
 	@Override
 	public float getAlpha(long aTime) {
 		float aAlpha = -1.0f;
-		for(Clip aClip : clipList) {//In fact, should be only one, otherwise the last is overlapping
+		for(Clip aClip : new Vector<Clip>(clipList)) {//In fact, should be only one, otherwise the last is overlapping
 			if(!plays(aClip)) {
 				continue;
 			}

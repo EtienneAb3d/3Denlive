@@ -59,6 +59,23 @@ public class TDConfig {
 	public String aiVideoModel = "";
 	//Colorization model chosen ("": the advised one)
 	public String aiColorModel = "";
+	//Detail of the AI 3D scenes (SceneGenerator.Detail id, "" = advised)
+	public String aiSceneDetail = "";
+	//Model of the AI 3D scenes (SceneGenerator.Model id, "" = default: Flash3D)
+	public String aiSceneModel = "";
+	//Model filling the holes of the AI 3D scenes (model3d.SmartFill.Model id, "" = default: the light model)
+	public String aiSceneFill = "";
+	//Smart filling of the AI 3D scenes: mesh of the visible Gaussians, cut at the depth edges, then inpainting
+	//(model3d.SmartFill)
+	public boolean aiSceneSmartFill = true;
+	//AI 3D scenes drawn as the mesh of their visible Gaussians (interpolation), else as the Gaussians
+	public boolean aiSceneInterp = true;
+	//AI 3D scenes shown with their estimated depths in gray
+	public boolean aiSceneDepth = false;
+	//Thresholding of the AI 3D scenes: the triangles of the mesh whose |cos| with the direction of the depth is below
+	//this are holes; shown ("Thresholding") or not
+	public double aiSceneCos = com.cubaix.TDenlive.model3d.SmartFill.DEFAULT_COS;
+	public boolean aiSceneCut = false;
 	//Model of the AI masks (SAM 2.1, "" = the one advised for the hardware)
 	public String aiMaskModel = "";
 	//Speech panels (subtitles, voice translation): speech recognition and voice models ("": the advised ones),
@@ -166,6 +183,51 @@ public class TDConfig {
 						aiColorModel = aOs.elementAt(o) instanceof XmlTag ? "" : aOs.elementAt(o).text.trim();
 						continue;
 					}
+					if("aiSceneCos".equalsIgnoreCase(aT.tagName)) {
+						o++;
+						try {
+							aiSceneCos = Double.parseDouble(aOs.elementAt(o).text.trim());
+						}
+						catch(Throwable t) {
+							aiSceneCos = com.cubaix.TDenlive.model3d.SmartFill.DEFAULT_COS;
+						}
+						continue;
+					}
+					if("aiSceneCut".equalsIgnoreCase(aT.tagName)) {
+						o++;
+						aiSceneCut = !(aOs.elementAt(o) instanceof XmlTag) && "true".equalsIgnoreCase(aOs.elementAt(o).text.trim());
+						continue;
+					}
+					if("aiSceneDepth".equalsIgnoreCase(aT.tagName)) {
+						o++;
+						aiSceneDepth = !(aOs.elementAt(o) instanceof XmlTag) && "true".equalsIgnoreCase(aOs.elementAt(o).text.trim());
+						continue;
+					}
+					if("aiSceneInterp".equalsIgnoreCase(aT.tagName)) {
+						o++;
+						aiSceneInterp = aOs.elementAt(o) instanceof XmlTag || !"false".equalsIgnoreCase(aOs.elementAt(o).text.trim());
+						continue;
+					}
+					if("aiSceneSmartFill".equalsIgnoreCase(aT.tagName)) {
+						o++;
+						aiSceneSmartFill = aOs.elementAt(o) instanceof XmlTag || !"false".equalsIgnoreCase(aOs.elementAt(o).text.trim());
+						continue;
+					}
+					if("aiSceneFill".equalsIgnoreCase(aT.tagName)) {
+						o++;
+						aiSceneFill = aOs.elementAt(o) instanceof XmlTag ? "" : aOs.elementAt(o).text.trim();
+						continue;
+					}
+					if("aiSceneModel".equalsIgnoreCase(aT.tagName)) {
+						o++;
+						aiSceneModel = aOs.elementAt(o) instanceof XmlTag ? "" : aOs.elementAt(o).text.trim();
+						continue;
+					}
+					if("aiSceneDetail".equalsIgnoreCase(aT.tagName)) {
+						o++;
+						aiSceneDetail = aOs.elementAt(o) instanceof XmlTag ? "" : aOs.elementAt(o).text.trim();
+						continue;
+					}
 					if("aiMaskModel".equalsIgnoreCase(aT.tagName)) {
 						o++;
 						aiMaskModel = aOs.elementAt(o) instanceof XmlTag ? "" : aOs.elementAt(o).text.trim();
@@ -265,6 +327,14 @@ public class TDConfig {
 			aOut.write("<aiSfxModel>"+aiSfxModel+"</aiSfxModel>\n");
 			aOut.write("<aiSfxClean>"+aiSfxClean+"</aiSfxClean>\n");
 			aOut.write("<aiColorModel>"+aiColorModel+"</aiColorModel>\n");
+			aOut.write("<aiSceneDetail>"+aiSceneDetail+"</aiSceneDetail>\n");
+			aOut.write("<aiSceneModel>"+aiSceneModel+"</aiSceneModel>\n");
+			aOut.write("<aiSceneFill>"+aiSceneFill+"</aiSceneFill>\n");
+			aOut.write("<aiSceneSmartFill>"+aiSceneSmartFill+"</aiSceneSmartFill>\n");
+			aOut.write("<aiSceneInterp>"+aiSceneInterp+"</aiSceneInterp>\n");
+			aOut.write("<aiSceneDepth>"+aiSceneDepth+"</aiSceneDepth>\n");
+			aOut.write("<aiSceneCos>"+aiSceneCos+"</aiSceneCos>\n");
+			aOut.write("<aiSceneCut>"+aiSceneCut+"</aiSceneCut>\n");
 			aOut.write("<aiMaskModel>"+aiMaskModel+"</aiMaskModel>\n");
 			aOut.write("<aiAsrModel>"+aiAsrModel+"</aiAsrModel>\n");
 			aOut.write("<aiTtsModel>"+aiTtsModel+"</aiTtsModel>\n");

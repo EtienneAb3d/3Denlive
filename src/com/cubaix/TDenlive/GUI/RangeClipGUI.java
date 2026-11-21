@@ -20,6 +20,7 @@ import com.cubaix.TDenlive.ffmpeg.FfmpegEncoder;
 import com.cubaix.TDenlive.medias.Clip;
 import com.cubaix.TDenlive.processors.Inpainting;
 import com.cubaix.TDenlive.processors.Renderer;
+import com.cubaix.TDenlive.processors.TwoPassRender;
 
 /**
  * Video camera button of the monitor toolbar (right of the snapshot one): renders the selected time range of the
@@ -82,7 +83,7 @@ public class RangeClipGUI {
 			}
 		}
 		fps = tde.config.outFps > 0 ? tde.config.outFps : 30;
-		nbFrames = Math.max(1, (int)Math.ceil((endMS-startMS)*fps/1000.0));
+		nbFrames = TwoPassRender.nbFrames(startMS, endMS, fps);
 
 		File aDir = new File(tde.projectDir == null || tde.projectName == null ? tde.tdeDir : tde.projectDir, "Clips");
 		aDir.mkdirs();
@@ -160,6 +161,8 @@ public class RangeClipGUI {
 		playing = true;
 		if(tde.gui.monitorGUI != null) {
 			tde.gui.monitorGUI.setMedia(null);
+			//The images produced are shown in the monitor (as by the rendering window)
+			tde.gui.monitorGUI.setRendering(true);
 		}
 		int aHeight = TDConfig.RESVALUES[tde.config.renderedDefaultRes];
 		int aWidth = (int)(tde.config.outRatio * aHeight);
@@ -190,21 +193,25 @@ public class RangeClipGUI {
 				if(playing) {
 					renderer = new Renderer(tde, aWidth, aHeight, fps, "", new String[] {out.getAbsolutePath()}
 							, new int[] {FfmpegEncoder.FORMAT_P}, audioWav == null ? null : audioWav.getAbsolutePath(), false);
-					for(int f = 0;f < nbFrames && playing;f++) {
-						long aT = startMS+(long)(1000*f/fps);
-						tde.timeLineStack.setTimePosMS(aT);
-						tde.timeLineStack.setRequestedTimePosMS(aT);
-						tde.timeLineStack.reBuild(TDConfig.PROCESSING_MODE_RENDER, aT);
-						BufferedImage aL = tde.timeLineStack.getFinalLeft(TDConfig.PROCESSING_MODE_RENDER, aT);
-						BufferedImage aR = tde.timeLineStack.getFinalRight(TDConfig.PROCESSING_MODE_RENDER, aT);
-						renderer.addPair(aL, aR);
-						final int aDone = f+1;
+					//Keyframes at TwoPassRender.KEY_FPS first, then the output at its rate (processors.TwoPassRender)
+					TwoPassRender.run(tde, renderer, startMS, endMS, fps, () -> playing
+							, (aPass, aIndex, aTotal, aTimeMS, aL, aR, aKey) -> {
+						if(tde.gui.monitorGUI != null) {
+							tde.gui.monitorGUI.showRendered(aL, aR);
+						}
+						final int aDone = aIndex+1;
 						ui(() -> {
+							//The time cursor (time lines and ruler of the monitor) on the image just produced
+							tde.gui.timeLinesGUI.redraw();
+							if(tde.gui.monitorRulerGUI != null) {
+								tde.gui.monitorRulerGUI.redraw();
+							}
+							bar.setMaximum(aTotal);
 							bar.setSelection(aDone);
-							status.setText(tde.gui.lngs.get("Monitor.RangeClipProgress")
-									.replace("%DONE%", ""+aDone).replace("%TOTAL%", ""+nbFrames));
+							status.setText(tde.gui.lngs.get(aPass == 1 ? "Renderer.KeyPass" : "Monitor.RangeClipProgress")
+									.replace("%FPS%", TwoPassRender.keyFpsText()).replace("%DONE%", ""+aDone).replace("%TOTAL%", ""+aTotal));
 						});
-					}
+					});
 					renderer.stop();
 				}
 			}
@@ -257,6 +264,7 @@ public class RangeClipGUI {
 			tde.gui.timeLinesGUI.redraw();
 		}
 		if(tde.gui.monitorGUI != null) {
+			tde.gui.monitorGUI.setRendering(false);
 			tde.gui.monitorGUI.setMedia(tde.timeLineStack);
 		}
 		if(tde.gui.mediaListGUI != null) {

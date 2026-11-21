@@ -687,7 +687,7 @@ public class AiMaskGUI {
 		BufferedImage aL = src.left;
 		BufferedImage aR = src.right;
 		if(aL == null) {
-			BufferedImage aBI = ImageIO.read(new File(src.path));
+			BufferedImage aBI = com.cubaix.TDenlive.utils.ImageUtils.loadImage(src.path);
 			if(aBI == null) {
 				throw new Exception("Unreadable image "+src.path);
 			}
@@ -700,7 +700,7 @@ public class AiMaskGUI {
 			}
 			else if(src.layout == Source.TWO && src.pathR != null) {
 				aL = aBI;
-				aR = ImageIO.read(new File(src.pathR));
+				aR = com.cubaix.TDenlive.utils.ImageUtils.loadImage(src.pathR);
 			}
 			else {
 				aL = aBI;

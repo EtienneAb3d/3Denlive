@@ -33,7 +33,45 @@ public class ImageUtils {
 		if(aPath.toLowerCase().endsWith(".pgm")) {
 			return PGMIO.read(aPath);
 		}
-		return ImageIO.read(new File(aPath));
+		BufferedImage aBI = ImageIO.read(new File(aPath));
+		if(aBI == null) {
+			//A format ImageIO does not read (WebP...): decoded by ffmpeg
+			aBI = loadWithFfmpeg(aPath);
+		}
+		return aBI;
+	}
+
+	/**
+	 * First image of aPath decoded by ffmpeg (formats unknown to ImageIO: WebP, animated WebP...), as an RGBA PNG
+	 * through a pipe; null if ffmpeg can't read it
+	 */
+	static BufferedImage loadWithFfmpeg(String aPath) throws Exception {
+		String aFfmpeg = com.cubaix.TDenlive.ffmpeg.Ffmpeg.ffmpegPath();
+		if(aFfmpeg == null || !new File(aPath).isFile()) {
+			return null;
+		}
+		Process aP = new ProcessBuilder(aFfmpeg, "-hide_banner", "-v", "error", "-i", aPath, "-frames:v", "1"
+				, "-f", "image2pipe", "-c:v", "png", "-pix_fmt", "rgba", "-")
+				.redirectError(ProcessBuilder.Redirect.DISCARD).start();
+		byte[] aPng;
+		try(java.io.InputStream aIS = aP.getInputStream()) {
+			aPng = aIS.readAllBytes();
+		}
+		aP.waitFor();
+		if(aPng.length == 0) {
+			System.err.println("Image not readable (ImageIO, ffmpeg): "+aPath);
+			return null;
+		}
+		BufferedImage aRead = ImageIO.read(new java.io.ByteArrayInputStream(aPng));
+		if(aRead == null) {
+			return null;
+		}
+		//Integer ARGB pixels, as the images read by ImageIO in the rest of the application
+		BufferedImage aBI = new BufferedImage(aRead.getWidth(), aRead.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		java.awt.Graphics2D aG = aBI.createGraphics();
+		aG.drawImage(aRead, 0, 0, null);
+		aG.dispose();
+		return aBI;
 	}
 	
 	static public final void saveImage(String aPath,BufferedImage aBI) throws Exception {

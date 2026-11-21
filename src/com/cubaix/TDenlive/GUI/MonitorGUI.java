@@ -60,6 +60,13 @@ public class MonitorGUI {
 	int countWaitingRequests = 0;
 	Rectangle piBounds = null;
 
+	//Rendering in progress (RendererGUI): the last pair produced, mixed in the mode of the monitor, shown instead of
+	//its media; one mix at a time, the latest pair waiting wins
+	volatile boolean rendering = false;
+	Image renderedI = null;
+	BufferedImage[] renderPending = null;
+	boolean renderMixing = false;
+
 	boolean isMouseDown = false;
 	boolean isDrag = false;
 	Point clickedMousePos = null;
@@ -90,6 +97,9 @@ public class MonitorGUI {
 		createContents(aParent);
 	}
 
+	//The main window has the wait cursor because SDXL computes (SmartFill.onComputing)
+	static boolean waitCursorSet = false;
+
 	void createContents(Composite aParent) {
 		canvas = new Canvas (aParent,
 //				SWT.BORDER |
@@ -99,6 +109,20 @@ public class MonitorGUI {
 				| SWT.H_SCROLL
 				);
 		canvas.setLayoutData(new GridData(GridData.FILL_BOTH));
+		//Hourglass while SDXL fills the holes of a 3D scene (the image of the monitor is computed meanwhile)
+		com.cubaix.TDenlive.model3d.SmartFill.onComputing = () -> tde.gui.display.asyncExec(() -> {
+			//The cursor of the main window too, back to normal at the end
+			if(tde.gui.shell != null && !tde.gui.shell.isDisposed()) {
+				boolean aOn = com.cubaix.TDenlive.model3d.SmartFill.isComputing();
+				if(aOn != waitCursorSet) {
+					waitCursorSet = aOn;
+					tde.gui.shell.setCursor(aOn ? tde.gui.waitCursor : null);
+				}
+			}
+			if(!canvas.isDisposed()) {
+				canvas.redraw();
+			}
+		});
 
 		vSC = canvas.getVerticalBar();
 		vSC.setValues(1000,0,3000,1000,10,100);
@@ -355,6 +379,103 @@ public class MonitorGUI {
 	/**
 	 * Time ruler of the main monitor (the shown media or its time may have changed)
 	 */
+	public boolean isRendering() {
+		return rendering;
+	}
+
+	/**
+	 * Start (true) or end (false) the display of the images of a rendering
+	 */
+	public void setRendering(boolean aOn) {
+		synchronized(this) {
+			rendering = aOn;
+			renderPending = null;
+		}
+		if(!aOn) {
+			Image aOld = renderedI;
+			renderedI = null;
+			if(aOld != null && !aOld.isDisposed()) {
+				aOld.dispose();
+			}
+		}
+		if(!canvas.isDisposed()) {
+			canvas.redraw();
+		}
+	}
+
+	/**
+	 * A pair just produced by the rendering (any thread): mixed in a thread of its own at the size of the monitor,
+	 * then shown; a pair coming while the previous one is mixed replaces the one waiting (the rendering never waits)
+	 */
+	public void showRendered(BufferedImage aL,BufferedImage aR) {
+		if(aL == null || aR == null) {
+			return;
+		}
+		synchronized(this) {
+			if(!rendering) {
+				return;
+			}
+			renderPending = new BufferedImage[] {aL, aR};
+			if(renderMixing) {
+				return;
+			}
+			renderMixing = true;
+		}
+		Thread aTh = new Thread(() -> {
+			while(true) {
+				BufferedImage[] aPair;
+				Rectangle aR0;
+				synchronized(MonitorGUI.this) {
+					aPair = renderPending;
+					renderPending = null;
+					aR0 = clientR;
+					if(aPair == null || !rendering) {
+						renderMixing = false;
+						return;
+					}
+				}
+				if(aR0 == null || aR0.width <= 0 || aR0.height <= 0) {
+					continue;
+				}
+				try {
+					Image aI = mixer.mix2Swt(ldr(aPair[0]), ldr(aPair[1]), TDConfig.PROCESSING_MODE_FULLSCREEN, aR0);
+					tde.gui.display.asyncExec(() -> {
+						if(!rendering || canvas.isDisposed()) {
+							aI.dispose();
+							return;
+						}
+						Image aOld = renderedI;
+						renderedI = aI;
+						if(aOld != null && !aOld.isDisposed()) {
+							aOld.dispose();
+						}
+						canvas.redraw();
+					});
+				}
+				catch(Throwable t) {
+					t.printStackTrace(System.err);
+				}
+			}
+		}, "Monitor of the rendering");
+		aTh.setDaemon(true);
+		aTh.start();
+	}
+
+	/**
+	 * An 8 bits image (the mixers don't take the HDR images of the rendering)
+	 */
+	static BufferedImage ldr(BufferedImage aBI) {
+		int aT = aBI.getType();
+		if(aT == BufferedImage.TYPE_INT_ARGB || aT == BufferedImage.TYPE_INT_RGB) {
+			return aBI;
+		}
+		BufferedImage aO = com.cubaix.TDenlive.utils.ImageUtils.createImage(aBI.getWidth(), aBI.getHeight());
+		java.awt.Graphics2D aG = aO.createGraphics();
+		aG.drawImage(aBI, 0, 0, null);
+		aG.dispose();
+		return aO;
+	}
+
 	void redrawRuler() {
 		if(tde.gui != null && tde.gui.monitorGUI == this && tde.gui.monitorRulerGUI != null) {
 			tde.gui.monitorRulerGUI.redraw();
@@ -468,7 +589,8 @@ public class MonitorGUI {
 		Image aI = new Image(tde.gui.display, aClientR.width, aClientR.height);
 		GC aGCDL = new GC(aI);
 		drawDbl(aGCDL);
-		drawWorkCopies(aGCDL, aClientR);
+		int aY = drawWorkCopies(aGCDL, aClientR);
+		drawComputing(aGCDL, aClientR, aY);
 		aGCDL.dispose();
 		aGC.drawImage(aI, aClientR.x, aClientR.y);
 		aI.dispose();
@@ -478,10 +600,10 @@ public class MonitorGUI {
 	 * Message over the top left corner while work copies of videos are made (VideoReader): the images shown come
 	 * meanwhile from the original videos, reduced
 	 */
-	void drawWorkCopies(GC aGC,Rectangle aR) {
+	int drawWorkCopies(GC aGC,Rectangle aR) {
 		int aN = com.cubaix.TDenlive.ffmpeg.VideoReader.workCopiesInProgress();
 		if(aN <= 0) {
-			return;
+			return aR.y;
 		}
 		String aMsg = tde.gui.lngs.get("Monitor.WorkCopies").replace("%N%", ""+aN);
 		org.eclipse.swt.graphics.Point aE = aGC.textExtent(aMsg);
@@ -492,6 +614,40 @@ public class MonitorGUI {
 		aGC.setAlpha(255);
 		aGC.setForeground(tde.gui.colorsSwt.WHITE);
 		aGC.drawText(aMsg, aR.x+8+aPad, aR.y+8+aPad, true);
+		return aR.y+8+aE.y+2*aPad;
+	}
+
+	/**
+	 * Hourglass and elapsed time over the top left corner (below aY) while SDXL fills the holes of a 3D scene
+	 * (model3d.SmartFill); redrawn every second meanwhile
+	 */
+	void drawComputing(GC aGC,Rectangle aR,int aY) {
+		if(!com.cubaix.TDenlive.model3d.SmartFill.isComputing()) {
+			return;
+		}
+		long aS = Math.max(0, (System.currentTimeMillis()-com.cubaix.TDenlive.model3d.SmartFill.computingSinceMS())/1000);
+		String aMsg = tde.gui.lngs.get("Monitor.Filling").replace("%S%", ""+aS)
+				.replace("%MODEL%", tde.gui.lngs.get(com.cubaix.TDenlive.model3d.SmartFill.computingModel().key()));
+		org.eclipse.swt.graphics.Image aIcon = tde.gui.imgsSwt.getIcon("wait.png");
+		Rectangle aIB = aIcon != null ? aIcon.getBounds() : new Rectangle(0, 0, 0, 0);
+		org.eclipse.swt.graphics.Point aE = aGC.textExtent(aMsg);
+		int aPad = 6;
+		int aH = Math.max(aE.y, aIB.height);
+		int aX0 = aR.x+8, aY0 = aY+8;
+		aGC.setAlpha(170);
+		aGC.setBackground(tde.gui.colorsSwt.BLACK);
+		aGC.fillRoundRectangle(aX0, aY0, aIB.width+(aIB.width > 0 ? aPad : 0)+aE.x+2*aPad, aH+2*aPad, 8, 8);
+		aGC.setAlpha(255);
+		if(aIcon != null) {
+			aGC.drawImage(aIcon, aX0+aPad, aY0+aPad+(aH-aIB.height)/2);
+		}
+		aGC.setForeground(tde.gui.colorsSwt.WHITE);
+		aGC.drawText(aMsg, aX0+aPad+aIB.width+(aIB.width > 0 ? aPad : 0), aY0+aPad+(aH-aE.y)/2, true);
+		tde.gui.display.timerExec(1000, () -> {
+			if(!canvas.isDisposed()) {
+				canvas.redraw();
+			}
+		});
 	}
 
 	void drawDbl(GC aGC) {
@@ -501,6 +657,23 @@ public class MonitorGUI {
 		clientR = canvas.getClientArea();
 		aGC.setBackground(tde.gui.colorsSwt.BLACK);
 		aGC.fillRectangle(clientR);
+		if(rendering) {
+			//Images of the rendering in progress
+			tde.gui.monitorControlGUI.status.setImage(tde.gui.imgsSwt.getIcon("tuneButton.gif"));
+			tde.gui.monitorControlGUI.status.layout(true);
+			Image aRI = renderedI;
+			if(aRI == null || aRI.isDisposed()) {
+				drawGrid(aGC,clientR);
+				return;
+			}
+			Rectangle aB = aRI.getBounds();
+			int aX = (clientR.width-aB.width)/2;
+			int aY = (clientR.height-aB.height)/2;
+			aGC.drawImage(aRI, aX, aY);
+			piBounds = new Rectangle(aX, aY, aB.width, aB.height);
+			drawGrid(aGC,piBounds);
+			return;
+		}
 		if(media == null) {
 			tde.gui.monitorControlGUI.status.setImage(tde.gui.imgsSwt.getIcon("tuneButton.gif"));
 			tde.gui.monitorControlGUI.status.layout(true);
