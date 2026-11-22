@@ -450,6 +450,7 @@
 	<entry label="RangeClipError">Não foi possível criar o vídeo da seleção:</entry>
 	<entry label="RangeClipCancel">Cancelar</entry>
 	<entry label="WorkCopies">A calcular as cópias de trabalho dos vídeos na resolução do monitor (%N%)...</entry>
+	<entry label="WorkCopiesLeft">, faltam %S%</entry>
 	<entry label="Filling">A preencher os buracos (%MODEL%)... %S% s</entry>
 </EntrySet>
 <EntrySet label="MediaProps">
@@ -506,8 +507,29 @@
 	<entry label="Shapes">Formas</entry>
 	<entry label="OneDepthmap">Este clipe já tem um processador de mapa de profundidade (apenas um por clipe, sempre o primeiro).</entry>
 	<entry label="OneSpeed">Este clipe já tem um processador de velocidade (apenas um por clipe).</entry>
+	<entry label="TrackMixer">Misturador multifaixa</entry>
+	<entry label="OneTrackMixer">Este clipe já tem um misturador multifaixa (só um por clipe).</entry>
 	<entry label="SelectAVideoOrSoundClip">A velocidade atua sobre um vídeo ou um som: selecione um clipe de vídeo ou de som</entry>
 	<entry label="Objects3D">Objetos 3D</entry>
+	<entry label="Curves">Curvas</entry>
+	<entry label="ColorTemperature">Temperatura de cor</entry>
+	<entry label="ColorBalance">Balanço de cor (sombras / meios-tons / realces)</entry>
+	<entry label="Vibrance">Vibração</entry>
+	<entry label="Sharpen">Nitidez</entry>
+	<entry label="Smoothing">Suavização (preserva as bordas)</entry>
+	<entry label="Vignette">Vinheta</entry>
+	<entry label="Grain">Grão de filme</entry>
+	<entry label="Despill">Despill (após chroma key)</entry>
+	<entry label="Pixelize">Pixelizar</entry>
+	<entry label="Loudness">Normalização de volume</entry>
+	<entry label="Equalizer">Equalizador</entry>
+	<entry label="DeEsser">De-esser</entry>
+	<entry label="Monitor">Monitor</entry>
+	<entry label="Histogram">Histograma</entry>
+	<entry label="Waveform">Forma de onda (níveis por coluna)</entry>
+	<entry label="Vectorscope">Vetorscópio (matiz / saturação)</entry>
+	<entry label="AudioMeter">Medidores (níveis, loudness)</entry>
+	<entry label="Spectrum">Espectro do som</entry>
 </EntrySet>
 <EntrySet label="TimeController">
 	<entry label="TrashClip">Eliminar clipe</entry>
@@ -1313,6 +1335,50 @@
 	<entry label="KindDub">Dobragem</entry>
 	<entry label="SubsTitle">Legendas IA (Qwen3-ASR)</entry>
 	<entry label="DubTitle">Dobragem IA (Qwen3-TTS)</entry>
+	<entry label="KindRemix">Remix</entry>
+	<entry label="KindCatImage">Imagem / Vídeo</entry>
+	<entry label="KindCatSound">Som</entry>
+	<entry label="KindMenuTip">Escolher a ferramenta IA</entry>
+	<entry label="RemixTitle">Remix IA (Demucs)</entry>
+	<entry label="RemixIntro">Separa as faixas de uma música: bateria, baixo, voz, outros (também guitarra e piano com o modelo de 6 faixas).</entry>
+	<entry label="GenRemixDesc">Escolha um vídeo ou um som: o seu áudio é separado em faixas pelo Demucs. Ouça-as com um volume por faixa (Solo, mudo) e guarde-as num MP4 multifaixa: o som original, depois cada faixa, chamadas "[3De] ...". Na linha do tempo, os seus clipes recebem um misturador multifaixa com keyframes, com todas as faixas e sem o original: a remistura faz-se na montagem.</entry>
+	<entry label="RemixModelName">%NAME%: %N% faixas, %GB% GB</entry>
+	<entry label="RemixhtdemucsNote">O mais rápido, de boa qualidade.</entry>
+	<entry label="RemixhtdemucsftNote">O mesmo afinado, um modelo por faixa: melhor separação, 4 vezes mais lento.</entry>
+	<entry label="Remixhtdemucs6sNote">6 faixas: guitarra e piano também separados (o piano menos limpo).</entry>
+	<entry label="RemixOnGpu">Neste computador, a separação é feita na GPU.</entry>
+	<entry label="RemixOnCpu">Neste computador, a separação é feita na CPU (mais lento: cerca da duração da música).</entry>
+	<entry label="RemixSource">Música a separar (vídeo ou som):</entry>
+	<entry label="SourceTrack">Faixa de áudio:</entry>
+	<entry label="SourceTrackTip">O ficheiro tem várias faixas de áudio (línguas, faixas de um remix...): a que é usada</entry>
+	<entry label="RemixNote">O som do vídeo é separado; o vídeo é copiado tal como está para o MP4. Sem vídeo, o ficheiro é um .m4a (MP4 áudio).</entry>
+	<entry label="RemixLicence">Demucs (Meta, ICASSP 2023), código e pesos sob licença MIT: uso comercial permitido. Separe apenas músicas que tem o direito de usar.</entry>
+	<entry label="RemixNoSource">Escolha o vídeo ou o som a separar.</entry>
+	<entry label="RemixPrompt">Faixas de %NAME%</entry>
+	<entry label="RemixSuffix">remix</entry>
+	<entry label="RemixError">A separação falhou.</entry>
+	<entry label="RemixErrorOom">Memória insuficiente na GPU para a separação.</entry>
+	<entry label="RemixExtracting">Extração do som...</entry>
+	<entry label="RemixLoading">Carregamento do Demucs...</entry>
+	<entry label="RemixSeparating">Separação das faixas</entry>
+	<entry label="RemixWriting">Escrita das faixas...</entry>
+	<entry label="DownloadingRemixModel">Download do Demucs</entry>
+	<entry label="RemixListen">Ouça as faixas (os volumes aqui servem apenas para ouvir, não são guardados). Duplo clique numa % para voltar a 100 %.</entry>
+	<entry label="RemixOnTip">Ouvida ou não</entry>
+	<entry label="RemixSolo">Solo</entry>
+	<entry label="RemixSoloTip">Só as faixas em Solo são ouvidas</entry>
+	<entry label="RemixSaveNote">O MP4 contém o som original (lido por qualquer leitor), depois cada faixa a 100 %, todas chamadas "[3De] ...": sem mistura. Adicionado à biblioteca: na linha do tempo, os seus clipes recebem o misturador multifaixa com todas as faixas e sem o original, para uma remistura manual.</entry>
+	<entry label="RemixSave">Guardar o MP4 multifaixa</entry>
+	<entry label="RemixSaving">Escrita do ficheiro multifaixa...</entry>
+	<entry label="RemixSaved">Guardado e adicionado à biblioteca: %FILE%</entry>
+	<entry label="RemixCloseAsk">As faixas separadas não foram guardadas: serão apagadas. Fechar?</entry>
+	<entry label="RemixOriginal">Original</entry>
+	<entry label="RemixStem_drums">Bateria</entry>
+	<entry label="RemixStem_bass">Baixo</entry>
+	<entry label="RemixStem_other">Outros</entry>
+	<entry label="RemixStem_vocals">Voz</entry>
+	<entry label="RemixStem_guitar">Guitarra</entry>
+	<entry label="RemixStem_piano">Piano</entry>
 	<entry label="SubsIntro">Escreve as legendas da fala de um vídeo, em uma ou várias línguas, neste computador: na GPU se houver, senão na CPU (mais lento). Nada é enviado pela rede.</entry>
 	<entry label="SubsDesc">A fala é reconhecida palavra a palavra com o instante de cada palavra e depois agrupada em legendas de no máximo duas linhas, cortadas nas pausas e nos finais de frase. As outras línguas são traduzidas frase a frase pelo modelo de linguagem local da aplicação. Um ficheiro .srt por língua, para o processador Legendas ou qualquer leitor.</entry>
 	<entry label="DubIntro">Dobra a fala de um vídeo para outra língua com a voz do orador, neste computador: na GPU se houver, senão na CPU (muito mais lento). Nada é enviado pela rede.</entry>
@@ -1453,6 +1519,8 @@ Calcular os mapas de profundidade das duas vistas a partir do clipe (inteligênc
 	<entry label="DownloadingModel">A transferir o modelo %MODEL%:</entry>
 	<entry label="LoadingModel">A carregar o modelo %MODEL%...</entry>
 	<entry label="Computing">A calcular a profundidade (%MODEL%):</entry>
+	<entry label="Finishing">Finalização do vídeo de profundidade...</entry>
+	<entry label="Elapsed">há %S%</entry>
 	<entry label="Loading">A abrir o resultado...</entry>
 	<entry label="Remaining">Faltam cerca de</entry>
 	<entry label="Error">O cálculo do mapa de profundidade falhou:</entry>
@@ -1551,6 +1619,181 @@ Calcular os mapas de profundidade das duas vistas a partir do clipe (inteligênc
 	<entry label="SpeedLetter">S</entry>
 	<entry label="FitToMedia">Ajustar o fim do clipe ao fim do media</entry>
 	<entry label="KeepPitch">Manter o tom do som</entry>
+</EntrySet>
+<EntrySet label="Curves">
+	<entry label="preset">Predefinição</entry>
+	<entry label="preset_None">Nenhuma</entry>
+	<entry label="preset_Vintage">Vintage</entry>
+	<entry label="preset_CrossProcess">Processo cruzado</entry>
+	<entry label="preset_ColorNegative">Negativo a cores</entry>
+	<entry label="preset_Negative">Negativo</entry>
+	<entry label="preset_Darker">Mais escuro</entry>
+	<entry label="preset_Lighter">Mais claro</entry>
+	<entry label="preset_IncreaseContrast">Mais contraste</entry>
+	<entry label="preset_LinearContrast">Contraste linear</entry>
+	<entry label="preset_MediumContrast">Contraste médio</entry>
+	<entry label="preset_StrongContrast">Contraste forte</entry>
+	<entry label="amount">Intensidade do efeito (%)</entry>
+	<entry label="amountLetter">I</entry>
+	<entry label="shadows">Sombras</entry>
+	<entry label="shadowsLetter">S</entry>
+	<entry label="midtones">Meios-tons</entry>
+	<entry label="midtonesLetter">M</entry>
+	<entry label="highlights">Realces</entry>
+	<entry label="highlightsLetter">R</entry>
+</EntrySet>
+<EntrySet label="ColorTemperature">
+	<entry label="kelvin">Temperatura (K, 6500 = inalterado)</entry>
+	<entry label="kelvinLetter">T</entry>
+	<entry label="tint">Matiz (verde / magenta, %)</entry>
+	<entry label="tintLetter">N</entry>
+	<entry label="preserve">Manter a luminosidade</entry>
+	<entry label="preserve_Yes">Sim</entry>
+	<entry label="preserve_No">Não</entry>
+</EntrySet>
+<EntrySet label="ColorBalance">
+	<entry label="Shadows">Sombras (vermelho, verde, azul)</entry>
+	<entry label="Midtones">Meios-tons (vermelho, verde, azul)</entry>
+	<entry label="Highlights">Realces (vermelho, verde, azul)</entry>
+	<entry label="preserve">Manter a luminosidade</entry>
+	<entry label="preserve_Yes">Sim</entry>
+	<entry label="preserve_No">Não</entry>
+</EntrySet>
+<EntrySet label="Vibrance">
+	<entry label="intensity">Vibração (%)</entry>
+	<entry label="intensityLetter">V</entry>
+</EntrySet>
+<EntrySet label="Sharpen">
+	<entry label="amount">Quantidade (%)</entry>
+	<entry label="amountLetter">Q</entry>
+	<entry label="radius">Raio (1/10 pixel, para 1080 linhas)</entry>
+	<entry label="radiusLetter">R</entry>
+	<entry label="threshold">Limiar (ruído ignorado)</entry>
+	<entry label="thresholdLetter">L</entry>
+</EntrySet>
+<EntrySet label="Smoothing">
+	<entry label="radius">Raio (pixels, para 1080 linhas)</entry>
+	<entry label="radiusLetter">R</entry>
+	<entry label="smooth">Suavidade (variações alisadas)</entry>
+	<entry label="smoothLetter">S</entry>
+	<entry label="mix">Mistura com a imagem (%)</entry>
+	<entry label="mixLetter">M</entry>
+</EntrySet>
+<EntrySet label="Vignette">
+	<entry label="angle">Força (ângulo, graus)</entry>
+	<entry label="angleLetter">A</entry>
+	<entry label="x">Posição horizontal do centro</entry>
+	<entry label="xLetter">X</entry>
+	<entry label="y">Posição vertical do centro</entry>
+	<entry label="yLetter">Y</entry>
+	<entry label="shape">Forma</entry>
+	<entry label="shape_Circle">Círculo</entry>
+	<entry label="shape_Frame">Elipse do quadro</entry>
+</EntrySet>
+<EntrySet label="Grain">
+	<entry label="strength">Força (%)</entry>
+	<entry label="strengthLetter">F</entry>
+	<entry label="size">Tamanho do grão (1/10 pixel, para 1080 linhas)</entry>
+	<entry label="sizeLetter">T</entry>
+	<entry label="parallax">Profundidade do grão (paralaxe)</entry>
+	<entry label="parallaxLetter">X</entry>
+	<entry label="colored">Grão</entry>
+	<entry label="colored_Mono">Monocromático</entry>
+	<entry label="colored_Color">Colorido</entry>
+	<entry label="animated">Grão novo a cada imagem</entry>
+	<entry label="animated_Yes">Sim</entry>
+	<entry label="animated_No">Não (fixo)</entry>
+</EntrySet>
+<EntrySet label="Despill">
+	<entry label="keyColor">Cor do fundo</entry>
+	<entry label="keyColor_Green">Verde</entry>
+	<entry label="keyColor_Blue">Azul</entry>
+	<entry label="mix">Mistura do derrame (%)</entry>
+	<entry label="mixLetter">M</entry>
+	<entry label="expand">Expansão (%)</entry>
+	<entry label="expandLetter">E</entry>
+	<entry label="brightness">Compensação de brilho (%)</entry>
+	<entry label="brightnessLetter">B</entry>
+</EntrySet>
+<EntrySet label="Pixelize">
+	<entry label="blockSize">Tamanho dos blocos (pixels, para 1080 linhas)</entry>
+	<entry label="blockSizeLetter">B</entry>
+	<entry label="x">Posição horizontal da zona</entry>
+	<entry label="xLetter">X</entry>
+	<entry label="y">Posição vertical da zona</entry>
+	<entry label="yLetter">Y</entry>
+	<entry label="w">Largura da zona (%)</entry>
+	<entry label="wLetter">L</entry>
+	<entry label="h">Altura da zona (%)</entry>
+	<entry label="hLetter">H</entry>
+	<entry label="parallax">Profundidade da zona (paralaxe, por mil da largura)</entry>
+	<entry label="parallaxLetter">P</entry>
+	<entry label="shape">Forma da zona</entry>
+	<entry label="shape_Rect">Retângulo</entry>
+	<entry label="shape_Ellipse">Elipse</entry>
+</EntrySet>
+<EntrySet label="TrackMixer">
+	<entry label="Track">Faixa</entry>
+	<entry label="GainLetter">V</entry>
+</EntrySet>
+
+<EntrySet label="Loudness">
+	<entry label="target">Loudness alvo (LUFS: -14 web, -16 podcast, -23 TV)</entry>
+	<entry label="targetLetter">L</entry>
+	<entry label="limiter">Limitar os picos (-1 dBFS)</entry>
+	<entry label="limiter_Yes">Sim</entry>
+	<entry label="limiter_No">Não</entry>
+	<entry label="Measured">Loudness do clipe:</entry>
+	<entry label="Measuring">medindo...</entry>
+</EntrySet>
+<EntrySet label="Equalizer">
+	<entry label="g80">80 Hz, graves (1/10 dB)</entry>
+	<entry label="g80Letter">1</entry>
+	<entry label="g300">300 Hz (1/10 dB)</entry>
+	<entry label="g300Letter">2</entry>
+	<entry label="g1k">1 kHz (1/10 dB)</entry>
+	<entry label="g1kLetter">3</entry>
+	<entry label="g3k">3 kHz, presença (1/10 dB)</entry>
+	<entry label="g3kLetter">4</entry>
+	<entry label="g10k">10 kHz, agudos (1/10 dB)</entry>
+	<entry label="g10kLetter">5</entry>
+	<entry label="highPass">Passa-alta (ronco, vento)</entry>
+	<entry label="highPass_Off">Não</entry>
+	<entry label="lowPass">Passa-baixa (chiado)</entry>
+	<entry label="lowPass_Off">Não</entry>
+</EntrySet>
+<EntrySet label="DeEsser">
+	<entry label="frequency">Frequência das sibilantes (Hz)</entry>
+	<entry label="frequencyLetter">F</entry>
+	<entry label="threshold">Limiar (dB)</entry>
+	<entry label="thresholdLetter">L</entry>
+	<entry label="reduction">Redução máxima (dB)</entry>
+	<entry label="reductionLetter">R</entry>
+	<entry label="listen">Escuta</entry>
+	<entry label="listen_Normal">Normal</entry>
+	<entry label="listen_Sibilants">Só sibilantes</entry>
+</EntrySet>
+<EntrySet label="Histogram">
+	<entry label="Mode">Canais</entry>
+	<entry label="Mode_RGB">Vermelho, verde, azul</entry>
+	<entry label="Mode_Luma">Luminância</entry>
+</EntrySet>
+<EntrySet label="Waveform">
+	<entry label="Mode">Canais</entry>
+	<entry label="Mode_Luma">Luminância</entry>
+	<entry label="Mode_Parade">Parada RGB</entry>
+</EntrySet>
+<EntrySet label="Vectorscope">
+	<entry label="Mode">Zoom</entry>
+	<entry label="Mode_Zoom1">x1</entry>
+	<entry label="Mode_Zoom2">x2 (imagens pouco saturadas)</entry>
+</EntrySet>
+<EntrySet label="AudioMeter">
+	<entry label="Reset">Reiniciar</entry>
+	<entry label="MaxPeak">Pico máx.</entry>
+</EntrySet>
+<EntrySet label="Spectrum">
+	<entry label="Reset">Reiniciar</entry>
 </EntrySet>
 <EntrySet label="TimeLine">
 	<entry label="ZoomIn">Ampliar (tempo)</entry>
@@ -1733,6 +1976,8 @@ Calcular os mapas de profundidade das duas vistas a partir do clipe (inteligênc
 	<entry label="ProcDown">Mover este processador para baixo (aplicado mais tarde)</entry>
 	<entry label="ProcLoad">Carregar as definições deste processador a partir de um ficheiro</entry>
 	<entry label="ProcSave">Guardar as definições deste processador num ficheiro</entry>
+	<entry label="ProcFocusOn">Este tratamento tem o foco: as alterações (formas e legendas editadas no monitor...) dizem-lhe respeito. Clique: retirar o foco</entry>
+	<entry label="ProcFocusOff">Dar o foco a este tratamento: as alterações (formas e legendas editadas no monitor...) dir-lhe-ão respeito. Uma alteração no seu painel também lhe dá o foco</entry>
 	<entry label="ProcDelete">Remover este processador do clipe</entry>
 
 	<entry label="ProcLib">Faça duplo clique num processador para o adicionar ao clipe selecionado</entry>
@@ -1876,4 +2121,78 @@ Calcular os mapas de profundidade das duas vistas a partir do clipe (inteligênc
 	<entry label="Contrast">Contraste</entry>
 	<entry label="Gamma">Gama (brilho dos meios-tons)</entry>
 	<entry label="SmoothContrast">Contraste suave (curva TanH)</entry>
+	<entry label="ProcLib_Curves">Curvas de tons: predefinições do ffmpeg (vintage, processo cruzado, contrastes...) e pontos de sombras / meios-tons / realces</entry>
+	<entry label="ProcLib_ColorTemperature">Aquecer ou arrefecer a imagem (temperatura de cor em kelvin) e corrigir o matiz</entry>
+	<entry label="ProcLib_ColorBalance">Deslocar separadamente as cores das sombras, dos meios-tons e dos realces</entry>
+	<entry label="ProcLib_Vibrance">Aumentar a saturação das cores apagadas mais do que a das vivas (tons de pele preservados)</entry>
+	<entry label="ProcLib_Sharpen">Realçar a nitidez dos detalhes (máscara de nitidez na luminância)</entry>
+	<entry label="ProcLib_Smoothing">Suavizar a pele e as zonas planas mantendo as bordas nítidas</entry>
+	<entry label="ProcLib_Vignette">Escurecer as bordas da imagem (vinheta)</entry>
+	<entry label="ProcLib_Grain">Adicionar grão de filme, o mesmo nas duas vistas, à profundidade escolhida</entry>
+	<entry label="ProcLib_Despill">Remover o tom verde (ou azul) deixado pelo fundo no tema, após Chroma key</entry>
+	<entry label="ProcLib_Pixelize">Pixelizar a imagem ou uma zona (um rosto, uma matrícula), à profundidade do que esconde</entry>
+	<entry label="ProcLib_Loudness">Levar o loudness do clipe a um alvo (EBU R128), medido uma vez no seu som</entry>
+	<entry label="ProcLib_Equalizer">Equalizador de 5 bandas com filtros passa-alta e passa-baixa</entry>
+	<entry label="ProcLib_DeEsser">Suavizar os "s" sibilantes das vozes</entry>
+	<entry label="ProcLib_Histogram">Histograma dos níveis de cada vista. Coloque-o na pilha para ver o estado do clipe nessa etapa. Só análise: nem a imagem nem o som são alterados, nem a renderização fica mais lenta.</entry>
+	<entry label="ProcLib_Waveform">Forma de onda: níveis de cada coluna de cada vista (exposição, recorte). Coloque-o na pilha para ver o estado do clipe nessa etapa. Só análise: nem a imagem nem o som são alterados, nem a renderização fica mais lenta.</entry>
+	<entry label="ProcLib_Vectorscope">Vetorscópio: matizes e saturações de cada vista, com a linha dos tons de pele. Coloque-o na pilha para ver o estado do clipe nessa etapa. Só análise: nem a imagem nem o som são alterados, nem a renderização fica mais lenta.</entry>
+	<entry label="ProcLib_AudioMeter">Níveis de pico e RMS de cada canal, loudness EBU R128 (momentâneo, curto prazo, integrado) durante a reprodução. Coloque-o na pilha para ver o estado do clipe nessa etapa. Só análise: nem a imagem nem o som são alterados, nem a renderização fica mais lenta.</entry>
+	<entry label="ProcLib_Spectrum">Espectro do som durante a reprodução (20 Hz a 20 kHz). Coloque-o na pilha para ver o estado do clipe nessa etapa. Só análise: nem a imagem nem o som são alterados, nem a renderização fica mais lenta.</entry>
+	<entry label="Curves_preset">Curvas das predefinições do ffmpeg, aplicadas antes dos três pontos abaixo</entry>
+	<entry label="Curves_amount">Mistura do resultado com a imagem (0 = inalterada)</entry>
+	<entry label="Curves_shadows">Subir ou baixar os tons escuros (ponto a 25 % da curva)</entry>
+	<entry label="Curves_midtones">Subir ou baixar os meios-tons (ponto a 50 %)</entry>
+	<entry label="Curves_highlights">Subir ou baixar os tons claros (ponto a 75 %)</entry>
+	<entry label="ColorTemperature_kelvin">Abaixo de 6500 K: mais quente (laranja), acima: mais frio (azul)</entry>
+	<entry label="ColorTemperature_tint">Negativo: mais verde, positivo: mais magenta</entry>
+	<entry label="ColorTemperature_preserve">Manter a luminosidade de cada pixel (só as cores mudam)</entry>
+	<entry label="ColorBalance_Shadows">Adicionar (direita) ou retirar (esquerda) esta cor nos tons escuros</entry>
+	<entry label="ColorBalance_Midtones">Adicionar (direita) ou retirar (esquerda) esta cor nos meios-tons</entry>
+	<entry label="ColorBalance_Highlights">Adicionar (direita) ou retirar (esquerda) esta cor nos tons claros</entry>
+	<entry label="ColorBalance_preserve">Manter a luminosidade de cada pixel (só as cores mudam)</entry>
+	<entry label="Vibrance_intensity">Positivo: mais saturação para as cores apagadas; negativo: menos para as vivas</entry>
+	<entry label="Sharpen_amount">Força da nitidez (100 = detalhes duplicados)</entry>
+	<entry label="Sharpen_radius">Tamanho dos detalhes realçados: pequeno para os finos, maior para os contornos</entry>
+	<entry label="Sharpen_threshold">As variações mais fracas (ruído, grão) não são realçadas</entry>
+	<entry label="Smoothing_radius">Tamanho da zona sobre a qual a imagem é suavizada</entry>
+	<entry label="Smoothing_smooth">As variações menores são alisadas, as maiores (bordas) mantidas</entry>
+	<entry label="Smoothing_mix">Mistura da imagem suavizada com a imagem (aspeto natural abaixo de 100)</entry>
+	<entry label="Vignette_angle">Escurecimento das bordas (0 = nenhum)</entry>
+	<entry label="Vignette_x">Centro da vinheta: -100 = borda esquerda, 100 = borda direita</entry>
+	<entry label="Vignette_y">Centro da vinheta: -100 = borda superior, 100 = borda inferior</entry>
+	<entry label="Vignette_shape">Círculo, ou elipse seguindo a forma do quadro</entry>
+	<entry label="Grain_strength">Quantidade de grão, mais forte nos meios-tons como num filme</entry>
+	<entry label="Grain_size">Tamanho dos grãos</entry>
+	<entry label="Grain_parallax">Deslocamento do grão na vista direita: 0 = no ecrã, pode ficar à frente ou atrás</entry>
+	<entry label="Grain_colored">Mesmo ruído nas três cores, ou um ruído por cor</entry>
+	<entry label="Grain_animated">Um grão novo a cada imagem da montagem, ou o mesmo grão o tempo todo</entry>
+	<entry label="Despill_keyColor">Cor do fundo removido pelo Chroma key</entry>
+	<entry label="Despill_mix">Como as outras cores calculam o derrame: mais alto = menos removido</entry>
+	<entry label="Despill_expand">Remove mais o derrame</entry>
+	<entry label="Despill_brightness">Devolve como brilho o que foi removido (as zonas ficam tão claras)</entry>
+	<entry label="Pixelize_blockSize">Tamanho dos blocos de cor média</entry>
+	<entry label="Pixelize_x">Centro da zona: -100 = borda esquerda, 100 = borda direita (chaves: pode seguir um rosto)</entry>
+	<entry label="Pixelize_y">Centro da zona: -100 = borda superior, 100 = borda inferior</entry>
+	<entry label="Pixelize_w">Largura da zona (100 = toda a imagem)</entry>
+	<entry label="Pixelize_h">Altura da zona (100 = toda a imagem)</entry>
+	<entry label="Pixelize_parallax">Deslocamento da zona na vista direita, à profundidade do que esconde</entry>
+	<entry label="Pixelize_shape">Retângulo, ou elipse inscrita (rostos)</entry>
+	<entry label="Loudness_target">Loudness integrado a atingir. O som do clipe (antes dos seus processadores) é medido uma vez; aplica-se um ganho constante</entry>
+	<entry label="Loudness_limiter">Limita suavemente os picos acima de -1 dBFS (sem saturação com ganho alto)</entry>
+	<entry label="TrackMixer_track">Volume desta faixa de áudio do média (100% = inalterado, 0 = muda)</entry>
+	<entry label="Equalizer_g80">Prateleira grave a 80 Hz: graves</entry>
+	<entry label="Equalizer_g300">Banda a 300 Hz: calor, ressonância</entry>
+	<entry label="Equalizer_g1k">Banda a 1 kHz: corpo das vozes</entry>
+	<entry label="Equalizer_g3k">Banda a 3 kHz: presença, inteligibilidade</entry>
+	<entry label="Equalizer_g10k">Prateleira aguda a 10 kHz: agudos, ar</entry>
+	<entry label="Equalizer_highPass">Remove as frequências abaixo (ronco, vento, ruídos de manuseamento)</entry>
+	<entry label="Equalizer_lowPass">Remove as frequências acima (chiado)</entry>
+	<entry label="DeEsser_frequency">O som acima desta frequência é reduzido quando está demasiado forte (5 a 8 kHz para a maioria das vozes)</entry>
+	<entry label="DeEsser_threshold">Nível da banda aguda acima do qual é reduzida</entry>
+	<entry label="DeEsser_reduction">Redução máxima das sibilantes</entry>
+	<entry label="DeEsser_listen">"Só sibilantes" reproduz a banda aguda reduzida sozinha, para ajustar a frequência e o limiar</entry>
+	<entry label="Histogram_Mode">Vermelho, verde e azul sobrepostos, ou a luminância. Marcas vermelhas: pretos ou brancos cortados</entry>
+	<entry label="Waveform_Mode">Luminância, ou vermelho, verde e azul lado a lado (parada); linhas a 0, 25, 50, 75, 100 %</entry>
+	<entry label="Vectorscope_Mode">x2 amplia o centro, para imagens pouco saturadas. Quadrados: cores a 75 %, linha castanha: tons de pele</entry>
 </EntrySet>

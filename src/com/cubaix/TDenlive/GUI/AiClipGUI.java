@@ -24,10 +24,14 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Shell;
@@ -39,8 +43,10 @@ import org.eclipse.swt.widgets.TreeItem;
 import com.cubaix.TDenlive.TDConfig;
 import com.cubaix.TDenlive.TDenlive;
 import com.cubaix.TDenlive.ai.ColorGenerator;
+import com.cubaix.TDenlive.ffmpeg.AudioTracks;
 import com.cubaix.TDenlive.ai.MaskGenerator;
 import com.cubaix.TDenlive.ai.PromptExtender;
+import com.cubaix.TDenlive.ai.RemixGenerator;
 import com.cubaix.TDenlive.ai.PythonAI;
 import com.cubaix.TDenlive.ai.SceneGenerator;
 import com.cubaix.TDenlive.model3d.SmartFill;
@@ -136,9 +142,15 @@ public class AiClipGUI {
 		String name = null;
 		//Subtitles file of its speech given by the user (.srt, .vtt): used instead of the recognition, else null
 		String srt = null;
+		//Audio stream used when the file has several (languages, tracks of a remix), 0: the first
+		int track = 0;
 	}
 	SpeechSource subsSrc = new SpeechSource();
 	SpeechSource dubSrc = new SpeechSource();
+	//AI remix (REMIX): the tracks of a sound separated (Demucs), then listened and saved by AiRemixGUI
+	boolean remix = false;
+	RemixGenerator.Model remixModel = RemixGenerator.HTDEMUCS;
+	SpeechSource remixSrc = new SpeechSource();
 
 	SpeechSource speechSource() {
 		return dub ? dubSrc : subsSrc;
@@ -328,6 +340,29 @@ public class AiClipGUI {
 		return aL;
 	}
 
+	/**
+	 * Layout of the window of aC after a change of its content (a longer text, a row shown...): the window grows
+	 * when its content no longer fits (the buttons at the bottom stay visible), within the screen
+	 */
+	public static void fit(Control aC) {
+		if(aC == null || aC.isDisposed()) {
+			return;
+		}
+		Shell aSh = aC.getShell();
+		aSh.layout(true, true);
+		org.eclipse.swt.graphics.Point aSize = aSh.getSize();
+		org.eclipse.swt.graphics.Point aNeed = aSh.computeSize(aSize.x, SWT.DEFAULT);
+		if(aNeed.y <= aSize.y) {
+			return;
+		}
+		Rectangle aArea = aSh.getMonitor().getClientArea();
+		int aH = Math.min(aNeed.y, aArea.height);
+		Rectangle aB = aSh.getBounds();
+		int aY = Math.max(aArea.y, Math.min(aB.y, aArea.y+aArea.height-aH));
+		aSh.setBounds(aB.x, aY, aB.width, aH);
+		aSh.layout(true, true);
+	}
+
 	void center(Shell aShell) {
 		aShell.pack();
 		Rectangle aP = tde.gui.shell.getBounds();
@@ -348,25 +383,34 @@ public class AiClipGUI {
 		tde.gui.applyColorFont(aShell);
 		aShell.setImage(tde.gui.imgsSwt.getIcon("3Denlive32.png"));
 
-		//Kind of generation
+		//Kind of generation: a burger menu (categories Image / Video and Sound), then the name of the tool chosen
 		Composite aKind = new Composite(aShell, SWT.NONE);
 		tde.gui.applyColorFont(aKind);
 		aKind.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		GridLayout aKGL = new GridLayout(1+KINDS.length, false);
+		GridLayout aKGL = new GridLayout(2, false);
 		tde.gui.applyNoMargin(aKGL);
-		aKGL.horizontalSpacing = 12;
+		aKGL.horizontalSpacing = 10;
 		aKind.setLayout(aKGL);
-		Label aKL = new Label(aKind, SWT.NONE);
-		tde.gui.applyColorFont(aKL);
-		aKL.setText(lng("AI.Kind"));
-		aKL.setFont(tde.gui.fontsSwt.robotoBold);
-		Button[] aKindB = new Button[KINDS.length];
-		for(int k = 0;k < KINDS.length;k++) {
-			aKindB[k] = new Button(aKind, SWT.RADIO);
-			tde.gui.applyColorFont(aKindB[k]);
-			aKindB[k].setText(lng(KIND_KEYS[k]));
-			aKindB[k].setData(KINDS[k]);
-		}
+		Button aMenuB = new Button(aKind, SWT.PUSH);
+		tde.gui.applyColorFont(aMenuB);
+		aMenuB.setImage(tde.gui.imgsSwt.getIcon("burger.png"));
+		aMenuB.setToolTipText(lng("AI.KindMenuTip"));
+		Label aKindName = new Label(aKind, SWT.NONE);
+		tde.gui.applyColorFont(aKindName);
+		aKindName.setFont(tde.gui.fontsSwt.robotoBold);
+		aKindName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		aKindName.setToolTipText(lng("AI.KindMenuTip"));
+		Menu aKindMenu = new Menu(aShell, SWT.POP_UP);
+		Vector<MenuItem> aKindItems = new Vector<MenuItem>();
+		//Name of the tool shown, and the item checked in the menu
+		Runnable aShowName = () -> {
+			int k = kindIndex(kind);
+			aKindName.setText(lng(KIND_CATEGORY_KEYS[categoryOf(kind)])+"  ›  "+lng(KIND_KEYS[k]));
+			for(MenuItem aMI : aKindItems) {
+				aMI.setSelection(kind.equals(aMI.getData()));
+			}
+			aKind.layout(true);
+		};
 		Label aSep = new Label(aShell, SWT.SEPARATOR | SWT.HORIZONTAL);
 		aSep.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -384,6 +428,7 @@ public class AiClipGUI {
 					: MASK.equals(KINDS[k]) ? createMaskPanel(aPanels[k])
 					: SCENE.equals(KINDS[k]) ? createScenePanel(aPanels[k])
 					: SUBS.equals(KINDS[k]) || DUB.equals(KINDS[k]) ? createSpeechPanel(aPanels[k], DUB.equals(KINDS[k]))
+					: REMIX.equals(KINDS[k]) ? createRemixPanel(aPanels[k])
 					: createSoundPanel(aPanels[k], KINDS[k]);
 		}
 
@@ -439,9 +484,6 @@ public class AiClipGUI {
 				if(VIDEO.equals(kind) && WanGenerator.isPlatformSupported()) {
 					if(!videoPair.shown()) {
 						kind = MUSIC;
-						for(Button aB : aKindB) {
-							aB.setSelection(kind.equals(aB.getData()));
-						}
 					}
 				}
 				if(!VIDEO.equals(kind)) {
@@ -454,41 +496,57 @@ public class AiClipGUI {
 			scene = SCENE.equals(kind);
 			dub = DUB.equals(kind);
 			speech = dub || SUBS.equals(kind);
-			music = !VIDEO.equals(kind) && !color && !mask && !scene && !speech;
+			remix = REMIX.equals(kind);
+			music = !VIDEO.equals(kind) && !color && !mask && !scene && !speech && !remix;
 			if(music) {
 				soundModel = (SoundGenerator.Model)aPanels[k].getData(MODEL);
 			}
 			aSL.topControl = aPanels[k];
+			aShowName.run();
 			aShell.setText(lng(KIND_TITLES[k]));
 			aOk.setEnabled(!VIDEO.equals(kind) || WanGenerator.isPlatformSupported());
 			//The mask opens its editor
 			aOk.setText(lng(mask ? "AI.MaskOpen" : "AI.Generate"));
 			aButtons.layout(true);
-			aStack.layout(true, true);
+			fit(aStack);
 		};
-		SelectionAdapter aKindL = new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				if(!((Button)e.widget).getSelection()) {
-					return;
+		//The menu: one sub-menu per category, the tools in it
+		for(int c = 0;c < KIND_CATEGORY_KEYS.length;c++) {
+			MenuItem aCat = new MenuItem(aKindMenu, SWT.CASCADE);
+			aCat.setText(lng(KIND_CATEGORY_KEYS[c]));
+			Menu aSub = new Menu(aCat);
+			aCat.setMenu(aSub);
+			for(int k = 0;k < KINDS.length;k++) {
+				if(categoryOf(KINDS[k]) != c) {
+					continue;
 				}
-				kind = (String)e.widget.getData();
-				aShowKind.run();
-				focusPrompt(aSL.topControl);
+				MenuItem aMI = new MenuItem(aSub, SWT.RADIO);
+				aMI.setText(lng(KIND_KEYS[k]));
+				aMI.setData(KINDS[k]);
+				aKindItems.add(aMI);
+				aMI.addListener(SWT.Selection, e -> {
+					if(!aMI.getSelection() || kind.equals(aMI.getData())) {
+						return;
+					}
+					kind = (String)aMI.getData();
+					aShowKind.run();
+					focusPrompt(aSL.topControl);
+				});
 			}
-		};
-		for(Button aB : aKindB) {
-			aB.addSelectionListener(aKindL);
 		}
+		Listener aOpenMenu = e -> {
+			org.eclipse.swt.graphics.Rectangle aB = aMenuB.getBounds();
+			aKindMenu.setLocation(aKind.toDisplay(aB.x, aB.y+aB.height));
+			aKindMenu.setVisible(true);
+		};
+		aMenuB.addListener(SWT.Selection, aOpenMenu);
+		aKindName.addListener(SWT.MouseDown, aOpenMenu);
 		//Always the music first (the video panel asks for the download of its LLM), but the kind of "Generate
 		//again"; not the video when it is not possible here
 		kind = againKind != null && kindIndex(againKind) >= 0 ? againKind : MUSIC;
 		againKind = null;
 		if(VIDEO.equals(kind) && !WanGenerator.isPlatformSupported()) {
 			kind = MUSIC;
-		}
-		for(Button aB : aKindB) {
-			aB.setSelection(kind.equals(aB.getData()));
 		}
 		aShowKind.run();
 
@@ -519,9 +577,17 @@ public class AiClipGUI {
 	//Speech of a video: subtitles in one or several languages, voice translation (see ai.SpeechGenerator)
 	static final String SUBS = "subtitles";
 	static final String DUB = "dub";
-	static final String[] KINDS = {VIDEO, COLOR, MASK, SCENE, MUSIC, SFX, SUBS, DUB};
-	static final String[] KIND_KEYS = {"AI.KindVideo", "AI.KindColor", "AI.KindMask", "AI.KindScene", "AI.KindMusic", "AI.KindSfx", "AI.KindSubs", "AI.KindDub"};
-	static final String[] KIND_TITLES = {"AI.Title", "AI.ColorTitle", "AI.MaskTitle", "AI.SceneTitle", "AI.MusicTitle", "AI.SfxTitle", "AI.SubsTitle", "AI.DubTitle"};
+	//Tracks of a sound separated (Demucs, see ai.RemixGenerator), listened and saved into a multi-track MP4 (AiRemixGUI)
+	static final String REMIX = "remix";
+	static final String[] KINDS = {VIDEO, COLOR, MASK, SCENE, MUSIC, SFX, REMIX, SUBS, DUB};
+	static final String[] KIND_KEYS = {"AI.KindVideo", "AI.KindColor", "AI.KindMask", "AI.KindScene", "AI.KindMusic", "AI.KindSfx", "AI.KindRemix", "AI.KindSubs", "AI.KindDub"};
+	//Categories of the menu of the kinds: images / videos, sounds
+	static final String[] KIND_CATEGORY_KEYS = {"AI.KindCatImage", "AI.KindCatSound"};
+
+	static int categoryOf(String aKind) {
+		return MUSIC.equals(aKind) || SFX.equals(aKind) || REMIX.equals(aKind) || SUBS.equals(aKind) || DUB.equals(aKind) ? 1 : 0;
+	}
+	static final String[] KIND_TITLES = {"AI.Title", "AI.ColorTitle", "AI.MaskTitle", "AI.SceneTitle", "AI.MusicTitle", "AI.SfxTitle", "AI.RemixTitle", "AI.SubsTitle", "AI.DubTitle"};
 	//OK button of the form (the panel of the 3D scene validates it to open a saved scene)
 	Button formOkB = null;
 	//Data of a sound panel: its model chosen
@@ -1331,7 +1397,7 @@ public class AiClipGUI {
 			}
 			long aBytes = WanGenerator.modelBytesToDownload(tde.tdeDir, videoModel)+WanGenerator.envBytesToInstall(tde.tdeDir);
 			aDownload[0].setText(aBytes > 0 ? lng("AI.Download").replace("%GB%", gb(aBytes)) : lng("AI.MusicReady"));
-			aPanel.layout(true, true);
+			fit(aPanel);
 		};
 		createModelChoice(aLeft, aChoices, videoModel, aM -> {
 			videoModel = (WanGenerator.Variant)aM;
@@ -1384,7 +1450,7 @@ public class AiClipGUI {
 			if(!aK.equals(aTree.getData(KIND_DATA))) {
 				fillExamples(aTree, aK);
 				aExL.setText(lng(IMAGE.equals(aK) ? "AI.PromptExamplesImage" : "AI.PromptExamples"));
-				aRight.layout(true, true);
+				fit(aRight);
 			}
 			aPair.imageChanged();
 		});
@@ -1449,7 +1515,7 @@ public class AiClipGUI {
 			aWhere[0].setText(aReason == null ? lng("AI.ColorOnGpu") : lng("AI.ColorOnCpu"));
 			long aBytes = colorModel.bytesToDownload(tde.tdeDir)+PythonAI.envBytesToInstall(tde.tdeDir);
 			aDownload[0].setText(aBytes > 0 ? lng("AI.MusicDownload").replace("%GB%", gb(aBytes)) : lng("AI.MusicReady"));
-			aPanel.layout(true, true);
+			fit(aPanel);
 		};
 		createModelChoice(aLeft, aChoices, colorModel, aM -> {
 			colorModel = (ColorGenerator.Model)aM;
@@ -1532,12 +1598,7 @@ public class AiClipGUI {
 							aRun.run();
 						}
 						//Longer texts: the window grows if needed
-						Shell aSh = aPanel.getShell();
-						aSh.layout(true, true);
-						org.eclipse.swt.graphics.Point aNeed = aSh.computeSize(aSh.getSize().x, SWT.DEFAULT);
-						if(aNeed.y > aSh.getSize().y) {
-							aSh.setSize(aSh.getSize().x, aNeed.y);
-						}
+						fit(aPanel);
 					}
 				}
 			});
@@ -1742,7 +1803,7 @@ public class AiClipGUI {
 			aWhere[0].setText(aReason == null ? lng("AI.MaskOnGpu") : lng("AI.MaskOnCpu"));
 			long aBytes = maskModel.bytesToDownload(tde.tdeDir)+PythonAI.envBytesToInstall(tde.tdeDir);
 			aDownload[0].setText(aBytes > 0 ? lng("AI.MusicDownload").replace("%GB%", gb(aBytes)) : lng("AI.MusicReady"));
-			aPanel.layout(true, true);
+			fit(aPanel);
 		};
 		createModelChoice(aLeft, aChoices, maskModel, aM -> {
 			maskModel = (MaskGenerator.Model)aM;
@@ -1811,7 +1872,7 @@ public class AiClipGUI {
 			aSbs.setEnabled(aHas && maskSrc.media == null);
 			aSbs.setSelection(maskSrc.layout == AiMaskGUI.Source.SBS_P);
 			aRow.layout(true);
-			aParent.layout(true, true);
+			fit(aParent);
 		};
 		aChoose.addListener(SWT.Selection, e -> {
 			FileDialog aFD = new FileDialog(aParent.getShell(), SWT.OPEN);
@@ -1986,7 +2047,7 @@ public class AiClipGUI {
 					+(aDub && !aDirect && aVoice[0] != null ? SpeechGenerator.designBytesToDownload(tde.tdeDir
 							, aVoices[Math.max(0, aVoice[0].getSelectionIndex())], aTargets.get().firstElement()) : 0);
 			aDownload[0].setText(aBytes > 0 ? lng("AI.MusicDownload").replace("%GB%", gb(aBytes)) : lng("AI.MusicReady"));
-			aPanel.layout(true, true);
+			fit(aPanel);
 		};
 		//A choice that Hibiki-Zero cannot do (spoken language, target, native voice): the cascade model instead
 		java.util.function.BooleanSupplier aNeedsCascade = () -> {
@@ -2288,7 +2349,11 @@ public class AiClipGUI {
 	 * the media list)
 	 */
 	void createSourceRow(Composite aParent,SpeechSource aSrc) {
-		Label aL = addLabel(aParent, lng("AI.SpeechSource"), 0);
+		createSourceRow(aParent, aSrc, "AI.SpeechSource");
+	}
+
+	void createSourceRow(Composite aParent,SpeechSource aSrc,String aLabelKey) {
+		Label aL = addLabel(aParent, lng(aLabelKey), 0);
 		((GridData)aL.getLayoutData()).verticalIndent = 8;
 		Composite aRow = new Composite(aParent, SWT.NONE);
 		tde.gui.applyColorFont(aRow);
@@ -2309,11 +2374,52 @@ public class AiClipGUI {
 		aLib.setText(lng("AI.ImageLibrary"));
 		aLib.setToolTipText(lng("AI.SpeechLibraryTip"));
 		aLib.setEnabled(!librarySpeech().isEmpty());
+		//Audio stream, shown only when the file has several (AudioTracks: name and / or language of each)
+		Composite aTrackRow = new Composite(aParent, SWT.NONE);
+		tde.gui.applyColorFont(aTrackRow);
+		GridData aTRGD = new GridData(GridData.FILL_HORIZONTAL);
+		aTrackRow.setLayoutData(aTRGD);
+		GridLayout aTGL = new GridLayout(2, false);
+		tde.gui.applyNoMargin(aTGL);
+		aTrackRow.setLayout(aTGL);
+		Label aTL = new Label(aTrackRow, SWT.NONE);
+		tde.gui.applyColorFont(aTL);
+		aTL.setText(lng("AI.SourceTrack"));
+		aTL.setToolTipText(lng("AI.SourceTrackTip"));
+		Combo aTrack = new Combo(aTrackRow, SWT.READ_ONLY | SWT.DROP_DOWN);
+		tde.gui.applyColorFont(aTrack);
+		aTrack.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		aTrack.setToolTipText(lng("AI.SourceTrackTip"));
+		aTrack.addListener(SWT.Selection, e -> aSrc.track = Math.max(0, aTrack.getSelectionIndex()));
+		String[] aShownPath = {null};
 		Runnable aShow = () -> {
 			aName.setText(aSrc.path == null ? lng("AI.SpeechNoSourceYet")
 					: aSrc.name != null ? aSrc.name : new File(aSrc.path).getName());
 			aName.setFont(aSrc.path == null ? aChoose.getFont() : tde.gui.fontsSwt.robotoBold);
 			aRow.layout(true);
+			AudioTracks aTs = AudioTracks.of(aSrc.path);
+			if(aSrc.path == null || !aSrc.path.equals(aShownPath[0])) {
+				//Another file: its first stream
+				aShownPath[0] = aSrc.path;
+				aSrc.track = 0;
+			}
+			aTrack.removeAll();
+			for(int k = 0;k < aTs.size();k++) {
+				aTrack.add(aTs.label(k, tde.config.lng, lng("TrackMixer.Track"), aT -> com.cubaix.TDenlive.processors.TrackMixer.showTitle(tde, aT)));
+			}
+			if(aTs.size() > 1) {
+				aSrc.track = Math.min(aSrc.track, aTs.size()-1);
+				aTrack.select(aSrc.track);
+			}
+			else {
+				aSrc.track = 0;
+			}
+			boolean aVisible = aTs.size() > 1;
+			if(aTRGD.exclude == aVisible || aTrackRow.getVisible() != aVisible) {
+				aTRGD.exclude = !aVisible;
+				aTrackRow.setVisible(aVisible);
+				fit(aParent);
+			}
 		};
 		aChoose.addListener(SWT.Selection, e -> {
 			FileDialog aFD = new FileDialog(aParent.getShell(), SWT.OPEN);
@@ -2525,7 +2631,7 @@ public class AiClipGUI {
 			aDMax[0].setText(lng("AI.MusicDurationMax").replace("%MAX%", ""+aMax).replace("%KHZ%", ""+aM.sampleRate/1000));
 			long aBytes = aM.bytesToDownload(tde.tdeDir)+aM.envBytesToInstall(tde.tdeDir);
 			aDownload[0].setText(aBytes > 0 ? lng("AI.MusicDownload").replace("%GB%", gb(aBytes)) : lng("AI.MusicReady"));
-			aPanel.layout(true, true);
+			fit(aPanel);
 		};
 		createModelChoice(aLeft, aChoices, aPanel.getData(MODEL), aM -> {
 			aPanel.setData(MODEL, aM);
@@ -3288,6 +3394,9 @@ public class AiClipGUI {
 			addLabel(shell, lng(sceneModel.key())+" - "+lng("AI.SceneDetail"+sceneDetail.id).replace("%N%", String.format("%,d", sceneDetail.gaussians(sceneModel)))
 					+" - "+lng(SceneGenerator.cpuReason(sceneModel) == null ? "AI.MusicOnGpu" : "AI.MusicOnCpu"), 0);
 		}
+		else if(remix) {
+			addLabel(shell, "Demucs "+remixModel.id+" - "+lng(RemixGenerator.cpuReason(remixModel) == null ? "AI.MusicOnGpu" : "AI.MusicOnCpu"), 0);
+		}
 		else if(speech) {
 			addLabel(shell, dub && ttsModel == SpeechGenerator.HIBIKI ? ttsModel.name : asrModel.name+(dub ? " + "+ttsModel.name : ""), 0);
 		}
@@ -3338,11 +3447,15 @@ public class AiClipGUI {
 		center(shell);
 		shell.open();
 		final Shell aShell = shell;
-		if(!music && !color && !scene && !speech) {
+		if(!music && !color && !scene && !speech && !remix) {
 			animate();
 		}
 		if(speech) {
 			runSpeech(aRun, aEnding, aShell);
+			return;
+		}
+		if(remix) {
+			runRemix(aRun, aEnding, aShell);
 			return;
 		}
 
@@ -3468,6 +3581,141 @@ public class AiClipGUI {
 	}
 
 	/**
+	 * Separation of the tracks of the sound (thread) in a work folder, then the listening window (AiRemixGUI)
+	 */
+	void runRemix(int aRun,PythonAI aEnding,Shell aShell) {
+		final SpeechSource aSrc = remixSrc;
+		final RemixGenerator.Model aModel = remixModel;
+		final File aWork = new File(tde.getWorkCacheDir(), "AI_Remix_"+System.currentTimeMillis());
+		Thread aTh = new Thread(() -> {
+			String aError = null;
+			Vector<RemixGenerator.Stem> aStems = null;
+			try {
+				for(int w = 0;aEnding != null && aEnding.isRunning() && !isCanceled(aRun) && w < 1200;w++) {
+					Thread.sleep(100);
+				}
+				PythonAI.Progress aProgress = new PythonAI.Progress() {
+					@Override
+					public void status(String aKey, String aDetail, long aDoneN, long aTotal) {
+						if(!AiClipGUI.this.isCanceled(aRun)) {
+							showStatus(aKey, aDetail, aDoneN, aTotal);
+						}
+					}
+					@Override
+					public boolean isCanceled() {
+						return AiClipGUI.this.isCanceled(aRun);
+					}
+				};
+				RemixGenerator aRG = new RemixGenerator(tde.tdeDir, aModel, aProgress);
+				aRG.audioTrack = aSrc.track;
+				generator = aRG;
+				aStems = aRG.separate(new File(aSrc.path), aWork);
+			}
+			catch(Throwable t) {
+				aError = errorMessage(t);
+			}
+			final boolean aCanceled = isCanceled(aRun) || (aStems == null && aError == null);
+			final String aErr = aError;
+			final Vector<RemixGenerator.Stem> aS = aStems;
+			if(aCanceled || aS == null) {
+				AiRemixGUI.deleteTree(aWork);
+			}
+			tde.gui.display.asyncExec(() -> {
+				if(aCanceled) {
+					return;
+				}
+				if(!aShell.isDisposed()) {
+					aShell.dispose();
+				}
+				if(aS != null) {
+					new AiRemixGUI(this, aSrc.path, aSrc.track, aSrc.name != null ? aSrc.name : new File(aSrc.path).getName(), aS, aWork).open();
+					return;
+				}
+				running = false;
+				if(aErr != null) {
+					message(tde, SWT.ICON_ERROR, aErr);
+				}
+			});
+		}, "AI remix");
+		aTh.start();
+	}
+
+	/**
+	 * Remix panel (Demucs): what it does, its models with where they run; the music (a video or a sound, required),
+	 * name, downloads, licence
+	 * @return the check of the OK button: sets prompt (left null when the form is not valid)
+	 */
+	Runnable createRemixPanel(Composite aPanel) {
+		if(!RemixGenerator.isPlatformSupported()) {
+			Label aU = addLabel(aPanel, lng("AI.UnsupportedAll"), 0);
+			aU.setForeground(tde.gui.colorsSwt.RED);
+			return () -> {};
+		}
+		Composite[] aCols = columns(aPanel);
+		Composite aLeft = aCols[0];
+		Composite aRight = aCols[1];
+		Label aIntro = addLabel(aLeft, lng("AI.RemixIntro"), 0);
+		aIntro.setFont(tde.gui.fontsSwt.robotoBold);
+		addLabel(aLeft, lng("AI.GenRemixDesc"), 0);
+
+		RemixGenerator.Model aChosen = RemixGenerator.byId(tde.config.aiRemixModel);
+		remixModel = aChosen != null ? aChosen : RemixGenerator.HTDEMUCS;
+		Choice[] aChoices = new Choice[RemixGenerator.MODELS.length];
+		for(int m = 0;m < aChoices.length;m++) {
+			RemixGenerator.Model aM = RemixGenerator.MODELS[m];
+			Choice aC = aChoices[m] = new Choice();
+			aC.model = aM;
+			aC.advised = aM == RemixGenerator.HTDEMUCS;
+			aC.name = lng("AI.RemixModelName").replace("%NAME%", aM.id).replace("%N%", ""+aM.sources.length)
+					.replace("%GB%", gb(aM.downloadSize()))+downloaded(aM.isDownloaded(tde.tdeDir));
+			aC.details = lng("AI.Remix"+aM.id.replace("_", "")+"Note");
+		}
+		Label[] aWhere = {null};
+		Label[] aDownload = {null};
+		Runnable aShow = () -> {
+			String aReason = RemixGenerator.cpuReason(remixModel);
+			aWhere[0].setText(aReason == null ? lng("AI.RemixOnGpu") : lng("AI.RemixOnCpu"));
+			long aBytes = remixModel.bytesToDownload(tde.tdeDir)+RemixGenerator.envBytesToInstall(tde.tdeDir);
+			aDownload[0].setText(aBytes > 0 ? lng("AI.MusicDownload").replace("%GB%", gb(aBytes)) : lng("AI.MusicReady"));
+			fit(aPanel);
+		};
+		createModelChoice(aLeft, aChoices, remixModel, aM -> {
+			remixModel = (RemixGenerator.Model)aM;
+			aShow.run();
+		});
+		aWhere[0] = addLabel(aLeft, " \n ", 0);
+		((GridData)aWhere[0].getLayoutData()).verticalIndent = 8;
+
+		Text aName = createNameField(aRight, REMIX);
+		createSourceRow(aRight, remixSrc, "AI.RemixSource");
+		Label aNote = addLabel(aRight, lng("AI.RemixNote"), 0);
+		((GridData)aNote.getLayoutData()).verticalIndent = 8;
+		aDownload[0] = addLabel(aRight, " \n ", 0);
+		addLabel(aRight, lng("AI.RemixLicence"), 0);
+		labelWidth = 560;
+		aShow.run();
+		return () -> {
+			if(remixSrc.path != null && !new File(remixSrc.path).isFile()) {
+				remixSrc.path = null;
+				remixSrc.media = null;
+				remixSrc.name = null;
+			}
+			if(remixSrc.path == null) {
+				message(tde, SWT.ICON_INFORMATION, lng("AI.RemixNoSource"));
+				return;
+			}
+			String aSrcName = remixSrc.name != null ? remixSrc.name : new File(remixSrc.path).getName();
+			prompt = lng("AI.RemixPrompt").replace("%NAME%", aSrcName);
+			clipName = aName.getText().trim();
+			if(clipName.isEmpty()) {
+				//From the file (the name of a library media of two files is "left / right")
+				clipName = new File(remixSrc.path).getName().replaceAll("[.][A-Za-z0-9]{2,4}$", "")+" "+lng("AI.RemixSuffix");
+			}
+			tde.config.aiRemixModel = remixModel == RemixGenerator.HTDEMUCS ? "" : remixModel.id;
+		};
+	}
+
+	/**
 	 * Subtitles or voice translation of the video (thread), then the result window (AiSpeechResultGUI)
 	 */
 	void runSpeech(int aRun,PythonAI aEnding,Shell aShell) {
@@ -3500,6 +3748,7 @@ public class AiClipGUI {
 					}
 				};
 				SpeechGenerator aSG = new SpeechGenerator(tde.tdeDir, tde.getWorkCacheDir(), aProgress);
+				aSG.audioTrack = aSrc.track;
 				generator = aSG;
 				File aIn = new File(aSrc.path);
 				File aOwn = aSrc.srt == null ? null : new File(aSrc.srt);
@@ -3549,6 +3798,12 @@ public class AiClipGUI {
 		aT.printStackTrace(System.err);
 		if(aT instanceof PythonAI.GenerationException) {
 			PythonAI.GenerationException e = (PythonAI.GenerationException)aT;
+			if(remix && "NOSOUND".equals(e.code)) {
+				return lng("AI.SpeechNoSound");
+			}
+			if(remix && "OOM".equals(e.code)) {
+				return lng("AI.RemixErrorOom");
+			}
 			if(speech && ("NOSOUND".equals(e.code) || "NOSPEECH".equals(e.code))) {
 				return lng("NOSOUND".equals(e.code) ? "AI.SpeechNoSound" : "AI.SpeechNoSpeech");
 			}
@@ -3583,7 +3838,7 @@ public class AiClipGUI {
 	 * Language key of the failure message of the kind generated
 	 */
 	String errorKey() {
-		return speech ? "AI.SpeechError" : color ? "AI.ColorError" : scene ? "AI.SceneError" : !music ? "AI.Error" : SFX.equals(soundModel.kind) ? "AI.SfxError" : "AI.MusicError";
+		return remix ? "AI.RemixError" : speech ? "AI.SpeechError" : color ? "AI.ColorError" : scene ? "AI.SceneError" : !music ? "AI.Error" : SFX.equals(soundModel.kind) ? "AI.SfxError" : "AI.MusicError";
 	}
 
 	/**
@@ -3694,7 +3949,7 @@ public class AiClipGUI {
 		long aNow = System.currentTimeMillis();
 		boolean aSteps = "AI.Generating".equals(aKey) || "AI.GeneratingMusic".equals(aKey) || "AI.GeneratingSfx".equals(aKey)
 				|| "AI.Transcribing".equals(aKey) || "AI.Translating".equals(aKey) || "AI.SpeakingTranslation".equals(aKey)
-				|| "AI.TranslatingVoice".equals(aKey);
+				|| "AI.TranslatingVoice".equals(aKey) || "AI.RemixSeparating".equals(aKey);
 		//Another counted step (speech: transcription, translation, voice): its own remaining time
 		if(aSteps && !aKey.equals(stepKeyNow)) {
 			stepKeyNow = aKey;
@@ -3741,6 +3996,8 @@ public class AiClipGUI {
 				if(aBar >= 0) {
 					bar.setSelection(aBar);
 				}
+				//A longer status (wrapped on more lines): the window grows, the Cancel button stays visible
+				fit(shell);
 			}
 		});
 	}

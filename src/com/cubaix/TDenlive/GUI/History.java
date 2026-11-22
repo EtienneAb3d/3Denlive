@@ -414,12 +414,7 @@ public class History {
 		if(aClip == null) {
 			return null;
 		}
-		for(Processor aP : aClip.getProcessors()) {
-			if(aP instanceof Shapes) {
-				return (Shapes)aP;
-			}
-		}
-		return null;
+		return aClip.getEditedShapes();
 	}
 
 	ViewState captureView() {

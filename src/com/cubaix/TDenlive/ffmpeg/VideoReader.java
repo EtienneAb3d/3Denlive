@@ -18,6 +18,9 @@ public class VideoReader {
 	public long durationMS = -1;
 	public double origFps = 30;
 	public int origWidth = 0;
+	//Image of a video that can't be decoded (missing file)
+	static final int MISSING_W = 640;
+	static final int MISSING_H = 360;
 	public int origHeight = 0;
 	public double currentFps = 30;
 	public int currentWidth = 0;
@@ -392,8 +395,13 @@ public class VideoReader {
 			//Past the last frame (the clip can last a few ms more than the frames): keep the last one
 			aBI = lastImage;
 		}
-		else {
+		else if(origWidth > 0 && origHeight > 0) {
 			aBI = ImageUtils.createImage(origWidth, origHeight);
+		}
+		else {
+			//Nothing decoded (file missing or unreadable): a black image instead of an error, the project opens
+			System.err.println("Video not readable (missing?): "+path);
+			aBI = ImageUtils.createImage(MISSING_W, MISSING_H);
 		}
 		return aBI;
 	}

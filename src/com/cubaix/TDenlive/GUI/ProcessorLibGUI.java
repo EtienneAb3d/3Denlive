@@ -15,7 +15,7 @@ import com.cubaix.TDenlive.processors.Subtitles;
 
 public class ProcessorLibGUI extends TreeView {
 	//Processors working on the sound (see Processor.isAudio())
-	static final String AUDIO_PROCESSORS = ";Volume;";
+	static final String AUDIO_PROCESSORS = ";Volume;TrackMixer;Loudness;Equalizer;DeEsser;AudioMeter;Spectrum;";
 	
 	public ProcessorLibGUI(TDenlive aTDe, Composite aParent) {
 		super(aTDe, aParent);
@@ -33,13 +33,23 @@ public class ProcessorLibGUI extends TreeView {
 		aFolder = createFolder(tree, tde.gui.lngs.get("Processor.Colors"));
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.HueSaturation"), "HueSaturation",true);
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.BrightnessContrast"), "BrightnessContrast",true);
+		createProcessor(aFolder,tde.gui.lngs.get("Processor.Curves"), "Curves",true);
+		createProcessor(aFolder,tde.gui.lngs.get("Processor.ColorTemperature"), "ColorTemperature",true);
+		createProcessor(aFolder,tde.gui.lngs.get("Processor.ColorBalance"), "ColorBalance",true);
+		createProcessor(aFolder,tde.gui.lngs.get("Processor.Vibrance"), "Vibrance",true);
 		aFolder = createFolder(tree, tde.gui.lngs.get("Processor.Image"));
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.LensCorrection"), "LensCorrection",true);
+		createProcessor(aFolder,tde.gui.lngs.get("Processor.Sharpen"), "Sharpen",true);
+		createProcessor(aFolder,tde.gui.lngs.get("Processor.Smoothing"), "Smoothing",true);
+		createProcessor(aFolder,tde.gui.lngs.get("Processor.Vignette"), "Vignette",true);
+		createProcessor(aFolder,tde.gui.lngs.get("Processor.Grain"), "Grain",true);
+		createProcessor(aFolder,tde.gui.lngs.get("Processor.Pixelize"), "Pixelize",true);
 		aFolder = createFolder(tree, tde.gui.lngs.get("Processor.Composition"));
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.Cropper"), "Cropper",true);
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.Placer"), "Placer",true);
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.Transparency"), "Transparency",true);
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.Chromakey"), "Chromakey",true);
+		createProcessor(aFolder,tde.gui.lngs.get("Processor.Despill"), "Despill",true);
 		aFolder = createFolder(tree, tde.gui.lngs.get("Processor.Design"));
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.Framing"), "Framing",true);
 		aFolder = createFolder(tree, tde.gui.lngs.get("Processor.Video"));
@@ -47,8 +57,24 @@ public class ProcessorLibGUI extends TreeView {
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.Speed"), "Speed",true);
 		aFolder = createFolder(tree, tde.gui.lngs.get("Processor.Audio"));
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.Volume"), "Volume",true);
+		createProcessor(aFolder,tde.gui.lngs.get("Processor.TrackMixer"), "TrackMixer",true);
 		//Same processor as in the Video folder: speed of the images and of the sound of any video or sound clip
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.Speed"), "Speed",true);
+		createProcessor(aFolder,tde.gui.lngs.get("Processor.Loudness"), "Loudness",true);
+		createProcessor(aFolder,tde.gui.lngs.get("Processor.Equalizer"), "Equalizer",true);
+		createProcessor(aFolder,tde.gui.lngs.get("Processor.DeEsser"), "DeEsser",true);
+		aFolder = createFolder(tree, tde.gui.lngs.get("Processor.Monitor"));
+		TreeItem aSub = createSubFolder(aFolder, tde.gui.lngs.get("Processor.Image"));
+		createProcessor(aSub,tde.gui.lngs.get("Processor.Histogram"), "Histogram",true);
+		createProcessor(aSub,tde.gui.lngs.get("Processor.Waveform"), "Waveform",true);
+		createProcessor(aSub,tde.gui.lngs.get("Processor.Vectorscope"), "Vectorscope",true);
+		aSub.setExpanded(true);
+		aSub = createSubFolder(aFolder, tde.gui.lngs.get("Processor.Audio"));
+		createProcessor(aSub,tde.gui.lngs.get("Processor.AudioMeter"), "AudioMeter",true);
+		createProcessor(aSub,tde.gui.lngs.get("Processor.Spectrum"), "Spectrum",true);
+		aSub.setExpanded(true);
+		//Collapsed like the other folders (their setExpanded() in createFolder() has no effect without children
+		//yet); its sub-folders open with it
 		aFolder = createFolder(tree, tde.gui.lngs.get("Processor.Expert"));
 		createProcessor(aFolder,tde.gui.lngs.get("Processor.Scripter"), "Scripter",true);
 		
@@ -112,6 +138,13 @@ public class ProcessorLibGUI extends TreeView {
 			    messageBox.open();
 				return;
 			}
+			if("TrackMixer".equals(aTI.getData()) && aClip.getTrackMixer(false) != null) {
+				//One multi-track mixer per clip
+				MessageBox messageBox = new MessageBox(tde.gui.shell,SWT.ICON_INFORMATION|SWT.OK);
+				messageBox.setMessage(tde.gui.lngs.get("Processor.OneTrackMixer"));
+				messageBox.open();
+				return;
+			}
 			if(Clip.isDepthProcessorName((String)aTI.getData()) && aClip.getDepthProcessor() != null) {
 				MessageBox messageBox = new MessageBox(tde.gui.shell,SWT.ICON_INFORMATION|SWT.OK);
 			    messageBox.setMessage(tde.gui.lngs.get("Processor.OneDepthmap"));
@@ -145,11 +178,19 @@ public class ProcessorLibGUI extends TreeView {
 	TreeItem createFolder(Tree aTree,String aText) {
 		TreeItem aFolder = new TreeItem(aTree, SWT.NONE);
 		aFolder.setForeground(tde.gui.colorsSwt.CUBAIX_BLUE);
-		aFolder.setFont(tde.gui.fontsSwt.robotoBold);//Font is not really changed(!?)
+		//No bold font: shown only on some folders (Monitor, whose sub-folders are expanded), all alike without it
 		aFolder.setText(aText);
 		aFolder.setExpanded(true);
 		return aFolder;
 	}
+	/** Folder inside a folder (no data: a double-click does nothing) */
+	TreeItem createSubFolder(TreeItem aParent,String aText) {
+		TreeItem aFolder = new TreeItem(aParent, SWT.NONE);
+		aFolder.setForeground(tde.gui.colorsSwt.CUBAIX_BLUE);
+		aFolder.setText(aText);
+		return aFolder;
+	}
+
 	TreeItem createProcessor(TreeItem aFolder,String aText,String aProcessorName,boolean aIsAvailable) {
 		TreeItem aProcessor = new TreeItem(aFolder, SWT.NONE);
 		aProcessor.setForeground(aIsAvailable?tde.gui.colorsSwt.CUBAIX_PINK:tde.gui.colorsSwt.LIGHTGRAY);

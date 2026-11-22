@@ -18,6 +18,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
@@ -53,6 +54,99 @@ public class ProcessorsGUI extends CompositePanel {
 	public ProcessorsGUI(TDenlive aTDe, Composite aParent) {
 		super(aTDe, aParent);
 		createContents(aParent);
+		//A change in the panel of a processor (click, selection, key; not in its title) gives it the focus
+		Listener aFilter = e -> focusFromEvent(e);
+		org.eclipse.swt.widgets.Display aD = aParent.getDisplay();
+		aD.addFilter(SWT.MouseDown, aFilter);
+		aD.addFilter(SWT.Selection, aFilter);
+		aD.addFilter(SWT.KeyDown, aFilter);
+		container.addListener(SWT.Dispose, e -> {
+			aD.removeFilter(SWT.MouseDown, aFilter);
+			aD.removeFilter(SWT.Selection, aFilter);
+			aD.removeFilter(SWT.KeyDown, aFilter);
+		});
+	}
+
+	//Scrolled list of the processors shown and its content
+	ScrolledComposite scroll = null;
+	Composite scrollContent = null;
+	boolean scrollPending = false;
+
+	/**
+	 * Height of the scrolled list from its content (a panel expanded / collapsed / grown): the scroll bar can
+	 * reach the last processors
+	 */
+	public void updateScroll() {
+		if(scroll == null || scroll.isDisposed() || scrollContent == null || scrollContent.isDisposed()) {
+			return;
+		}
+		Rectangle r = scroll.getClientArea();
+		Point aS = scrollContent.computeSize(r.width, SWT.DEFAULT);
+		if(scroll.getMinWidth() != aS.x || scroll.getMinHeight() != aS.y) {
+			scroll.setMinSize(aS);
+		}
+	}
+
+	void scrollLater() {
+		if(scrollPending) {
+			return;
+		}
+		scrollPending = true;
+		tde.gui.display.asyncExec(() -> {
+			scrollPending = false;
+			updateScroll();
+		});
+	}
+
+	//Data of the box of a processor (its processor) and of its title (the focus is not changed by a click there)
+	static final String PROC_BOX = "ProcessorsGUI.box";
+	static final String PROC_TITLE = "ProcessorsGUI.title";
+	//Focus icons of the titles shown, by processor
+	final java.util.HashMap<Processor,CLabel> focusIcons = new java.util.HashMap<Processor,CLabel>();
+
+	void focusFromEvent(Event e) {
+		if(!(e.widget instanceof Control) || container.isDisposed()) {
+			return;
+		}
+		for(Control aC = (Control)e.widget;aC != null;aC = aC.getParent()) {
+			if(aC.getData(PROC_TITLE) != null) {
+				return;
+			}
+			Object aP = aC.getData(PROC_BOX);
+			if(aP instanceof Processor) {
+				if(((Processor)aP).targetMedia instanceof Clip && ((Clip)((Processor)aP).targetMedia).getFocused() != aP) {
+					focus((Processor)aP);
+				}
+				return;
+			}
+			if(aC == container) {
+				return;
+			}
+		}
+	}
+
+	/**
+	 * aP gets the focus of its clip (null: none of aClip), the others lose it; the icons and the monitor follow
+	 */
+	public void focus(Processor aP) {
+		if(aP != null && aP.targetMedia instanceof Clip) {
+			((Clip)aP.targetMedia).setFocused(aP);
+		}
+		showFocus();
+		tde.gui.monitorGUI.redraw();
+	}
+
+	void showFocus() {
+		for(java.util.Map.Entry<Processor,CLabel> aE : focusIcons.entrySet()) {
+			CLabel aL = aE.getValue();
+			if(aL.isDisposed()) {
+				continue;
+			}
+			Processor aP = aE.getKey();
+			boolean aOn = aP.targetMedia instanceof Clip && ((Clip)aP.targetMedia).getFocused() == aP;
+			aL.setImage(tde.gui.imgsSwt.getIcon(aOn ? "focusOn.png" : "focusOff.png"));
+			tde.gui.tip(aL, aOn ? "ProcFocusOn" : "ProcFocusOff");
+		}
 	}
 
 	void createContents(Composite aParent) {
@@ -109,16 +203,18 @@ public class ProcessorsGUI extends CompositePanel {
 		aSC.setContent(aContainer);
 		aSC.setExpandHorizontal(true);
 		aSC.setExpandVertical(true);
-		aSC.addControlListener(ControlListener.controlResizedAdapter(e -> {
-			Rectangle r = aSC.getClientArea();
-			Point aS = aContainer.computeSize(r.width, SWT.DEFAULT);
-			aSC.setMinSize(aS);
-		}));
+		scroll = aSC;
+		scrollContent = aContainer;
+		aSC.addControlListener(ControlListener.controlResizedAdapter(e -> updateScroll()));
 		aSC.setAlwaysShowScrollBars(true);
 		
 		boolean aIsFirst = true;
+		focusIcons.clear();
 		for(Processor aP : aProcessors) {
 			final Composite aBox = new Composite (aContainer, SWT.NULL);
+			aBox.setData(PROC_BOX, aP);
+			//A panel opened, closed or changing its size: the scrolled height follows
+			aBox.addListener(SWT.Resize, e -> scrollLater());
 			aBox.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 			GridLayout aLayoutB = new GridLayout(1,false);
 			aLayoutB.marginLeft = aLayoutB.marginTop = aLayoutB.marginRight = aLayoutB.marginBottom = 0;
@@ -130,8 +226,9 @@ public class ProcessorsGUI extends CompositePanel {
 			aBox.setForeground(tde.gui.colorsSwt.WHITE);
 			
 			Composite aTitleC = new Composite(aBox,SWT.BORDER);
+			aTitleC.setData(PROC_TITLE, Boolean.TRUE);
 			aTitleC.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-			GridLayout aLayoutTC = new GridLayout(7,false);
+			GridLayout aLayoutTC = new GridLayout(8,false);
 			tde.gui.applyNoMargin(aLayoutTC);
 			aTitleC.setLayout(aLayoutTC);
 			tde.gui.applyColorFont(aTitleC);
@@ -157,6 +254,7 @@ public class ProcessorsGUI extends CompositePanel {
 						rememberExpanded(aP);
 						
 						aContainer.layout(true);
+						updateScroll();
 					}
 					else {
 						ProcessorGUI aPG = (ProcessorGUI)aBox.getData();
@@ -167,6 +265,7 @@ public class ProcessorsGUI extends CompositePanel {
 						rememberExpanded(aP);
 
 						aContainer.layout(true);
+						updateScroll();
 					}
 				}
 			});
@@ -215,6 +314,24 @@ public class ProcessorsGUI extends CompositePanel {
 				tde.gui.applyColorFont(aSC);
 				aSPC.setBackground(tde.gui.colorsSwt.PINK_L92);
 			}
+
+			//Focus: the processor concerned by the changes (several subtitles...); a click gives / removes it
+			CLabel aFocus = new CLabel(aTitleC, SWT.NONE);
+			aFocus.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+			aFocus.setBackground(tde.gui.colorsSwt.PINK_L92);
+			aFocus.setData(aP);
+			focusIcons.put(aP, aFocus);
+			aFocus.addListener(SWT.MouseDown, e -> {
+				Clip aOwner = (Clip)aP.targetMedia;
+				if(aOwner.getFocused() == aP) {
+					aOwner.setFocused(null);
+					showFocus();
+					tde.gui.monitorGUI.redraw();
+				}
+				else {
+					focus(aP);
+				}
+			});
 
 			CLabel aUp = new CLabel(aTitleC, SWT.NONE);
 			aUp.setLayoutData(new GridData(GridData.FILL_VERTICAL));
@@ -306,8 +423,10 @@ public class ProcessorsGUI extends CompositePanel {
 				createProcessorGUI(aBox, aP);
 			}
 		}
+		showFocus();
 
 		container.layout(true);
+		updateScroll();
 	}
 	
 	void createProcessorGUI(Composite aBox,Processor aP) {
@@ -390,6 +509,14 @@ public class ProcessorsGUI extends CompositePanel {
 		}
 		if("Speed".equals(aClassP)) {
 			aBox.setData(new SpeedGUI(tde, aBox,aP));
+			return;
+		}
+		if(aP instanceof com.cubaix.TDenlive.processors.ParamProcessor) {
+			aBox.setData(new com.cubaix.TDenlive.GUI.processors.ParamProcessorGUI(tde, aBox,aP));
+			return;
+		}
+		if(aP instanceof com.cubaix.TDenlive.processors.MonitorProcessor) {
+			aBox.setData(new com.cubaix.TDenlive.GUI.processors.MonitorProcessorGUI(tde, aBox,aP));
 			return;
 		}
 		

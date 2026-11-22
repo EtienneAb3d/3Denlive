@@ -56,6 +56,11 @@ public class DepthmapConvertGUI {
 	long computeStartMS = -1;
 	long computeStartDone = 0;
 	long lastUpdateMS = 0;
+	//Step without a counter (end of the encoding, opening of the result): its text and start, an elapsed time
+	//shown every second (the window is not frozen)
+	volatile String phaseText = null;
+	volatile long phaseStartMS = 0;
+	boolean phaseTimer = false;
 	boolean force = false;
 
 	DepthmapConvertGUI(TDenlive aTDe,Clip aClip,Processor aP) {
@@ -361,6 +366,15 @@ public class DepthmapConvertGUI {
 		}
 		lastUpdateMS = aNow;
 		String aText = lng(aKey).replace("%MODEL%", model.id);
+		if(aTotal <= 0 && !aKey.startsWith("DepthConvert.Downloading")) {
+			if(!aText.equals(phaseText)) {
+				phaseText = aText;
+				phaseStartMS = aNow;
+			}
+		}
+		else {
+			phaseText = null;
+		}
 		String aEta = " ";
 		int aBar = 0;
 		if(aKey.startsWith("DepthConvert.Downloading")) {
@@ -391,7 +405,30 @@ public class DepthmapConvertGUI {
 				etaL.setText(aE);
 				deviceL.setText(aD);
 				bar.setSelection(aB);
+				tickPhase();
 			}
+		});
+	}
+
+	/**
+	 * Elapsed time of a step without a counter, every second (GUI thread)
+	 */
+	void tickPhase() {
+		if(phaseTimer || shell == null || shell.isDisposed()) {
+			return;
+		}
+		String aP = phaseText;
+		if(aP == null) {
+			return;
+		}
+		long aS = (System.currentTimeMillis()-phaseStartMS)/1000;
+		if(aS >= 1) {
+			statusL.setText(aP+" ("+lng("DepthConvert.Elapsed").replace("%S%", (aS >= 60 ? (aS/60)+" min " : "")+(aS%60)+" s")+")");
+		}
+		phaseTimer = true;
+		tde.gui.display.timerExec(1000, () -> {
+			phaseTimer = false;
+			tickPhase();
 		});
 	}
 

@@ -744,8 +744,9 @@ public class Depthmap extends Processor {
 			}
 		}
 
-		if(aHoles != null) {
-			//Holes filled by the inpainting model instead of the interpolation (see Inpainting)
+		if(aHoles != null && Inpainting.hasHoles(aHoles)) {
+			//Holes filled by the inpainting model instead of the interpolation (see Inpainting); none: the model is
+			//neither loaded nor run, nothing cached
 			inpainting.fill(aPlan, inpainting.frame(aDB, aDMDB, aWidth, aHeight, aTime, aIsL, aSide < 0, aProcessingMode), aFDB, aWidth, aHeight, aHoles);
 		}
 		return aFBI;
@@ -1045,8 +1046,9 @@ public class Depthmap extends Processor {
 			}
 		}
 
-		if(aHoles != null) {
-			//Holes filled by the inpainting model instead of the interpolation (see Inpainting)
+		if(aHoles != null && Inpainting.hasHoles(aHoles)) {
+			//Holes filled by the inpainting model instead of the interpolation (see Inpainting); none: the model is
+			//neither loaded nor run, nothing cached
 			inpainting.fill(aPlan, inpainting.frame(aDB, aDMDB, aWidth, aHeight, aTime, aIsL, aSide < 0, aProcessingMode), aFDB, aWidth, aHeight, aHoles);
 		}
 		return aFBI;

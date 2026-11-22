@@ -210,6 +210,10 @@ public class MonitorGUI {
 					aE.setViews(shapesViews);
 					if(aE.mouseDown(e.x, e.y)) {
 						shapesDragged = aE;
+						//Edited on the image: that processor has the focus
+						if(aSh.targetMedia instanceof Clip && ((Clip)aSh.targetMedia).getFocused() != aSh && tde.gui.processorGUI != null) {
+							tde.gui.processorGUI.focus(aSh);
+						}
 					}
 				}
 			}
@@ -281,12 +285,8 @@ public class MonitorGUI {
 		if(aTime < aClip.getStartTimeMS() || aTime >= aClip.getStartTimeMS()+aClip.getDurationMS()) {
 			return null;
 		}
-		for(Processor aP : aClip.getProcessors()) {
-			if(aP instanceof Shapes) {
-				return (Shapes)aP;
-			}
-		}
-		return null;
+		//The one having the focus when there are several (subtitles...)
+		return aClip.getEditedShapes();
 	}
 	
 	/**
@@ -600,12 +600,33 @@ public class MonitorGUI {
 	 * Message over the top left corner while work copies of videos are made (VideoReader): the images shown come
 	 * meanwhile from the original videos, reduced
 	 */
+	boolean workCopiesTimer = false;
+
 	int drawWorkCopies(GC aGC,Rectangle aR) {
 		int aN = com.cubaix.TDenlive.ffmpeg.VideoReader.workCopiesInProgress();
 		if(aN <= 0) {
 			return aR.y;
 		}
 		String aMsg = tde.gui.lngs.get("Monitor.WorkCopies").replace("%N%", ""+aN);
+		//Its progress and the time left, redrawn every second meanwhile
+		long[] aP = com.cubaix.TDenlive.ffmpeg.FfmpegTranscoder.workCopyProgress();
+		if(aP != null) {
+			String aLeft = "";
+			if(aP[0] > 0 && aP[2] > 1000) {
+				long aLeftS = aP[2]*(aP[1]-aP[0])/aP[0]/1000;
+				aLeft = tde.gui.lngs.get("Monitor.WorkCopiesLeft").replace("%S%", (aLeftS >= 60 ? (aLeftS/60)+" min " : "")+(aLeftS%60)+" s");
+			}
+			aMsg += " "+(100*aP[0]/aP[1])+" %"+aLeft;
+		}
+		if(!workCopiesTimer) {
+			workCopiesTimer = true;
+			tde.gui.display.timerExec(1000, () -> {
+				workCopiesTimer = false;
+				if(canvas != null && !canvas.isDisposed() && com.cubaix.TDenlive.ffmpeg.VideoReader.workCopiesInProgress() > 0) {
+					redraw();
+				}
+			});
+		}
 		org.eclipse.swt.graphics.Point aE = aGC.textExtent(aMsg);
 		int aPad = 6;
 		aGC.setAlpha(170);

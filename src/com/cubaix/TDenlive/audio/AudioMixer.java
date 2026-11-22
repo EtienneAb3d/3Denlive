@@ -87,7 +87,8 @@ public class AudioMixer {
 			for(Clip aC : new Vector<Clip>(aTL.clipList)) {
 				AudioReader aAR = aTL.soundReaderOf(aC);
 				if(aAR != null) {
-					aReaders.add(aAR);
+					//The streams of its multi-track mixer
+					aReaders.addAll(aC.soundReaders(aAR));
 				}
 			}
 		}

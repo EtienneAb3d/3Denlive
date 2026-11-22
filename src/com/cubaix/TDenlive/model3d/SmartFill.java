@@ -284,6 +284,25 @@ public class SmartFill {
 		float[] aZ = aMesh ? new float[aW*aH] : null;
 		aV.depthOut = aZ;
 		aScene.render(aV, aW, aH, aPix, aTrans);
+		if(!hasHoles(aTrans)) {
+			//Nothing uncovered in this view: no filling (no model loaded, no SDXL computation, no hourglass); its
+			//image is kept for the carry-over of the next images
+			if(aPrevCarry && aZ != null && aModel != Model.SDXL) {
+				boolean[] aKnown = new boolean[aW*aH];
+				for(int p = 0;p < aKnown.length;p++) {
+					aKnown[p] = aTrans[p] <= HOLE && aZ[p] > 0;
+				}
+				keepPrevOf(aKey, remember(stream(aW, aH, aEye, aDepth, aThreshold, aModel), toRGB(aPix), aZ, aTrans, aKnown, aV, aW, aH));
+			}
+			synchronized(CACHE) {
+				CACHE.put(aKey, new java.lang.ref.SoftReference<BufferedImage>(aBI));
+				while(CACHE.size() > CACHE_MAX) {
+					CACHE.remove(CACHE.keySet().iterator().next());
+				}
+			}
+			markShown(aKey);
+			return aBI;
+		}
 		computingModel = aModel;
 		computingChanged(true);
 		try {
@@ -363,6 +382,18 @@ public class SmartFill {
 	/**
 	 * The pixels of aPix (rendered over black where uncovered) completed with the colors filled by the model
 	 */
+	/**
+	 * A pixel of the view at least is uncovered (transmittance above HOLE): something to fill
+	 */
+	static boolean hasHoles(float[] aTrans) {
+		for(float t : aTrans) {
+			if(t > HOLE) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	static void fill(int[] aPix,float[] aTrans,int aW,int aH,boolean aFlip,Model aModel,float[] aSdxl,int[] aSdxlSize,String aTdeDir) throws Exception {
 		fill(aPix, aTrans, aW, aH, aFlip, aModel, aSdxl, aSdxlSize, aTdeDir, null);
 	}

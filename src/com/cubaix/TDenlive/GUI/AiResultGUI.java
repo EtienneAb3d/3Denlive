@@ -282,6 +282,7 @@ public class AiResultGUI {
 	void add() {
 		addB.setEnabled(false);
 		statusL.setText(lng(ai.music ? "AI.LoadingSound" : "AI.Loading"));
+		AiClipGUI.fit(statusL);
 		ai.working(statusL, true);
 		final String aPath = out.getPath();
 		final boolean aMusic = ai.music;
@@ -308,18 +309,20 @@ public class AiResultGUI {
 				if(aE != null) {
 					addB.setEnabled(true);
 					statusL.setText(" ");
+					AiClipGUI.fit(statusL);
 					ai.working(statusL, false);
 					AiClipGUI.message(tde, SWT.ICON_ERROR, aE);
 					return;
 				}
 				added = true;
 				statusL.setText(lng("AI.ResultAdded"));
+				AiClipGUI.fit(statusL);
 				ai.working(statusL, false);
 				addB.setText(lng("AI.ResultAdded"));
 				//Nothing to discard any more: the button only closes
 				discardB.setText(lng("AI.ResultClose"));
 				discardB.setImage(null);
-				shell.layout(true, true);
+				AiClipGUI.fit(shell);
 			});
 		}).start();
 	}
@@ -374,6 +377,7 @@ public class AiResultGUI {
 			t.printStackTrace(System.err);
 			clip = null;
 			statusL.setText(lng("AI.ResultNoPlay"));
+			AiClipGUI.fit(statusL);
 			playB.setEnabled(false);
 		}
 		position.addListener(SWT.MouseDown, e -> {
@@ -397,6 +401,7 @@ public class AiResultGUI {
 	//Video: frames decoded by ffmpeg (BMP pipe) at VIDEO_W, played in a loop at the video fps
 	void startVideo() {
 		statusL.setText(lng("AI.ResultDecoding"));
+		AiClipGUI.fit(statusL);
 		ai.working(statusL, true);
 		position.addListener(SWT.MouseDown, e -> {
 			if(!frames.isEmpty() && position.getSize().x > 0) {
@@ -439,6 +444,7 @@ public class AiResultGUI {
 			tde.gui.display.asyncExec(() -> {
 				if(!shell.isDisposed()) {
 					statusL.setText(frames.isEmpty() ? lng("AI.ResultNoPlay") : " ");
+					AiClipGUI.fit(statusL);
 					ai.working(statusL, false);
 				}
 			});

@@ -12,7 +12,9 @@ import java.util.HashMap;
  * (signed 16 bits little endian, stereo, RATE Hz) in the cache folder of the project. The cache is then read
  * by random access, so any position can be mixed at once (playback, rendering).
  * A peak envelope (one value per PEAK_MS) is kept in memory to draw the waveforms.
- * One reader per file and cache folder, shared by all the medias and clips using it (see get()).
+ * One reader per file, audio stream and cache folder, shared by all the medias and clips using it (see get()):
+ * stream 0 is the first audio stream of the file (the sound of its medias), the others are read by the
+ * multi-track mixer (processors.TrackMixer, see AudioTracks).
  * The cache folder is given by TDenlive.getWorkCacheDir() (next to the project file).
  */
 public class AudioReader extends Ffmpeg {
@@ -27,6 +29,8 @@ public class AudioReader extends Ffmpeg {
 	public static volatile Runnable decodedListener = null;
 
 	public String path = null;
+	//Audio stream of the file (0: the first)
+	public final int stream;
 	String cacheDir = null;
 	File cacheFile = null;
 	RandomAccessFile raf = null;
@@ -40,14 +44,21 @@ public class AudioReader extends Ffmpeg {
 	int curPeakFrames = 0;
 
 	public static AudioReader get(String aPath,String aCacheDir) {
+		return get(aPath, aCacheDir, 0);
+	}
+
+	/**
+	 * Reader of the audio stream aStream (0: the first) of a file
+	 */
+	public static AudioReader get(String aPath,String aCacheDir,int aStream) {
 		if(aPath == null) {
 			return null;
 		}
 		synchronized (READERS) {
-			String aK = aCacheDir+"|"+aPath;
+			String aK = aCacheDir+"|"+aPath+(aStream > 0 ? "|"+aStream : "");
 			AudioReader aAR = READERS.get(aK);
 			if(aAR == null) {
-				aAR = new AudioReader(aPath,aCacheDir);
+				aAR = new AudioReader(aPath,aCacheDir,aStream);
 				READERS.put(aK, aAR);
 			}
 			return aAR;
@@ -83,16 +94,31 @@ public class AudioReader extends Ffmpeg {
 	 * Cache file of a sound file: named from its path, size and date (a moved file keeps its cache if renamed with it)
 	 */
 	public static File cacheFileFor(String aPath,String aCacheDir) {
+		return cacheFileFor(aPath, aCacheDir, 0);
+	}
+
+	/**
+	 * Cache file of the audio stream aStream of a file (_a<stream> added after the first one)
+	 */
+	public static File cacheFileFor(String aPath,String aCacheDir,int aStream) {
 		File aIn = new File(aPath);
 		String aName = aIn.getName().replaceAll("[^A-Za-z0-9._-]", "_");
 		String aKey = Integer.toHexString((aIn.getAbsolutePath()+"|"+aIn.length()+"|"+aIn.lastModified()).hashCode());
-		return new File(aCacheDir, aName+"_"+aKey+".pcm");
+		return new File(aCacheDir, aName+"_"+aKey+(aStream > 0 ? "_a"+aStream : "")+".pcm");
 	}
 
-	AudioReader(String aPath,String aCacheDir) {
+	/**
+	 * Reader of the audio stream aStream of the same file, in the same cache folder (this one for its stream)
+	 */
+	public AudioReader track(int aStream) {
+		return aStream == stream ? this : get(path, cacheDir, aStream);
+	}
+
+	AudioReader(String aPath,String aCacheDir,int aStream) {
 		path = aPath;
+		stream = aStream;
 		cacheDir = aCacheDir;
-		cacheFile = cacheFileFor(aPath, aCacheDir);
+		cacheFile = cacheFileFor(aPath, aCacheDir, aStream);
 		Thread aTh = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -173,7 +199,7 @@ public class AudioReader extends Ffmpeg {
 			aCmdA.add("-nostats");
 			aCmdA.add("-i"); aCmdA.add(path);
 			aCmdA.add("-vn"); aCmdA.add("-sn"); aCmdA.add("-dn");
-			aCmdA.add("-map"); aCmdA.add("0:a:0");//First audio stream
+			aCmdA.add("-map"); aCmdA.add("0:a:"+stream);//First audio stream, or the one asked
 			aCmdA.add("-ac"); aCmdA.add(""+CHANNELS);
 			aCmdA.add("-ar"); aCmdA.add(""+RATE);
 			aCmdA.add("-acodec"); aCmdA.add("pcm_s16le");

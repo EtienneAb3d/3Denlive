@@ -56,6 +56,8 @@ public class Clip extends Media {
 	long keysMediaShiftMS = 0;
 	//Sound at another speed with the same pitch (speed processor with keepPitch)
 	final com.cubaix.TDenlive.audio.TimeStretch stretch = new com.cubaix.TDenlive.audio.TimeStretch();
+	//Grains of the other audio streams (multi-track mixer, TrackMixer), index = stream - 1
+	final Vector<com.cubaix.TDenlive.audio.TimeStretch> trackStretch = new Vector<com.cubaix.TDenlive.audio.TimeStretch>();
 	Vector<Clip> pairedClips = new Vector<Clip>();
 	public int pairedType = -1;//-1 = not a paired, 0 = unknown, 1 = depthmap
 	//Paired clip whose media takes the rotation / anamorphosis of the media of its clip (computed depth maps)
@@ -65,6 +67,10 @@ public class Clip extends Media {
 	public boolean soundOn = true;
 	//Sound of the right video of a media of two files, set by the line of the clip (see VideoTimeLine.soundSource)
 	public boolean soundRight = false;
+	//Processor having the focus (icon of its title in the processors panel: the one the changes are for), and the
+	//shapes / subtitles processor edited on the monitor (the last one focused, else the first); session only
+	Processor focused = null;
+	Shapes focusedShapes = null;
 	//Shortest clip left by a trim of its start / end on the time line
 	public static final long MIN_DURATION_MS = 40;
 
@@ -329,9 +335,43 @@ public class Clip extends Media {
 					processors.add(aP);
 					o = aP.openProject(aOs, o);
 				}
+				Processor aSimple = newSimpleProcessor(aT.tagName);
+				if(aSimple != null) {
+					processors.add(aSimple);
+					o = aSimple.openProject(aOs, o);
+				}
 			}
 		}
 		return o;
+	}
+
+	/**
+	 * A new processor made only of parameters or of analyses (ParamProcessor, MonitorProcessor),
+	 * by its class name (any case: the XML tags are lowered), null for the others
+	 */
+	Processor newSimpleProcessor(String aName) {
+		switch(aName.toLowerCase()) {
+		case "curves": return new com.cubaix.TDenlive.processors.Curves(tde, this);
+		case "colortemperature": return new com.cubaix.TDenlive.processors.ColorTemperature(tde, this);
+		case "colorbalance": return new com.cubaix.TDenlive.processors.ColorBalance(tde, this);
+		case "vibrance": return new com.cubaix.TDenlive.processors.Vibrance(tde, this);
+		case "sharpen": return new com.cubaix.TDenlive.processors.Sharpen(tde, this);
+		case "smoothing": return new com.cubaix.TDenlive.processors.Smoothing(tde, this);
+		case "vignette": return new com.cubaix.TDenlive.processors.Vignette(tde, this);
+		case "grain": return new com.cubaix.TDenlive.processors.Grain(tde, this);
+		case "despill": return new com.cubaix.TDenlive.processors.Despill(tde, this);
+		case "pixelize": return new com.cubaix.TDenlive.processors.Pixelize(tde, this);
+		case "loudness": return new com.cubaix.TDenlive.processors.Loudness(tde, this);
+		case "equalizer": return new com.cubaix.TDenlive.processors.Equalizer(tde, this);
+		case "deesser": return new com.cubaix.TDenlive.processors.DeEsser(tde, this);
+		case "histogram": return new com.cubaix.TDenlive.processors.Histogram(tde, this);
+		case "waveform": return new com.cubaix.TDenlive.processors.Waveform(tde, this);
+		case "vectorscope": return new com.cubaix.TDenlive.processors.Vectorscope(tde, this);
+		case "audiometer": return new com.cubaix.TDenlive.processors.AudioMeter(tde, this);
+		case "spectrum": return new com.cubaix.TDenlive.processors.Spectrum(tde, this);
+		case "trackmixer": return new com.cubaix.TDenlive.processors.TrackMixer(tde, this);
+		default: return null;
+		}
 	}
 
 	@Override
@@ -432,6 +472,67 @@ public class Clip extends Media {
 	/**
 	 * Speed processor of the clip (only if active when aActiveOnly), null if none
 	 */
+	/**
+	 * Processor having the focus, null if none
+	 */
+	public Processor getFocused() {
+		Processor aP = focused;
+		return aP != null && processors.contains(aP) ? aP : null;
+	}
+
+	/**
+	 * aP gets the focus (null: none); a shapes / subtitles processor becomes the one edited on the monitor
+	 */
+	public void setFocused(Processor aP) {
+		focused = aP;
+		if(aP instanceof Shapes) {
+			focusedShapes = (Shapes)aP;
+		}
+	}
+
+	/**
+	 * Shapes (or subtitles) processor edited on the monitor: the last one focused, else the first one
+	 */
+	public Shapes getEditedShapes() {
+		Shapes aF = focusedShapes;
+		if(aF != null && processors.contains(aF)) {
+			return aF;
+		}
+		for(Processor aP : new Vector<Processor>(processors)) {
+			if(aP instanceof Shapes) {
+				return (Shapes)aP;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * The multi-track mixer of the clip (one at most), null if none
+	 */
+	public com.cubaix.TDenlive.processors.TrackMixer getTrackMixer(boolean aActiveOnly) {
+		for(Processor aP : new Vector<Processor>(processors)) {
+			if(aP instanceof com.cubaix.TDenlive.processors.TrackMixer && (aP.isActive || !aActiveOnly)) {
+				return (com.cubaix.TDenlive.processors.TrackMixer)aP;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Readers of the sound of the clip: its sound, or the streams of its multi-track mixer
+	 */
+	public Vector<AudioReader> soundReaders(AudioReader aBase) {
+		com.cubaix.TDenlive.processors.TrackMixer aTM = getTrackMixer(true);
+		if(aBase == null || aTM == null) {
+			Vector<AudioReader> aRs = new Vector<AudioReader>();
+			if(aBase != null) {
+				aRs.add(aBase);
+			}
+			return aRs;
+		}
+		return aTM.readers(aBase);
+	}
+
 	public Speed getSpeedProcessor(boolean aActiveOnly) {
 		for(Processor aP : new Vector<Processor>(processors)) {
 			if(aP instanceof Speed && (aP.isActive || !aActiveOnly)) {
@@ -548,6 +649,11 @@ public class Clip extends Media {
 		aChange.run();
 		//The grains of the sound follow the new speeds
 		stretch.reset();
+		synchronized (trackStretch) {
+			for(com.cubaix.TDenlive.audio.TimeStretch aTS : trackStretch) {
+				aTS.reset();
+			}
+		}
 		double aMediaEnd = aRef.mediaEnd;
 		long aLimit = getMediaLimitMS();
 		if(aLimit >= 0 && aMediaEnd > aLimit) {
@@ -577,11 +683,45 @@ public class Clip extends Media {
 	 * at the integrated speed and resampled (linear), so the pitch follows the speed
 	 */
 	void readAtSpeed(AudioReader aAR,Speed aSpeed,long aFrom,float[] aBuf,int aN,double aFrameMS) {
+		readAtSpeed(aAR, stretch, aSpeed, aFrom, aBuf, aN, aFrameMS);
+	}
+
+	/**
+	 * Grains of the stream aTrack of the sound (TimeStretch of the clip for the first one)
+	 */
+	com.cubaix.TDenlive.audio.TimeStretch stretchOf(int aTrack) {
+		if(aTrack <= 0) {
+			return stretch;
+		}
+		synchronized (trackStretch) {
+			while(trackStretch.size() < aTrack) {
+				trackStretch.add(new com.cubaix.TDenlive.audio.TimeStretch());
+			}
+			return trackStretch.elementAt(aTrack-1);
+		}
+	}
+
+	/**
+	 * Read aN frames of the sound aAR at the media positions of the clip from the frame aFrom of the time line
+	 * (speed included, aStretch: the grains of that stream when the pitch is kept)
+	 */
+	void readSound(AudioReader aAR,com.cubaix.TDenlive.audio.TimeStretch aStretch,long aFrom,float[] aBuf,int aN,double aFrameMS) {
+		long aRate = AudioReader.RATE;
+		Speed aSpeed = getSpeedProcessor();
+		if(aSpeed == null) {
+			aAR.read(aFrom-startTimeMS*aRate/1000+shiftTimeMS*aRate/1000, aBuf, aN);
+		}
+		else {
+			readAtSpeed(aAR, aStretch, aSpeed, aFrom, aBuf, aN, aFrameMS);
+		}
+	}
+
+	void readAtSpeed(AudioReader aAR,com.cubaix.TDenlive.audio.TimeStretch aStretch,Speed aSpeed,long aFrom,float[] aBuf,int aN,double aFrameMS) {
 		long aRate = AudioReader.RATE;
 		if(aSpeed.isKeepPitch()) {
 			//Same pitch: grains of the source at the speed positions, overlapped (TimeStretch)
 			long aClipStartF = startTimeMS*aRate/1000;
-			stretch.render(aAR, aF -> mediaTimeD((aClipStartF+aF)*1000.0/aRate)*aRate/1000.0
+			aStretch.render(aAR, aF -> mediaTimeD((aClipStartF+aF)*1000.0/aRate)*aRate/1000.0
 					, aFrom-aClipStartF, aBuf, aN);
 			return;
 		}
@@ -1166,14 +1306,16 @@ public class Clip extends Media {
 		int aN = (int)(aTo-aFrom);
 		float[] aBuf = new float[aN*AudioReader.CHANNELS];
 		double aFrameMS = 1000.0/aRate;
-		Speed aSpeed = getSpeedProcessor();
-		if(aSpeed == null) {
-			aAR.read(aFrom-aClipStartF+shiftTimeMS*aRate/1000, aBuf, aN);
+		long aTimeMS = aFrom*1000/aRate;
+		com.cubaix.TDenlive.processors.TrackMixer aTM = getTrackMixer(true);
+		if(aTM == null) {
+			readSound(aAR, stretch, aFrom, aBuf, aN, aFrameMS);
 		}
 		else {
-			readAtSpeed(aAR, aSpeed, aFrom, aBuf, aN, aFrameMS);
+			//Several streams at their volumes
+			final long aF = aFrom;
+			aTM.mix(aAR, aTimeMS, aN, aFrameMS, aBuf, (aR, aK, aTrackBuf) -> readSound(aR, stretchOf(aK), aF, aTrackBuf, aN, aFrameMS));
 		}
-		long aTimeMS = aFrom*1000/aRate;
 		for(Processor aP : new Vector<Processor>(processors)) {
 			if(aP.isActive) {
 				aP.processAudio(this, aBuf, aN, aTimeMS, aFrameMS);
@@ -1399,12 +1541,21 @@ public class Clip extends Media {
 		if("Speed".equals(aProcessorName) && getSpeedProcessor(false) == null) {
 			processors.add(new Speed(tde, this));
 		}
+		Processor aSimple = "TrackMixer".equals(aProcessorName) && getTrackMixer(false) != null ? null
+				: newSimpleProcessor(aProcessorName);
+		if(aSimple != null) {
+			processors.add(aSimple);
+		}
 		Processor aAdded = processors.size() > aNb ? processors.lastElement() : null;
 		if(aAdded != null && aIsDepth) {
 			placeDepthProcessor(aAdded);
 		}
 		if(aAdded instanceof Speed) {
 			placeSpeedProcessor(aAdded);
+		}
+		if(aAdded != null) {
+			//The processor just added gets the focus (the changes are for it)
+			setFocused(aAdded);
 		}
 		tde.gui.processorGUI.setProcessors(processors);
 		return aAdded;

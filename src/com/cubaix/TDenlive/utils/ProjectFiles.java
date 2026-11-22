@@ -159,6 +159,13 @@ public class ProjectFiles {
 				transferWork(aOldWorkCopy, new File(StringUtils.path2workingcopy(aNew, aWork)), aMove);
 			}
 			transferWork(aOldSound, AudioReader.cacheFileFor(aNew, aWork), aMove);
+			//The other audio streams decoded (multi-track mixer)
+			for(int k = 1;k < 64;k++) {
+				File aOldK = AudioReader.cacheFileFor(aPath, aWork, k);
+				if(aOldK.isFile()) {
+					transferWork(aOldK, AudioReader.cacheFileFor(aNew, aWork, k), aMove);
+				}
+			}
 			for(String[] aD : aDepths) {
 				File aT = new File(aD[1]);
 				if(!aT.exists()) {

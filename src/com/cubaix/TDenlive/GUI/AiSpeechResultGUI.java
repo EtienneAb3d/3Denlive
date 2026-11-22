@@ -377,7 +377,7 @@ public class AiSpeechResultGUI {
 		tde.gui.monitorGUI.redraw();
 		ai.working(statusL, false);
 		statusL.setText(lng("AI.SubsApplied").replace("%N%", ""+aN).replace("%FILE%", aSrt.getName()));
-		shell.layout(true, true);
+		AiClipGUI.fit(shell);
 	}
 
 	/**
@@ -385,6 +385,7 @@ public class AiSpeechResultGUI {
 	 */
 	void load(String aPath,boolean aSound,Button aButton) {
 		statusL.setText(lng(aSound ? "AI.LoadingSound" : "AI.Loading"));
+		AiClipGUI.fit(statusL);
 		ai.working(statusL, true);
 		new Thread(() -> {
 			String aErr = null;
@@ -409,6 +410,7 @@ public class AiSpeechResultGUI {
 				if(aE != null) {
 					aButton.setEnabled(true);
 					statusL.setText(" ");
+					AiClipGUI.fit(statusL);
 					ai.working(statusL, false);
 					AiClipGUI.message(tde, SWT.ICON_ERROR, aE);
 					return;
@@ -417,8 +419,9 @@ public class AiSpeechResultGUI {
 				discardB.setEnabled(false);
 				aButton.setText(lng("AI.ResultAdded"));
 				statusL.setText(lng("AI.ResultAdded"));
+				AiClipGUI.fit(statusL);
 				ai.working(statusL, false);
-				shell.layout(true, true);
+				AiClipGUI.fit(shell);
 			});
 		}).start();
 	}

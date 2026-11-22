@@ -821,6 +821,10 @@ public class Inpainting {
 	}
 
 	boolean runModel(float[] aRGB,int aW,int aH,boolean[] aHoles,boolean aFlip) {
+		if(!hasHoles(aHoles)) {
+			//Nothing to fill: the model is not loaded
+			return true;
+		}
 		long aStart = System.currentTimeMillis();
 		try {
 			Inpainter.shared(proc.tde.tdeDir).fill(aRGB, aW, aH, aHoles, aFlip);
@@ -834,6 +838,21 @@ public class Inpainting {
 		finally {
 			modelMS += Math.max(1, System.currentTimeMillis()-aStart);
 		}
+	}
+
+	/**
+	 * At least one hole: the inpainting is only run (model loaded, cache, smoothing) when the warp left holes
+	 */
+	public static boolean hasHoles(boolean[] aHoles) {
+		if(aHoles == null) {
+			return false;
+		}
+		for(boolean aB : aHoles) {
+			if(aB) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	static int[] indexes(boolean[] aHoles) {

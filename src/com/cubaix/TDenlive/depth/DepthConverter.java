@@ -349,6 +349,10 @@ public class DepthConverter {
 		}
 		finally {
 			aDec.stop();
+			if(aEnc != null && aOk && !canceled()) {
+				//The end of the encoding of the depth video (no counter: elapsed time shown)
+				status("DepthConvert.Finishing", 0, 0);
+			}
 			if(aEnc != null && !aEnc.finish(aOk && !canceled())) {
 				aOk = false;
 			}

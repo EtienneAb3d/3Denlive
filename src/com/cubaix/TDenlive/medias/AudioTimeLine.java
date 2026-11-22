@@ -56,6 +56,8 @@ public class AudioTimeLine extends VideoTimeLine {
 	protected Clip newClip(Media aMedia) {
 		Clip aC = new Clip(tde, aMedia);
 		aC.keepOnlyTimeController();
+		//Several audio streams (AI remix, languages): their mixer
+		com.cubaix.TDenlive.processors.TrackMixer.addIfMultiTrack(aC);
 		return aC;
 	}
 

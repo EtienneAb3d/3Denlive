@@ -14,6 +14,8 @@ public class Ffmpeg {
 	//Set by the stderr reader: the input has an audio stream / the input description is fully read
 	volatile boolean hasAudioStream = false;
 	volatile boolean inputParsed = false;
+	//Time of the output written so far (ms), from the progress lines of ffmpeg ("time=..."), -1 if none yet
+	volatile long progressMS = -1;
 
 	public Ffmpeg() {
 	}
@@ -122,6 +124,8 @@ public class Ffmpeg {
 		return javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(aFile));
 	}
 	
+	static final java.util.regex.Pattern PROGRESS_TIME = java.util.regex.Pattern.compile("time=(\\d+:\\d\\d:\\d\\d[.]\\d+)");
+
 	class StreamReader implements Runnable {
 
 	    protected final InputStream inputStream;
@@ -151,6 +155,16 @@ public class Ffmpeg {
 	            		String aFps = aLine.substring(0, aLine.indexOf("fps,"));
 	            		aFps = aFps.substring(aFps.lastIndexOf(",")+1).trim();
 	            		fps = Double.parseDouble(aFps);
+	            	}
+	            	if(aLine.startsWith("frame=") || aLine.startsWith("size=")) {
+	            		java.util.regex.Matcher aM = PROGRESS_TIME.matcher(aLine);
+	            		if(aM.find()) {
+	            			try {
+	            				progressMS = StringUtils.ffmpeg2Time(aM.group(1));
+	            			}
+	            			catch(Throwable t) {
+	            			}
+	            		}
 	            	}
 	            	if(aLine.matches("Stream #.*: Audio: .*")) {
 	            		hasAudioStream = true;

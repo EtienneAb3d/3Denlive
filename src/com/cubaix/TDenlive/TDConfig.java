@@ -59,6 +59,8 @@ public class TDConfig {
 	public String aiVideoModel = "";
 	//Colorization model chosen ("": the advised one)
 	public String aiColorModel = "";
+	//Model of the AI remix (ai.RemixGenerator.Model.id, "": htdemucs)
+	public String aiRemixModel = "";
 	//Detail of the AI 3D scenes (SceneGenerator.Detail id, "" = advised)
 	public String aiSceneDetail = "";
 	//Model of the AI 3D scenes (SceneGenerator.Model id, "" = default: Flash3D)
@@ -177,6 +179,10 @@ public class TDConfig {
 						default: break;
 						}
 						continue;
+					}
+					if("aiRemixModel".equalsIgnoreCase(aT.tagName)) {
+						o++;
+						aiRemixModel = aOs.elementAt(o) instanceof XmlTag ? "" : aOs.elementAt(o).text.trim();
 					}
 					if("aiColorModel".equalsIgnoreCase(aT.tagName)) {
 						o++;
@@ -327,6 +333,7 @@ public class TDConfig {
 			aOut.write("<aiSfxModel>"+aiSfxModel+"</aiSfxModel>\n");
 			aOut.write("<aiSfxClean>"+aiSfxClean+"</aiSfxClean>\n");
 			aOut.write("<aiColorModel>"+aiColorModel+"</aiColorModel>\n");
+			aOut.write("<aiRemixModel>"+aiRemixModel+"</aiRemixModel>\n");
 			aOut.write("<aiSceneDetail>"+aiSceneDetail+"</aiSceneDetail>\n");
 			aOut.write("<aiSceneModel>"+aiSceneModel+"</aiSceneModel>\n");
 			aOut.write("<aiSceneFill>"+aiSceneFill+"</aiSceneFill>\n");

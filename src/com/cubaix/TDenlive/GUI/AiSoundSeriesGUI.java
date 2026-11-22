@@ -365,7 +365,7 @@ public class AiSoundSeriesGUI {
 				ai.statusL.setForeground(tde.gui.display.getSystemColor(SWT.COLOR_RED));
 				ai.detailL.setText(" ");
 				ai.etaL.setText(" ");
-				shell.layout(true, true);
+				AiClipGUI.fit(shell);
 			});
 			return;
 		}
@@ -462,7 +462,7 @@ public class AiSoundSeriesGUI {
 		int aW = scroll.getClientArea().width;
 		Point aS = rows.computeSize(aW > 0 ? aW : SWT.DEFAULT, SWT.DEFAULT);
 		scroll.setMinSize(aS);
-		rows.layout(true, true);
+		AiClipGUI.fit(rows);
 	}
 
 	void togglePlay(Item aI) {
@@ -566,7 +566,7 @@ public class AiSoundSeriesGUI {
 					aI.keep.setToolTipText(lng("AI.SfxSeriesKept"));
 					aI.number.setForeground(tde.gui.display.getSystemColor(SWT.COLOR_DARK_GREEN));
 					aI.number.setText(aI.number.getText()+" "+lng("AI.SfxSeriesKept"));
-					aI.number.getParent().layout(true, true);
+					AiClipGUI.fit(aI.number);
 				}
 			});
 		}).start();

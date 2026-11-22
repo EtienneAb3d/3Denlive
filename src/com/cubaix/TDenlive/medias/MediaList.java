@@ -16,7 +16,7 @@ import com.cubaix.TDenlive.xml.XmlObject;
 import com.cubaix.TDenlive.xml.XmlTag;
 
 public class MediaList extends Drawable {
-	static final String VIDEO_FILE_RE = ".*[.](mpg|mpeg|mp4|avi|mov|mkv|flv|vob|ogv|ts|m2s|m2ts|divx|dvx|wmv)";
+	static final String VIDEO_FILE_RE = ".*[.](mpg|mpeg|mp4|m4v|avi|mov|mkv|webm|flv|vob|ogv|ts|mts|m2s|m2ts|dv|divx|dvx|wmv)";
 	static final String SVG_FILE_RE = ".*[.]svg";
 	//3D scenes of Gaussians (3D Gaussian Splatting PLY), see SceneMedia
 	public static final String SCENE_FILE_RE = ".*[.]ply";

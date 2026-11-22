@@ -13,7 +13,30 @@ import com.cubaix.TDenlive.utils.StringUtils;
 public class FfmpegTranscoder extends Ffmpeg {
 
 	public FfmpegTranscoder() {
-		// TODO Auto-generated constructor stub
+	}
+
+	//Work copies being made: their transcoder and start time (progress shown over the monitor)
+	static final java.util.concurrent.ConcurrentHashMap<FfmpegTranscoder,Long> ACTIVE = new java.util.concurrent.ConcurrentHashMap<FfmpegTranscoder,Long>();
+
+	/**
+	 * Progress of the work copies being made: {ms done, ms in all, ms since the start of the oldest}, null when
+	 * the durations are not known yet (or none is being made)
+	 */
+	public static long[] workCopyProgress() {
+		long aDone = 0, aTotal = 0, aStart = Long.MAX_VALUE;
+		for(java.util.Map.Entry<FfmpegTranscoder,Long> aE : ACTIVE.entrySet()) {
+			FfmpegTranscoder aT = aE.getKey();
+			if(aT.duration <= 0) {
+				return null;
+			}
+			aTotal += aT.duration;
+			aDone += Math.max(0, Math.min(aT.duration, aT.progressMS));
+			aStart = Math.min(aStart, aE.getValue());
+		}
+		if(aTotal <= 0) {
+			return null;
+		}
+		return new long[] {aDone, aTotal, System.currentTimeMillis()-aStart};
 	}
 
 	public void createWorkCopy(String aPathIn,String aPathWork,int aWidth,int aHeight,double aFps) {
@@ -70,6 +93,7 @@ public class FfmpegTranscoder extends Ffmpeg {
 						aCmdSB.append(aCmd[c]+" ");
 					}
 					System.out.println("cmd: "+aCmdSB.toString());
+					ACTIVE.put(FfmpegTranscoder.this, System.currentTimeMillis());
 					Process p = Runtime.getRuntime().exec(aCmd);
 					StreamReader ffmpegOut = new StreamReader(p.getInputStream());
 					StreamReader ffmpegErr = new StreamReader(p.getErrorStream());
@@ -83,6 +107,7 @@ public class FfmpegTranscoder extends Ffmpeg {
 						//Failed: no work copy, the original is read
 						System.err.println("Work copy failed (ffmpeg exit "+aExit+"): "+aPI);
 						aProcessing.delete();
+						ACTIVE.remove(FfmpegTranscoder.this);
 						if(aDone != null) {
 							aDone.run();
 						}
@@ -99,6 +124,7 @@ public class FfmpegTranscoder extends Ffmpeg {
 				catch(Throwable t) {
 					t.printStackTrace(System.err);
 				}
+				ACTIVE.remove(FfmpegTranscoder.this);
 				if(aDone != null) {
 					try {
 						aDone.run();

@@ -365,6 +365,9 @@ public class SpeechGenerator extends PythonAI {
 	volatile PromptExtender extender = null;
 	File workDir;
 
+	//Audio stream of the source used (several: languages...), 0: the first
+	public int audioTrack = 0;
+
 	public SpeechGenerator(String aTdeDir,String aWorkDir,Progress aProgress) {
 		super(aTdeDir, aProgress);
 		workDir = new File(aWorkDir);
@@ -626,10 +629,11 @@ public class SpeechGenerator extends PythonAI {
 	}
 
 	/**
-	 * The first audio stream of aSource as 16 kHz mono s16le (aRaw), and as a 24 kHz mono WAV (aWav, may be null)
+	 * The audio stream audioTrack (0: the first) of aSource as 16 kHz mono s16le (aRaw), and as a 24 kHz mono WAV (aWav, may be null)
 	 * @return false if canceled
 	 */
 	boolean extract(File aSource,File aRaw,File aWav) throws Exception {
+		String aMap = "0:a:"+Math.max(0, audioTrack);
 		status("AI.ExtractingAudio", aSource.getName(), 0, 0);
 		workDir.mkdirs();
 		String aFfmpeg = Ffmpeg.ffmpegPath();
@@ -638,10 +642,10 @@ public class SpeechGenerator extends PythonAI {
 		}
 		Vector<String> aCmd = new Vector<String>();
 		aCmd.add(aFfmpeg); aCmd.add("-y"); aCmd.add("-v"); aCmd.add("error"); aCmd.add("-i"); aCmd.add(aSource.getAbsolutePath());
-		aCmd.add("-map"); aCmd.add("0:a:0"); aCmd.add("-vn"); aCmd.add("-ac"); aCmd.add("1"); aCmd.add("-ar"); aCmd.add("16000");
+		aCmd.add("-map"); aCmd.add(aMap); aCmd.add("-vn"); aCmd.add("-ac"); aCmd.add("1"); aCmd.add("-ar"); aCmd.add("16000");
 		aCmd.add("-f"); aCmd.add("s16le"); aCmd.add(aRaw.getAbsolutePath());
 		if(aWav != null) {
-			aCmd.add("-map"); aCmd.add("0:a:0"); aCmd.add("-vn"); aCmd.add("-ac"); aCmd.add("1"); aCmd.add("-ar"); aCmd.add("24000");
+			aCmd.add("-map"); aCmd.add(aMap); aCmd.add("-vn"); aCmd.add("-ac"); aCmd.add("1"); aCmd.add("-ar"); aCmd.add("24000");
 			aCmd.add(aWav.getAbsolutePath());
 		}
 		ProcessBuilder aPB = new ProcessBuilder(aCmd);

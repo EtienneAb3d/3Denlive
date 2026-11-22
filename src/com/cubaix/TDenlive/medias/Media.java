@@ -224,6 +224,10 @@ public abstract class Media extends Drawable {
 			}
 			aSB.append("\n");
 		}
+		catch(com.drew.imaging.ImageProcessingException e) {
+			//A format without EXIF / XMP support (WebM, MKV...): no metadata, not an error
+			System.out.println("No metadata for "+aFile.getName()+": "+e.getMessage());
+		}
 		catch(Throwable t) {
 			t.printStackTrace(System.err);
 		}

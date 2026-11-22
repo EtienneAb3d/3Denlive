@@ -105,7 +105,10 @@ public class VideoTimeLine extends Media {
 	 * New clip for a media placed on this time line
 	 */
 	protected Clip newClip(Media aMedia) {
-		return new Clip(tde,aMedia);
+		Clip aC = new Clip(tde,aMedia);
+		//Several audio streams (AI remix, languages): their mixer
+		com.cubaix.TDenlive.processors.TrackMixer.addIfMultiTrack(aC);
+		return aC;
 	}
 	
 	protected Rectangle drawClipAwt(Clip aC,Graphics2D aGC, int aX, int aY, Rectangle aClippingR) {
