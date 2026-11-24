@@ -106,6 +106,13 @@ for c in "${CONFIGS[@]}"; do
 	cp "$BUILD/3Denlive.jar" "$stage/"
 	for j in "${COMMON_JARS[@]}"; do cp "$DISTRIB/$j" "$stage/"; done
 	cp -RP "$DISTRIB/lumas" "$DISTRIB/frames" "$stage/"
+	# Objects of the library of the 3D modeler with their thumbnails (Install-Dev.sh --objects-only);
+	# without them the application downloads each object at its first use
+	if [ -d "$DISTRIB/objects3d/thumbs" ]; then
+		cp -RP "$DISTRIB/objects3d" "$stage/"
+	else
+		echo "[$c] no distrib/objects3d: the 3D objects will be downloaded at their first use (./Install-Dev.sh --objects-only)" >&2
+	fi
 	# Platform files: SWT jar + natives, launcher
 	cp -RP "$DISTRIB/$c/." "$stage/"
 	f="$(ffmpeg_name "$c")"

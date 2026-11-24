@@ -145,6 +145,19 @@ public class MaskGenerator extends PythonAI {
 	 */
 	public interface Listener {
 		void labels(int aFrame);
+		/** The objects that left the image changed (ends) */
+		default void ends() {
+		}
+	}
+
+	//Objects that left the image (ENDS message): object -> {first frame no longer computed forward (-1: none), last
+	//frame no longer computed backward (-1: none)}
+	public final java.util.concurrent.ConcurrentHashMap<Integer,int[]> ends = new java.util.concurrent.ConcurrentHashMap<Integer,int[]>();
+
+	/** The object left the image before the frame aF (forward), or does not appear before it (backward) */
+	public boolean endedAt(int aObj,int aF) {
+		int[] aE = ends.get(aObj);
+		return aE != null && ((aE[0] >= 0 && aF >= aE[0]) || (aE[1] >= 0 && aF <= aE[1]));
 	}
 
 	Model model;
@@ -191,6 +204,27 @@ public class MaskGenerator extends PythonAI {
 			}
 			catch(Throwable t) {
 				t.printStackTrace(System.err);
+			}
+			return true;
+		}
+		if(aL.startsWith("ENDS")) {
+			java.util.HashMap<Integer,int[]> aNew = new java.util.HashMap<Integer,int[]>();
+			for(String aP : aL.substring(4).trim().split(";")) {
+				String[] aS = aP.split(":");
+				if(aS.length == 3) {
+					try {
+						aNew.put(Integer.parseInt(aS[0]), new int[] {"-".equals(aS[1]) ? -1 : Integer.parseInt(aS[1])
+								, "-".equals(aS[2]) ? -1 : Integer.parseInt(aS[2])});
+					}
+					catch(Throwable t) {
+						t.printStackTrace(System.err);
+					}
+				}
+			}
+			ends.keySet().retainAll(aNew.keySet());
+			ends.putAll(aNew);
+			if(listener != null) {
+				listener.ends();
 			}
 			return true;
 		}
@@ -244,9 +278,11 @@ public class MaskGenerator extends PythonAI {
 		}
 		//Another model kept loaded is unloaded first (ScriptServer.obtain())
 		ScriptServer aS = ScriptServer.obtain(this, tag(model), model.gpuMemory, command);
-		if(aS != sessionServer && openArgs != null) {
+		//Opened again in a new script, or in this one when another editor opened its own session there since
+		if((aS != sessionServer || aS.sessionOwner != this) && openArgs != null) {
 			sessionServer = null;
 			aS.request(this, openArgs);
+			aS.sessionOwner = this;
 			Vector<Vector<String>> aAll;
 			synchronized(points) {
 				aAll = new Vector<Vector<String>>(points.values());
@@ -359,12 +395,23 @@ public class MaskGenerator extends PythonAI {
 	 * @return false if stopped
 	 */
 	public boolean track(File aStop,int aResume) throws Exception {
+		return track(aStop, aResume, -1);
+	}
+
+	/**
+	 * Tracking only up to the frame aTo (>= 0: a step of the editor; before the first prompt: backward down to it)
+	 */
+	public boolean track(File aStop,int aResume,int aTo) throws Exception {
 		aStop.delete();
 		stepKey = "AI.MaskTracking";
 		Vector<String> aArgs = args("--op", "track", "--stop-file", aStop.getAbsolutePath());
 		if(aResume >= 0) {
 			aArgs.add("--resume");
 			aArgs.add(""+aResume);
+		}
+		if(aTo >= 0) {
+			aArgs.add("--to");
+			aArgs.add(""+aTo);
 		}
 		try {
 			return request(aArgs) != null;
@@ -404,8 +451,13 @@ public class MaskGenerator extends PythonAI {
 		}
 		try {
 			Resident aR = resident();
-			if(aR == sessionServer && aR != null && aR.residentAlive()) {
+			if(aR != sessionServer) {
+				aR = companion();
+			}
+			//Not when another editor opened its session in it since (closed late: its work ending in the background)
+			if(aR == sessionServer && aR != null && aR.residentAlive() && sessionServer.sessionOwner == this) {
 				sessionServer.request(this, args("--op", "close"));
+				sessionServer.sessionOwner = null;
 			}
 		}
 		catch(Throwable t) {

@@ -11,6 +11,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.ColorDialog;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Scale;
@@ -23,13 +24,16 @@ import com.cubaix.TDenlive.model3d.Model3D;
 import com.cubaix.TDenlive.model3d.Object3D;
 import com.cubaix.TDenlive.model3d.Renderer3D;
 import com.cubaix.TDenlive.utils.ImageUtils;
+import com.cubaix.TDenlive.utils.StringUtils;
 
 /**
  * Popup of the 3D modeler to choose the texture of the selected objects: preview of the main object
  * turning slowly (zoom slider and mouse wheel, 50 to 800 %), its two colors (the color of the object, and the second color of the procedural
  * textures), the library of the color clips (TextureLibrary; plain color = no texture), the
  * scale of the texture (%, logarithmic), its rotation, the repeats on a face (U / V, linked or not) and its
- * offset (% of a repeat).
+ * offset (% of a repeat). A shape of several faces (cube, cylinder, text...) gets a "Face" combo: "All faces" chooses
+ * the texture of the object (Object3D.texture), a face its own one (Object3D.faceTex; "Same as all faces" removes it);
+ * the other settings are shared by the faces.
  * open() returns an object holding the chosen color and texture (Object3D.copyTextureTo()), or null.
  */
 public class Texture3DGUI {
@@ -72,6 +76,18 @@ public class Texture3DGUI {
 	Label[] offsetValues = new Label[2];
 	Button[] links = new Button[2];
 	boolean updating = false;
+	//Face edited (Object3D.faceNames()), -1 = all faces
+	int face = -1;
+	//Settings of the texture of the face edited (Object3D.texParams()), stored by commit()
+	Object3D.TexParams cp = null;
+	Combo faceCombo = null;
+	Button sameAsAll = null;
+	//Video texture: range of the media time looped (Object3D.texStartMS / texEndMS), shown only for a video
+	Composite rangeRow = null;
+	RangeSlider range = null;
+	Label rangeValue = null;
+	//>= 0: media time shown by the preview (the thumb last moved), else the start of the range
+	long previewTexMS = -1;
 
 	/**
 	 * aObj: the main selected object (not modified)
@@ -79,6 +95,7 @@ public class Texture3DGUI {
 	public Texture3DGUI(TDenlive aTDe, Object3D aObj) {
 		tde = aTDe;
 		obj = aObj.copy();
+		cp = Object3D.TexParams.of(obj);
 		createContents();
 	}
 
@@ -190,10 +207,65 @@ public class Texture3DGUI {
 			colorButtons[c] = aB;
 		}
 
+		//Face whose texture is chosen (shapes of several faces)
+		String[] aFaces = Object3D.faceNames(obj.type);
+		if(aFaces.length > 1) {
+			Composite aFaceRow = new Composite(shell, SWT.NONE);
+			aFaceRow.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+			tde.gui.applyColorFont(aFaceRow);
+			GridLayout aFGL = new GridLayout(3, false);
+			tde.gui.applyNoMargin(aFGL);
+			aFaceRow.setLayout(aFGL);
+			Label aFaceL = new Label(aFaceRow, SWT.NONE);
+			aFaceL.setText(l("Texture3D.Face"));
+			tde.gui.applyColorFont(aFaceL);
+			faceCombo = new Combo(aFaceRow, SWT.READ_ONLY | SWT.DROP_DOWN);
+			tde.gui.applyColorFont(faceCombo);
+			faceCombo.setToolTipText(l("Texture3D.FaceTip"));
+			faceCombo.add(l("Texture3D.AllFaces"));
+			for(String aF : aFaces) {
+				faceCombo.add(l("Texture3D.Face_" + aF));
+			}
+			faceCombo.select(0);
+			faceCombo.addListener(SWT.Selection, e -> {
+				face = faceCombo.getSelectionIndex()-1;
+				previewTexMS = -1;
+				cp = obj.texParams(face).copy();
+				library.setTexture(face < 0 ? obj.texture : obj.faceTexture(face));
+				loadWidgets();
+				refreshWidgets();
+			});
+			sameAsAll = new Button(aFaceRow, SWT.PUSH);
+			sameAsAll.setText(l("Texture3D.SameAsAll"));
+			sameAsAll.setToolTipText(l("Texture3D.SameAsAllTip"));
+			tde.gui.applyColorFont(sameAsAll);
+			sameAsAll.addListener(SWT.Selection, e -> {
+				obj.setFaceTexture(face, null);
+				obj.setFaceParams(face, null);
+				cp = Object3D.TexParams.of(obj);
+				previewTexMS = -1;
+				library.setTexture(obj.faceTexture(face));
+				loadWidgets();
+				refreshWidgets();
+			});
+		}
+
 		library = new TextureLibrary(tde, shell, obj.texture, () -> colorsFill(), aT -> {
-			obj.texture = aT;
+			//Another video: looped whole at first
+			if(com.cubaix.TDenlive.model3d.Texture3D.isMoving(aT) && !aT.equals(editedTexture())) {
+				cp.startMS = 0;
+				cp.endMS = -1;
+				commit();
+			}
+			previewTexMS = -1;
+			if(face < 0) {
+				obj.texture = aT;
+			}
+			else {
+				obj.setFaceTexture(face, aT);
+			}
 			refreshWidgets();
-		});
+		}, true);
 
 		//Repeats and offset
 		Composite aTiles = new Composite(shell, SWT.NONE);
@@ -214,9 +286,10 @@ public class Texture3DGUI {
 		GridData aSclGD = new GridData(GridData.FILL_HORIZONTAL);
 		aSclGD.widthHint = 240;
 		scale.setLayoutData(aSclGD);
-		scale.setSelection(scaleToSlider(obj.texScale));
+		scale.setSelection(scaleToSlider(cp.scale));
 		scale.addListener(SWT.Selection, e -> {
-			obj.texScale = sliderToScale(scale.getSelection());
+			cp.scale = sliderToScale(scale.getSelection());
+			commit();
 			updateScaleLabel();
 			redrawPreview();
 		});
@@ -229,7 +302,8 @@ public class Texture3DGUI {
 		scaleReset.setText("100 %");
 		tde.gui.applyColorFont(scaleReset);
 		scaleReset.addListener(SWT.Selection, e -> {
-			obj.texScale = 100;
+			cp.scale = 100;
+			commit();
 			scale.setSelection(scaleToSlider(100));
 			updateScaleLabel();
 			redrawPreview();
@@ -247,9 +321,10 @@ public class Texture3DGUI {
 		GridData aRotGD = new GridData(GridData.FILL_HORIZONTAL);
 		aRotGD.widthHint = 240;
 		rotation.setLayoutData(aRotGD);
-		rotation.setSelection((int)Math.round(obj.texRot) + 180);
+		rotation.setSelection((int)Math.round(cp.rot) + 180);
 		rotation.addListener(SWT.Selection, e -> {
-			obj.texRot = rotation.getSelection() - 180;
+			cp.rot = rotation.getSelection() - 180;
+			commit();
 			updateScaleLabel();
 			redrawPreview();
 		});
@@ -262,7 +337,8 @@ public class Texture3DGUI {
 		rotationReset.setText("0°");
 		tde.gui.applyColorFont(rotationReset);
 		rotationReset.addListener(SWT.Selection, e -> {
-			obj.texRot = 0;
+			cp.rot = 0;
+			commit();
 			rotation.setSelection(180);
 			updateScaleLabel();
 			redrawPreview();
@@ -277,7 +353,7 @@ public class Texture3DGUI {
 			if(s < 2) {
 				Spinner aSp = new Spinner(aTiles, SWT.BORDER);
 				aSp.setDigits(1);
-				aSp.setValues((int)Math.round((s == 0 ? obj.texRepU : obj.texRepV)*10), 1, REPEAT_MAX, 1, 1, 10);
+				aSp.setValues((int)Math.round((s == 0 ? cp.repU : cp.repV)*10), 1, REPEAT_MAX, 1, 1, 10);
 				tde.gui.applyColorFont(aSp);
 				GridData aSGD = new GridData();
 				aSGD.horizontalSpan = 2;
@@ -295,7 +371,7 @@ public class Texture3DGUI {
 				aSc.setMaximum(100);
 				aSc.setIncrement(1);
 				aSc.setPageIncrement(10);
-				aSc.setSelection((int)Math.round(s == 2 ? obj.texOffU : obj.texOffV));
+				aSc.setSelection((int)Math.round(s == 2 ? cp.offU : cp.offV));
 				GridData aScGD = new GridData(GridData.FILL_HORIZONTAL);
 				aScGD.widthHint = 240;
 				aSc.setLayoutData(aScGD);
@@ -315,7 +391,7 @@ public class Texture3DGUI {
 				aLGD.verticalSpan = 2;
 				aLink.setLayoutData(aLGD);
 				tde.gui.applyColorFont(aLink);
-				aLink.setSelection(s == 0 ? obj.texRepU == obj.texRepV : obj.texOffU == obj.texOffV);
+				aLink.setSelection(s == 0 ? cp.repU == cp.repV : cp.offU == cp.offV);
 				aLink.addListener(SWT.Selection, e -> {
 					if(aLink.getSelection()) {
 						changed(aIdx);
@@ -324,6 +400,44 @@ public class Texture3DGUI {
 				links[s/2] = aLink;
 			}
 		}
+
+		//Video texture: start / end of the range looped, the preview showing the image of the thumb moved
+		rangeRow = new Composite(shell, SWT.NONE);
+		rangeRow.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		tde.gui.applyColorFont(rangeRow);
+		GridLayout aRGL = new GridLayout(4, false);
+		tde.gui.applyNoMargin(aRGL);
+		rangeRow.setLayout(aRGL);
+		Label aRangeL = new Label(rangeRow, SWT.NONE);
+		aRangeL.setText(l("Texture3D.VideoRange"));
+		tde.gui.applyColorFont(aRangeL);
+		range = new RangeSlider(tde, rangeRow, (aThumb, aDragging) -> {
+			cp.startMS = range.getStart();
+			cp.endMS = range.getEnd() >= range.getMax() ? -1 : range.getEnd();
+			commit();
+			previewTexMS = aThumb == RangeSlider.START ? range.getStart() : Math.max(range.getStart(), range.getEnd()-1);
+			updateRangeLabel();
+			redrawPreview();
+		});
+		range.setToolTipText(l("Texture3D.VideoRangeTip"));
+		GridData aRSGD = new GridData(GridData.FILL_HORIZONTAL);
+		aRSGD.widthHint = 240;
+		aRSGD.heightHint = 20;
+		range.setLayoutData(aRSGD);
+		rangeValue = new Label(rangeRow, SWT.CENTER);
+		tde.gui.applyColorFont(rangeValue);
+		rangeValue.setText(StringUtils.time2Clock(0) + " - " + StringUtils.time2Clock(0));
+		rangeValue.setLayoutData(new GridData(rangeValue.computeSize(SWT.DEFAULT, SWT.DEFAULT).x + 8, SWT.DEFAULT));
+		Button aWhole = new Button(rangeRow, SWT.PUSH);
+		aWhole.setText(l("Texture3D.WholeVideo"));
+		tde.gui.applyColorFont(aWhole);
+		aWhole.addListener(SWT.Selection, e -> {
+			cp.startMS = 0;
+			cp.endMS = -1;
+			commit();
+			previewTexMS = -1;
+			refreshWidgets();
+		});
 
 		Composite aButtons = new Composite(shell, SWT.NONE);
 		aButtons.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
@@ -383,13 +497,13 @@ public class Texture3DGUI {
 		if(aIdx < 2) {
 			double aV = repeats[aIdx].getSelection()/10.0;
 			if(aIdx == 0) {
-				obj.texRepU = aV;
+				cp.repU = aV;
 			}
 			else {
-				obj.texRepV = aV;
+				cp.repV = aV;
 			}
 			if(links[0].getSelection()) {
-				obj.texRepU = obj.texRepV = aV;
+				cp.repU = cp.repV = aV;
 				updating = true;
 				repeats[1-aIdx].setSelection(repeats[aIdx].getSelection());
 				updating = false;
@@ -398,18 +512,51 @@ public class Texture3DGUI {
 		else {
 			int aV = offsets[aIdx-2].getSelection();
 			if(aIdx == 2) {
-				obj.texOffU = aV;
+				cp.offU = aV;
 			}
 			else {
-				obj.texOffV = aV;
+				cp.offV = aV;
 			}
 			if(links[1].getSelection()) {
-				obj.texOffU = obj.texOffV = aV;
+				cp.offU = cp.offV = aV;
 				offsets[3-aIdx].setSelection(aV);
 			}
 			updateOffsetLabels();
 		}
+		commit();
 		redrawPreview();
+	}
+
+	/**
+	 * The settings edited to the face edited (its own from then on), or to the object for all faces
+	 */
+	void commit() {
+		if(face < 0) {
+			cp.applyTo(obj);
+		}
+		else {
+			obj.setFaceParams(face, cp.copy());
+		}
+	}
+
+	/**
+	 * Sliders, spinners and links set from the settings edited (another face)
+	 */
+	void loadWidgets() {
+		updating = true;
+		try {
+			scale.setSelection(scaleToSlider(cp.scale));
+			rotation.setSelection((int)Math.round(cp.rot) + 180);
+			repeats[0].setSelection((int)Math.round(cp.repU*10));
+			repeats[1].setSelection((int)Math.round(cp.repV*10));
+			offsets[0].setSelection((int)Math.round(cp.offU));
+			offsets[1].setSelection((int)Math.round(cp.offV));
+			links[0].setSelection(cp.repU == cp.repV);
+			links[1].setSelection(cp.offU == cp.offV);
+		}
+		finally {
+			updating = false;
+		}
 	}
 
 	static int zoomToSlider(double aZoom) {
@@ -443,19 +590,27 @@ public class Texture3DGUI {
 	}
 
 	void updateScaleLabel() {
-		scaleValue.setText(Math.round(obj.texScale) + " %");
-		rotationValue.setText(Math.round(obj.texRot) + "°");
+		scaleValue.setText(Math.round(cp.scale) + " %");
+		rotationValue.setText(Math.round(cp.rot) + "°");
 	}
 
 	void updateOffsetLabels() {
-		offsetValues[0].setText(Math.round(obj.texOffU) + " %");
-		offsetValues[1].setText(Math.round(obj.texOffV) + " %");
+		offsetValues[0].setText(Math.round(cp.offU) + " %");
+		offsetValues[1].setText(Math.round(cp.offV) + " %");
 	}
 
 	void refreshWidgets() {
-		boolean aTextured = obj.hasTexture();
-		//The image has its own colors; the second color is that of the procedural textures
-		colorButtons[1].setEnabled(aTextured && !ColorBck.Fill.isBitmap(obj.texture));
+		boolean aTextured = obj.hasAnyTexture();
+		//The images have their own colors; the second color is that of the procedural textures
+		boolean aProcedural = false;
+		for(String aT : obj.textures()) {
+			aProcedural |= aT != null && !ColorBck.Fill.PLAIN.equals(aT) && !ColorBck.Fill.isBitmap(aT) && !ColorBck.Fill.isFile(aT)
+					&& !com.cubaix.TDenlive.model3d.Texture3D.isMedia(aT);
+		}
+		colorButtons[1].setEnabled(aProcedural);
+		if(sameAsAll != null) {
+			sameAsAll.setEnabled(face >= 0 && (obj.ownFaceTexture(face) != null || obj.ownFaceParams(face) != null));
+		}
 		for(Spinner aSp : repeats) {
 			aSp.setEnabled(aTextured);
 		}
@@ -488,7 +643,46 @@ public class Texture3DGUI {
 		}
 		colorButtons[0].getParent().layout();
 		updateOffsetLabels();
+		updateRange();
 		redrawPreview();
+	}
+
+	/**
+	 * Texture of the face edited (that of the object for all faces)
+	 */
+	String editedTexture() {
+		return face < 0 ? obj.texture : obj.faceTexture(face);
+	}
+
+	/**
+	 * Range row shown only when the texture edited is a video (of a known duration), its thumbs set from the object
+	 */
+	void updateRange() {
+		if(range == null) {
+			return;
+		}
+		long aDur = com.cubaix.TDenlive.model3d.Texture3D.durationMS(editedTexture());
+		boolean aShow = aDur > 0;
+		if(aShow) {
+			if(!range.isDragging()) {
+				range.setValues(aDur, cp.startMS, cp.endMS < 0 ? aDur : cp.endMS, Math.min(aDur, 40));
+			}
+			updateRangeLabel();
+		}
+		if(rangeRow.getVisible() != aShow) {
+			rangeRow.setVisible(aShow);
+			((GridData)rangeRow.getLayoutData()).exclude = !aShow;
+			if(shell.isVisible()) {
+				shell.pack();
+			}
+			else {
+				shell.layout(true, true);
+			}
+		}
+	}
+
+	void updateRangeLabel() {
+		rangeValue.setText(StringUtils.time2Clock(range.getStart()) + " - " + StringUtils.time2Clock(range.getEnd()));
 	}
 
 	/**
@@ -507,6 +701,7 @@ public class Texture3DGUI {
 		if(aO.isGroup()) {
 			aO.type = Object3D.CUBE;
 		}
+
 		previewModel.objects.clear();
 		previewModel.objects.add(aO);
 		previewModel.lastId = 0;
@@ -514,10 +709,65 @@ public class Texture3DGUI {
 		//Framed unturned, on its bounding sphere: the same size all around
 		previewModel.frame(null, aW/(double)aH);
 		previewModel.distance *= 1.1*100/previewZoom;
-		aO.ry = previewAngle;
+		//A face chosen (not a round side): turned toward the camera, swaying a little; else all around
+		double[] aN = face >= 0 ? faceNormal(aO, face) : null;
+		if(aN != null) {
+			double aEl = Math.toRadians(previewModel.pitch);
+			double[] aToCam = {0, Math.sin(aEl), Math.cos(aEl)};
+			double aDot = Math.max(-1, Math.min(1, com.cubaix.TDenlive.model3d.Math3D.dot(aN, aToCam)));
+			double[] aAxis = com.cubaix.TDenlive.model3d.Math3D.cross(aN, aToCam);
+			double[] aAlign;
+			if(com.cubaix.TDenlive.model3d.Math3D.length(aAxis) < 1e-9) {
+				aAlign = aDot > 0 ? com.cubaix.TDenlive.model3d.Math3D.euler(0, 0, 0) : com.cubaix.TDenlive.model3d.Math3D.euler(0, 180, 0);
+			}
+			else {
+				aAlign = com.cubaix.TDenlive.model3d.Math3D.rotation(aAxis, Math.acos(aDot));
+			}
+			double aSway = 30*Math.sin(Math.toRadians(previewAngle*1.5));
+			aO.setRotation(com.cubaix.TDenlive.model3d.Math3D.mulM(com.cubaix.TDenlive.model3d.Math3D.euler(0, aSway, 0), aAlign));
+		}
+		else {
+			aO.ry = previewAngle;
+		}
 		Renderer3D.Options aOpt = new Renderer3D.Options();
 		aOpt.bck = 0xFF505050;
+		//Video texture: the image of the thumb moved, else the start of its range
+		aOpt.texTimeMS = previewTexMS;
 		return Renderer3D.render(previewModel, aW, aH, 0, 0, aOpt).image;
+	}
+
+	/**
+	 * Mean normal of the face aF of the object (its scale applied, not its rotation), null for a round side or
+	 * an object without faces
+	 */
+	static double[] faceNormal(Object3D aO, int aF) {
+		com.cubaix.TDenlive.model3d.Mesh3D aMesh = aO.mesh();
+		if(aMesh == null || aMesh.triFace == null) {
+			return null;
+		}
+		double[] aS = aO.getScale();
+		double[] aSum = {0, 0, 0};
+		double aArea = 0;
+		for(int t = 0;t < aMesh.nbTris;t++) {
+			if(aMesh.faceOf(t) != aF) {
+				continue;
+			}
+			double[][] aP = new double[3][];
+			for(int i = 0;i < 3;i++) {
+				int aV = aMesh.tris[t*3+i];
+				aP[i] = new double[] {aMesh.pos[aV*3]*aS[0], aMesh.pos[aV*3+1]*aS[1], aMesh.pos[aV*3+2]*aS[2]};
+			}
+			double[] aC = com.cubaix.TDenlive.model3d.Math3D.cross(com.cubaix.TDenlive.model3d.Math3D.sub(aP[1], aP[0]),
+					com.cubaix.TDenlive.model3d.Math3D.sub(aP[2], aP[0]));
+			aSum = com.cubaix.TDenlive.model3d.Math3D.add(aSum, aC);
+			aArea += com.cubaix.TDenlive.model3d.Math3D.length(aC);
+		}
+		double aL = com.cubaix.TDenlive.model3d.Math3D.length(aSum);
+		//A round side: its normals cancel out
+		if(aArea <= 0 || aL < 0.3*aArea) {
+			return null;
+		}
+		return com.cubaix.TDenlive.model3d.Math3D.mul(aSum, 1/aL);
 	}
 
 	void redrawPreview() {

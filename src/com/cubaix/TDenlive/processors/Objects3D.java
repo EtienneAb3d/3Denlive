@@ -27,8 +27,111 @@ import com.cubaix.TDenlive.xml.XmlTag;
  * with keys. A key holds a pose per node, relative to the model of the media (so that a change of the
  * model in the modeler still applies): position + d, rotation q * R (quaternion, in the space of the
  * group), scale * k. A node without pose in a key: no change. Interpolation: linear, rotations by slerp.
+ * A key may also hold the camera (Cam: free, or on the X / Y / Z axis of its target); none = the camera of the model.
  */
 public class Objects3D extends Processor {
+	//Camera modes: free (orbit), or looking along an axis (camera on +X, on top, on +Z of the target)
+	public static final int CAM_FREE = 0;
+	public static final int CAM_X = 1;
+	public static final int CAM_Y = 2;
+	public static final int CAM_Z = 3;
+
+	/**
+	 * Camera of a key: target, angles and distance of the orbit camera (the field of view stays that of the model)
+	 */
+	public static class Cam {
+		public int mode = CAM_FREE;
+		public double[] target = {0, 0.5, 0};
+		public double yaw = 35, pitch = 25, distance = 4;
+
+		public Cam copy() {
+			Cam aC = new Cam();
+			aC.mode = mode;
+			aC.target = target.clone();
+			aC.yaw = yaw;
+			aC.pitch = pitch;
+			aC.distance = distance;
+			return aC;
+		}
+
+		public static Cam of(Model3D aM) {
+			Cam aC = new Cam();
+			aC.target = aM.getTarget();
+			aC.yaw = aM.yaw;
+			aC.pitch = aM.pitch;
+			aC.distance = aM.distance;
+			return aC;
+		}
+
+		public void applyTo(Model3D aM) {
+			aM.setTarget(target.clone());
+			aM.yaw = yaw;
+			aM.pitch = pitch;
+			aM.distance = distance;
+		}
+
+		/**
+		 * The direction of its mode (an axis: the angles of that axis; free from an axis: the standard view)
+		 */
+		public void setMode(int aMode) {
+			int aOld = mode;
+			mode = aMode;
+			switch(aMode) {
+			case CAM_FREE:
+				//Back from an axis: the standard view between the three axes
+				if(aOld != CAM_FREE) {
+					yaw = 35;
+					pitch = 25;
+				}
+				break;
+			case CAM_X: yaw = 90; pitch = 0; break;
+			case CAM_Y: yaw = 0; pitch = Model3D.MAX_PITCH; break;
+			case CAM_Z: yaw = 0; pitch = 0; break;
+			}
+		}
+
+		boolean same(Cam aC) {
+			return Math.abs(target[0]-aC.target[0]) < 1e-9 && Math.abs(target[1]-aC.target[1]) < 1e-9
+					&& Math.abs(target[2]-aC.target[2]) < 1e-9 && Math.abs(distance-aC.distance) < 1e-9
+					&& Math.abs(pitch-aC.pitch) < 1e-9 && Math.abs(((yaw-aC.yaw)%360+540)%360-180) < 1e-9;
+		}
+
+		/**
+		 * Linear, the yaw by the shortest way; the mode of aA
+		 */
+		static Cam lerp(Cam aA, Cam aB, double aF) {
+			Cam aC = new Cam();
+			aC.mode = aA.mode;
+			for(int c = 0;c < 3;c++) {
+				aC.target[c] = aA.target[c]*(1-aF)+aB.target[c]*aF;
+			}
+			double aDYaw = ((aB.yaw-aA.yaw)%360+540)%360-180;
+			aC.yaw = aA.yaw+aDYaw*aF;
+			aC.pitch = aA.pitch*(1-aF)+aB.pitch*aF;
+			//Logarithmic: the same zoom speed whatever the distance
+			aC.distance = aA.distance > 0 && aB.distance > 0 ? Math.exp(Math.log(aA.distance)*(1-aF)+Math.log(aB.distance)*aF)
+					: aA.distance*(1-aF)+aB.distance*aF;
+			return aC;
+		}
+
+		String save() {
+			return mode+";"+target[0]+";"+target[1]+";"+target[2]+";"+yaw+";"+pitch+";"+distance;
+		}
+
+		static Cam load(String aText) {
+			String[] aVs = aText.trim().split(";");
+			Cam aC = new Cam();
+			aC.mode = Integer.parseInt(aVs[0]);
+			for(int c = 0;c < 3;c++) {
+				aC.target[c] = Double.parseDouble(aVs[1+c]);
+			}
+			aC.yaw = Double.parseDouble(aVs[4]);
+			aC.pitch = Double.parseDouble(aVs[5]);
+			aC.distance = Double.parseDouble(aVs[6]);
+			return aC;
+		}
+	}
+
 	public static class Pose {
 		public double[] d = {0, 0, 0};
 		public double[] q = {1, 0, 0, 0};
@@ -102,10 +205,13 @@ public class Objects3D extends Processor {
 	class Key {
 		long time = 0;
 		HashMap<Integer,Pose> poses = new HashMap<Integer,Pose>();
+		//Camera of the key, null = that of the model of the media
+		Cam cam = null;
 
 		Key copy() {
 			Key aK = new Key();
 			aK.time = time;
+			aK.cam = cam == null ? null : cam.copy();
 			for(Map.Entry<Integer,Pose> aE : poses.entrySet()) {
 				aK.poses.put(aE.getKey(), aE.getValue().copy());
 			}
@@ -155,6 +261,9 @@ public class Objects3D extends Processor {
 					int aId = Pose.load(aOs.elementAt(++o).text, aP);
 					aKeys.lastElement().poses.put(aId, aP);
 				}
+				if("cam".equalsIgnoreCase(aT.tagName) && aKeys.size() > 0) {
+					aKeys.lastElement().cam = Cam.load(aOs.elementAt(++o).text);
+				}
 			}
 		}
 		if(aKeys.size() <= 0) {
@@ -174,6 +283,9 @@ public class Objects3D extends Processor {
 			for(Key aK : keys) {
 				aSB.append("							<Key>\n");
 				aSB.append("								<time>" + aK.time + "</time>\n");
+				if(aK.cam != null) {
+					aSB.append("								<cam>" + aK.cam.save() + "</cam>\n");
+				}
 				//Same order at each save (the history compares the texts)
 				for(Integer aId : new java.util.TreeSet<Integer>(aK.poses.keySet())) {
 					Pose aP = aK.poses.get(aId);
@@ -316,6 +428,10 @@ public class Objects3D extends Processor {
 					for(Integer aI : aIds) {
 						aInter.poses.put(aI, Pose.lerp(aKey.poses.getOrDefault(aI, aId), aNext.poses.getOrDefault(aI, aId), aF));
 					}
+					if(aKey.cam != null || aNext.cam != null) {
+						Cam aBase = Cam.of(getBaseModel());
+						aInter.cam = Cam.lerp(aKey.cam != null ? aKey.cam : aBase, aNext.cam != null ? aNext.cam : aBase, aF);
+					}
 					return aInter;
 				}
 			}
@@ -346,6 +462,9 @@ public class Objects3D extends Processor {
 		if(aK == null) {
 			return aM;
 		}
+		if(aK.cam != null) {
+			aK.cam.applyTo(aM);
+		}
 		for(Object3D aO : aM.objects) {
 			Pose aP = aK.poses.get(aO.id);
 			if(aP != null) {
@@ -369,6 +488,53 @@ public class Objects3D extends Processor {
 	}
 
 	/**
+	 * Camera of a key (or of the display key): its own, else that of the model of the media (mode free)
+	 */
+	public Cam camForKey(int aKey) {
+		Key aK;
+		synchronized (keys) {
+			aK = aKey == DISPLAY_KEY ? displayKey : (aKey >= 0 && aKey < keys.size() ? keys.elementAt(aKey) : null);
+		}
+		return aK != null && aK.cam != null ? aK.cam.copy() : Cam.of(getBaseModel());
+	}
+
+	/**
+	 * Camera at aTimePos (time of the montage)
+	 */
+	public Cam camAt(long aTimePos) {
+		Key aK = interpolate(keyTime(aTimePos));
+		return aK.cam != null ? aK.cam : Cam.of(getBaseModel());
+	}
+
+	/**
+	 * Sets the camera of a key: the view of aM, in the mode aMode (an axis: the angles of that axis)
+	 */
+	public void setCamera(int aKey, Model3D aM, int aMode) {
+		if(aKey < 0 || aKey >= keys.size()) {
+			return;
+		}
+		Cam aC = Cam.of(aM);
+		aC.setMode(aMode);
+		synchronized (keys) {
+			keys.elementAt(aKey).cam = aC;
+		}
+	}
+
+	/**
+	 * Changes the mode of the camera of a key (its target and distance kept)
+	 */
+	public void setCameraMode(int aKey, int aMode) {
+		if(aKey < 0 || aKey >= keys.size()) {
+			return;
+		}
+		Cam aC = camForKey(aKey);
+		aC.setMode(aMode);
+		synchronized (keys) {
+			keys.elementAt(aKey).cam = aC;
+		}
+	}
+
+	/**
 	 * Back to the model of the media for a node in a key
 	 */
 	public void resetPose(int aKey, int aId) {
@@ -382,6 +548,9 @@ public class Objects3D extends Processor {
 
 	boolean isIdentityAt(long aTimePos) {
 		Key aK = interpolate(keyTime(aTimePos));
+		if(aK.cam != null && !aK.cam.same(Cam.of(getBaseModel()))) {
+			return false;
+		}
 		for(Pose aP : aK.poses.values()) {
 			if(!aP.isIdentity()) {
 				return false;
@@ -413,6 +582,9 @@ public class Objects3D extends Processor {
 			double aSpin = aM.spin*aMediaTime/1000.0;
 			Renderer3D.Options aOpt = new Renderer3D.Options();
 			aOpt.ss = aW*(long)aH <= 2200000 ? 2 : 1;
+			//Videos as textures: at the media time of the clip
+			aOpt.mode = aProcessingMode;
+			aOpt.timeMS = aMediaTime;
 			BufferedImage aL = Renderer3D.render(aM, aW, aH, -1, aSpin, aOpt).image;
 			BufferedImage aR = Renderer3D.render(aM, aW, aH, 1, aSpin, aOpt).image;
 			if(tde.config.processingHdr[aProcessingMode]) {

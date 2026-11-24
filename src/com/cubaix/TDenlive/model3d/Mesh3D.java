@@ -13,8 +13,35 @@ public class Mesh3D {
 	public int[] tris = new int[0];
 	public int nbVerts = 0;
 	public int nbTris = 0;
+	//Face of each triangle (Object3D.faceNames(): the faces of a cube, the side and the disks of a cylinder, the
+	//front / back / sides of a text...), a texture per face; null = all on face 0 (sphere, torus, objects of the library)
+	public int[] triFace = null;
+	public int nbFaces = 1;
+	//Face of the triangles being added (-1: none yet = 0)
+	int curFace = -1;
 	//Lit on both sides (open surface)
 	public boolean twoSided = false;
+	//Objects of the library (Gltf): their own materials, one per triangle (triMat), and a color per
+	//vertex (vcol, r g b 0..1); null for the primitives and the texts
+	public Material[] mats = null;
+	public int[] triMat = null;
+	public float[] vcol = null;
+	//Size of the bounds (largest side 1) of an object of the library, else null (the cube -0.5..0.5)
+	public double[] size = null;
+
+	/**
+	 * Material of an object of the library: base color (0..1) times its texture if any
+	 */
+	public static class Material {
+		public float r = 1, g = 1, b = 1;
+		public Texture3D tex = null;
+		public int texCoord = 0;
+		//KHR_texture_transform {m00, m10, m01, m11, tx, ty} applied to the coordinates at the loading
+		public double[] texTransform = null;
+		//Alpha mask or blend: the pixels of the texture below alpha 0.5 are not drawn
+		public boolean alphaCut = false;
+		public boolean doubleSided = false;
+	}
 
 	static Mesh3D[] cache = new Mesh3D[Object3D.NB_PRIMITIVES];
 	//Mesh of the groups and of the empty texts
@@ -77,6 +104,16 @@ public class Mesh3D {
 		tris[nbTris*3] = aA;
 		tris[nbTris*3+1] = aB;
 		tris[nbTris*3+2] = aC;
+		if(curFace > 0 && triFace == null) {
+			//The triangles before were on face 0
+			triFace = new int[tris.length/3];
+		}
+		if(triFace != null) {
+			if(triFace.length < tris.length/3) {
+				triFace = java.util.Arrays.copyOf(triFace, tris.length/3);
+			}
+			triFace[nbTris] = Math.max(0, curFace);
+		}
 		nbTris++;
 	}
 
@@ -90,6 +127,31 @@ public class Mesh3D {
 		nor = java.util.Arrays.copyOf(nor, nbVerts*3);
 		uv = java.util.Arrays.copyOf(uv, nbVerts*2);
 		tris = java.util.Arrays.copyOf(tris, nbTris*3);
+		if(triFace != null) {
+			triFace = java.util.Arrays.copyOf(triFace, nbTris);
+		}
+	}
+
+	/**
+	 * The next triangles are on a new face
+	 */
+	void newFace() {
+		setFace(curFace+1);
+	}
+
+	/**
+	 * The next triangles are on the face aF
+	 */
+	void setFace(int aF) {
+		curFace = aF;
+		nbFaces = Math.max(nbFaces, aF+1);
+	}
+
+	/**
+	 * Face of the triangle aT
+	 */
+	public int faceOf(int aT) {
+		return triFace == null || aT >= triFace.length ? 0 : triFace[aT];
 	}
 
 	//Texture coordinates of the points of a face: a quad from its bottom left corner, counterclockwise
@@ -100,6 +162,7 @@ public class Mesh3D {
 	 * Flat face of 3 or 4 points (normal from the first three), the texture once on it
 	 */
 	void face(double[]... aPts) {
+		newFace();
 		double[] aN = Math3D.cross(Math3D.sub(aPts[1], aPts[0]), Math3D.sub(aPts[2], aPts[0]));
 		int[] aIs = new int[aPts.length];
 		double[][] aUV = aPts.length == 3 ? TRI_UV : QUAD_UV;
@@ -162,6 +225,7 @@ public class Mesh3D {
 	 * Disk of radius aR at height aY (normal up or down), or a ring from aRIn to aR
 	 */
 	void disk(double aY, double aR, double aRIn, boolean aUp) {
+		newFace();
 		double aNy = aUp ? 1 : -1;
 		if(aRIn <= 0) {
 			int aC = diskVertex(0, aY, 0, aUp);
@@ -198,6 +262,7 @@ public class Mesh3D {
 	 * Side of a cylinder of radius aR (normals outward, or inward for the inside of a tube)
 	 */
 	void side(double aR, boolean aOutward) {
+		newFace();
 		int[] aB = new int[SEGS+1];
 		int[] aT = new int[SEGS+1];
 		double aK = aOutward ? 1 : -1;
@@ -228,6 +293,7 @@ public class Mesh3D {
 
 	void cone() {
 		//Side normal: (cos, r/h, sin) with r = 0.5, h = 1
+		newFace();
 		for(int s = 0;s < SEGS;s++) {
 			double aA0 = 2*Math.PI*s/SEGS;
 			double aA1 = 2*Math.PI*(s+1)/SEGS;
@@ -482,6 +548,8 @@ public class Mesh3D {
 		double aY0 = -(aYa-aCy)*aK, aY1 = -(aYb-aCy)*aK;
 		double[][] aPts = {{(aXa0-aCx)*aK, aY0}, {(aXa1-aCx)*aK, aY0}, {(aXb1-aCx)*aK, aY1}, {(aXb0-aCx)*aK, aY1}};
 		for(int aSide = -1;aSide <= 1;aSide += 2) {
+			//Faces of a text: front, back, sides
+			setFace(aSide > 0 ? 0 : 1);
 			int[] aIs = new int[4];
 			for(int p = 0;p < 4;p++) {
 				//Texture: one repeat per line height, mirrored on the back
@@ -495,6 +563,7 @@ public class Mesh3D {
 	 * Side wall of a contour, normals outward (tested on the outline), smoothed on the curves
 	 */
 	void textSide(java.awt.Shape aS, double[] aC, double aCx, double aCy, double aK, double aZ) {
+		setFace(2);
 		int aN = aC.length/2;
 		double[][] aNor = new double[aN][];//Normal of the edge i → i+1 (AWT coordinates)
 		for(int i = 0;i < aN;i++) {

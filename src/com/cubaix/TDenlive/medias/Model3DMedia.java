@@ -20,6 +20,9 @@ public class Model3DMedia extends StereoImage {
 	//Output ratio and media time of the last image
 	double lastProcessedRatio = 0;
 	long lastTime = Long.MIN_VALUE;
+	//A media texture was missing at the last image / thumbnail (not loaded yet): made again
+	boolean missing = false;
+	boolean thumbMissing = false;
 
 	public Model3DMedia(TDenlive aTDe) {
 		super(aTDe);
@@ -55,10 +58,14 @@ public class Model3DMedia extends StereoImage {
 			o = model.openProject(aOs, o);
 			//Images of the disk used as textures: found back next to the project if moved
 			for(com.cubaix.TDenlive.model3d.Object3D aObj : model.objects) {
-				if(aObj.textureFile() != null) {
-					aObj.texture = ColorBck.Fill.FILE + findPath(aObj.textureFile());
-					ColorBck.Fill.addFile(aObj.texture);
-				}
+				aObj.mapTextures(aT -> {
+					if(aT == null || !ColorBck.Fill.isFile(aT)) {
+						return aT;
+					}
+					String aF = ColorBck.Fill.FILE + findPath(aT.substring(ColorBck.Fill.FILE.length()));
+					ColorBck.Fill.addFile(aF);
+					return aF;
+				});
 			}
 		}
 		return o;
@@ -79,8 +86,10 @@ public class Model3DMedia extends StereoImage {
 		//No file, but the images of the disk used as textures
 		Vector<String> aPs = new Vector<String>();
 		for(com.cubaix.TDenlive.model3d.Object3D aObj : model.objects) {
-			if(aObj.textureFile() != null && !aPs.contains(aObj.textureFile())) {
-				aPs.add(aObj.textureFile());
+			for(String aP : aObj.textureFiles()) {
+				if(!aPs.contains(aP)) {
+					aPs.add(aP);
+				}
 			}
 		}
 		return aPs;
@@ -94,8 +103,11 @@ public class Model3DMedia extends StereoImage {
 
 	@Override
 	public synchronized void reBuild(int aProcessingMode, long aTime) {
-		long aT = model.spin == 0 ? 0 : Math.max(0, aTime);
-		if(workLeft != null && workRight != null
+		long aT = !model.isAnimated() ? 0 : Math.max(0, aTime);
+		if(thumbMissing) {
+			buildThumb();
+		}
+		if(!missing && workLeft != null && workRight != null
 				&& lastProcessedRes == tde.config.processingResValues[aProcessingMode]
 						&& lastProcessedHdr == tde.config.processingHdr[aProcessingMode]
 								&& lastProcessedRatio == tde.config.outRatio
@@ -119,7 +131,8 @@ public class Model3DMedia extends StereoImage {
 	 * Both eyes at a media time
 	 */
 	void render(int aProcessingMode, long aTime) {
-		lastTime = model.spin == 0 ? 0 : Math.max(0, aTime);
+		lastTime = !model.isAnimated() ? 0 : Math.max(0, aTime);
+		missing = false;
 		loadedLeft = renderEye(aProcessingMode, lastTime, -1);
 		loadedRight = renderEye(aProcessingMode, lastTime, 1);
 		if(origWidth <= 0) {
@@ -135,7 +148,13 @@ public class Model3DMedia extends StereoImage {
 		Renderer3D.Options aOpt = new Renderer3D.Options();
 		//Anti-aliasing up to the full HD, the memory of the samples grows fast beyond
 		aOpt.ss = aWidth*(long)aHeight <= 2200000 ? 2 : 1;
-		return Renderer3D.render(model, aWidth, aHeight, aEye, model.spin*aTime/1000.0, aOpt).image;
+		aOpt.mode = aProcessingMode;
+		aOpt.timeMS = aTime;
+		BufferedImage aBI = Renderer3D.render(model, aWidth, aHeight, aEye, model.spin*aTime/1000.0, aOpt).image;
+		if(aOpt.missing) {
+			missing = true;
+		}
+		return aBI;
 	}
 
 	@Override
@@ -159,6 +178,7 @@ public class Model3DMedia extends StereoImage {
 		ImageUtils.checkerBck(aThumb, 4);
 		Renderer3D.Options aOpt = new Renderer3D.Options();
 		BufferedImage aModel = Renderer3D.render(model, aW, aH, 0, 0, aOpt).image;
+		thumbMissing = aOpt.missing;
 		Graphics2D aG = (Graphics2D)aThumb.getGraphics();
 		aG.drawImage(aModel, 0, 0, null);
 		aG.dispose();

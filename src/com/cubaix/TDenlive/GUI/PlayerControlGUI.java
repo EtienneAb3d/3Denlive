@@ -35,6 +35,9 @@ public class PlayerControlGUI extends CompositePanel {
 	//Shown while paused: stops and stays at the current position
 	Label stopHere = null;
 	Text clock = null;
+	//Time relative to the start of the selected clip (empty without selected clip)
+	Text clipClock = null;
+	boolean settingClipClock = false;
 	//True while the program sets the clock text (not a user input)
 	boolean settingClock = false;
 	//Step in seconds of the back / forward arrows
@@ -53,7 +56,7 @@ public class PlayerControlGUI extends CompositePanel {
 		aTB.heightHint = tde.gui.h(25);
 		toolBar.setLayoutData(aTB);
 		tde.gui.applyColorFont(toolBar);
-		GridLayout aGL = new GridLayout(17, false);
+		GridLayout aGL = new GridLayout(20, false);
 		tde.gui.applyNoMargin(aGL);
 		toolBar.setLayout(aGL);
 
@@ -146,6 +149,9 @@ public class PlayerControlGUI extends CompositePanel {
 			}
 		});
 
+		//Space of a button between the clock and the start / frame / end buttons
+		buttonSpace();
+
 		Label aStart = new Label(toolBar,SWT.NONE);
 		aStart.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 		aStart.setImage(tde.gui.imgsSwt.getIcon("arrowLeftWall.gif"));
@@ -211,6 +217,39 @@ public class PlayerControlGUI extends CompositePanel {
 		aStepForward.setBackground(tde.gui.colorsSwt.WHITE);
 		tde.gui.tip(aStepForward, "StepForward");
 		aStepForward.addListener(SWT.MouseDown,e -> stepBy(1));
+
+		//Space of a button, then the time relative to the selected clip, editable as the clock
+		buttonSpace();
+		clipClock = framedField(SWT.CENTER);
+		clipClock.setText(StringUtils.time2Clock(0));
+		tde.gui.tip(clipClock, "ClipClock");
+		((GridData)clipClock.getParent().getLayoutData()).widthHint = aClockGD.widthHint;
+		clipClock.addListener(SWT.Verify, e -> {
+			if(settingClipClock) {
+				return;
+			}
+			String aNew = clipClock.getText().substring(0, e.start) + e.text + clipClock.getText().substring(e.end);
+			e.doit = aNew.length() <= 11 && aNew.matches("[0-9:]*");
+		});
+		clipClock.addListener(SWT.Modify, e -> {
+			if(settingClipClock) {
+				return;
+			}
+			long aTime = StringUtils.clock2Time(clipClock.getText());
+			clipClock.setBackground(aTime < 0 ? tde.gui.colorsSwt.RED : tde.gui.colorsSwt.WHITE);
+			if(aTime >= 0 && tde.selected.clips.size() > 0) {
+				long[] aSE = getStartEnd();
+				goToTime(Math.max(aSE[0], Math.min(aSE[0] + aTime, aSE[1])));
+			}
+		});
+		clipClock.addListener(SWT.DefaultSelection, e -> releaseClockFocus());
+		clipClock.addListener(SWT.FocusOut, e -> {
+			if(StringUtils.clock2Time(clipClock.getText()) < 0) {
+				clipClock.setText("");
+				updateClipClock();
+			}
+		});
+		updateClipClock();
 
 		Label aBlank = new Label(toolBar,SWT.NONE);
 		tde.gui.applyColorFont(aBlank);
@@ -341,6 +380,54 @@ public class PlayerControlGUI extends CompositePanel {
 	}
 
 	/**
+	 * Empty space of the width of a button
+	 */
+	void buttonSpace() {
+		Label aSpace = new Label(toolBar,SWT.NONE);
+		tde.gui.applyColorFont(aSpace);
+		GridData aGD = new GridData();
+		aGD.widthHint = 25;
+		aSpace.setLayoutData(aGD);
+	}
+
+	/**
+	 * Time of the montage cursor relative to the start of the main selected clip (negative before it),
+	 * empty without selected clip (SWT thread). An invalid time being typed is left as it is.
+	 */
+	public void updateClipClock() {
+		if(clipClock == null || clipClock.isDisposed()) {
+			return;
+		}
+		boolean aHasClip = tde.selected.clips.size() > 0;
+		if(clipClock.isFocusControl() && aHasClip && StringUtils.clock2Time(clipClock.getText()) < 0) {
+			return;
+		}
+		String aText = "";
+		if(aHasClip) {
+			long aRel = tde.timeLineStack.getTimePosMS() - tde.selected.clips.lastElement().getStartTimeMS();
+			aText = (aRel < 0 ? "-" : "") + StringUtils.time2Clock(Math.abs(aRel));
+		}
+		if(clipClock.getEnabled() != aHasClip) {
+			clipClock.setEnabled(aHasClip);
+		}
+		if(aText.equals(clipClock.getText())) {
+			return;
+		}
+		settingClipClock = true;
+		try {
+			int aCaret = clipClock.getCaretPosition();
+			clipClock.setText(aText);
+			clipClock.setBackground(tde.gui.colorsSwt.WHITE);
+			if(clipClock.isFocusControl()) {
+				clipClock.setSelection(Math.min(aCaret, aText.length()));
+			}
+		}
+		finally {
+			settingClipClock = false;
+		}
+	}
+
+	/**
 	 * Text field with a gray 1 px frame (the native border is hardly visible on macOS)
 	 */
 	Text framedField(int aStyle) {
@@ -354,7 +441,8 @@ public class PlayerControlGUI extends CompositePanel {
 	 * Focus out of the clock (to the time lines), so that its text follows the time cursor again
 	 */
 	void releaseClockFocus() {
-		if(!clock.isDisposed() && clock.isFocusControl() && tde.gui.timeLinesGUI != null
+		if(!clock.isDisposed() && (clock.isFocusControl() || (clipClock != null && !clipClock.isDisposed() && clipClock.isFocusControl()))
+				&& tde.gui.timeLinesGUI != null
 				&& !tde.gui.timeLinesGUI.canvas.isDisposed()) {
 			tde.gui.timeLinesGUI.canvas.setFocus();
 		}
@@ -659,6 +747,7 @@ public class PlayerControlGUI extends CompositePanel {
 			@Override
 			public void run() {
 				showClock(tde.timeLineStack.getTimePosMS());
+				updateClipClock();
 			}
 		});
 	}

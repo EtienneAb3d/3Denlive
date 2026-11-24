@@ -17,6 +17,7 @@ import org.eclipse.swt.widgets.MessageBox;
 
 import com.cubaix.TDenlive.TDenlive;
 import com.cubaix.TDenlive.medias.ColorBck;
+import com.cubaix.TDenlive.model3d.Texture3D;
 import com.cubaix.TDenlive.utils.ImageUtils;
 
 /**
@@ -49,11 +50,21 @@ public class TextureLibrary {
 	String viewCategory = null;
 	java.util.Vector<String> viewTextures = null;
 	Label textureName = null;
+	//3D modeler: the medias of the media list (images, videos, 2D or stereo) as textures (Texture3D.MEDIA)
+	boolean withMedias = false;
 
 	/**
 	 * In aParent (a GridLayout of one column): its row and its thumbnails
 	 */
 	public TextureLibrary(TDenlive aTDe, Composite aParent, String aTexture, java.util.function.Supplier<ColorBck.Fill> aColors, Listener aListener) {
+		this(aTDe, aParent, aTexture, aColors, aListener, false);
+	}
+
+	/**
+	 * aMedias: with the button of the medias of the media list, and the videos of the disk (added to it)
+	 */
+	public TextureLibrary(TDenlive aTDe, Composite aParent, String aTexture, java.util.function.Supplier<ColorBck.Fill> aColors, Listener aListener, boolean aMedias) {
+		withMedias = aMedias;
 		tde = aTDe;
 		parent = aParent;
 		colors = aColors;
@@ -69,6 +80,14 @@ public class TextureLibrary {
 	}
 
 	public static String label(TDenlive aTDe, String aTexture) {
+		if(Texture3D.isMedia(aTexture)) {
+			long aUID = Texture3D.mediaUID(aTexture);
+			String aN = Texture3D.medias != null ? Texture3D.medias.name(aUID) : null;
+			if(aN == null) {
+				return aTDe.gui.lngs.get("Texture3D.MediaMissing");
+			}
+			return aN + (Texture3D.medias.isMoving(aUID) ? aTDe.gui.lngs.get("Texture3D.Video") : "");
+		}
 		if(ColorBck.Fill.isFile(aTexture)) {
 			return ColorBck.Fill.baseName(aTexture);
 		}
@@ -79,7 +98,7 @@ public class TextureLibrary {
 		Composite aLibRow = new Composite(parent, SWT.NONE);
 		aLibRow.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		tde.gui.applyColorFont(aLibRow);
-		GridLayout aLRGL = new GridLayout(4, false);
+		GridLayout aLRGL = new GridLayout(withMedias ? 5 : 4, false);
 		tde.gui.applyNoMargin(aLRGL);
 		aLibRow.setLayout(aLRGL);
 		Label aCatL = new Label(aLibRow, SWT.NONE);
@@ -102,10 +121,18 @@ public class TextureLibrary {
 			}
 		});
 		Button aLoad = new Button(aLibRow, SWT.PUSH);
-		aLoad.setText(tde.gui.lngs.get("ColorBck.LoadImage"));
+		aLoad.setText(tde.gui.lngs.get(withMedias ? "Texture3D.LoadFile" : "ColorBck.LoadImage"));
 		aLoad.setImage(tde.gui.imgsSwt.getIcon("open.gif"));
 		tde.gui.applyColorFont(aLoad);
 		aLoad.addListener(SWT.Selection, e -> loadImage());
+		if(withMedias) {
+			Button aLib = new Button(aLibRow, SWT.PUSH);
+			aLib.setText(tde.gui.lngs.get("Texture3D.FromLibrary"));
+			tde.gui.applyColorFont(aLib);
+			aLib.setToolTipText(tde.gui.lngs.get("Texture3D.FromLibraryTip"));
+			aLib.setEnabled(!libraryMedias(tde).isEmpty());
+			aLib.addListener(SWT.Selection, e -> chooseMedia());
+		}
 		textureName = new Label(aLibRow, SWT.NONE);
 		GridData aTNGD = new GridData(GridData.FILL_HORIZONTAL);
 		aTNGD.horizontalIndent = 12;
@@ -247,8 +274,11 @@ public class TextureLibrary {
 	 */
 	void loadImage() {
 		FileDialog aFD = new FileDialog(parent.getShell(), SWT.OPEN);
-		aFD.setText(tde.gui.lngs.get("ColorBck.LoadImage"));
+		aFD.setText(tde.gui.lngs.get(withMedias ? "Texture3D.LoadFile" : "ColorBck.LoadImage"));
 		String aExts = "*.jpg;*.jpeg;*.png;*.webp;*.bmp;*.gif;*.tif;*.tiff;*.pgm";
+		if(withMedias) {
+			aExts += ";" + AiClipGUI.VIDEO_EXTS.substring(0, AiClipGUI.VIDEO_EXTS.length()-1);
+		}
 		aFD.setFilterExtensions(new String[] {aExts + ";" + aExts.toUpperCase(), "*"});
 		String aDir = ColorBck.Fill.isFile(texture) ? new java.io.File(texture.substring(ColorBck.Fill.FILE.length())).getParent() : tde.lastDir;
 		if(aDir != null) {
@@ -256,6 +286,10 @@ public class TextureLibrary {
 		}
 		String aPath = aFD.open();
 		if(aPath == null) {
+			return;
+		}
+		if(withMedias && aPath.toLowerCase().matches(com.cubaix.TDenlive.medias.MediaList.VIDEO_FILE_RE)) {
+			loadVideo(aPath);
 			return;
 		}
 		String aTexture = ColorBck.Fill.FILE + aPath;
@@ -269,6 +303,95 @@ public class TextureLibrary {
 		ColorBck.Fill.addFile(aTexture);
 		showCategory(ColorBck.Fill.FILES);
 		select(aTexture);
+	}
+
+	/**
+	 * Medias of the media list usable as textures: still images and videos of files (not the color
+	 * backgrounds, the shapes, the 3D models or the scenes)
+	 */
+	static java.util.Vector<com.cubaix.TDenlive.medias.Media> libraryMedias(TDenlive aTDe) {
+		java.util.Vector<com.cubaix.TDenlive.medias.Media> aL = new java.util.Vector<com.cubaix.TDenlive.medias.Media>();
+		if(aTDe.mediaList == null) {
+			return aL;
+		}
+		for(com.cubaix.TDenlive.medias.Media aM : new java.util.Vector<com.cubaix.TDenlive.medias.Media>(aTDe.mediaList.mediaList)) {
+			if(aM instanceof com.cubaix.TDenlive.medias.StereoMovie ? ((com.cubaix.TDenlive.medias.StereoMovie)aM).getPathL() != null
+					: aM instanceof com.cubaix.TDenlive.medias.StereoImage && !(aM instanceof ColorBck)
+					&& !(aM instanceof com.cubaix.TDenlive.medias.ShapesMedia) && !(aM instanceof com.cubaix.TDenlive.medias.Model3DMedia)
+					&& !(aM instanceof com.cubaix.TDenlive.medias.SceneMedia)
+					&& AiClipGUI.leftView((com.cubaix.TDenlive.medias.StereoImage)aM) != null) {
+				aL.add(aM);
+			}
+		}
+		return aL;
+	}
+
+	/**
+	 * A media of the media list as texture
+	 */
+	void chooseMedia() {
+		com.cubaix.TDenlive.medias.Media aM = AiClipGUI.chooseLibraryMedia(tde, parent.getShell(), libraryMedias(tde), tde.gui.lngs.get("Texture3D.LibraryTitle"));
+		if(aM != null) {
+			select(Texture3D.MEDIA + aM.UID);
+		}
+	}
+
+	/**
+	 * A video of the disk: added to the media list (its layout asked, copied into the project folder if wanted),
+	 * then its media as texture
+	 */
+	void loadVideo(String aPath) {
+		java.util.Vector<String> aFiles = new java.util.Vector<String>();
+		aFiles.add(aPath);
+		int aType = MediaDropGUI.askType(tde, parent.getShell(), aFiles, tde.gui.lngs.get("Texture3D.LoadFile"));
+		if(aType < 0) {
+			return;
+		}
+		boolean aCopy = MediaDropGUI.askCopy(tde, parent.getShell(), aPath);
+		parent.getShell().setCursor(tde.gui.display.getSystemCursor(SWT.CURSOR_WAIT));
+		final int aT = aType;
+		Thread aTh = new Thread(() -> {
+			com.cubaix.TDenlive.medias.Media aNew = null;
+			try {
+				String aP = aCopy ? com.cubaix.TDenlive.utils.ProjectFiles.importFile(tde, aPath, false, null) : aPath;
+				int aBefore = tde.mediaList.mediaList.size();
+				if(aT == MediaDropGUI.PARALLEL) {
+					tde.mediaList.loadImageP(aP, com.cubaix.TDenlive.TDConfig.PROCESSING_MODE_RENDER, 0);
+				}
+				else if(aT == MediaDropGUI.CROSSED) {
+					tde.mediaList.loadImageX(aP, com.cubaix.TDenlive.TDConfig.PROCESSING_MODE_RENDER, 0);
+				}
+				else {
+					tde.mediaList.loadImageLR(aP, aP, com.cubaix.TDenlive.TDConfig.PROCESSING_MODE_RENDER, 0);
+				}
+				if(tde.mediaList.mediaList.size() > aBefore) {
+					aNew = tde.mediaList.mediaList.lastElement();
+				}
+			}
+			catch(Throwable t) {
+				t.printStackTrace(System.err);
+			}
+			final com.cubaix.TDenlive.medias.Media aM = aNew;
+			tde.gui.display.asyncExec(() -> {
+				if(tde.gui.mediaListGUI != null) {
+					tde.gui.mediaListGUI.redraw();
+				}
+				if(library.isDisposed()) {
+					return;
+				}
+				parent.getShell().setCursor(null);
+				if(aM == null) {
+					MessageBox aMB = new MessageBox(parent.getShell(), SWT.ICON_ERROR | SWT.OK);
+					aMB.setText(parent.getShell().getText());
+					aMB.setMessage(tde.gui.lngs.get("ColorBck.LoadError") + "\n" + aPath);
+					aMB.open();
+					return;
+				}
+				select(Texture3D.MEDIA + aM.UID);
+			});
+		}, "Video texture");
+		aTh.setDaemon(true);
+		aTh.start();
 	}
 
 	void disposeThumbs() {

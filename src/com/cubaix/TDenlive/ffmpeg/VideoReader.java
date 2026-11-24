@@ -236,7 +236,10 @@ public class VideoReader {
 			aPath = path;
 		}
 		if(decoder == null) {
-			decoder = new FfmpegDecoder(aPath,aTimeOffset,-1,aResize,aFps);
+			//Frame grid of the file read: the work copy at 15 fps at most, else the original (known after the first
+			//reading, at 0)
+			double aFileFps = durationMS < 0 || origFps <= 0 ? -1 : aPath.equals(path) ? origFps : Math.min(15, origFps);
+			decoder = new FfmpegDecoder(aPath,aTimeOffset,-1,aResize,aFps,aFileFps);
 			countFrames = 0;
 			currentResize = aResize;
 		}
@@ -250,7 +253,7 @@ public class VideoReader {
 			currentWidth = aBI.getWidth();
 			currentHeight = aBI.getHeight();
 			synchronized (buffer) {
-				buffer.add(new VideoImage(aBI,decoder.timeOffset+(int)(1000*countFrames/(double)currentFps)));
+				buffer.add(new VideoImage(aBI,Math.round(decoder.firstMS+1000*countFrames/(double)currentFps)));
 				countFrames++;
 				buffer.sort(new Comparator<VideoImage>() {
 					@Override
@@ -313,7 +316,7 @@ public class VideoReader {
 								break;
 							}
 							currentFps = decoder.fps;
-							buffer.add(new VideoImage(aBI,decoder.timeOffset+(int)(1000*countFrames/(double)currentFps)));
+							buffer.add(new VideoImage(aBI,Math.round(decoder.firstMS+1000*countFrames/(double)currentFps)));
 							countFrames++;
 							buffer.sort(new Comparator<VideoImage>() {
 								@Override

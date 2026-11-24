@@ -8,14 +8,17 @@
 #                      when the system has no WebKitGTK (GUI/FxBrowser), bundled into the Linux delivery
 #  - JVMs/JDK/       : a Java JDK for this machine, used by run_3De.sh and build_delivery.sh
 #                      when no JDK 27+ is installed (find_jdk.sh)
+#  - distrib/objects3d/ : every object of the library of the 3D modeler (res/objects3d/objects.txt)
+#                      with its thumbnail, bundled into every delivery (model3d.ObjectCatalog.main())
 #
-# Usage: ./Install-Dev.sh [-f] [--ffmpeg-only|--jvm-only|--jdk-only|--javafx-only] [config...]
+# Usage: ./Install-Dev.sh [-f] [--ffmpeg-only|--jvm-only|--jdk-only|--javafx-only|--objects-only] [config...]
 #   configs: Linux PPC64le Win-x64 MacIntel MacSilicon (default: all)
 #   -f            : re-download even if already present (to update to the latest versions)
 #   --ffmpeg-only : only ffmpeg (enough to develop and run from distrib/)
 #   --jvm-only    : only the JVMs (needed by build_delivery.sh)
 #   --jdk-only    : only the JDK of this machine (to compile when the system has no JDK 27+)
 #   --javafx-only : only JavaFX (Linux config)
+#   --objects-only: only the 3D objects (-f: their thumbnails made again)
 #
 # Sources:
 #   ffmpeg Linux / Windows : https://github.com/BtbN/FFmpeg-Builds (latest nX.Y release branch)
@@ -39,16 +42,18 @@ DO_FFMPEG=1
 DO_JVM=1
 DO_JDK=1
 DO_JAVAFX=1
+DO_OBJECTS=1
 CONFIGS=()
 
 for arg in "$@"; do
 	case "$arg" in
 		-f|--force) FORCE=1 ;;
-		--ffmpeg-only) DO_JVM=0; DO_JDK=0; DO_JAVAFX=0 ;;
-		--jvm-only) DO_FFMPEG=0; DO_JDK=0; DO_JAVAFX=0 ;;
-		--jdk-only) DO_FFMPEG=0; DO_JVM=0; DO_JAVAFX=0 ;;
-		--javafx-only) DO_FFMPEG=0; DO_JVM=0; DO_JDK=0 ;;
-		-h|--help) sed -n '2,26p' "$0"; exit 0 ;;
+		--ffmpeg-only) DO_JVM=0; DO_JDK=0; DO_JAVAFX=0; DO_OBJECTS=0 ;;
+		--jvm-only) DO_FFMPEG=0; DO_JDK=0; DO_JAVAFX=0; DO_OBJECTS=0 ;;
+		--jdk-only) DO_FFMPEG=0; DO_JVM=0; DO_JAVAFX=0; DO_OBJECTS=0 ;;
+		--javafx-only) DO_FFMPEG=0; DO_JVM=0; DO_JDK=0; DO_OBJECTS=0 ;;
+		--objects-only) DO_FFMPEG=0; DO_JVM=0; DO_JDK=0; DO_JAVAFX=0 ;;
+		-h|--help) sed -n '2,30p' "$0"; exit 0 ;;
 		Linux|PPC64le|Win-x64|MacIntel|MacSilicon) CONFIGS+=("$arg") ;;
 		*) echo "Unknown argument: $arg (configs: ${ALL_CONFIGS[*]})" >&2; exit 1 ;;
 	esac
@@ -226,4 +231,23 @@ for c in "${CONFIGS[@]}"; do
 	[ "$DO_JVM" -eq 1 ] && install_jvm "$c"
 	[ "$DO_JAVAFX" -eq 1 ] && install_javafx "$c"
 done
+
+# Objects of the library of the 3D modeler: downloaded by the application itself (same code as the
+# downloads at the first use), compiled into a temporary folder, with their thumbnails
+if [ "$DO_OBJECTS" -eq 1 ]; then
+	# shellcheck source=find_jdk.sh
+	source "$ROOT/find_jdk.sh"
+	jbin="$(find_java_bin "$JAVA_VERSION" javac)" || { echo "Objects 3D: no JDK $JAVA_VERSION+ to compile the downloader" >&2; exit 1; }
+	cls="$TMP/objects3d-classes"
+	rm -rf "$cls"; mkdir -p "$cls"
+	echo "Objects 3D: compiling the downloader..."
+	"$jbin/javac" --release "$JAVA_VERSION" -nowarn -encoding UTF-8 -d "$cls" -cp "$ROOT/distrib/*:$ROOT/distrib/Linux/swt.jar" \
+		$(find "$ROOT/src" -name '*.java') 2>&1 | grep -v '^Note:' || true
+	oflag=""
+	[ "$FORCE" -eq 1 ] && oflag="-f"
+	(cd "$ROOT/distrib" && "$jbin/java" -Djava.awt.headless=true -Xmx2G -cp "$cls:$ROOT/src:$ROOT/distrib/*:$ROOT/distrib/Linux/swt.jar" \
+		com.cubaix.TDenlive.model3d.ObjectCatalog "$ROOT/distrib/objects3d" $oflag) \
+		|| echo "Objects 3D: some objects failed (see above); run ./Install-Dev.sh --objects-only again" >&2
+	echo "Objects 3D: $(du -sh "$ROOT/distrib/objects3d" | cut -f1 | tr -d ' ') in distrib/objects3d"
+fi
 exit 0

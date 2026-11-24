@@ -67,6 +67,8 @@ public class MediaListGUI extends CanvasPanel {
 
 	void createContents(Composite aParent) {
 		createDragSource();
+		//Files dropped from the file manager (type asked)
+		MediaDropGUI.install(tde, canvas);
 		tde.gui.tip(canvas, "MediaList");
 		//Trash buttons: hover frame and help
 		canvas.addListener(SWT.MouseMove, e -> {
@@ -227,7 +229,14 @@ public class MediaListGUI extends CanvasPanel {
 		}
 		Vector<Clip> aClips = tde.timeLineStack.clipsOf(aMedia);
 		Vector<Clip> aDepths = tde.timeLineStack.depthUsesOf(aMedia);
-		if(aClips.size() > 0 || aDepths.size() > 0) {
+		//3D models textured by it
+		Vector<com.cubaix.TDenlive.medias.Model3DMedia> aModels = new Vector<com.cubaix.TDenlive.medias.Model3DMedia>();
+		for(Media aM : tde.mediaList.mediaList) {
+			if(aM instanceof com.cubaix.TDenlive.medias.Model3DMedia && ((com.cubaix.TDenlive.medias.Model3DMedia)aM).getModel().usesMedia(aMedia.UID)) {
+				aModels.add((com.cubaix.TDenlive.medias.Model3DMedia)aM);
+			}
+		}
+		if(aClips.size() > 0 || aDepths.size() > 0 || aModels.size() > 0) {
 			String aName = aMedia.fileName == null ? "?" : new File(aMedia.fileName).getName();
 			String aMsg = tde.gui.lngs.get(aClips.size() > 0 ? "MediaTrash.Used" : "MediaTrash.UsedDepthOnly")
 					.replace("%s", aName).replace("%n", ""+aClips.size());
@@ -236,6 +245,11 @@ public class MediaListGUI extends CanvasPanel {
 			}
 			else if(aDepths.size() > 0) {
 				aMsg = aMsg.replace("%d", ""+aDepths.size());
+			}
+			if(aModels.size() > 0) {
+				String aT = tde.gui.lngs.get("MediaTrash.Texture3D").replace("%n", ""+aModels.size());
+				aMsg = aClips.size() > 0 || aDepths.size() > 0 ? aMsg+"\n"+aT
+						: tde.gui.lngs.get("MediaTrash.UsedTexture3DOnly").replace("%s", aName)+"\n"+aT;
 			}
 			aMsg += "\n\n"+tde.gui.lngs.get("MediaTrash.Confirm");
 			MessageBox aMB = new MessageBox(tde.gui.shell, SWT.ICON_WARNING|SWT.YES|SWT.NO);
@@ -260,6 +274,12 @@ public class MediaListGUI extends CanvasPanel {
 		try {
 			tde.timeLineStack.releaseMedia(aMedia);
 			tde.mediaList.removeMedia(aMedia);
+			//The objects textured by it take their color again
+			for(com.cubaix.TDenlive.medias.Model3DMedia aMM : aModels) {
+				com.cubaix.TDenlive.model3d.Model3D aM3 = aMM.getModel().copy();
+				aM3.releaseMedia(aMedia.UID);
+				aMM.setModel(aM3);
+			}
 		}
 		catch(Throwable t) {
 			t.printStackTrace(System.err);

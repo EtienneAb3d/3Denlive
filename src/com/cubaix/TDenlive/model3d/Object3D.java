@@ -26,9 +26,11 @@ public class Object3D {
 	public static final int NB_PRIMITIVES = 8;
 	public static final int TEXT = 8;
 	public static final int GROUP = 9;
-	public static final int NB_TYPES = 10;
+	//Textured object of the library (ObjectCatalog), its id in asset
+	public static final int ASSET = 10;
+	public static final int NB_TYPES = 11;
 	//Language keys (Model3D.<name>) and saved names
-	public static final String[] TYPE_NAMES = {"Cube", "Sphere", "Cylinder", "Cone", "Torus", "Pyramid", "Plane", "Tube", "Text", "Group"};
+	public static final String[] TYPE_NAMES = {"Cube", "Sphere", "Cylinder", "Cone", "Torus", "Pyramid", "Plane", "Tube", "Text", "Group", "Asset"};
 
 	public int id = 0;
 	public int type = CUBE;
@@ -49,12 +51,142 @@ public class Object3D {
 	public double texScale = 100;
 	//Rotation of the texture on the faces, degrees counterclockwise around the middle of a face
 	public double texRot = 0;
+	//Video textures (Texture3D.MEDIA): range of the media time looped, in ms (end -1 = end of the video)
+	public long texStartMS = 0;
+	public long texEndMS = -1;
+	//Texture of each face (faceNames(), Mesh3D.triFace) when not that of the object (texture), null = the same;
+	//the colors are shared
+	public String[] faceTex = null;
+	//Settings of the texture of each face (repeats, offsets, scale, rotation, video range) when not those of the
+	//object, null = the same
+	public TexParams[] faceParams = null;
+
+	/**
+	 * Settings of a texture on a face: repeats, offsets (% of a repeat), scale (%), rotation (degrees), video range
+	 */
+	public static class TexParams {
+		public double repU = 1, repV = 1;
+		public double offU = 0, offV = 0;
+		public double scale = 100;
+		public double rot = 0;
+		public long startMS = 0, endMS = -1;
+
+		public TexParams copy() {
+			TexParams aP = new TexParams();
+			aP.repU = repU; aP.repV = repV;
+			aP.offU = offU; aP.offV = offV;
+			aP.scale = scale;
+			aP.rot = rot;
+			aP.startMS = startMS; aP.endMS = endMS;
+			return aP;
+		}
+
+		/**
+		 * Those of the object aO
+		 */
+		public static TexParams of(Object3D aO) {
+			TexParams aP = new TexParams();
+			aP.repU = aO.texRepU; aP.repV = aO.texRepV;
+			aP.offU = aO.texOffU; aP.offV = aO.texOffV;
+			aP.scale = aO.texScale;
+			aP.rot = aO.texRot;
+			aP.startMS = aO.texStartMS; aP.endMS = aO.texEndMS;
+			return aP;
+		}
+
+		/**
+		 * As those of the object aO
+		 */
+		public void applyTo(Object3D aO) {
+			aO.texRepU = repU; aO.texRepV = repV;
+			aO.texOffU = offU; aO.texOffV = offV;
+			aO.texScale = scale;
+			aO.texRot = rot;
+			aO.texStartMS = startMS; aO.texEndMS = endMS;
+		}
+
+		/**
+		 * Text of the values (contexts of the renderer, save)
+		 */
+		public String key() {
+			return repU+";"+repV+";"+offU+";"+offV+";"+scale+";"+rot+";"+startMS+";"+endMS;
+		}
+
+		static TexParams load(String[] aVs, int aFrom) {
+			TexParams aP = new TexParams();
+			aP.repU = Double.parseDouble(aVs[aFrom]);
+			aP.repV = Double.parseDouble(aVs[aFrom+1]);
+			aP.offU = Double.parseDouble(aVs[aFrom+2]);
+			aP.offV = Double.parseDouble(aVs[aFrom+3]);
+			aP.scale = Double.parseDouble(aVs[aFrom+4]);
+			aP.rot = Double.parseDouble(aVs[aFrom+5]);
+			aP.startMS = Long.parseLong(aVs[aFrom+6].trim());
+			aP.endMS = Long.parseLong(aVs[aFrom+7].trim());
+			return aP;
+		}
+	}
+
+	/**
+	 * Settings of the texture of the face aF: its own, else those of the object (a copy)
+	 */
+	public TexParams texParams(int aF) {
+		TexParams aP = ownFaceParams(aF);
+		return aP != null ? aP : TexParams.of(this);
+	}
+
+	/**
+	 * Own settings of the face aF, null when it has those of the object
+	 */
+	public TexParams ownFaceParams(int aF) {
+		return faceParams != null && aF >= 0 && aF < faceParams.length ? faceParams[aF] : null;
+	}
+
+	/**
+	 * Settings of the face aF (null: those of the object again)
+	 */
+	public void setFaceParams(int aF, TexParams aP) {
+		if(aF < 0) {
+			return;
+		}
+		if(faceParams == null) {
+			if(aP == null) {
+				return;
+			}
+			faceParams = new TexParams[Math.max(aF+1, faceNames(type).length)];
+		}
+		if(aF >= faceParams.length) {
+			faceParams = java.util.Arrays.copyOf(faceParams, aF+1);
+		}
+		faceParams[aF] = aP;
+		for(TexParams aT : faceParams) {
+			if(aT != null) {
+				return;
+			}
+		}
+		faceParams = null;
+	}
+	//Language keys (Texture3D.Face_<name>) of the faces of each type; one face: no texture per face
+	static final String[][] FACE_NAMES = {
+			{"Front", "Back", "Right", "Left", "Top", "Bottom"}//Cube
+			, {}//Sphere
+			, {"Side", "Top", "Bottom"}//Cylinder
+			, {"Side", "Base"}//Cone
+			, {}//Torus
+			, {"Front", "Right", "Back", "Left", "Base"}//Pyramid
+			, {}//Plane
+			, {"Outside", "Inside", "Top", "Bottom"}//Tube
+			, {"Front", "Back", "Sides"}//Text
+			, {}//Group
+			, {}//Asset
+	};
 	//Text
 	public String text = "Text";
 	public String fontName = ShapeText.DEFAULT_FONT;
 	public boolean bold = false;
 	public boolean italic = false;
 	public double extrusion = 0.25;//Thickness / height of a line
+	//Object of the library: id of ObjectCatalog
+	public String asset = "";
 
 	public Object3D() {
 	}
@@ -76,6 +208,7 @@ public class Object3D {
 		aO.bold = bold;
 		aO.italic = italic;
 		aO.extrusion = extrusion;
+		aO.asset = asset;
 		return aO;
 	}
 
@@ -86,10 +219,127 @@ public class Object3D {
 		aO.texOffU = texOffU; aO.texOffV = texOffV;
 		aO.texScale = texScale;
 		aO.texRot = texRot;
+		aO.texStartMS = texStartMS;
+		aO.texEndMS = texEndMS;
+		//The faces of another type are not the same: its own textures per face are kept
+		if(aO.type == type) {
+			aO.faceTex = faceTex == null ? null : faceTex.clone();
+			aO.faceParams = null;
+			if(faceParams != null) {
+				aO.faceParams = new TexParams[faceParams.length];
+				for(int f = 0;f < faceParams.length;f++) {
+					aO.faceParams[f] = faceParams[f] == null ? null : faceParams[f].copy();
+				}
+			}
+		}
 	}
 
 	public boolean hasTexture() {
 		return texture != null && !ColorBck.Fill.PLAIN.equals(texture);
+	}
+
+	/**
+	 * Names (language keys Texture3D.Face_<name>) of the faces of the type aType, empty when it has one face
+	 */
+	public static String[] faceNames(int aType) {
+		return aType >= 0 && aType < FACE_NAMES.length ? FACE_NAMES[aType] : new String[0];
+	}
+
+	/**
+	 * Texture of the face aF: its own, else that of the object
+	 */
+	public String faceTexture(int aF) {
+		if(faceTex != null && aF >= 0 && aF < faceTex.length && faceTex[aF] != null) {
+			return faceTex[aF];
+		}
+		return texture;
+	}
+
+	/**
+	 * Own texture of the face aF, null = that of the object
+	 */
+	public String ownFaceTexture(int aF) {
+		return faceTex != null && aF >= 0 && aF < faceTex.length ? faceTex[aF] : null;
+	}
+
+	/**
+	 * Texture of the face aF (null: that of the object again)
+	 */
+	public void setFaceTexture(int aF, String aTexture) {
+		if(aF < 0) {
+			return;
+		}
+		if(faceTex == null) {
+			if(aTexture == null) {
+				return;
+			}
+			faceTex = new String[Math.max(aF+1, faceNames(type).length)];
+		}
+		if(aF >= faceTex.length) {
+			faceTex = java.util.Arrays.copyOf(faceTex, aF+1);
+		}
+		faceTex[aF] = aTexture;
+		for(String aT : faceTex) {
+			if(aT != null) {
+				return;
+			}
+		}
+		faceTex = null;
+	}
+
+	/**
+	 * The textures used: that of the object, then those of the faces (each once)
+	 */
+	public java.util.List<String> textures() {
+		java.util.List<String> aTs = new java.util.ArrayList<String>();
+		aTs.add(texture);
+		if(faceTex != null) {
+			for(String aT : faceTex) {
+				if(aT != null && !aTs.contains(aT)) {
+					aTs.add(aT);
+				}
+			}
+		}
+		return aTs;
+	}
+
+	/**
+	 * Textured: the object or one of its faces
+	 */
+	public boolean hasAnyTexture() {
+		for(String aT : textures()) {
+			if(aT != null && !ColorBck.Fill.PLAIN.equals(aT)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Paths of the images of the disk used as textures (object and faces)
+	 */
+	public java.util.List<String> textureFiles() {
+		java.util.List<String> aPs = new java.util.ArrayList<String>();
+		for(String aT : textures()) {
+			if(aT != null && ColorBck.Fill.isFile(aT)) {
+				aPs.add(aT.substring(ColorBck.Fill.FILE.length()));
+			}
+		}
+		return aPs;
+	}
+
+	/**
+	 * Each texture (object and faces) replaced by aMap.apply(texture) (an image of the disk found back...)
+	 */
+	public void mapTextures(java.util.function.UnaryOperator<String> aMap) {
+		texture = aMap.apply(texture);
+		if(faceTex != null) {
+			for(int f = 0;f < faceTex.length;f++) {
+				if(faceTex[f] != null) {
+					faceTex[f] = aMap.apply(faceTex[f]);
+				}
+			}
+		}
 	}
 
 	/**
@@ -123,6 +373,9 @@ public class Object3D {
 		}
 		if(type == TEXT) {
 			return Mesh3D.text(text, fontName, bold, italic, extrusion);
+		}
+		if(type == ASSET) {
+			return ObjectCatalog.mesh(asset);
 		}
 		return Mesh3D.get(type);
 	}
@@ -205,7 +458,7 @@ public class Object3D {
 		aSB.append(aIndent+"	<rot>" + rx + ";" + ry + ";" + rz + "</rot>\n");
 		aSB.append(aIndent+"	<scale>" + sx + ";" + sy + ";" + sz + "</scale>\n");
 		aSB.append(aIndent+"	<color>" + color + "</color>\n");
-		if(hasTexture()) {
+		if(hasAnyTexture()) {
 			if(textureFile() != null) {
 				//The path alone in its tag: gathered, packed and renamed like the paths of the medias
 				aSB.append(aIndent+"	<texture>file</texture>\n");
@@ -219,6 +472,32 @@ public class Object3D {
 			aSB.append(aIndent+"	<texOffset>" + texOffU + ";" + texOffV + "</texOffset>\n");
 			aSB.append(aIndent+"	<texScale>" + texScale + "</texScale>\n");
 			aSB.append(aIndent+"	<texRot>" + texRot + "</texRot>\n");
+			if(texStartMS != 0 || texEndMS >= 0) {
+				aSB.append(aIndent+"	<texLoop>" + texStartMS + ";" + texEndMS + "</texLoop>\n");
+			}
+			if(faceTex != null) {
+				for(int f = 0;f < faceTex.length;f++) {
+					String aT = faceTex[f];
+					if(aT == null) {
+						continue;
+					}
+					if(ColorBck.Fill.isFile(aT)) {
+						//The path alone in its tag, as that of the object
+						aSB.append(aIndent+"	<faceTexture>" + f + ";file</faceTexture>\n");
+						aSB.append(aIndent+"	<faceTexturePath>" + aT.substring(ColorBck.Fill.FILE.length()) + "</faceTexturePath>\n");
+					}
+					else {
+						aSB.append(aIndent+"	<faceTexture>" + f + ";" + aT + "</faceTexture>\n");
+					}
+				}
+			}
+			if(faceParams != null) {
+				for(int f = 0;f < faceParams.length;f++) {
+					if(faceParams[f] != null) {
+						aSB.append(aIndent+"	<faceTexParams>" + f + ";" + faceParams[f].key() + "</faceTexParams>\n");
+					}
+				}
+			}
 		}
 		if(type == TEXT) {
 			aSB.append(aIndent+"	<text>" + Shape.encode(text) + "</text>\n");
@@ -227,6 +506,9 @@ public class Object3D {
 			aSB.append(aIndent+"	<bold>" + bold + "</bold>\n");
 			aSB.append(aIndent+"	<italic>" + italic + "</italic>\n");
 			aSB.append(aIndent+"	<extrusion>" + extrusion + "</extrusion>\n");
+		}
+		if(type == ASSET) {
+			aSB.append(aIndent+"	<asset>" + Shape.encode(asset) + "</asset>\n");
 		}
 		aSB.append(aIndent+"</Object3D>\n");
 	}
@@ -240,6 +522,8 @@ public class Object3D {
 	 * Reads from the <Object3D> tag at index o, returns the index of </Object3D>
 	 */
 	public int openProject(Vector<XmlObject> aOs, int o) throws Exception {
+		//Face of the last <faceTexture> (its path follows in <faceTexturePath>)
+		int aFace = -1;
 		for(o++;o < aOs.size();o++) {
 			XmlObject aO = aOs.elementAt(o);
 			if(!(aO instanceof XmlTag)) {
@@ -289,6 +573,20 @@ public class Object3D {
 			if("texturePath".equalsIgnoreCase(aT.tagName)) {
 				texture = ColorBck.Fill.FILE + aOs.elementAt(++o).text.trim();
 			}
+			if("faceTexture".equalsIgnoreCase(aT.tagName)) {
+				String aV = aOs.elementAt(++o).text.trim();
+				int aS = aV.indexOf(';');
+				aFace = Integer.parseInt(aV.substring(0, aS));
+				String aTex = aV.substring(aS+1);
+				setFaceTexture(aFace, "file".equals(aTex) ? ColorBck.Fill.FILE : aTex);
+			}
+			if("faceTexParams".equalsIgnoreCase(aT.tagName)) {
+				String[] aVs = aOs.elementAt(++o).text.trim().split(";");
+				setFaceParams(Integer.parseInt(aVs[0].trim()), TexParams.load(aVs, 1));
+			}
+			if("faceTexturePath".equalsIgnoreCase(aT.tagName)) {
+				setFaceTexture(aFace, ColorBck.Fill.FILE + aOs.elementAt(++o).text.trim());
+			}
 			if("color2".equalsIgnoreCase(aT.tagName)) {
 				color2 = Integer.parseInt(aOs.elementAt(++o).text.trim());
 			}
@@ -299,6 +597,11 @@ public class Object3D {
 			}
 			if("texRot".equalsIgnoreCase(aT.tagName)) {
 				texRot = Double.parseDouble(aOs.elementAt(++o).text.trim());
+			}
+			if("texLoop".equalsIgnoreCase(aT.tagName)) {
+				String[] aVs = aOs.elementAt(++o).text.trim().split(";");
+				texStartMS = Long.parseLong(aVs[0].trim());
+				texEndMS = Long.parseLong(aVs[1].trim());
 			}
 			if("texScale".equalsIgnoreCase(aT.tagName)) {
 				texScale = Double.parseDouble(aOs.elementAt(++o).text.trim());
@@ -322,6 +625,9 @@ public class Object3D {
 			}
 			if("extrusion".equalsIgnoreCase(aT.tagName)) {
 				extrusion = Double.parseDouble(aOs.elementAt(++o).text.trim());
+			}
+			if("asset".equalsIgnoreCase(aT.tagName)) {
+				asset = Shape.decode(aOs.elementAt(++o).text.trim());
 			}
 		}
 		return o;

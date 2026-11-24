@@ -1,0 +1,725 @@
+# 3Denlive library of 3D objects (downloaded at the first use into ~/3Denlive/Models/Objects3D/)
+# pack|<pack id>|<kind>|<url>|<size bytes>|<licence>|<author>|<source page>
+# obj|<Category>[/<Subcategory>]|<object id>|<English name>|<pack id>|<path>|<triangles>|<download bytes>
+pack|khronos|files|https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/|0|CC0 1.0|Khronos glTF Sample Assets contributors|https://github.com/KhronosGroup/glTF-Sample-Assets
+pack|polyhaven|polyhaven|-|0|CC0 1.0|Poly Haven contributors|https://polyhaven.com/models
+pack|polypizza-creativetrio|files|https://static.poly.pizza/|0|CC0 1.0|CreativeTrio|https://poly.pizza/u/CreativeTrio
+pack|polypizza-daniel-melchior-ccby|files|https://static.poly.pizza/|0|CC-BY 3.0|Daniel Melchior|https://poly.pizza/u/Daniel%20Melchior
+pack|polypizza-davis-ccby|files|https://static.poly.pizza/|0|CC-BY 3.0|davis|https://poly.pizza/u/davis
+pack|polypizza-don-carson-ccby|files|https://static.poly.pizza/|0|CC-BY 3.0|Don Carson|https://poly.pizza/u/Don%20Carson
+pack|polypizza-evol-love-ccby|files|https://static.poly.pizza/|0|CC-BY 3.0|Evol-Love|https://poly.pizza/u/Evol-Love
+pack|polypizza-geldvillager|files|https://static.poly.pizza/|0|CC0 1.0|Geldvillager|https://poly.pizza/u/Geldvillager
+pack|polypizza-greatgavino-ccby|files|https://static.poly.pizza/|0|CC-BY 3.0|GreatGavino|https://poly.pizza/u/GreatGavino
+pack|polypizza-ivan-klus-ccby|files|https://static.poly.pizza/|0|CC-BY 3.0|Ivan Klus|https://poly.pizza/u/Ivan%20Klus
+pack|polypizza-jair-trejo-ccby|files|https://static.poly.pizza/|0|CC-BY 3.0|Jair Trejo|https://poly.pizza/u/Jair%20Trejo
+pack|polypizza-jarlan-perez-ccby|files|https://static.poly.pizza/|0|CC-BY 3.0|Jarlan Perez|https://poly.pizza/u/Jarlan%20Perez
+pack|polypizza-jeremy-ccby|files|https://static.poly.pizza/|0|CC-BY 3.0|jeremy|https://poly.pizza/u/jeremy
+pack|polypizza-jeremy-eyring-ccby|files|https://static.poly.pizza/|0|CC-BY 3.0|Jeremy Eyring|https://poly.pizza/u/Jeremy%20Eyring
+pack|polypizza-kazuma|files|https://static.poly.pizza/|0|CC0 1.0|kazuma|https://poly.pizza/u/kazuma
+pack|polypizza-kenney|files|https://static.poly.pizza/|0|CC0 1.0|Kenney|https://poly.pizza/u/Kenney
+pack|polypizza-nick-ladd-ccby|files|https://static.poly.pizza/|0|CC-BY 3.0|Nick Ladd|https://poly.pizza/u/Nick%20Ladd
+pack|polypizza-paul-spooner-ccby|files|https://static.poly.pizza/|0|CC-BY 3.0|Paul Spooner|https://poly.pizza/u/Paul%20Spooner
+pack|polypizza-poly-by-google-ccby|files|https://static.poly.pizza/|0|CC-BY 3.0|Poly by Google|https://poly.pizza/u/Poly%20by%20Google
+pack|polypizza-quaternius|files|https://static.poly.pizza/|0|CC0 1.0|Quaternius|https://poly.pizza/u/Quaternius
+pack|polypizza-sirkitree-ccby|files|https://static.poly.pizza/|0|CC-BY 3.0|sirkitree|https://poly.pizza/u/sirkitree
+pack|polypizza-smoj-ccby|files|https://static.poly.pizza/|0|CC-BY 3.0|smoj|https://poly.pizza/u/smoj
+pack|polypizza-tiff-eidmann-ccby|files|https://static.poly.pizza/|0|CC-BY 3.0|Tiff Eidmann|https://poly.pizza/u/Tiff%20Eidmann
+pack|polypizza-zsky-ccby|files|https://static.poly.pizza/|0|CC-BY 3.0|Zsky|https://poly.pizza/u/Zsky
+pack|ov-hendrikreyneke-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|hendrikReyneke|https://sketchfab.com/hendrikReyneke
+pack|ov-16nharris-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Nicole Harris|https://sketchfab.com/16nharris
+pack|ov-triaz686-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Talha Riaz|https://sketchfab.com/triaz686
+pack|ov-polyplant3d-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|polyplant3d|https://sketchfab.com/polyplant3d
+pack|ov-animated3d-us-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|animated3d.us|https://sketchfab.com/animated3d.us
+pack|ov-chaitanyak-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Chaitanya Krishnan|https://sketchfab.com/chaitanyak
+pack|ov-erinaekasyaharani-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Erina eka syaharani|https://sketchfab.com/erinaekasyaharani
+pack|ov-doinspire-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|FainoDS|https://sketchfab.com/doinspire
+pack|ov-avatarium3d-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Avatarium 3D|https://sketchfab.com/avatarium3d
+pack|ov-pusztaiandras-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|PAndras|https://sketchfab.com/PusztaiAndras
+pack|ov-alexgiardiniere-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|AlexGiardiniere|https://sketchfab.com/AlexGiardiniere
+pack|ov-jai-gupta-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Jai.Gupta|https://sketchfab.com/Jai.Gupta
+pack|ov-cmp-innovation-studio-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Innovation Studio|https://sketchfab.com/cmp_innovation_studio
+pack|ov-omarme37-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|omarme37|https://sketchfab.com/omarme37
+pack|ov-dinomaster-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|dinomaster|https://sketchfab.com/dinomaster
+pack|ov-sdpm-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|SDPM Esare|https://sketchfab.com/sdpm
+pack|ov-jeremy-kan-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|jeremy.kan|https://sketchfab.com/jeremy.kan
+pack|ov-gentryhseast-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|GentryHS EAST|https://sketchfab.com/gentryhsEAST
+pack|ov-victory-mirosya-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|victory_mirosya|https://sketchfab.com/victory_mirosya
+pack|ov-konstaintin-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|konstaintin|https://sketchfab.com/konstaintin
+pack|ov-dashdu-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Abner Wu|https://sketchfab.com/dashdu
+pack|ov-magnus-furberg-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Magnus_Furberg|https://sketchfab.com/Magnus_Furberg
+pack|ov-djmiddi-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|DJMiddi|https://sketchfab.com/DJMiddi
+pack|ov-nebulousflynn-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Thomas Flynn|https://sketchfab.com/nebulousflynn
+pack|ov-tan-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Tan|https://sketchfab.com/Tan
+pack|ov-rzyas-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Rzyas|https://sketchfab.com/rzyas
+pack|ov-tasuku-minoura-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Tasuku_Minoura|https://sketchfab.com/Tasuku_Minoura
+pack|ov-smplaza-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|PlazaS|https://sketchfab.com/smplaza
+pack|ov-vaptor-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|BlueMesh|https://sketchfab.com/VapTor
+pack|ov-thunderpwn-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Thunder|https://sketchfab.com/thunderpwn
+pack|ov-jimmygunawan-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Jimmy Gunawan|https://sketchfab.com/jimmygunawan
+pack|ov-kodai100-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|kodai100|https://sketchfab.com/kodai100
+pack|ov-zackw-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|zackw|https://sketchfab.com/zackw
+pack|ov-pendekar-mouse-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|pendekar_mouse|https://sketchfab.com/pendekar_mouse
+pack|ov-duisengaliyevs-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Serik Duissengaliyev|https://sketchfab.com/duisengaliyevs
+pack|ov-rafaelbr873d-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Rafael Rodrigues|https://sketchfab.com/RafaelBR873D
+pack|ov-protocept-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Protocept|https://sketchfab.com/Protocept
+pack|ov-zung115-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|zung115|https://sketchfab.com/zung115
+pack|ov-virreal4-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|VirReal4|https://sketchfab.com/VirReal4
+pack|ov-victorkz-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|victorkz|https://sketchfab.com/victorkz
+pack|ov-anthonyvanoo-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|anthonyvanoo|https://sketchfab.com/anthonyvanoo
+pack|ov-lexyc16-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Lexyc16|https://sketchfab.com/Lexyc16
+pack|ov-andrewswihart-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Arion Digital|https://sketchfab.com/andrewswihart
+pack|ov-luis-adrian-designs3d-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|luis.adrian.villagrana|https://sketchfab.com/luis.adrian.designs3D
+pack|ov-david-holiday-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|David_Holiday|https://sketchfab.com/David_Holiday
+pack|ov-orangetheshow-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|the Show Orange|https://sketchfab.com/orangetheshow
+pack|ov-junaidamin-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Junaid Amin|https://sketchfab.com/junaidamin
+pack|ov-cardboard-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Lung_ong|https://sketchfab.com/cardboard
+pack|ov-gatostas-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|gatostas|https://sketchfab.com/gatostas
+pack|ov-ffeller-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|FFeller|https://sketchfab.com/FFeller
+pack|ov-axelavez-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Axel Avez|https://sketchfab.com/AxelAvez
+pack|ov-rockblade-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Rockblade_|https://sketchfab.com/Rockblade_
+pack|ov-maypassamon-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|maypassamon|https://sketchfab.com/maypassamon
+pack|ov-cronicash-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|cronicash|https://sketchfab.com/cronicash
+pack|ov-boatusfoundation-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|BoatUS Foundation|https://sketchfab.com/boatusfoundation
+pack|ov-gribbox-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|gribbox|https://sketchfab.com/gribbox
+pack|ov-manilov-ap-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|manilov.ap|https://sketchfab.com/manilov.ap
+pack|ov-helijah-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|helijah|https://sketchfab.com/helijah
+pack|ov-lxsquid-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Gigantic Burger|https://sketchfab.com/LxSquid
+pack|ov-zdenkoroman-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|grafi|https://sketchfab.com/zdenkoroman
+pack|ov-meerschaumdigital-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Meerschaum Digital|https://sketchfab.com/meerschaumdigital
+pack|ov-fenelope-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Penny|https://sketchfab.com/fenelope
+pack|ov-siotech2011-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|siotech2011|https://sketchfab.com/siotech2011
+pack|ov-bfg900-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|bfg900|https://sketchfab.com/bfg900
+pack|ov-wojciechmiedziocha-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|wojciechmiedziocha|https://sketchfab.com/wojciechmiedziocha
+pack|ov-madman05-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|madman05|https://sketchfab.com/Madman05
+pack|ov-wolfram9-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Wolfram9|https://sketchfab.com/Wolfram9
+pack|ov-bharat-from-mars-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|bharat_from_mars|https://sketchfab.com/bharat_from_mars
+pack|ov-adriano-castro-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Adriano Castro|https://sketchfab.com/Adriano_Castro
+pack|ov-alban-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|alban|https://sketchfab.com/alban
+pack|ov-ujjvalvfxartist9211-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Ujjval Singhal|https://sketchfab.com/ujjvalvfxartist9211
+pack|ov-greta-m-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|greta.m|https://sketchfab.com/greta.m
+pack|ov-kimsiwon-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|kimsiwon|https://sketchfab.com/kimsiwon
+pack|ov-jonasschramme-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Jonas Schramme|https://sketchfab.com/JonasSchramme
+pack|ov-ra3id-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Glowbox 3D|https://sketchfab.com/ra3id
+pack|ov-microsoft-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Microsoft|https://sketchfab.com/microsoft
+pack|ov-farhad-guli-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|farhad.Guli|https://sketchfab.com/farhad.Guli
+pack|ov-eduardo-dudu2001-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|DarksProducer|https://sketchfab.com/eduardo-dudu2001
+pack|ov-mattcaddie-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Matt Caddie|https://sketchfab.com/MattCaddie
+pack|ov-taw7904-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|taw7904|https://sketchfab.com/taw7904
+pack|ov-tykrastagames-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|tykrastagames|https://sketchfab.com/tykrastagames
+pack|ov-makou-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|makou|https://sketchfab.com/makou
+pack|ov-loichuet1-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|loichuet1|https://sketchfab.com/loichuet1
+pack|ov-kylontome-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|kylontome|https://sketchfab.com/kylontome
+pack|ov-plasmaernst-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|plasmaernst|https://sketchfab.com/plasmaernst
+pack|ov-21franklinc-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|21franklinc|https://sketchfab.com/21franklinc
+pack|ov-reaps6-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|HenryP-F|https://sketchfab.com/Reaps6
+pack|ov-julialemke-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Julia Lemke|https://sketchfab.com/julialemke
+pack|ov-gregwerth-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|VanGogh Imaging|https://sketchfab.com/gregwerth
+pack|ov-yanez-designs-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Yanez Designs|https://sketchfab.com/Yanez-Designs
+pack|ov-simonustal-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|simonustal|https://sketchfab.com/simonustal
+pack|ov-macriciox-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|macriciox|https://sketchfab.com/macriciox
+pack|ov-ikagogava-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|24fpsboy|https://sketchfab.com/ikagogava
+pack|ov-vinokkur-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|vinokkur|https://sketchfab.com/vinokkur
+pack|ov-pquijano-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Paolo Quijano|https://sketchfab.com/PQuijano
+pack|ov-tomations-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Tomations|https://sketchfab.com/Tomations
+pack|ov-urheilumuseo-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|urheilumuseo|https://sketchfab.com/urheilumuseo
+pack|ov-tadeus-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|tadeus|https://sketchfab.com/tadeus
+pack|ov-yarik16-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|Yarik16|https://sketchfab.com/Yarik16
+pack|ov-george-levchenko-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|George.Levchenko|https://sketchfab.com/George.Levchenko
+pack|ov-token-tu-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|token_tu|https://sketchfab.com/token_tu
+pack|ov-armtoucher-ccby|files|https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/|0|CC-BY 4.0|armtoucher|https://sketchfab.com/armtoucher
+
+# Animals/Farm
+obj|Animals/Farm|quaternius-cow|Cow|polypizza-quaternius|382b3d4a-a7c9-4c03-9858-3df630d90047.glb|2450|1028584
+obj|Animals/Farm|quaternius-bull|Bull|polypizza-quaternius|5704ef69-2c27-4de8-a942-70a29458af21.glb|2418|1038360
+obj|Animals/Farm|quaternius-horse|Horse|polypizza-quaternius|d37dbc87-ca61-4b2c-a2da-d2f0c4240bef.glb|2182|1108124
+obj|Animals/Farm|quaternius-donkey|Donkey|polypizza-quaternius|ca29f94e-0874-41b6-8334-66642af56a61.glb|2000|1093824
+obj|Animals/Farm|quaternius-llama|Llama|polypizza-quaternius|73641d10-547f-47d8-9c86-ad92158fd78b.glb|661|164708
+obj|Animals/Farm|quaternius-alpaca|Alpaca|polypizza-quaternius|444228bb-745d-49b2-89ef-cc12805deaa8.glb|2060|1053804
+obj|Animals/Farm|ov-cow|Cow|ov-hendrikreyneke-ccby|000-121/dc8185e4e21747fb8b394e40d3ec125a.glb|6120|1978064
+obj|Animals/Farm|ov-pig|Pig|ov-hendrikreyneke-ccby|000-000/041ea96fc6ae4839bf9ce16f8ea4ad68.glb|6748|2197304
+obj|Animals/Farm|ov-sheep|Sheep|ov-hendrikreyneke-ccby|000-085/67abff7459f34afca11e3effab62c761.glb|4372|1920064
+obj|Animals/Farm|ov-goat|Goat|ov-hendrikreyneke-ccby|000-049/2624ac2ce2364930ba2d5f70eb7aa1ea.glb|5278|2509948
+obj|Animals/Farm|ov-horse|Horse|ov-16nharris-ccby|000-142/dbd3c65e8df94e6d80f5ca95ea0c6977.glb|24510|2641072
+obj|Animals/Farm|ov-donkey|Donkey|ov-triaz686-ccby|000-016/7730e7c08e7043b787647ba37519d9b9.glb|43722|1382348
+obj|Animals/Farm|ov-hen|Hen|ov-polyplant3d-ccby|000-126/fef7c1969ee2420ea0e1481c3b4e6ec0.glb|6933|1719232
+obj|Animals/Farm|ov-rooster|Rooster|ov-animated3d-us-ccby|000-080/f0acb761248b489689ef87c726d43959.glb|2454|3719700
+obj|Animals/Farm|ov-mallard|Mallard duck|ov-chaitanyak-ccby|000-140/278d7637c0da43058ae6bc06b0b99bf2.glb|6888|629944
+# Animals/Pets
+obj|Animals/Pets|quaternius-pug|Pug|polypizza-quaternius|094335c0-632a-45f5-8583-27d5cab53b54.glb|644|147380
+obj|Animals/Pets|quaternius-husky|Husky|polypizza-quaternius|611d25c7-430f-4bb5-ab2c-d8f5f3cb9712.glb|1920|927536
+obj|Animals/Pets|quaternius-shiba-inu|Shiba Inu|polypizza-quaternius|ba6d0ee3-bcc0-4ef0-9d3c-a3e245b41c77.glb|1950|851196
+obj|Animals/Pets|ov-tabby-cat|Tabby cat|ov-erinaekasyaharani-ccby|000-024/fc6e597a81ce4dc291dcca6a9e6888ba.glb|3914|513196
+obj|Animals/Pets|ov-kitten|Kitten|ov-doinspire-ccby|000-137/4ae3704cd65b423ab994545988d4db1a.glb|15530|2497808
+obj|Animals/Pets|ov-pharaoh-hound|Pharaoh hound|ov-avatarium3d-ccby|000-115/503683ba48a8455591879c6d82fc5a2c.glb|7206|909508
+obj|Animals/Pets|ov-dachshund|Dachshund|ov-pusztaiandras-ccby|000-117/046f4d21810e4bf68feabe393a6b83cf.glb|41284|2157228
+obj|Animals/Pets|ov-brown-rabbit|Brown rabbit|ov-chaitanyak-ccby|000-157/2e27ecf2fbfc430198794dfde48e3dfb.glb|12248|754992
+obj|Animals/Pets|ov-cockatoo|Cockatoo|ov-alexgiardiniere-ccby|000-045/18fca4e421094c789c63cd78565e38b6.glb|8778|310032
+# Animals/Wild
+obj|Animals/Wild|quaternius-deer|Deer|polypizza-quaternius|4b6c2a41-43c7-404c-ae37-e8c4645ff93b.glb|2096|1007564
+obj|Animals/Wild|quaternius-fox|Fox|polypizza-quaternius|e18e86df-1692-48d8-ac6e-1e25ab4ad574.glb|1848|960228
+obj|Animals/Wild|quaternius-wolf|Wolf|polypizza-quaternius|f1d12388-e39b-4157-b32a-646a1d089fc4.glb|1962|986712
+obj|Animals/Wild|quaternius-zebra|Zebra|polypizza-quaternius|ff99ce31-85dd-4863-b145-24a6646a2b20.glb|1354|384288
+obj|Animals/Wild|quaternius-snake|Snake|polypizza-quaternius|0f3a551e-743e-48f5-936f-804c6c3b88bd.glb|1618|216696
+obj|Animals/Wild|ph-street-rat|Rat|polyhaven|street_rat|57216|3610113
+obj|Animals/Wild|quaternius-bat|Bat|polypizza-quaternius|4ae13ae9-c257-41ed-86b5-1b4760924ebc.glb|1046|231476
+obj|Animals/Wild|quaternius-spider|Spider|polypizza-quaternius|4259fbdb-afb5-4d40-9108-363625dd6b6e.glb|2712|449008
+obj|Animals/Wild|ov-lion|Lion|ov-hendrikreyneke-ccby|000-118/48fc306182ea411a92eb10ceb32a7ca9.glb|7924|3138176
+obj|Animals/Wild|ov-tiger|Tiger|ov-jai-gupta-ccby|000-148/9488609b11c244b1b4176fb4dd17b718.glb|37418|1325552
+obj|Animals/Wild|ov-leopard|Leopard|ov-hendrikreyneke-ccby|000-152/0aa47cb5f29647c3964480ec9216468a.glb|6250|2236444
+obj|Animals/Wild|ov-cheetah|Cheetah|ov-hendrikreyneke-ccby|000-061/b36caff5df6148c191629c02e6fe36eb.glb|9880|2520036
+obj|Animals/Wild|ov-bobcat|Bobcat|ov-cmp-innovation-studio-ccby|000-002/c478395f3d5f4effa62224aadf2bb89c.glb|34611|1611316
+obj|Animals/Wild|ov-elephant|Elephant|ov-hendrikreyneke-ccby|000-054/64bced0aa85b4723bc398ea579b21350.glb|6450|3660332
+obj|Animals/Wild|ov-giraffe|Giraffe|ov-hendrikreyneke-ccby|000-136/d90db5cff6344a04b45cf95d1f32a8a9.glb|8442|2687160
+obj|Animals/Wild|ov-rhinoceros|Rhinoceros|ov-hendrikreyneke-ccby|000-116/ee112628473b436a8095850dd3caf990.glb|16966|4197184
+obj|Animals/Wild|ov-hippopotamus|Hippopotamus|ov-hendrikreyneke-ccby|000-128/1ff82abde44e47db9b1bb298825e5a55.glb|11544|3611672
+obj|Animals/Wild|ov-gorilla|Gorilla|ov-hendrikreyneke-ccby|000-128/d8df49f051224c1880d061bca05f7ff4.glb|20500|4704044
+obj|Animals/Wild|ov-hyena|Hyena|ov-hendrikreyneke-ccby|000-111/f74b47c36a10443388905407958db591.glb|9084|2736348
+obj|Animals/Wild|ov-gazelle|Gazelle|ov-hendrikreyneke-ccby|000-050/4afbf4bd95764e32b8a29168cb2549da.glb|8652|2623512
+obj|Animals/Wild|ov-wildebeest|Wildebeest|ov-hendrikreyneke-ccby|000-107/f01175538f7b4ffe8e2648d772e94c5c.glb|13908|3026928
+obj|Animals/Wild|ov-african-buffalo|African buffalo|ov-hendrikreyneke-ccby|000-016/14d376df3070448ba82e423c2392057b.glb|8872|2840860
+obj|Animals/Wild|ov-warthog|Warthog|ov-hendrikreyneke-ccby|000-111/77208f9196744bee8c2326ff3217c55c.glb|6596|2590100
+obj|Animals/Wild|ov-dromedary|Dromedary|ov-omarme37-ccby|000-038/44ef2ea4b50a49e395e5e3ebbdc99f98.glb|23156|1913204
+obj|Animals/Wild|ov-kangaroo|Kangaroo|ov-dinomaster-ccby|000-083/b9c8518e06804043b4479eb3e73894f1.glb|56527|6306148
+obj|Animals/Wild|ov-brown-bear|Brown bear|ov-sdpm-ccby|000-020/da9b588f7a7346519f391c3eb9532226.glb|12126|1948924
+obj|Animals/Wild|ov-polar-bear|Polar bear|ov-jeremy-kan-ccby|000-048/d59974c6545143528cfda75f28392c62.glb|1572|1361804
+obj|Animals/Wild|ov-giant-panda|Giant panda|ov-gentryhseast-ccby|000-013/76ce633705f04272b30823c428952a6d.glb|11040|440004
+obj|Animals/Wild|ov-wolf|Wolf|ov-dinomaster-ccby|000-079/89ea539d69214bc6ac40cdde06e4fd4c.glb|5714|324268
+obj|Animals/Wild|ov-red-fox|Red fox|ov-victory-mirosya-ccby|000-025/7a31d0ca279d48e9b65091f191b00de1.glb|4286|3606740
+obj|Animals/Wild|ov-reindeer|Reindeer|ov-konstaintin-ccby|000-114/555cb2de36f54e80a588ddd461dab91b.glb|38360|1157800
+obj|Animals/Wild|ov-arctic-hare|Arctic hare|ov-cmp-innovation-studio-ccby|000-012/48caf8a64509421b9d8845e8b95bdac1.glb|29188|1388672
+obj|Animals/Wild|ov-crocodile|Crocodile|ov-hendrikreyneke-ccby|000-121/fe2cbf8040f74bd98e4beb55f9bec164.glb|4949|2532120
+obj|Animals/Wild|ov-komodo-dragon|Komodo dragon|ov-dinomaster-ccby|000-007/4a6e8802d90a475ba1ce0f5f4c263c5c.glb|14261|6095064
+obj|Animals/Wild|ov-chameleon|Chameleon|ov-dashdu-ccby|000-140/3877371976754df68d2b93a181bd4893.glb|44322|3812332
+obj|Animals/Wild|ov-green-snake|Green snake|ov-magnus-furberg-ccby|000-094/c8ce54d20c8e4169b0a8f0975e90f254.glb|5934|5650948
+obj|Animals/Wild|ov-poison-dart-frog|Poison dart frog|ov-djmiddi-ccby|000-000/0413d92d70f24a68b3afe8643301c515.glb|5376|2100108
+obj|Animals/Wild|ov-giant-tortoise|Giant tortoise|ov-nebulousflynn-ccby|000-155/282c8c0383ba4f8d8dc07d38e2b1b766.glb|46703|2689764
+# Animals/Birds
+obj|Animals/Birds|ov-eagle|Eagle|ov-hendrikreyneke-ccby|000-026/fbcbdaab9c3245de97df48ae6a19f789.glb|3700|3151552
+obj|Animals/Birds|ov-red-tailed-hawk|Red-tailed hawk|ov-cmp-innovation-studio-ccby|000-060/a0154c1dde464e54a8017998c1afd4f3.glb|50117|2288604
+obj|Animals/Birds|ov-turkey-vulture|Turkey vulture|ov-cmp-innovation-studio-ccby|000-012/4005811722a54afaba3d0c29d58b657d.glb|35726|1772260
+obj|Animals/Birds|ov-barn-owl|Barn owl|ov-cmp-innovation-studio-ccby|000-081/19c989a6681145bc999c332699eb852e.glb|29314|1690152
+obj|Animals/Birds|ov-snowy-owl|Snowy owl|ov-cmp-innovation-studio-ccby|000-070/e63aacf6b63a41f6bf9b302aad460835.glb|30930|1227012
+obj|Animals/Birds|ov-penguin|African penguin|ov-cmp-innovation-studio-ccby|000-136/b10454cd501d4d7187842f471de153b7.glb|29734|1362988
+obj|Animals/Birds|ov-canada-goose|Canada goose|ov-cmp-innovation-studio-ccby|000-141/50f4ace96846465f85f2e9a9f5c84453.glb|47820|2073952
+obj|Animals/Birds|ov-seagull|Seagull|ov-hendrikreyneke-ccby|000-137/4eb62e5c8a2640e382c892e03372550a.glb|2638|2008960
+obj|Animals/Birds|ov-pigeon|Pigeon|ov-hendrikreyneke-ccby|000-152/8cdbd8890ed84c228191cbe6241b420d.glb|2394|1835008
+obj|Animals/Birds|ov-crow|Crow|ov-hendrikreyneke-ccby|000-109/5ec78c8b6ab54f739adb0b46d216a454.glb|2208|2494476
+obj|Animals/Birds|ov-sparrow|Sparrow|ov-hendrikreyneke-ccby|000-003/fc347fa4d3b84a3c99df887a36c4e2fe.glb|2106|2486504
+obj|Animals/Birds|ov-blue-jay|Blue jay|ov-hendrikreyneke-ccby|000-114/6233ad12a9be46e496e27233b9b3b7de.glb|4444|3504680
+obj|Animals/Birds|ov-woodpecker|Pileated woodpecker|ov-cmp-innovation-studio-ccby|000-033/4474051b2496481fa9e59d89531f3cbc.glb|24740|1155760
+# Animals/Sea
+obj|Animals/Sea|quaternius-shark|Shark|polypizza-quaternius|840dac4f-e6b5-4015-88d7-ceb940a4b90e.glb|6604|527836
+obj|Animals/Sea|quaternius-whale|Whale|polypizza-quaternius|7300e697-2543-4a9a-a77d-dedf29251fd7.glb|447|68764
+obj|Animals/Sea|quaternius-dolphin|Dolphin|polypizza-quaternius|fcea284f-cafc-4be1-a701-2a0fd811ad5c.glb|440|60412
+obj|Animals/Sea|quaternius-manta-ray|Manta ray|polypizza-quaternius|32b4e08e-4605-4356-8bd3-e0cf32335a0f.glb|696|101788
+obj|Animals/Sea|quaternius-swordfish|Swordfish|polypizza-quaternius|4400228c-a051-4f95-9b59-1293d0754ddd.glb|1384|150640
+obj|Animals/Sea|kh-barramundifish|Barramundi|khronos|BarramundiFish/glTF-Binary/BarramundiFish.glb|3864|12488144
+obj|Animals/Sea|ov-great-white-shark|Great white shark|ov-tan-ccby|000-116/a80e6367072b499d859157d494c2a235.glb|3696|239864
+obj|Animals/Sea|ov-dolphin|Dolphin|ov-dinomaster-ccby|000-132/08a93ccc711c44d89eac6a845c927b4b.glb|3680|178020
+obj|Animals/Sea|ov-orca|Orca|ov-dashdu-ccby|000-056/63b680d7e58f463a9868ed7bf163094a.glb|3072|459948
+obj|Animals/Sea|ov-humpback-whale|Humpback whale|ov-rzyas-ccby|000-140/af22823f7494465ba041ea7564fba7df.glb|17568|3169720
+obj|Animals/Sea|ov-manta-ray|Manta ray|ov-tasuku-minoura-ccby|000-006/17d7b1b8435c4f2391527934c8709616.glb|1800|508172
+obj|Animals/Sea|ov-sea-turtle|Sea turtle|ov-smplaza-ccby|000-007/2046dd5b34214b52ac5169bd061eab86.glb|4468|1689564
+obj|Animals/Sea|ov-clownfish|Clownfish|ov-vaptor-ccby|000-013/fe11968d55574131b1bfaa8c87566a79.glb|6236|2008920
+obj|Animals/Sea|ov-trout|Trout|ov-thunderpwn-ccby|000-147/cc4eef17bff24cb58358cfa1b7e045a4.glb|1808|1245300
+obj|Animals/Sea|ov-seahorse|Seahorse|ov-jimmygunawan-ccby|000-047/a615760dd5b049c4976ba13011e61e68.glb|4508|427120
+obj|Animals/Sea|ov-starfish|Starfish|ov-kodai100-ccby|000-153/10d31cb05a1844bb89e83ec0827196d9.glb|16664|2385288
+obj|Animals/Sea|ov-shrimp|Shrimp|ov-zackw-ccby|000-128/2b2e7af2be4549d9b379ccaabdf0962c.glb|5512|512412
+# Animals/Insects
+obj|Animals/Insects|ov-monarch-butterfly|Monarch butterfly|ov-erinaekasyaharani-ccby|000-144/9e17d5737d564d2e92338c80c8324b78.glb|2768|198724
+obj|Animals/Insects|ov-morpho-butterfly|Blue morpho butterfly|ov-tan-ccby|000-135/35426d17345e4fd3b0532ed0fee951fa.glb|6774|316696
+obj|Animals/Insects|ov-honeybee|Honeybee|ov-pendekar-mouse-ccby|000-076/242c1dd3f30843f9a99832cb1efdccc8.glb|51731|4802108
+obj|Animals/Insects|ov-wasp|Wasp|ov-duisengaliyevs-ccby|000-150/6a4b9e9fce7a4a2486fcdc45363f48c2.glb|41872|1732680
+obj|Animals/Insects|ov-ladybug|Ladybird|ov-rafaelbr873d-ccby|000-019/899587f5843345649b1ee069d8922071.glb|15600|496768
+obj|Animals/Insects|ov-rhinoceros-beetle|Rhinoceros beetle|ov-protocept-ccby|000-074/eed56295d62444e09430a006671cf25d.glb|29281|7140436
+obj|Animals/Insects|ov-ant|Ant|ov-zung115-ccby|000-081/322850e9020f4178a52bcd586a3c3c22.glb|20922|2471236
+obj|Animals/Insects|ov-grasshopper|Grasshopper|ov-chaitanyak-ccby|000-130/77b2f1cfcc9b4e3eac0cef026b2ec674.glb|9338|386680
+obj|Animals/Insects|ov-praying-mantis|Praying mantis|ov-virreal4-ccby|000-058/ec088115ec8746d79c41f2db69665f15.glb|47138|1538952
+obj|Animals/Insects|ov-spider|Spider|ov-victorkz-ccby|000-136/114cbff289ed48f4bba8d20c5c0a8cb1.glb|18024|3060024
+obj|Animals/Insects|ov-scorpion|Scorpion|ov-anthonyvanoo-ccby|000-145/4c0fd62d33ab4d2592ee0a1d985a480d.glb|7288|3653564
+# Animals/Dinosaurs
+obj|Animals/Dinosaurs|quaternius-t-rex|T-Rex|polypizza-quaternius|34eed102-48f0-43dd-bc6f-ef7a6dfddfbb.glb|1820|336568
+obj|Animals/Dinosaurs|quaternius-triceratops|Triceratops|polypizza-quaternius|6aa1f3ff-b9b3-4bb5-9d85-b2ffa514f0cc.glb|1332|309684
+obj|Animals/Dinosaurs|quaternius-stegosaurus|Stegosaurus|polypizza-quaternius|6f8f4ac6-f9e8-488d-97a8-220b9b2fd02a.glb|2282|423036
+obj|Animals/Dinosaurs|quaternius-apatosaurus|Apatosaurus|polypizza-quaternius|7b873860-f23f-4266-b341-5c5e6770cfa0.glb|1438|380776
+obj|Animals/Dinosaurs|quaternius-velociraptor|Velociraptor|polypizza-quaternius|c1f0c4cb-c84f-415c-8323-d8cb871a2126.glb|1248|285828
+obj|Animals/Dinosaurs|quaternius-parasaurolophus|Parasaurolophus|polypizza-quaternius|47b9d0bd-cddb-49be-b072-12201def24a9.glb|1412|291016
+obj|Animals/Dinosaurs|ov-spinosaurus|Spinosaurus|ov-hendrikreyneke-ccby|000-146/9f38751060eb4661bb54263951d87477.glb|9592|3714372
+# Buildings/Houses
+obj|Buildings/Houses|kenney-two-storey-house|Two-storey house|polypizza-kenney|b2dea819-c4b8-4304-9453-1f1d243f0817.glb|630|41344
+obj|Buildings/Houses|kenney-small-house|Small house|polypizza-kenney|81ce2988-6651-473c-bc27-b826c4cfcc07.glb|381|28748
+obj|Buildings/Houses|quaternius-house|House|polypizza-quaternius|c604d960-4184-4f8d-bdb5-9b970940bd63.glb|4958|322248
+obj|Buildings/Houses|quaternius-town-house|Town house|polypizza-quaternius|8919c62b-5754-45f8-8a08-4f337de61bbc.glb|5242|280844
+obj|Buildings/Houses|quaternius-half-timbered-house|Half-timbered house|polypizza-quaternius|341c9305-c6dd-4427-ad00-620ad57eb14e.glb|5758|410268
+obj|Buildings/Houses|quaternius-hut|Hut|polypizza-quaternius|36d65045-d2ff-4689-a34d-a4acbe1873cb.glb|632|36276
+# Buildings/City
+obj|Buildings/City|quaternius-office-building|Office building|polypizza-quaternius|9cf00975-0f9f-414c-bb2d-84decf12f0e0.glb|8556|529520
+obj|Buildings/City|quaternius-apartment-block|Apartment block|polypizza-quaternius|6c49f4dd-c032-4e50-b257-68bbe01bcf16.glb|7004|353968
+obj|Buildings/City|kenney-skyscraper|Skyscraper|polypizza-kenney|ae25e8bd-e0f7-4831-accd-190ae8ce6439.glb|956|60412
+obj|Buildings/City|kenney-large-building|Large building|polypizza-kenney|28951518-5003-4c49-a2f5-75bbb8295681.glb|2138|116488
+obj|Buildings/City|kenney-shop-building|Shop building|polypizza-kenney|23f5c878-1de4-4816-b227-9fc79adb6216.glb|694|44884
+obj|Buildings/City|quaternius-tv-tower|TV tower|polypizza-quaternius|fc13f23c-953b-4dc9-bfd1-87b086ce4bf0.glb|554|38088
+obj|Buildings/City|quaternius-water-tower|Water tower|polypizza-quaternius|abaa700a-0aaf-4baa-aa8b-b29d1fc12a0a.glb|1158|63428
+obj|Buildings/City|quaternius-market-stand|Market stand|polypizza-quaternius|e2633001-4cf5-46fa-ac68-575c9954f4ba.glb|1548|84992
+# Buildings/Countryside
+obj|Buildings/Countryside|quaternius-barn|Barn|polypizza-quaternius|e0ecaf1c-bff4-4f30-9a53-0cf0c1c90deb.glb|2910|128692
+obj|Buildings/Countryside|quaternius-big-barn|Big barn|polypizza-quaternius|613c3274-c1d2-409e-82f7-9ae4db261e56.glb|4220|187260
+obj|Buildings/Countryside|quaternius-silo|Silo|polypizza-quaternius|3944662c-ccdd-440d-94bf-a1e37624a536.glb|1592|69244
+obj|Buildings/Countryside|quaternius-windmill|Windmill|polypizza-quaternius|8e4bd22a-1ec9-4c27-b2d2-8620b646affa.glb|2090|136688
+obj|Buildings/Countryside|quaternius-chicken-coop|Chicken coop|polypizza-quaternius|3f01eddc-5941-42f5-acb7-363f9db61fd8.glb|948|47872
+obj|Buildings/Countryside|quaternius-well|Well|polypizza-quaternius|0e044203-f62e-4dad-ad3e-c3cb6cb393ac.glb|1870|110340
+obj|Buildings/Countryside|quaternius-garden-shed|Garden shed|polypizza-quaternius|5f6fd867-1979-4bd1-a2f9-99627cf86ac3.glb|5236|256252
+obj|Buildings/Countryside|quaternius-gazebo|Gazebo|polypizza-quaternius|a0c33317-3662-478e-b826-78590c348d83.glb|698|51956
+obj|Buildings/Countryside|quaternius-water-mill|Water mill|polypizza-quaternius|a347d313-8be5-4585-9fc4-2f7e745c0648.glb|8126|575508
+# Buildings/Historic
+obj|Buildings/Historic|quaternius-castle|Castle|polypizza-quaternius|dafe12fb-8ec0-4d2b-826a-4917d7ed78a3.glb|8460|544976
+obj|Buildings/Historic|quaternius-temple|Temple|polypizza-quaternius|d3bd25be-30d5-4108-b725-78c0c84395d0.glb|4828|277956
+obj|Buildings/Historic|quaternius-torii-gate|Torii gate|polypizza-quaternius|594cc1dd-8f4c-4c8c-a5d5-854d7cb36296.glb|236|16440
+obj|Buildings/Historic|quaternius-bell-tower|Bell tower|polypizza-quaternius|fe8e639d-f07d-4512-a38d-3519b44a5fdc.glb|11799|728440
+obj|Buildings/Historic|quaternius-inn|Inn|polypizza-quaternius|270a08b6-87e1-47eb-ad1c-5fd7be321bcd.glb|7756|468600
+obj|Buildings/Historic|quaternius-blacksmith-s-forge|Blacksmith's forge|polypizza-quaternius|c664d338-cf21-4cda-b0f8-efe0f0826a10.glb|7659|670832
+obj|Buildings/Historic|quaternius-watchtower|Watchtower|polypizza-quaternius|af9ebe34-f519-48eb-9185-3e2c76405697.glb|1324|96872
+# Vehicles/Road
+obj|Vehicles/Road|quaternius-car|Car|polypizza-quaternius|d35173c8-6078-4367-8f87-b1f2599f0bb7.glb|3124|174320
+obj|Vehicles/Road|quaternius-police-car|Police car|polypizza-quaternius|179e43ce-b9e0-40cf-8b99-641693d3207e.glb|3232|180512
+obj|Vehicles/Road|quaternius-taxi|Taxi|polypizza-quaternius|3622a7bf-f213-44c8-8949-c1bdd1e961a9.glb|3278|181084
+obj|Vehicles/Road|quaternius-suv|SUV|polypizza-quaternius|e5fbf2ee-5c9e-47d5-8ab6-80cacd463baa.glb|3294|181608
+obj|Vehicles/Road|quaternius-sports-car|Sports car|polypizza-quaternius|1847cc66-801a-42fd-9a87-47e86c7a5435.glb|5802|252528
+obj|Vehicles/Road|quaternius-pickup-truck|Pickup truck|polypizza-quaternius|4e925a01-dbb8-4aab-848b-221306b835ea.glb|6432|273012
+obj|Vehicles/Road|quaternius-truck|Truck|polypizza-quaternius|f4b28921-b45e-4653-b54c-c3976e4ea0fe.glb|7474|326828
+obj|Vehicles/Road|pp-bus|Bus|polypizza-jeremy-ccby|c5174cc9-15a6-4dff-9882-18846f05e888.glb|2142|92528
+obj|Vehicles/Road|pp-ambulance|Ambulance|polypizza-jeremy-ccby|3d97878f-a9c6-423c-aeed-2b1ce94d7eaa.glb|2750|126068
+obj|Vehicles/Road|pp-fire-engine|Fire engine|polypizza-ivan-klus-ccby|08660636-2148-4656-b6bc-ca72a312f90f.glb|2120|255676
+obj|Vehicles/Road|pp-motorcycle|Motorcycle|polypizza-jeremy-ccby|7d230a92-464a-4d1c-874e-712240e2db20.glb|2092|111268
+obj|Vehicles/Road|pp-bicycle|Bicycle|polypizza-jeremy-ccby|a561821d-efb9-4a36-ae99-61eff0772cf7.glb|2466|122472
+obj|Vehicles/Road|pp-tractor|Tractor|polypizza-poly-by-google-ccby|df097309-a762-4f8f-af36-c4d2b42dae1f.glb|2766|1959224
+obj|Vehicles/Road|pp-bulldozer|Bulldozer|polypizza-poly-by-google-ccby|4e401f2d-1000-472e-8167-0e3279b2d86d.glb|2518|1419388
+obj|Vehicles/Road|ov-ferrari-testarossa|Red sports car|ov-lexyc16-ccby|000-095/82b38bec977044be82822ce598abafc6.glb|55912|2354448
+obj|Vehicles/Road|ov-lamborghini|Yellow supercar|ov-andrewswihart-ccby|000-066/888e37a3641d4f7b94bc1a39396e2441.glb|10252|1302508
+obj|Vehicles/Road|ov-vintage-race-car|Vintage racing car|ov-luis-adrian-designs3d-ccby|000-135/9c0fe3afda4a4bbeb66e482f79c1e070.glb|30129|2905616
+obj|Vehicles/Road|ov-pickup|Pickup|ov-david-holiday-ccby|000-073/8026dc5f17254c9dbaeae2ee6e4f2779.glb|19316|1336264
+obj|Vehicles/Road|ov-old-van|Old van|ov-orangetheshow-ccby|000-072/d366b99f7c4a4582b33d945286431cf5.glb|6566|1163416
+obj|Vehicles/Road|ov-coach|Coach|ov-junaidamin-ccby|000-153/e29af46af5be4abd94b2d688695df42e.glb|41926|3652352
+obj|Vehicles/Road|ov-old-truck|Old truck|ov-orangetheshow-ccby|000-028/e3d136bfa4194845b8dd9940619e19ec.glb|3036|1287140
+obj|Vehicles/Road|ov-garbage-truck|Garbage truck|ov-cardboard-ccby|000-030/5d505fdbcc594cb3b3f1b30be8240ad7.glb|2260|421280
+obj|Vehicles/Road|ov-vintage-tractor|Vintage tractor|ov-gatostas-ccby|000-147/cdb44565a727480998c6fa80369cc4bb.glb|4000|2402716
+obj|Vehicles/Road|ov-forklift|Forklift|ov-ffeller-ccby|000-046/f550f917394449578f5930a46512f169.glb|10702|3047944
+obj|Vehicles/Road|ov-military-motorcycle|Military motorcycle|ov-axelavez-ccby|000-000/04740704967c4b8d8f05d2fa81b2cd52.glb|5301|4477120
+obj|Vehicles/Road|ov-scooter|Scooter|ov-rockblade-ccby|000-016/ceef43451f02438cad0db630930c22d7.glb|30508|1524320
+obj|Vehicles/Road|ov-road-bicycle|Road bicycle|ov-maypassamon-ccby|000-093/1814aac2ef374d3b876e1bbafcf05d7d.glb|23122|722244
+# Vehicles/Rail
+obj|Vehicles/Rail|quaternius-steam-locomotive|Steam locomotive|polypizza-quaternius|83605753-0012-4887-a821-b2988c0c45a4.glb|15614|821108
+obj|Vehicles/Rail|quaternius-freight-locomotive|Freight locomotive|polypizza-quaternius|1f7946e4-dc66-42b2-b493-c3542bb5ba8a.glb|9406|493888
+obj|Vehicles/Rail|quaternius-high-speed-train|High-speed train|polypizza-quaternius|18e950a2-e71a-4479-8865-31de94e5b3d0.glb|5024|172508
+# Vehicles/Water
+obj|Vehicles/Water|quaternius-rowing-boat|Rowing boat|polypizza-quaternius|c5fe6584-9f6e-46cf-bcf6-95979c7494e4.glb|224|13720
+obj|Vehicles/Water|quaternius-sailing-boat|Sailing boat|polypizza-quaternius|b1d42c7e-152a-4d56-a754-cca000a5abad.glb|1020|58132
+obj|Vehicles/Water|quaternius-sailing-ship|Sailing ship|polypizza-quaternius|941391c3-04a0-43fe-9f7a-c8e7d3b3a77d.glb|3938|214464
+obj|Vehicles/Water|quaternius-cruise-ship|Cruise ship|polypizza-quaternius|940a453e-eed5-4ae2-afc7-98171c92d87b.glb|858|61856
+obj|Vehicles/Water|quaternius-viking-ship|Viking ship|polypizza-quaternius|494f6688-438e-4bff-9cd0-88fdcb93957c.glb|1640|95164
+obj|Vehicles/Water|kenney-pirate-ship|Pirate ship|polypizza-kenney|73ef583c-23c3-4324-8c8f-83eddf84bfee.glb|9498|582036
+obj|Vehicles/Water|ov-rowing-boat|Wooden rowing boat|ov-cronicash-ccby|000-101/09b6b8134bc94abd85eb7e51a6ad5b15.glb|15066|4528560
+obj|Vehicles/Water|ov-canoe|Canoe|ov-boatusfoundation-ccby|000-141/b2e32f87f5cc4d728404a62d6000f9ae.glb|26364|1881856
+obj|Vehicles/Water|ov-kayak|Kayak|ov-gribbox-ccby|000-135/15d71bbd00454e63ad7d23914dc70b66.glb|1838|1416948
+# Vehicles/Air & space
+obj|Vehicles/Air & space|pp-airplane|Airplane|polypizza-jeremy-ccby|7823e338-576d-49b1-82e1-30fa6cbdb57e.glb|1886|106976
+obj|Vehicles/Air & space|pp-jet|Jet|polypizza-jeremy-ccby|19d58465-dafb-4df0-a3b8-b0500bd9ed4b.glb|1434|77620
+obj|Vehicles/Air & space|pp-helicopter|Helicopter|polypizza-kazuma|e3dfeb10-5525-4a39-83d8-13a709aaca4b.glb|1094|77712
+obj|Vehicles/Air & space|pp-hot-air-balloon|Hot air balloon|polypizza-jeremy-ccby|5c5de976-dedb-4bd5-a5e6-0d1138cd7d3c.glb|1694|95240
+obj|Vehicles/Air & space|quaternius-spaceship|Spaceship|polypizza-quaternius|fb4a47c7-5453-433d-959d-0d3903b578e3.glb|2814|161668
+obj|Vehicles/Air & space|quaternius-moon-rover|Moon rover|polypizza-quaternius|7992e6b4-8add-45a9-86fd-f208237d293c.glb|7346|331288
+obj|Vehicles/Air & space|ov-airliner|Airliner|ov-manilov-ap-ccby|000-078/259de41be0c7410e86b7e79be33d6b3a.glb|28288|2066364
+obj|Vehicles/Air & space|ov-spitfire|Spitfire|ov-manilov-ap-ccby|000-134/3e20bf74f3d448d8ae53616a2f15c8d8.glb|27872|2416768
+obj|Vehicles/Air & space|ov-seaplane|Seaplane|ov-helijah-ccby|000-037/0dc504d11c284f648d93efd6b0e8495b.glb|36421|4019012
+obj|Vehicles/Air & space|ov-military-helicopter|Military helicopter|ov-lxsquid-ccby|000-043/ef70283b1dea4ae8b18eec9231ce390e.glb|4738|1128688
+# Furniture/Living room
+obj|Furniture/Living room|ph-armchair-01|Victorian armchair|polyhaven|ArmChair_01|5626|769144
+obj|Furniture/Living room|ph-modern-arm-chair-01|Modern armchair|polyhaven|modern_arm_chair_01|8916|2698032
+obj|Furniture/Living room|ph-mid-century-lounge-chair|Lounge chair|polyhaven|mid_century_lounge_chair|6148|2087019
+obj|Furniture/Living room|ph-sofa-01|Sofa|polyhaven|Sofa_01|4101|517935
+obj|Furniture/Living room|kenney-designer-sofa|Designer sofa|polypizza-kenney|c9239576-bf6c-4f2d-b706-ad8d92093161.glb|232|17772
+obj|Furniture/Living room|ph-ottoman-01|Ottoman|polyhaven|Ottoman_01|4240|652112
+obj|Furniture/Living room|ph-coffeetable-01|Coffee table|polyhaven|CoffeeTable_01|10404|957812
+obj|Furniture/Living room|ph-wooden-bookshelf-worn|Bookshelf|polyhaven|wooden_bookshelf_worn|10106|2777194
+obj|Furniture/Living room|ph-modern-wooden-cabinet|Wooden cabinet|polyhaven|modern_wooden_cabinet|24976|2855522
+obj|Furniture/Living room|quaternius-fireplace|Fireplace|polypizza-quaternius|7841807d-cab9-46e2-95c2-1ca0bbee5736.glb|360|17728
+# Furniture/Bedroom
+obj|Furniture/Bedroom|ph-gothicbed-01|Gothic bed|polyhaven|GothicBed_01|18745|1155213
+obj|Furniture/Bedroom|kenney-double-bed|Double bed|polypizza-kenney|1e5a13d0-0dfe-464a-a50c-9a53f69122f2.glb|364|32028
+obj|Furniture/Bedroom|kenney-bunk-bed|Bunk bed|polypizza-kenney|1d898d94-d392-4b50-8a2e-cfd524301a4c.glb|932|57836
+obj|Furniture/Bedroom|ph-classicnightstand-01|Nightstand|polyhaven|ClassicNightstand_01|2002|444940
+obj|Furniture/Bedroom|ph-gothiccommode-01|Chest of drawers|polyhaven|GothicCommode_01|3897|604161
+obj|Furniture/Bedroom|ph-gothiccabinet-01|Wardrobe|polyhaven|GothicCabinet_01|12170|1015446
+# Furniture/Dining room
+obj|Furniture/Dining room|ph-woodenchair-01|Wooden chair|polyhaven|WoodenChair_01|19992|1079531
+obj|Furniture/Dining room|ph-dining-chair-02|Dining chair|polyhaven|dining_chair_02|22013|921075
+obj|Furniture/Dining room|ph-round-wooden-table-01|Round table|polyhaven|round_wooden_table_01|8640|550374
+obj|Furniture/Dining room|ph-gallinera-table|Dining table|polyhaven|gallinera_table|5528|1838718
+obj|Furniture/Dining room|ph-bar-chair-round-01|Bar stool|polyhaven|bar_chair_round_01|14373|2812333
+obj|Furniture/Dining room|ph-wooden-stool-01|Wooden stool|polyhaven|wooden_stool_01|10946|961720
+# Furniture/Kitchen & bathroom
+obj|Furniture/Kitchen & bathroom|kenney-bathtub|Bathtub|polypizza-kenney|72c078cf-f0cb-45dc-b9b6-e732e980576e.glb|1204|73680
+obj|Furniture/Kitchen & bathroom|kenney-toilet|Toilet|polypizza-kenney|a4e817a3-ac54-421a-b266-8538730ba0cc.glb|440|32888
+# Furniture/Office
+obj|Furniture/Office|ph-schoolchair-01|School chair|polyhaven|SchoolChair_01|5072|484723
+obj|Furniture/Office|ph-schooldesk-01|School desk|polyhaven|SchoolDesk_01|4162|421623
+obj|Furniture/Office|ph-metal-office-desk|Office desk|polyhaven|metal_office_desk|6898|1606530
+obj|Furniture/Office|kenney-desk-chair|Desk chair|polypizza-kenney|64699642-a4c2-4850-9c4b-558a328ed1bf.glb|656|41396
+# Furniture/Outdoor
+obj|Furniture/Outdoor|ph-wooden-picnic-table|Picnic table|polyhaven|wooden_picnic_table|10210|4308296
+obj|Furniture/Outdoor|ph-outdoor-table-chair-set-01|Garden table and chairs|polyhaven|outdoor_table_chair_set_01|9828|1242380
+obj|Furniture/Outdoor|ph-painted-wooden-bench|Wooden bench|polyhaven|painted_wooden_bench|630|1989639
+# Kitchen utensils/Cookware
+obj|Kitchen utensils/Cookware|ph-brass-pan-01|Brass frying pan|polyhaven|brass_pan_01|4340|1615932
+obj|Kitchen utensils/Cookware|kenney-frying-pan|Frying pan|polypizza-kenney|0bf7754b-9e18-4bdc-a9ad-4f89c18a3c54.glb|200|14804
+obj|Kitchen utensils/Cookware|ph-pot-enamel-01|Enamel cooking pot|polyhaven|pot_enamel_01|11416|1744727
+obj|Kitchen utensils/Cookware|kenney-stew-pot|Stew pot|polypizza-kenney|65d2602c-c411-45fd-b5ca-c42afeaf5381.glb|448|32748
+# Kitchen utensils/Utensils
+obj|Kitchen utensils/Utensils|ph-wooden-spoon|Wooden spoon|polyhaven|wooden_spoon|6576|1974577
+obj|Kitchen utensils/Utensils|ph-wooden-cutting-board|Cutting board|polyhaven|wooden_cutting_board|3520|1965772
+obj|Kitchen utensils/Utensils|kenney-rolling-pin|Rolling pin|polypizza-kenney|657aa24c-e260-48da-890b-434fc470eb08.glb|140|11684
+obj|Kitchen utensils/Utensils|kenney-whisk|Whisk|polypizza-kenney|2ba0acf6-8990-468a-8b99-22a77f644697.glb|150|8940
+obj|Kitchen utensils/Utensils|kenney-kitchen-knife|Kitchen knife|polypizza-kenney|796fdd8f-2afc-4fd1-a5b5-663184bc79b3.glb|36|5892
+obj|Kitchen utensils/Utensils|kenney-spatula|Spatula|polypizza-kenney|5dd09d41-14cf-4875-a571-4fad5fb23853.glb|72|5972
+obj|Kitchen utensils/Utensils|kenney-ladle|Ladle|polypizza-kenney|0df45670-877e-4366-9840-892cb8c7d78e.glb|56|5276
+obj|Kitchen utensils/Utensils|kenney-pepper-mill|Pepper mill|polypizza-kenney|1d94af3c-2bbe-4410-b678-8b012f8e1119.glb|504|34400
+# Kitchen utensils/Tableware
+obj|Kitchen utensils/Tableware|ph-wooden-bowl-01|Wooden bowl|polyhaven|wooden_bowl_01|14122|1823237
+obj|Kitchen utensils/Tableware|ph-carved-wooden-plate|Carved wooden plate|polyhaven|carved_wooden_plate|2112|1564238
+obj|Kitchen utensils/Tableware|ph-jug-01|Ceramic jug|polyhaven|jug_01|5770|1227735
+obj|Kitchen utensils/Tableware|ph-brass-goblets|Brass goblets|polyhaven|brass_goblets|9600|4776478
+obj|Kitchen utensils/Tableware|kh-diffusetransmissionteacup|Teacup and saucer|khronos|DiffuseTransmissionTeacup/glTF-Binary/DiffuseTransmissionTeacup.glb|28184|4795028
+obj|Kitchen utensils/Tableware|kenney-mug|Mug|polypizza-kenney|5600ffdc-21d2-4e62-93e2-1b255738e43d.glb|232|15440
+obj|Kitchen utensils/Tableware|kenney-wine-glass|Wine glass|polypizza-kenney|58ec2c22-a323-410f-92f5-0952ea8c3d98.glb|232|18288
+obj|Kitchen utensils/Tableware|kenney-fork|Fork|polypizza-kenney|497dd94d-d85a-40a5-9a5a-061bb1e66718.glb|44|3896
+obj|Kitchen utensils/Tableware|quaternius-chopsticks|Chopsticks|polypizza-quaternius|e7d2bea8-920d-422b-a339-fb17c2672393.glb|440|25184
+# Kitchen utensils/Appliances
+obj|Kitchen utensils/Appliances|ph-vintage-electric-kettle|Electric kettle|polyhaven|vintage_electric_kettle|14838|2387109
+obj|Kitchen utensils/Appliances|kenney-blender|Blender|polypizza-kenney|ace10ccb-ff45-4b56-ab7b-8abdb71b7fb4.glb|286|22380
+obj|Kitchen utensils/Appliances|kenney-toaster|Toaster|polypizza-kenney|1ba7a4dd-516c-4885-af12-561733baa55a.glb|440|29152
+obj|Kitchen utensils/Appliances|kenney-coffee-machine|Coffee machine|polypizza-kenney|2c95a2bb-5572-459e-a550-9772f9af0182.glb|272|21488
+# Food/Fruit
+obj|Food/Fruit|ph-food-apple-01|Apple|polyhaven|food_apple_01|7012|473812
+obj|Food/Fruit|ph-food-avocado-01|Avocado|polyhaven|food_avocado_01|7743|585169
+obj|Food/Fruit|ph-food-kiwi-01|Kiwi|polyhaven|food_kiwi_01|7748|794646
+obj|Food/Fruit|ph-lemon|Lemon|polyhaven|lemon|4012|1851844
+obj|Food/Fruit|ph-food-pomegranate-01|Pomegranate|polyhaven|food_pomegranate_01|8142|610846
+obj|Food/Fruit|kenney-watermelon|Watermelon|polypizza-kenney|cc2eae35-27e2-4924-8b45-cf5e16c42a7e.glb|1376|100624
+obj|Food/Fruit|kenney-banana|Banana|polypizza-kenney|bd78ebc9-2834-45d5-af16-e00f604bdf36.glb|104|10224
+obj|Food/Fruit|kenney-pineapple|Pineapple|polypizza-kenney|0f204361-3a94-42b1-8a19-55b08e685737.glb|196|15544
+obj|Food/Fruit|kenney-strawberry|Strawberry|polypizza-kenney|2599fb9c-aafc-4947-bf03-2f54be77deee.glb|148|13556
+obj|Food/Fruit|kenney-grapes|Grapes|polypizza-kenney|21b76573-57f0-45f7-88da-26feeb2b078d.glb|668|44256
+obj|Food/Fruit|kenney-orange|Orange|polypizza-kenney|20d83be3-caa5-44f4-8fe8-b03118329270.glb|116|10416
+obj|Food/Fruit|ov-banana|Banana|ov-zdenkoroman-ccby|000-081/c4f9b194abca4db7b4cd0ec6270f9d60.glb|30000|1880828
+obj|Food/Fruit|ov-mango|Mango|ov-meerschaumdigital-ccby|000-117/e5fd174d7a2e4ac894e3e69a4550d1e2.glb|1856|1194128
+obj|Food/Fruit|ov-strawberry|Strawberry|ov-fenelope-ccby|000-034/e69089e90c194318a3d2932557c8d3ea.glb|20868|1791636
+obj|Food/Fruit|ov-peach|Peach|ov-meerschaumdigital-ccby|000-112/21e1712c27b847e393ac39214f2762a0.glb|2176|955096
+obj|Food/Fruit|ov-cherries|Cherries|ov-siotech2011-ccby|000-002/a6a77f3d44d44c2dacab02b7a55c0b4e.glb|28009|2629880
+obj|Food/Fruit|ov-pear|Pear|ov-bfg900-ccby|000-024/f957a31cde7046e6908e464b588db822.glb|6611|1116076
+# Food/Vegetables
+obj|Food/Vegetables|ph-yellow-onion|Onion|polyhaven|yellow_onion|5444|1805401
+obj|Food/Vegetables|kenney-carrot|Carrot|polypizza-kenney|63ff505a-c1dc-49d6-bcd8-f18db459e007.glb|148|12768
+obj|Food/Vegetables|kenney-broccoli|Broccoli|polypizza-kenney|e2751aca-512c-4ea3-b850-338e091f3d6e.glb|260|17208
+obj|Food/Vegetables|kenney-corn-cob|Corn cob|polypizza-kenney|04dd6aed-7a5f-435d-bcc8-cb402df41208.glb|128|11624
+obj|Food/Vegetables|kenney-pumpkin|Pumpkin|polypizza-kenney|1f44d667-758a-49bd-81a8-372f78359e89.glb|188|15588
+obj|Food/Vegetables|ov-cabbage|Cabbage|ov-meerschaumdigital-ccby|000-077/654306fc3ae344c7b9e7a9a40faca45b.glb|3072|2612860
+obj|Food/Vegetables|ov-carrot|Carrot|ov-meerschaumdigital-ccby|000-048/4cfcef5d26834657a0e1204d2ff32523.glb|1920|1948360
+obj|Food/Vegetables|ov-pumpkin|Pumpkin|ov-wojciechmiedziocha-ccby|000-051/509e960db3b3443382b0a189f5abfae0.glb|2248|2153604
+obj|Food/Vegetables|ov-potato|Potato|ov-madman05-ccby|000-136/ada08ecce8184524b640e139050e1fd6.glb|17856|1606240
+# Food/Dishes
+obj|Food/Dishes|kenney-pizza|Pizza|polypizza-kenney|9db34844-0a4b-4024-80b5-43f2ea600875.glb|1552|109376
+obj|Food/Dishes|kenney-burger|Burger|polypizza-kenney|39f379e8-3075-41ec-ba11-518274e303ec.glb|294|26484
+obj|Food/Dishes|kenney-french-fries|French fries|polypizza-kenney|8cde95e4-e7be-413f-b67a-ebfa20693ea7.glb|564|41520
+obj|Food/Dishes|kenney-hot-dog|Hot dog|polypizza-kenney|bd6a07ae-2e72-445b-85bb-0df9aa9ff6d4.glb|272|21420
+obj|Food/Dishes|kenney-taco|Taco|polypizza-kenney|3507b3ea-ca6c-49ee-b7de-39b33df97ec6.glb|432|29560
+obj|Food/Dishes|kenney-salmon-sushi|Salmon sushi|polypizza-kenney|680e60d6-7dfe-47fa-923b-6f804d75e59d.glb|256|15364
+obj|Food/Dishes|quaternius-ramen|Ramen|polypizza-quaternius|9be6aee1-5998-452d-ad1a-333b5c0ab03c.glb|5582|197280
+obj|Food/Dishes|kenney-cheese|Cheese|polypizza-kenney|e3a5a84e-d3eb-4b1b-9e51-4f1f226761bb.glb|160|13384
+obj|Food/Dishes|ov-burger|Burger|ov-wolfram9-ccby|000-020/b0a20ac5a08f476bb2fd4115192cbd89.glb|1600|2111244
+obj|Food/Dishes|ov-pizza|Pizza|ov-bharat-from-mars-ccby|000-143/9e0e5fd9d8c149f894c988817ba80a90.glb|33538|2695304
+obj|Food/Dishes|ov-sushi|Sushi platter|ov-adriano-castro-ccby|000-009/cf65e7cdf6bf4571932cf4483b57d1e6.glb|12168|926748
+obj|Food/Dishes|ov-camembert|Camembert|ov-alban-ccby|000-159/2a33631736e9487f8d427a9c10e62bb0.glb|9244|672328
+# Food/Bakery & desserts
+obj|Food/Bakery & desserts|ph-croissant|Croissant|polyhaven|croissant|1990|2098773
+obj|Food/Bakery & desserts|kenney-baguette|Baguette|polypizza-kenney|95cf96d1-b0ec-4973-b0f0-9f6d4377b8d0.glb|122|10668
+obj|Food/Bakery & desserts|ph-carrot-cake|Carrot cake|polyhaven|carrot_cake|13790|3362843
+obj|Food/Bakery & desserts|ph-strawberry-chocolate-cake|Strawberry chocolate cake|polyhaven|strawberry_chocolate_cake|27054|3331619
+obj|Food/Bakery & desserts|kenney-birthday-cake|Birthday cake|polypizza-kenney|294f70e0-bab8-453c-bc85-edc5c94375f7.glb|1332|118628
+obj|Food/Bakery & desserts|kenney-cupcake|Cupcake|polypizza-kenney|7b2e3b72-8ffd-4920-9134-c1b60e5ffe91.glb|204|21232
+obj|Food/Bakery & desserts|kenney-donut|Donut|polypizza-kenney|569364fd-8397-4e26-9ff5-2c4909fc6e27.glb|240|20292
+obj|Food/Bakery & desserts|kenney-ice-cream|Ice cream|polypizza-kenney|74979311-8a4a-4b1b-ba1e-b8b049cd11ea.glb|84|7940
+obj|Food/Bakery & desserts|ov-chocolate-doughnut|Chocolate doughnut|ov-ujjvalvfxartist9211-ccby|000-135/4e3a9dde2dca4c59809c12a13835c015.glb|41920|1729776
+obj|Food/Bakery & desserts|ov-strawberry-cupcake|Strawberry cupcake|ov-greta-m-ccby|000-022/214e634cf57d479098bd012bf124bc8a.glb|3839|726876
+obj|Food/Bakery & desserts|ov-cookie|Chocolate chip cookie|ov-kimsiwon-ccby|000-158/1bbcdb1d6dd34bfe8c9176ccfb7d5c3c.glb|9206|811236
+# Food/Drinks
+obj|Food/Drinks|ph-wine-bottles-01|Wine bottles|polyhaven|wine_bottles_01|28848|3909317
+obj|Food/Drinks|kh-waterbottle|Water bottle|khronos|WaterBottle/glTF-Binary/WaterBottle.glb|4510|8966700
+obj|Food/Drinks|kenney-soda-can|Soda can|polypizza-kenney|54d66c00-9887-4deb-8bd8-9c1eb72bcea3.glb|150|13720
+# Plants & nature/Trees
+obj|Plants & nature/Trees|quaternius-tree|Tree|polypizza-quaternius|7f84a768-ac30-48d4-9c5d-f760492e7867.glb|3182|2385268
+obj|Plants & nature/Trees|quaternius-pine-tree|Pine tree|polypizza-quaternius|712aaefa-ae7f-4cb3-8834-a1b8860df3b2.glb|1646|2147312
+obj|Plants & nature/Trees|quaternius-snowy-pine|Snowy pine|polypizza-quaternius|1e077c40-f8df-4322-9faf-964faecc5860.glb|1695|95448
+obj|Plants & nature/Trees|quaternius-palm-tree|Palm tree|polypizza-quaternius|21d44b5b-efef-4abd-96ad-fc59e4ad373b.glb|3208|115980
+obj|Plants & nature/Trees|quaternius-birch-tree|Birch tree|polypizza-quaternius|f51ba6c2-51e9-43ce-b2a9-ccb0230b55e6.glb|1704|98204
+obj|Plants & nature/Trees|quaternius-autumn-tree|Autumn tree|polypizza-quaternius|653f3101-2c31-4d15-9e54-3d81aeca345a.glb|2950|163172
+obj|Plants & nature/Trees|quaternius-willow|Willow|polypizza-quaternius|fb9965b3-0b81-4bec-9798-9a55d57e6daa.glb|2752|151272
+obj|Plants & nature/Trees|quaternius-dead-tree|Dead tree|polypizza-quaternius|4db29f97-8e10-413d-be54-39ecda1a7c8d.glb|5648|2597644
+# Plants & nature/Plants & flowers
+obj|Plants & nature/Plants & flowers|ph-potted-plant-04|Potted plant|polyhaven|potted_plant_04|8929|2122625
+obj|Plants & nature/Plants & flowers|quaternius-houseplant|Houseplant|polypizza-quaternius|54f72b3a-0b21-4ab3-a6fd-5afef306c86a.glb|492|20796
+obj|Plants & nature/Plants & flowers|ph-calathea-orbifolia-01|Calathea|polyhaven|calathea_orbifolia_01|16688|1876209
+obj|Plants & nature/Plants & flowers|ph-fern-02|Fern|polyhaven|fern_02|6232|1146361
+obj|Plants & nature/Plants & flowers|ph-shrub-03|Shrub|polyhaven|shrub_03|8287|1628793
+obj|Plants & nature/Plants & flowers|quaternius-flowering-bush|Flowering bush|polypizza-quaternius|af83abca-9b41-4229-9652-e336a5f5eaba.glb|1368|809728
+obj|Plants & nature/Plants & flowers|ph-flower-gazania|Gazania flowers|polyhaven|flower_gazania|14340|2848844
+obj|Plants & nature/Plants & flowers|quaternius-flowers|Flowers|polypizza-quaternius|b668ad14-c29a-4555-bf2c-d50ad315d4b3.glb|1504|120616
+obj|Plants & nature/Plants & flowers|kh-glassvaseflowers|Flowers in a glass vase|khronos|GlassVaseFlowers/glTF-Binary/GlassVaseFlowers.glb|14036|1819824
+obj|Plants & nature/Plants & flowers|quaternius-cactus|Cactus|polypizza-quaternius|0642461e-5b49-4f04-b4e7-47b6bbb0153a.glb|412|23044
+obj|Plants & nature/Plants & flowers|quaternius-mushroom|Mushroom|polypizza-quaternius|b75b1119-06bf-4af4-aea0-985a30005591.glb|1080|43616
+obj|Plants & nature/Plants & flowers|quaternius-water-lily|Water lily|polypizza-quaternius|ae432cca-6422-42ef-a982-b74bd0fc99b2.glb|372|23784
+obj|Plants & nature/Plants & flowers|quaternius-mossy-rock|Mossy rock|polypizza-quaternius|76cc8706-7c55-4ba6-9492-f673b477b4bf.glb|68|6376
+# Tools/Hand tools
+obj|Tools/Hand tools|ph-cross-pein-hammer|Hammer|polyhaven|cross_pein_hammer|2124|1508699
+obj|Tools/Hand tools|ph-sledgehammer-01|Sledgehammer|polyhaven|sledgehammer_01|2596|1784129
+obj|Tools/Hand tools|ph-hatchet|Hatchet|polyhaven|hatchet|5250|1968020
+obj|Tools/Hand tools|ph-wooden-axe|Axe|polyhaven|wooden_axe|3348|2030240
+obj|Tools/Hand tools|ph-screwdriver|Screwdriver|polyhaven|screwdriver|3412|1536547
+obj|Tools/Hand tools|ph-pliers|Pliers|polyhaven|pliers|4540|2016360
+obj|Tools/Hand tools|ph-adjustable-wrench|Adjustable wrench|polyhaven|adjustable_wrench|5390|2642182
+obj|Tools/Hand tools|ph-pipe-wrench|Pipe wrench|polyhaven|pipe_wrench|10746|3015153
+obj|Tools/Hand tools|ph-handsaw-wood|Handsaw|polyhaven|handsaw_wood|2548|2479289
+obj|Tools/Hand tools|ph-crowbar-01|Crowbar|polyhaven|crowbar_01|2300|1588321
+obj|Tools/Hand tools|ph-measuring-tape-01|Tape measure|polyhaven|measuring_tape_01|2868|445979
+obj|Tools/Hand tools|ph-vintage-hand-drill|Hand drill|polyhaven|vintage_hand_drill|8338|3097287
+# Tools/Workshop
+obj|Tools/Workshop|ph-drill-01|Electric drill|polyhaven|Drill_01|2926|501066
+obj|Tools/Workshop|ph-metal-toolbox|Toolbox|polyhaven|metal_toolbox|14228|2746835
+obj|Tools/Workshop|ph-bench-vice-01|Bench vice|polyhaven|bench_vice_01|2864|2439636
+obj|Tools/Workshop|kenney-workbench|Workbench|polypizza-kenney|bdac0bfa-2f3d-4884-b276-fdddf0d4719e.glb|226|19228
+obj|Tools/Workshop|ph-propane-torch|Blowtorch|polyhaven|propane_torch|4848|1735305
+obj|Tools/Workshop|ph-tire-pump|Tire pump|polyhaven|tire_pump|6572|1666060
+obj|Tools/Workshop|ph-wooden-ladder|Wooden ladder|polyhaven|wooden_ladder|8492|2593249
+# Tools/Garden & cleaning
+obj|Tools/Garden & cleaning|ph-rusted-spade-01|Spade|polyhaven|rusted_spade_01|11436|2423156
+obj|Tools/Garden & cleaning|kenney-shovel|Shovel|polypizza-kenney|12c5dd8b-ab7f-4319-bf55-e79c5a91e79d.glb|124|11084
+obj|Tools/Garden & cleaning|ph-trowel-01|Trowel|polyhaven|trowel_01|5242|1973386
+obj|Tools/Garden & cleaning|ph-watering-can-metal-01|Watering can|polyhaven|watering_can_metal_01|11837|2611187
+obj|Tools/Garden & cleaning|ph-garden-sprinkler-01|Garden sprinkler|polyhaven|garden_sprinkler_01|8192|2917068
+obj|Tools/Garden & cleaning|ph-wooden-broom|Broom|polyhaven|wooden_broom|14258|3424320
+obj|Tools/Garden & cleaning|ph-dustpan|Dustpan|polyhaven|dustpan|4332|2275983
+# Musical instruments/Strings
+obj|Musical instruments/Strings|quaternius-acoustic-guitar|Black electric guitar|polypizza-quaternius|7a272c92-3d46-483d-bf42-ff2c20851a2c.glb|2325|131612
+obj|Musical instruments/Strings|pp-electric-guitar|Red electric guitar|polypizza-jeremy-ccby|6e20ad06-f528-41d5-a233-22d49b963858.glb|996|49376
+obj|Musical instruments/Strings|pp-bass-guitar|Bass guitar|polypizza-zsky-ccby|a8e8bb79-33cb-421f-9cab-01ab1c8e07cd.glb|1524|107288
+obj|Musical instruments/Strings|ph-ukulele-01|Ukulele|polyhaven|Ukulele_01|8912|807270
+obj|Musical instruments/Strings|quaternius-lute|Lute|polypizza-quaternius|5934b2b2-7f82-4f1d-93e9-838ad9b025f1.glb|710|41156
+obj|Musical instruments/Strings|pp-violin|Violin|polypizza-poly-by-google-ccby|f8d80576-130a-4d9e-9f54-15872a05a54c.glb|7685|376020
+obj|Musical instruments/Strings|pp-double-bass|Double bass|polypizza-paul-spooner-ccby|7cf8f4ef-64b3-47ea-a223-3bee25474230.glb|1628|400848
+obj|Musical instruments/Strings|pp-harp|Harp|polypizza-poly-by-google-ccby|bdccab14-4489-48e2-ad91-5d7905109d9a.glb|1370|3582140
+obj|Musical instruments/Strings|ov-electric-guitar|Electric guitar|ov-jonasschramme-ccby|000-099/d75216a52ff14a56aa40b6fec844ecd2.glb|13330|1592196
+obj|Musical instruments/Strings|ov-acoustic-guitar|Acoustic guitar|ov-ra3id-ccby|000-079/a8424727a3d54df89d4716966b4ab2ba.glb|22772|2678952
+obj|Musical instruments/Strings|ov-violin|Violin|ov-microsoft-ccby|000-141/e989583c447141438e4d6376f4189518.glb|41258|1792540
+# Musical instruments/Keyboards & winds
+obj|Musical instruments/Keyboards & winds|pp-piano|Piano|polypizza-jeremy-ccby|c217645d-d51f-4b36-8237-7bffe0e49029.glb|1936|103804
+obj|Musical instruments/Keyboards & winds|pp-electronic-keyboard|Electronic keyboard|polypizza-poly-by-google-ccby|5df695d0-a00a-43cc-bdac-ba70dfea6a45.glb|2184|124828
+obj|Musical instruments/Keyboards & winds|pp-accordion|Accordion|polypizza-don-carson-ccby|070a3ede-41f6-4ce1-8954-41428a558a55.glb|1776|142776
+obj|Musical instruments/Keyboards & winds|pp-trumpet|Trumpet|polypizza-jeremy-ccby|18e3c8ce-1e7a-47c0-9fb3-4d27898d00bd.glb|720|36320
+obj|Musical instruments/Keyboards & winds|pp-saxophone|Saxophone|polypizza-jeremy-ccby|27a428f2-ffb5-466e-87c5-5cb6e81b3ae4.glb|950|49488
+obj|Musical instruments/Keyboards & winds|pp-flute|Flute|polypizza-jeremy-ccby|7f23aece-e512-4b02-95f8-cc2c24d1780d.glb|1216|56096
+obj|Musical instruments/Keyboards & winds|pp-harmonica|Harmonica|polypizza-poly-by-google-ccby|e8f94a73-e848-428d-b847-6a966f867ecd.glb|968|1400608
+obj|Musical instruments/Keyboards & winds|ov-grand-piano|Grand piano|ov-farhad-guli-ccby|000-070/371090c279ff4e77a59acdebc25b5892.glb|13862|1180076
+obj|Musical instruments/Keyboards & winds|ov-upright-piano|Upright piano|ov-eduardo-dudu2001-ccby|000-100/8c3af1362caf45feb2e8eb2b6731926a.glb|2123|1455796
+obj|Musical instruments/Keyboards & winds|ov-saxophone|Saxophone|ov-mattcaddie-ccby|000-049/f72747715883480b9555a75558b3e9cd.glb|14650|1100132
+obj|Musical instruments/Keyboards & winds|ov-tuba|Tuba|ov-microsoft-ccby|000-057/b46edac910164056bae92921b350fc36.glb|27120|1349096
+# Musical instruments/Percussion
+obj|Musical instruments/Percussion|pp-drum-kit|Drum kit|polypizza-smoj-ccby|56bea38d-cb46-43e2-976b-2ed5d0827ffe.glb|3776|416052
+obj|Musical instruments/Percussion|pp-drum|Drum|polypizza-jeremy-ccby|58bd1985-0f3e-47f3-8c36-c19f958eea74.glb|720|38484
+obj|Musical instruments/Percussion|pp-bongos|Bongos|polypizza-poly-by-google-ccby|6ed37fd1-9424-4d1f-a364-86448635aef4.glb|2812|182852
+obj|Musical instruments/Percussion|pp-cymbal|Cymbal|polypizza-poly-by-google-ccby|2d44ab30-ffe7-4ad4-8b5b-7f4ff66e1aac.glb|1152|29204
+obj|Musical instruments/Percussion|pp-tambourine|Tambourine|polypizza-poly-by-google-ccby|e3a7de24-05b0-4914-b6c7-20e961d5a71d.glb|4128|83564
+obj|Musical instruments/Percussion|pp-maracas|Maracas|polypizza-poly-by-google-ccby|caac3fba-2f55-4deb-9c12-9680f8b77a40.glb|2152|161328
+obj|Musical instruments/Percussion|pp-xylophone|Xylophone|polypizza-daniel-melchior-ccby|f3f55659-b705-4877-ae87-27a5426d4b3e.glb|3920|307388
+obj|Musical instruments/Percussion|pp-gong|Gong|polypizza-poly-by-google-ccby|6911f3f9-d9c5-475c-a16f-638627854007.glb|1016|53328
+obj|Musical instruments/Percussion|quaternius-bell|Bell|polypizza-quaternius|203c2af9-cd8b-47d0-b8d5-424b9c4448f7.glb|779|20164
+obj|Musical instruments/Percussion|pp-guitar-amplifier|Guitar amplifier|polypizza-poly-by-google-ccby|33f5e0eb-6c1c-44e8-89a5-dfab4cd999ac.glb|1450|178200
+obj|Musical instruments/Percussion|ov-vintage-drum-kit|Vintage drum kit|ov-mattcaddie-ccby|000-089/5bfb43ddec994a21baa0eb5e458cdf09.glb|10150|1574756
+obj|Musical instruments/Percussion|ov-timpani|Timpani|ov-taw7904-ccby|000-049/9cf701a0db76411294266c5a3665458b.glb|1744|487856
+obj|Musical instruments/Percussion|ov-djembe|Djembe|ov-tykrastagames-ccby|000-035/c05369adb63b41968de1cb242c22e51d.glb|17952|1793356
+obj|Musical instruments/Percussion|ov-conga|Conga|ov-makou-ccby|000-136/1d13ba6ff9974679a995692d4392d648.glb|1518|281872
+# Toys & games
+obj|Toys & games|ph-rubber-duck-toy|Rubber duck|polyhaven|rubber_duck_toy|4288|735058
+obj|Toys & games|pp-doll|Doll|polypizza-creativetrio|6773f7e2-dbd1-432d-8b13-85c4d6406643.glb|1234|96880
+obj|Toys & games|pp-toy-train|Toy train|polypizza-jair-trejo-ccby|2c397592-30c2-4c19-8194-70c588297404.glb|4072|212396
+obj|Toys & games|pp-toy-plane|Toy plane|polypizza-davis-ccby|df685a03-2987-43ca-a741-8f58fc92a4fa.glb|7232|276448
+obj|Toys & games|pp-toy-robot|Toy robot|polypizza-tiff-eidmann-ccby|8191def6-0e74-4a17-bc69-93c727ad62d0.glb|2045|180356
+obj|Toys & games|pp-toy-block|Toy block|polypizza-greatgavino-ccby|bd111eee-b4c8-4233-ba22-d81e174b941c.glb|2328|155624
+obj|Toys & games|pp-building-brick|Building brick|polypizza-nick-ladd-ccby|51660796-d91c-4265-a4e2-75baa6305d75.glb|364|31392
+obj|Toys & games|pp-rubik-s-cube|Rubik's cube|polypizza-poly-by-google-ccby|e43be19c-d07d-4f3f-9f4f-29701a92feff.glb|540|45108
+obj|Toys & games|pp-kite|Kite|polypizza-poly-by-google-ccby|b7c51a13-1c4c-4822-a91e-829155881d07.glb|774|27392
+obj|Toys & games|pp-balloon|Balloon|polypizza-poly-by-google-ccby|7a51025e-d604-4282-b102-cdf80f92e693.glb|1048|29196
+obj|Toys & games|pp-piggy-bank|Piggy bank|polypizza-creativetrio|0a9a0571-b387-4def-83c7-a8de064c85ab.glb|626|52732
+obj|Toys & games|pp-sandcastle|Sandcastle|polypizza-poly-by-google-ccby|75d5cfa6-4175-4b86-af30-b39a52757167.glb|2692|5118168
+obj|Toys & games|pp-bouncy-castle|Bouncy castle|polypizza-poly-by-google-ccby|467d0f76-2502-4669-8c0c-eb4b648a58e8.glb|4752|367972
+obj|Toys & games|pp-merry-go-round|Merry-go-round|polypizza-sirkitree-ccby|2a5e197a-acf3-4e42-80b2-412957fe68b9.glb|806|72516
+obj|Toys & games|pp-dice|Dice|polypizza-jeremy-eyring-ccby|af8b9a0e-d187-4ffe-ab93-f3e7ca5972e7.glb|660|1490716
+obj|Toys & games|pp-chess-knight|Chess knight|polypizza-jarlan-perez-ccby|2b5a6939-9032-402f-b1d0-e44a6bfa226e.glb|372|11496
+obj|Toys & games|ph-sungka-board|Sungka board game|polyhaven|sungka_board|7304|1332344
+obj|Toys & games|ov-teddy-bear|Teddy bear|ov-kylontome-ccby|000-147/db618e3f97d641bf9ba04af3f84eb059.glb|13284|1445908
+obj|Toys & games|ov-rocking-horse|Rocking horse|ov-plasmaernst-ccby|000-128/c7814a2dd9434847beac62ecb703f1d4.glb|2530|1528272
+obj|Toys & games|ov-wooden-toy-truck|Wooden toy truck|ov-21franklinc-ccby|000-095/6d0841a918c441ff84557d04bdb03f25.glb|11093|759508
+obj|Toys & games|ov-music-box|Music box|ov-reaps6-ccby|000-154/f76c3804b9df45e3a3e0d4b41f548583.glb|4459|1168512
+obj|Toys & games|ov-nutcracker|Nutcracker|ov-julialemke-ccby|000-017/bb182cd70cd244b291ba0e3020f132ce.glb|9876|5885336
+obj|Toys & games|ov-matryoshka|Matryoshka doll|ov-gregwerth-ccby|000-015/aa8036a6d67d4cab8cb7a4ef8e807411.glb|59064|2285556
+obj|Toys & games|ov-chess-set|Chess set|ov-yanez-designs-ccby|000-059/a0fb4aa0e75649e0991a2571ab70ea44.glb|42634|1932920
+obj|Toys & games|ov-playing-cards|Playing cards|ov-simonustal-ccby|000-122/8137a484e0b640cf9f30e34be44bff55.glb|29488|1115524
+obj|Toys & games|ov-worn-dice|Worn die|ov-macriciox-ccby|000-112/6ee97010819742a8b8713605695ec703.glb|3862|1633344
+# Sports & leisure/Ball sports
+obj|Sports & leisure/Ball sports|ph-football|Soccer ball|polyhaven|football|4296|2762037
+obj|Sports & leisure/Ball sports|ph-american-football|American football|polyhaven|american_football|4480|2670255
+obj|Sports & leisure/Ball sports|ph-baseball-01|Baseball|polyhaven|baseball_01|10848|1079490
+obj|Sports & leisure/Ball sports|ph-baseball-bat|Baseball bat|polyhaven|baseball_bat|2672|1673447
+obj|Sports & leisure/Ball sports|pp-basketball|Basketball|polypizza-poly-by-google-ccby|e2534fbc-cb90-4b28-bb8e-4f6706957b21.glb|508|38288
+obj|Sports & leisure/Ball sports|pp-volleyball|Volleyball|polypizza-jeremy-ccby|13aad1e1-0505-4ea2-9397-9844b839f9f3.glb|504|29612
+obj|Sports & leisure/Ball sports|pp-tennis-racket|Tennis racket|polypizza-poly-by-google-ccby|f32a9f7b-9428-4686-9e7b-eb2ee7334d43.glb|3136|113380
+obj|Sports & leisure/Ball sports|pp-tennis-ball|Tennis ball|polypizza-poly-by-google-ccby|4c6ff1da-4263-42d6-8a74-926d2b4c3d62.glb|440|66324
+obj|Sports & leisure/Ball sports|pp-table-tennis-paddle|Table tennis paddle|polypizza-poly-by-google-ccby|9763973c-9506-45f9-82f0-29042df22ec5.glb|368|23804
+obj|Sports & leisure/Ball sports|pp-golf-club|Golf club|polypizza-creativetrio|9bf9d818-1209-4fd9-95f7-3c49e34a4a2f.glb|198|50256
+obj|Sports & leisure/Ball sports|pp-golf-ball|Golf ball|polypizza-poly-by-google-ccby|359f49cd-e177-444b-a17e-d446ad2c7b1d.glb|720|75220
+obj|Sports & leisure/Ball sports|pp-bowling-pins|Bowling pins|polypizza-poly-by-google-ccby|7e83ba03-eebd-4989-b626-9ecb04cbb670.glb|6440|460996
+obj|Sports & leisure/Ball sports|pp-pool-table|Pool table|polypizza-evol-love-ccby|9781bd7c-16db-4e2e-8b38-c2af091e4518.glb|14806|1058268
+obj|Sports & leisure/Ball sports|ov-basketball|Basketball|ov-ikagogava-ccby|000-107/bb2896720a1e4aefba3ab381d4b4554e.glb|6704|1802008
+obj|Sports & leisure/Ball sports|ov-tennis-racket|Tennis racket|ov-vinokkur-ccby|000-007/f04ea10301984e2eadee7c8456a54405.glb|7442|1883668
+obj|Sports & leisure/Ball sports|ov-bowling-ball|Bowling ball|ov-pquijano-ccby|000-055/10a4ea0579d54a73965a308469bbb973.glb|8296|732564
+obj|Sports & leisure/Ball sports|ov-bowling-pin|Bowling pin|ov-tomations-ccby|000-130/39fded55822b4b289e87c56210f9f5ee.glb|2816|1611328
+# Sports & leisure/Outdoors & other
+obj|Sports & leisure/Outdoors & other|pp-dumbbell|Dumbbell|polypizza-creativetrio|a9b5fb20-6ecb-4f20-996f-88743f2519da.glb|492|43692
+obj|Sports & leisure/Outdoors & other|pp-trophy|Trophy|polypizza-creativetrio|b56b0827-c9f6-46e6-9a5d-160225686ee7.glb|518|44456
+obj|Sports & leisure/Outdoors & other|kenney-skateboard|Skateboard|polypizza-kenney|1644e9b6-8917-4a90-b37a-ad32a5070336.glb|240|20272
+obj|Sports & leisure/Outdoors & other|pp-surfboard|Surfboard|polypizza-jeremy-ccby|0a53c369-21a0-4444-9318-6a01bea6420d.glb|424|21884
+obj|Sports & leisure/Outdoors & other|pp-snowboard|Snowboard|polypizza-geldvillager|b3f02a40-6db3-46dc-91fd-01d4c3e66598.glb|182|10432
+obj|Sports & leisure/Outdoors & other|ph-dartboard|Dartboard|polyhaven|dartboard|6800|3031256
+obj|Sports & leisure/Outdoors & other|quaternius-archery-target|Archery target|polypizza-quaternius|4878b319-8b82-410a-ae1f-c7f5fd3a30fa.glb|352|21324
+obj|Sports & leisure/Outdoors & other|kenney-tent|Tent|polypizza-kenney|559b06c1-dd7f-46ef-ad2a-c7a6b845b4ef.glb|352|21464
+obj|Sports & leisure/Outdoors & other|kenney-campfire|Campfire|polypizza-kenney|bf4a5ed8-486b-4863-a654-fade1a9eaa39.glb|641|42204
+obj|Sports & leisure/Outdoors & other|quaternius-fishing-rod|Fishing rod|polypizza-quaternius|10b55863-caee-4ac6-8a53-f9991acb30bb.glb|308|18244
+obj|Sports & leisure/Outdoors & other|ov-boxing-glove|Vintage boxing glove|ov-urheilumuseo-ccby|000-104/a00d2eaa0c1d459f893ae4cbb08b866e.glb|15940|2254808
+obj|Sports & leisure/Outdoors & other|ov-dumbbell|Dumbbell|ov-tadeus-ccby|000-022/2835f3bdc79a4e46aaf309cde977861c.glb|32140|1836668
+obj|Sports & leisure/Outdoors & other|ov-kettlebell|Kettlebell|ov-yarik16-ccby|000-079/33d7aecfa8504b52b4740e684eb0eaca.glb|7808|1091496
+obj|Sports & leisure/Outdoors & other|ov-skateboard|Skateboard|ov-george-levchenko-ccby|000-125/daba6e30f78d4604b5167b2f83b0d162.glb|7040|2385508
+obj|Sports & leisure/Outdoors & other|ov-wooden-sled|Wooden sled|ov-token-tu-ccby|000-082/743a8be4f26e4122818dec99edf35578.glb|32517|6353768
+obj|Sports & leisure/Outdoors & other|ov-medal|Medal|ov-armtoucher-ccby|000-012/8d2b7074affb44dd84a82c1515980540.glb|4828|1033200
+# Electronics/Audio & video
+obj|Electronics/Audio & video|ph-television-01|Vintage television|polyhaven|Television_01|1918|531294
+obj|Electronics/Audio & video|ph-television-02|Television|polyhaven|television_02|2310|1239955
+obj|Electronics/Audio & video|ph-boombox|Boombox|polyhaven|boombox|10168|3068296
+obj|Electronics/Audio & video|ph-portable-cassette-player|Cassette player|polyhaven|portable_cassette_player|13307|2554975
+obj|Electronics/Audio & video|kenney-radio|Radio|polypizza-kenney|33bdb52a-7a35-40f5-92db-870db8b1955e.glb|864|49604
+obj|Electronics/Audio & video|ph-camera-01|Camera|polyhaven|Camera_01|26987|2439882
+obj|Electronics/Audio & video|ph-vintage-video-camera|Video camera|polyhaven|vintage_video_camera|18682|2710066
+obj|Electronics/Audio & video|ph-megaphone-01|Megaphone|polyhaven|Megaphone_01|15814|776159
+obj|Electronics/Audio & video|ov-gramophone|Gramophone|ov-loichuet1-ccby|000-124/2458f980cf584c45a130df3fc39d47ff.glb|12614|2586588
+# Electronics/Computers & gadgets
+obj|Electronics/Computers & gadgets|ph-classic-laptop|Laptop|polyhaven|classic_laptop|14450|2184059
+obj|Electronics/Computers & gadgets|quaternius-desktop-computer|Desktop computer|polypizza-quaternius|44246bf0-aec9-494c-b4b0-47da40dfc40d.glb|1005|36092
+obj|Electronics/Computers & gadgets|quaternius-phone|Phone|polypizza-quaternius|bb788859-3dca-4a80-b4da-f5f26e6148f6.glb|224|15180
+obj|Electronics/Computers & gadgets|ph-gamepad|Gamepad|polyhaven|gamepad|9546|1320822
+obj|Electronics/Computers & gadgets|ph-gaming-console|Game console|polyhaven|gaming_console|31710|2979450
+obj|Electronics/Computers & gadgets|ph-digital-wrist-watch|Digital watch|polyhaven|digital_wrist_watch|10390|2163708
+# Electronics/Household
+obj|Electronics/Household|ph-vintage-microwave|Microwave oven|polyhaven|vintage_microwave|8120|1632959
+obj|Electronics/Household|ph-ceiling-fan|Ceiling fan|polyhaven|ceiling_fan|16356|1872498
+obj|Electronics/Household|ph-cashregister-01|Cash register|polyhaven|CashRegister_01|9927|1039472
+obj|Electronics/Household|quaternius-solar-panel|Solar panel|polypizza-quaternius|7a7d151e-b40a-4f5f-9372-7d5c9fb18072.glb|812|43724
+# Decoration/Ornaments
+obj|Decoration/Ornaments|ph-antique-ceramic-vase-01|Antique vase|polyhaven|antique_ceramic_vase_01|9408|525941
+obj|Decoration/Ornaments|ph-ceramic-vase-01|Ceramic vase|polyhaven|ceramic_vase_01|10296|418457
+obj|Decoration/Ornaments|ph-planter-pot-clay|Clay flower pot|polyhaven|planter_pot_clay|3080|1797158
+obj|Decoration/Ornaments|ph-standing-picture-frame-01|Picture frame|polyhaven|standing_picture_frame_01|1634|447425
+obj|Decoration/Ornaments|ph-throw-pillows-01|Cushions|polyhaven|throw_pillows_01|6362|1194408
+obj|Decoration/Ornaments|ph-chinese-screen-panels|Folding screen|polyhaven|chinese_screen_panels|784|1692932
+obj|Decoration/Ornaments|quaternius-round-rug|Round rug|polypizza-quaternius|e4c1f718-dd57-4542-8f06-1e00dfeb009f.glb|128|6628
+obj|Decoration/Ornaments|ph-mantel-clock-01|Mantel clock|polyhaven|mantel_clock_01|25721|2427220
+obj|Decoration/Ornaments|ph-vintage-grandfather-clock-01|Grandfather clock|polyhaven|vintage_grandfather_clock_01|8582|2362182
+obj|Decoration/Ornaments|ph-lambis-shell|Seashell|polyhaven|lambis_shell|12498|2248652
+# Decoration/Statues
+obj|Decoration/Statues|ph-marble-bust-01|Marble bust|polyhaven|marble_bust_01|17456|898283
+obj|Decoration/Statues|ph-horse-statue-01|Horse statue|polyhaven|horse_statue_01|22388|1283596
+obj|Decoration/Statues|ph-concrete-cat-statue|Cat statue|polyhaven|concrete_cat_statue|11950|3098337
+obj|Decoration/Statues|ph-carved-wooden-elephant|Wooden elephant|polyhaven|carved_wooden_elephant|2752|1863924
+obj|Decoration/Statues|ph-garden-gnome|Garden gnome|polyhaven|garden_gnome|28858|2454539
+# Decoration/Lighting
+obj|Decoration/Lighting|ph-chandelier-02|Chandelier|polyhaven|Chandelier_02|21514|1182054
+obj|Decoration/Lighting|ph-desk-lamp-arm-01|Desk lamp|polyhaven|desk_lamp_arm_01|24102|2875984
+obj|Decoration/Lighting|quaternius-table-lamp|Table lamp|polypizza-quaternius|dabc8a0b-f94e-4d9b-8e55-10d0d6327c44.glb|244|10152
+obj|Decoration/Lighting|kenney-floor-lamp|Floor lamp|polypizza-kenney|98dd45a1-0682-4d44-83d1-32fa2a4fca5b.glb|152|13200
+obj|Decoration/Lighting|kh-lantern|Lantern|khronos|Lantern/glTF-Binary/Lantern.glb|5394|9564264
+obj|Decoration/Lighting|ph-wooden-lantern-01|Wooden lantern|polyhaven|wooden_lantern_01|8321|3768780
+obj|Decoration/Lighting|ph-vintage-oil-lamp|Oil lamp|polyhaven|vintage_oil_lamp|7208|2070002
+obj|Decoration/Lighting|quaternius-candles|Candles|polypizza-quaternius|39564825-7671-42df-a1e4-6b48df6a80d6.glb|844|26508
+# Street furniture
+obj|Street furniture|ph-street-lamp-02|Street lamp|polyhaven|street_lamp_02|20338|1870246
+obj|Street furniture|quaternius-street-light|Street light|polypizza-quaternius|451a3b57-b957-4184-9c67-4a11587299b5.glb|426|23324
+obj|Street furniture|quaternius-traffic-light|Traffic light|polypizza-quaternius|25b4c51b-bcab-476e-9152-94d5049b27ee.glb|849|44940
+obj|Street furniture|quaternius-traffic-cone|Traffic cone|polypizza-quaternius|846de5e8-b6bf-4f84-ba21-54187a473c74.glb|134|13796
+obj|Street furniture|quaternius-fire-hydrant|Fire hydrant|polypizza-quaternius|0e892859-5ccd-4f9a-aa56-c7a9adb6f3de.glb|976|45216
+obj|Street furniture|quaternius-park-bench|Park bench|polypizza-quaternius|d0ed7f6f-ccca-412c-8328-7835d2575dab.glb|364|21044
+# Containers
+obj|Containers|ph-wine-barrel-01|Wine barrel|polyhaven|wine_barrel_01|10820|924683
+obj|Containers|ph-barrel-01|Metal drum|polyhaven|Barrel_01|2682|692947
+obj|Containers|ph-wicker-basket-01|Wicker basket|polyhaven|wicker_basket_01|22276|2730151
+obj|Containers|ph-wooden-bucket-01|Wooden bucket|polyhaven|wooden_bucket_01|5116|2331642
+obj|Containers|ph-cardboard-box-01|Cardboard box|polyhaven|cardboard_box_01|16952|2168437
+obj|Containers|ph-wooden-crate-01|Wooden crate|polyhaven|wooden_crate_01|6576|2277087
+obj|Containers|ph-plastic-crate-01|Plastic crate|polyhaven|plastic_crate_01|18320|3188865
+obj|Containers|ph-metal-trash-can|Trash can|polyhaven|metal_trash_can|13960|4994983
+obj|Containers|ph-plastic-jerrycan|Jerrycan|polyhaven|plastic_jerrycan|7348|2506291
+obj|Containers|ph-propane-tank|Gas bottle|polyhaven|propane_tank|5238|2214101
+obj|Containers|quaternius-treasure-chest|Treasure chest|polypizza-quaternius|ef0714ea-b808-423d-af60-e5aba72476b4.glb|3422|162464
+obj|Containers|ph-medical-box|First aid kit|polyhaven|medical_box|3718|1975384
+# Personal items
+obj|Personal items|ph-vintage-suitcase|Suitcase|polyhaven|vintage_suitcase|16474|4294734
+obj|Personal items|quaternius-backpack|Backpack|polypizza-quaternius|0d29cdc2-0baf-4bf7-835f-075b34c70b61.glb|1748|99444
+obj|Personal items|ph-round-spectacles|Glasses|polyhaven|round_spectacles|11810|2069915
+obj|Personal items|ph-pocket-watch|Pocket watch|polyhaven|pocket_watch|15615|2077362
+obj|Personal items|ph-fishermans-hat|Fisherman's hat|polyhaven|fishermans_hat|10304|2339689
+obj|Personal items|ph-binoculars|Binoculars|polyhaven|binoculars|19248|1950923
+obj|Personal items|ph-magnifying-glass-01|Magnifying glass|polyhaven|magnifying_glass_01|7240|466908
+obj|Personal items|ph-seadogs-compass|Compass|polyhaven|seadogs_compass|11645|2695701
+obj|Personal items|ph-life-jacket|Life jacket|polyhaven|life_jacket|8968|2325670
+obj|Personal items|quaternius-crown|Crown|polypizza-quaternius|1381b02a-8310-437b-a2a7-82cab0a94a4c.glb|840|47620
+obj|Personal items|quaternius-padlock|Padlock|polypizza-quaternius|492d2859-724c-42a4-86a2-5502214de10c.glb|584|33852
+# Office & science
+obj|Office & science|ph-vintage-stapler|Stapler|polyhaven|vintage_stapler|4370|2321764
+obj|Office & science|ph-clipboard|Clipboard|polyhaven|clipboard|6176|1786921
+obj|Office & science|ph-stationery-supplies|Pens and pencils|polyhaven|stationery_supplies|4412|1986813
+obj|Office & science|ph-binder-notebook|Ring binder|polyhaven|binder_notebook|18077|1889775
+obj|Office & science|quaternius-book|Book|polypizza-quaternius|e31bd2aa-b898-47a1-9480-9903fc207111.glb|1060|61620
+obj|Office & science|ph-standing-chalkboard-01|Chalkboard|polyhaven|standing_chalkboard_01|2372|2617256
+obj|Office & science|ph-vintage-microscope|Microscope|polyhaven|vintage_microscope|20631|2312802
+
+# Blocky style (voxel / cubic low poly)
+obj|Blocky style/Animals|quaternius-pig|Pig|polypizza-quaternius|6277c120-ea5c-405d-9614-0d3d7e0b829d.glb|2816|300940
+obj|Blocky style/Animals|quaternius-sheep|Sheep|polypizza-quaternius|d42145b6-ae20-48cd-ba36-63b03f901c32.glb|2528|223324
+obj|Blocky style/Animals|quaternius-chicken|Chicken|polypizza-quaternius|9ba093a4-6525-4f3b-927d-98dca72e1e40.glb|2140|172692
+obj|Blocky style/Animals|quaternius-cat|Cat|polypizza-quaternius|67f5e3fe-37ee-4c86-95c8-d269d8c9f8ba.glb|2448|238672
+obj|Blocky style/Animals|quaternius-dog|Dog|polypizza-quaternius|de55d76a-f578-4979-97ff-2a62edac32f3.glb|3604|296880
+obj|Blocky style/Animals|quaternius-rabbit|Rabbit|polypizza-quaternius|084b5ebe-c3eb-4e64-9b17-06e2d1e3da5d.glb|8284|538360
+obj|Blocky style/Animals|quaternius-goldfish|Goldfish|polypizza-quaternius|221c59b8-3326-4a4f-9bb7-7ba99e580c3c.glb|1590|177416
+obj|Blocky style/Animals|quaternius-hedgehog|Hedgehog|polypizza-quaternius|ff140817-6bba-4af6-b6c8-c3c80895f24e.glb|1472|108300
+obj|Blocky style/Animals|quaternius-panda|Panda|polypizza-quaternius|fb175c69-6c26-452a-87fe-16a1a9aa99a7.glb|2468|625748
+obj|Blocky style/Animals|quaternius-raccoon|Raccoon|polypizza-quaternius|c1c63d3e-1f22-42e9-a47a-682c9f109834.glb|2876|238560
+obj|Blocky style/Animals|quaternius-frog|Frog|polypizza-quaternius|9018566d-c4e9-4f20-9c99-964622a6e674.glb|5016|379892
+obj|Blocky style/Animals|quaternius-bee|Bee|polypizza-quaternius|1dbebe1f-7ef7-4886-ae25-4395b1dae452.glb|914|57672
+obj|Blocky style/Animals|quaternius-bird|Bird|polypizza-quaternius|bc6de37a-fdc5-4ef2-85c6-4a2e7b5db9d5.glb|1204|48544
+obj|Blocky style/Animals|quaternius-clownfish|Clownfish|polypizza-quaternius|f28280ed-888d-4d9b-9d13-af2baf36b749.glb|1530|166084
+obj|Blocky style/Animals|quaternius-blue-tang|Blue tang|polypizza-quaternius|f282d1d7-cf41-48e0-bbdc-a9dd0472b2cf.glb|1342|148440
+obj|Blocky style/Animals|quaternius-pufferfish|Pufferfish|polypizza-quaternius|2b8ee3e9-9fa3-458a-91a8-3d356dc8e6a5.glb|2142|238584
+obj|Blocky style/Animals|quaternius-koi-carp|Koi carp|polypizza-quaternius|d2ba96af-9f0b-45a8-a5b4-248b583f0765.glb|1494|164800
+obj|Blocky style/Objects|kenney-fridge|Fridge|polypizza-kenney|4e931c24-4e81-4569-8d36-0d009b561d8f.glb|316|26260
+obj|Blocky style/Objects|kenney-cooker|Cooker|polypizza-kenney|20ac0ba3-07c3-4ec5-ad2c-dc1b836c3006.glb|1604|97952
+obj|Blocky style/Objects|kenney-microwave|Microwave|polypizza-kenney|69b6d111-3ae6-4f6d-8f23-4ded92a021ab.glb|256|21576
+obj|Blocky style/Objects|kenney-kitchen-sink|Kitchen sink|polypizza-kenney|c0e9a45c-2468-4f60-803b-7ce563fbc2ab.glb|596|44620
+obj|Blocky style/Objects|kenney-washing-machine|Washing machine|polypizza-kenney|8564351d-aa73-4eec-b59d-9959d8bfc406.glb|892|58600
+obj|Blocky style/Objects|kenney-washbasin|Washbasin|polypizza-kenney|6c0b7fe1-8e06-4940-98ba-52dd18df00b3.glb|632|40504
+obj|Blocky style/Objects|kenney-shower|Shower|polypizza-kenney|46cd1ec6-59a0-4a76-8ffc-67bf5f0d4a57.glb|1232|84228
+obj|Blocky style/Objects|kenney-loudspeaker|Loudspeaker|polypizza-kenney|dd660763-bb31-4606-940c-ae747e2a6733.glb|456|29352

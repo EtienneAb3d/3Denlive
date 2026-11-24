@@ -113,6 +113,8 @@ public class AiClipGUI {
 	ColorGenerator.Model colorModel = ColorGenerator.MODELSCOPE;
 	//Mask of objects (MASK): the editor window instead of a generation
 	boolean mask = false;
+	//Eraser (ERASER): the mask editor in eraser mode (the objects erased or filled, see ai.EraseFiller)
+	boolean eraser = false;
 	MaskGenerator.Model maskModel = MaskGenerator.TINY;
 	AiMaskGUI.Source maskSrc = new AiMaskGUI.Source();
 	//3D scene of a photo (SCENE): the viewer AiSceneGUI after the computation, or at once for a scene saved before
@@ -425,7 +427,7 @@ public class AiClipGUI {
 			aPanels[k] = panel(aStack);
 			aChecks[k] = VIDEO.equals(KINDS[k]) ? createVideoPanel(aPanels[k])
 					: COLOR.equals(KINDS[k]) ? createColorPanel(aPanels[k])
-					: MASK.equals(KINDS[k]) ? createMaskPanel(aPanels[k])
+					: MASK.equals(KINDS[k]) || ERASER.equals(KINDS[k]) ? createMaskPanel(aPanels[k], ERASER.equals(KINDS[k]))
 					: SCENE.equals(KINDS[k]) ? createScenePanel(aPanels[k])
 					: SUBS.equals(KINDS[k]) || DUB.equals(KINDS[k]) ? createSpeechPanel(aPanels[k], DUB.equals(KINDS[k]))
 					: REMIX.equals(KINDS[k]) ? createRemixPanel(aPanels[k])
@@ -492,7 +494,17 @@ public class AiClipGUI {
 			}
 			int k = kindIndex(kind);
 			color = COLOR.equals(kind);
-			mask = MASK.equals(kind);
+			eraser = ERASER.equals(kind);
+			mask = MASK.equals(kind) || eraser;
+			//The mask and the eraser share the source and the model: those of the panel shown
+			if(mask) {
+				for(Runnable aR : maskShows) {
+					aR.run();
+				}
+				if(aPanels[k].getData(MODEL) instanceof MaskGenerator.Model) {
+					maskModel = (MaskGenerator.Model)aPanels[k].getData(MODEL);
+				}
+			}
 			scene = SCENE.equals(kind);
 			dub = DUB.equals(kind);
 			speech = dub || SUBS.equals(kind);
@@ -506,7 +518,7 @@ public class AiClipGUI {
 			aShell.setText(lng(KIND_TITLES[k]));
 			aOk.setEnabled(!VIDEO.equals(kind) || WanGenerator.isPlatformSupported());
 			//The mask opens its editor
-			aOk.setText(lng(mask ? "AI.MaskOpen" : "AI.Generate"));
+			aOk.setText(lng(eraser ? "AI.EraserOpen" : mask ? "AI.MaskOpen" : "AI.Generate"));
 			aButtons.layout(true);
 			fit(aStack);
 		};
@@ -572,6 +584,8 @@ public class AiClipGUI {
 	static final String COLOR = "color";
 	//Mask of objects delimited and tracked (SAM 2.1, see ai.MaskGenerator and AiMaskGUI)
 	static final String MASK = "mask";
+	//Objects delimited and tracked as for the mask, then erased (transparent) or filled (see ai.EraseFiller)
+	static final String ERASER = "eraser";
 	//Navigable 3D scene of a photo (Depth Pro or Flash3D, see ai.SceneGenerator and AiSceneGUI)
 	static final String SCENE = "scene";
 	//Speech of a video: subtitles in one or several languages, voice translation (see ai.SpeechGenerator)
@@ -579,15 +593,15 @@ public class AiClipGUI {
 	static final String DUB = "dub";
 	//Tracks of a sound separated (Demucs, see ai.RemixGenerator), listened and saved into a multi-track MP4 (AiRemixGUI)
 	static final String REMIX = "remix";
-	static final String[] KINDS = {VIDEO, COLOR, MASK, SCENE, MUSIC, SFX, REMIX, SUBS, DUB};
-	static final String[] KIND_KEYS = {"AI.KindVideo", "AI.KindColor", "AI.KindMask", "AI.KindScene", "AI.KindMusic", "AI.KindSfx", "AI.KindRemix", "AI.KindSubs", "AI.KindDub"};
+	static final String[] KINDS = {VIDEO, COLOR, MASK, ERASER, SCENE, MUSIC, SFX, REMIX, SUBS, DUB};
+	static final String[] KIND_KEYS = {"AI.KindVideo", "AI.KindColor", "AI.KindMask", "AI.KindEraser", "AI.KindScene", "AI.KindMusic", "AI.KindSfx", "AI.KindRemix", "AI.KindSubs", "AI.KindDub"};
 	//Categories of the menu of the kinds: images / videos, sounds
 	static final String[] KIND_CATEGORY_KEYS = {"AI.KindCatImage", "AI.KindCatSound"};
 
 	static int categoryOf(String aKind) {
 		return MUSIC.equals(aKind) || SFX.equals(aKind) || REMIX.equals(aKind) || SUBS.equals(aKind) || DUB.equals(aKind) ? 1 : 0;
 	}
-	static final String[] KIND_TITLES = {"AI.Title", "AI.ColorTitle", "AI.MaskTitle", "AI.SceneTitle", "AI.MusicTitle", "AI.SfxTitle", "AI.RemixTitle", "AI.SubsTitle", "AI.DubTitle"};
+	static final String[] KIND_TITLES = {"AI.Title", "AI.ColorTitle", "AI.MaskTitle", "AI.EraserTitle", "AI.SceneTitle", "AI.MusicTitle", "AI.SfxTitle", "AI.RemixTitle", "AI.SubsTitle", "AI.DubTitle"};
 	//OK button of the form (the panel of the 3D scene validates it to open a saved scene)
 	Button formOkB = null;
 	//Data of a sound panel: its model chosen
@@ -1770,7 +1784,7 @@ public class AiClipGUI {
 	 * OK opens the editor (AiMaskGUI).
 	 * @return the check of the OK button: sets prompt (left null when the form is not valid)
 	 */
-	Runnable createMaskPanel(Composite aPanel) {
+	Runnable createMaskPanel(Composite aPanel,boolean aEraser) {
 		if(!MaskGenerator.isPlatformSupported()) {
 			Label aU = addLabel(aPanel, lng("AI.UnsupportedAll"), 0);
 			aU.setForeground(tde.gui.colorsSwt.RED);
@@ -1779,9 +1793,9 @@ public class AiClipGUI {
 		Composite[] aCols = columns(aPanel);
 		Composite aLeft = aCols[0];
 		Composite aRight = aCols[1];
-		Label aIntro = addLabel(aLeft, lng("AI.MaskIntro"), 0);
+		Label aIntro = addLabel(aLeft, lng(aEraser ? "AI.EraserIntro" : "AI.MaskIntro"), 0);
 		aIntro.setFont(tde.gui.fontsSwt.robotoBold);
-		addLabel(aLeft, lng("AI.GenMaskDesc"), 0);
+		addLabel(aLeft, lng(aEraser ? "AI.GenEraserDesc" : "AI.GenMaskDesc"), 0);
 
 		MaskGenerator.Model aDefault = MaskGenerator.defaultModel();
 		MaskGenerator.Model aChosen = MaskGenerator.byId(tde.config.aiMaskModel);
@@ -1805,20 +1819,28 @@ public class AiClipGUI {
 			aDownload[0].setText(aBytes > 0 ? lng("AI.MusicDownload").replace("%GB%", gb(aBytes)) : lng("AI.MusicReady"));
 			fit(aPanel);
 		};
+		aPanel.setData(MODEL, maskModel);
 		createModelChoice(aLeft, aChoices, maskModel, aM -> {
 			maskModel = (MaskGenerator.Model)aM;
+			aPanel.setData(MODEL, maskModel);
 			aShow.run();
 		});
 		aWhere[0] = addLabel(aLeft, " \n ", 0);
 		((GridData)aWhere[0].getLayoutData()).verticalIndent = 8;
+		if(aEraser) {
+			createEraserFillChoice(aLeft, aPanel);
+		}
 
-		Text aName = createNameField(aRight, MASK);
-		aName.setMessage(lng("AI.MaskNameHint"));
+		Text aName = createNameField(aRight, aEraser ? ERASER : MASK);
+		aName.setMessage(lng(aEraser ? "AI.EraserNameHint" : "AI.MaskNameHint"));
 		createMaskSourceRow(aRight);
-		Label aNote = addLabel(aRight, lng("AI.MaskNote"), 0);
+		Label aNote = addLabel(aRight, lng(aEraser ? "AI.EraserNote" : "AI.MaskNote"), 0);
 		((GridData)aNote.getLayoutData()).verticalIndent = 8;
 		aDownload[0] = addLabel(aRight, " \n ", 0);
 		addLabel(aRight, lng("AI.MaskLicence"), 0);
+		if(aEraser) {
+			addLabel(aRight, lng("AI.EraserLicence"), 0);
+		}
 		labelWidth = 560;
 		aShow.run();
 		return () -> {
@@ -1834,9 +1856,52 @@ public class AiClipGUI {
 	}
 
 	/**
+	 * Eraser: model filling the zones (model3d.SmartFill, TDConfig.aiEraserFill), downloaded when chosen (refused:
+	 * back to the previous one); not possible here: disabled
+	 */
+	void createEraserFillChoice(Composite aLeft,Composite aPanel) {
+		Label aFL = addLabel(aLeft, lng("AI.EraserFillModel"), 0);
+		((GridData)aFL.getLayoutData()).verticalIndent = 8;
+		aFL.setFont(tde.gui.fontsSwt.robotoBold);
+		Vector<Button> aFillBs = new Vector<Button>();
+		for(SmartFill.Model aM : SmartFill.MODELS) {
+			Button aR = new Button(aLeft, SWT.RADIO);
+			tde.gui.applyColorFont(aR);
+			boolean aDefault = aM == SmartFill.DEFAULT_MODEL;
+			aR.setText(lng(aM.key())+(aDefault ? " "+lng("AI.SceneFillDefault") : ""));
+			aR.setEnabled(aM.capable());
+			aR.setSelection(aM == SmartFill.modelById(tde.config.aiEraserFill));
+			aR.setData(aM);
+			aR.setToolTipText(lng("AI.EraserFillModelTip"));
+			aFillBs.add(aR);
+			aR.addSelectionListener(new SelectionAdapter() {
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					SmartFill.Model aOld = SmartFill.modelById(tde.config.aiEraserFill);
+					if(!aR.getSelection() || aOld == aM) {
+						return;
+					}
+					if(FillModelGUI.ensure(tde, aPanel.getShell(), aM)) {
+						tde.config.aiEraserFill = aM == SmartFill.DEFAULT_MODEL ? "" : aM.id;
+					}
+					else {
+						for(Button aB : aFillBs) {
+							aB.setSelection(aB.getData() == aOld);
+						}
+					}
+				}
+			});
+			addLabel(aLeft, lng(aM.key()+"Note")+(aM.capable() ? "" : " "+lng("AI.SceneFillNotHere")), 20);
+		}
+	}
+
+	/**
 	 * Row of the image or video of the mask: name, Choose (a file), From the library (an image or a video of the
 	 * media list: its stereo layout known), and the side by side checkbox for a file
 	 */
+	//Names of the source shown by the mask and eraser panels (the source is shared), shown again with a panel
+	Vector<Runnable> maskShows = new Vector<Runnable>();
+
 	void createMaskSourceRow(Composite aParent) {
 		Label aL = addLabel(aParent, lng("AI.MaskSource"), 0);
 		((GridData)aL.getLayoutData()).verticalIndent = 8;
@@ -1897,6 +1962,11 @@ public class AiClipGUI {
 			StereoImage aM = (StereoImage)chooseLibraryMedia(aParent.getShell(), new Vector<Media>(libraryImages()), lng("AI.MaskLibraryTitle"));
 			if(aM != null) {
 				maskSrc = maskSource(aM);
+				aShow.run();
+			}
+		});
+		maskShows.add(() -> {
+			if(!aNameL.isDisposed()) {
 				aShow.run();
 			}
 		});
@@ -3182,6 +3252,13 @@ public class AiClipGUI {
 	 * Window listing medias of the media list (thumbnail + name): OK or a double click chooses one
 	 */
 	Media chooseLibraryMedia(Shell aParent,Vector<Media> aImages,String aTitle) {
+		return chooseLibraryMedia(tde, aParent, aImages, aTitle);
+	}
+
+	/**
+	 * Same, for any window of the application
+	 */
+	public static Media chooseLibraryMedia(TDenlive tde,Shell aParent,Vector<Media> aImages,String aTitle) {
 		if(aImages.isEmpty()) {
 			return null;
 		}
@@ -3205,8 +3282,8 @@ public class AiClipGUI {
 		final int aTW = 96, aTH = 54;
 		for(Media aM : aImages) {
 			org.eclipse.swt.widgets.TableItem aItem = new org.eclipse.swt.widgets.TableItem(aTable, SWT.NONE);
-			aItem.setText((aM.fileName != null ? aM.fileName : "?")+(aM instanceof StereoMovie ? lng("AI.ImageLibraryVideo")
-					: aM instanceof AudioMedia ? lng("AI.LibrarySound") : ""));
+			aItem.setText((aM.fileName != null ? aM.fileName : "?")+(aM instanceof StereoMovie ? tde.gui.lngs.get("AI.ImageLibraryVideo")
+					: aM instanceof AudioMedia ? tde.gui.lngs.get("AI.LibrarySound") : ""));
 			aItem.setData(aM);
 			try {
 				BufferedImage aSrc = aM instanceof StereoImage && !(aM instanceof StereoMovie) ? leftView((StereoImage)aM) : aM.getThumbAwt();
@@ -3236,11 +3313,11 @@ public class AiClipGUI {
 		aButtons.setLayout(new GridLayout(2, true));
 		Button aCancel = new Button(aButtons, SWT.PUSH);
 		tde.gui.applyColorFont(aCancel);
-		aCancel.setText(lng("AI.Cancel"));
+		aCancel.setText(tde.gui.lngs.get("AI.Cancel"));
 		aCancel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		Button aOk = new Button(aButtons, SWT.PUSH);
 		tde.gui.applyColorFont(aOk);
-		aOk.setText(lng("AI.Ok"));
+		aOk.setText(tde.gui.lngs.get("AI.Ok"));
 		aOk.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		final Media[] aResult = {null};
 		Runnable aChoose = () -> {
@@ -3363,7 +3440,7 @@ public class AiClipGUI {
 		}
 		//Mask: its editor window (running until it is closed)
 		if(mask) {
-			new AiMaskGUI(this, maskSrc, maskModel, clipName.isEmpty() ? null : clipName).open();
+			new AiMaskGUI(this, maskSrc, maskModel, clipName.isEmpty() ? null : clipName, eraser).open();
 			return;
 		}
 		//3D scene saved before: the viewer at once (not a generation: other AI clips can be made meanwhile)

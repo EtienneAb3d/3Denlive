@@ -67,6 +67,8 @@ public class TDConfig {
 	public String aiSceneModel = "";
 	//Model filling the holes of the AI 3D scenes (model3d.SmartFill.Model id, "" = default: the light model)
 	public String aiSceneFill = "";
+	//Filling model of the AI eraser (SmartFill.Model id, "" = the default one)
+	public String aiEraserFill = "";
 	//Smart filling of the AI 3D scenes: mesh of the visible Gaussians, cut at the depth edges, then inpainting
 	//(model3d.SmartFill)
 	public boolean aiSceneSmartFill = true;
@@ -219,6 +221,11 @@ public class TDConfig {
 						aiSceneSmartFill = aOs.elementAt(o) instanceof XmlTag || !"false".equalsIgnoreCase(aOs.elementAt(o).text.trim());
 						continue;
 					}
+					if("aiEraserFill".equalsIgnoreCase(aT.tagName)) {
+						o++;
+						aiEraserFill = aOs.elementAt(o) instanceof XmlTag ? "" : aOs.elementAt(o).text.trim();
+						continue;
+					}
 					if("aiSceneFill".equalsIgnoreCase(aT.tagName)) {
 						o++;
 						aiSceneFill = aOs.elementAt(o) instanceof XmlTag ? "" : aOs.elementAt(o).text.trim();
@@ -337,6 +344,7 @@ public class TDConfig {
 			aOut.write("<aiSceneDetail>"+aiSceneDetail+"</aiSceneDetail>\n");
 			aOut.write("<aiSceneModel>"+aiSceneModel+"</aiSceneModel>\n");
 			aOut.write("<aiSceneFill>"+aiSceneFill+"</aiSceneFill>\n");
+			aOut.write("<aiEraserFill>"+aiEraserFill+"</aiEraserFill>\n");
 			aOut.write("<aiSceneSmartFill>"+aiSceneSmartFill+"</aiSceneSmartFill>\n");
 			aOut.write("<aiSceneInterp>"+aiSceneInterp+"</aiSceneInterp>\n");
 			aOut.write("<aiSceneDepth>"+aiSceneDepth+"</aiSceneDepth>\n");

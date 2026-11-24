@@ -21,6 +21,8 @@ class ScriptServer implements PythonAI.Resident {
 	final String key;
 	//Which model (see PythonAI.Resident) and its device argument
 	final String tag;
+	//Whose session the script holds (a script with a state, SAM: one editor at a time), null: none
+	public volatile Object sessionOwner = null;
 	final String device;
 	//Memory of its model (estimate)
 	final long memory;
@@ -76,6 +78,12 @@ class ScriptServer implements PythonAI.Resident {
 		if(aR instanceof ScriptServer && ((ScriptServer)aR).key.equals(aKey) && ((ScriptServer)aR).process.isAlive()) {
 			System.out.println("AI: model already loaded ("+aKey+")");
 			return (ScriptServer)aR;
+		}
+		//Kept loaded alongside the model kept loaded (PythonAI.keepAlongside())
+		PythonAI.Resident aComp = PythonAI.companion();
+		if(aComp instanceof ScriptServer && ((ScriptServer)aComp).key.equals(aKey) && ((ScriptServer)aComp).process.isAlive()) {
+			System.out.println("AI: model already loaded alongside ("+aKey+")");
+			return (ScriptServer)aComp;
 		}
 		PythonAI.beforeLoad(aKey);
 		Vector<String> aC = new Vector<String>(aCmd);

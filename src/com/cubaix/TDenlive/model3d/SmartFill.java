@@ -606,7 +606,7 @@ public class SmartFill {
 	/**
 	 * Chamfer distance (3-4: pixels x 3) of each pixel to the nearest one of aIn (0 there)
 	 */
-	static int[] distance(boolean[] aIn,int aW,int aH) {
+	public static int[] distance(boolean[] aIn,int aW,int aH) {
 		int n = aW*aH;
 		int[] aD = new int[n];
 		final int INF = Integer.MAX_VALUE/4;
@@ -949,7 +949,7 @@ public class SmartFill {
 	/**
 	 * The view aPix / aTrans (not changed) filled by aModel: the whole image, 3 floats per pixel 0..1
 	 */
-	static float[] fillImage(int[] aPix,float[] aTrans,int aW,int aH,boolean aFlip,Model aModel,int aSeed,String aTdeDir,float[] aZ) throws Exception {
+	public static float[] fillImage(int[] aPix,float[] aTrans,int aW,int aH,boolean aFlip,Model aModel,int aSeed,String aTdeDir,float[] aZ) throws Exception {
 		int n = aW*aH;
 		int[] aP = aPix.clone();
 		if(aModel == Model.SDXL) {
@@ -961,6 +961,53 @@ public class SmartFill {
 		else {
 			fill(aP, aTrans, aW, aH, aFlip, aModel, null, null, aTdeDir, aZ);
 		}
+		float[] aRes = new float[3*n];
+		for(int p = 0;p < n;p++) {
+			int c = aP[p];
+			aRes[3*p] = ((c>>16)&0xFF)/255f;
+			aRes[3*p+1] = ((c>>8)&0xFF)/255f;
+			aRes[3*p+2] = (c&0xFF)/255f;
+		}
+		return aRes;
+	}
+
+	/**
+	 * Any view (not a scene: the AI eraser, ai.EraseFiller) aPix / aTrans (not changed, holes: aTrans > HOLE) filled by
+	 * aModel, with its depths aZ (1/z or any nearness > 0, the larger the nearer; null: unknown). SDXL runs on the view
+	 * resized to sdxlSize() (its sides multiple of 8), its colors enlarged into the holes; a failure of SDXL: LIGHT.
+	 * @return the whole image, 3 floats per pixel 0..1
+	 */
+	public static float[] fillView(int[] aPix,float[] aTrans,int aW,int aH,boolean aFlip,Model aModel,int aSeed,String aTdeDir,float[] aZ) throws Exception {
+		int n = aW*aH;
+		if(aModel == Model.SDXL) {
+			try {
+				int[] aS = sdxlSize(aW, aH);
+				int aSW = aS[0], aSH = aS[1];
+				int[] aSP = new int[aSW*aSH];
+				float[] aST = new float[aSW*aSH];
+				for(int y = 0;y < aSH;y++) {
+					int sy = Math.min(aH-1, (int)((y+0.5)*aH/aSH));
+					for(int x = 0;x < aSW;x++) {
+						int sx = Math.min(aW-1, (int)((x+0.5)*aW/aSW));
+						aSP[y*aSW+x] = aPix[sy*aW+sx];
+						aST[y*aSW+x] = aTrans[sy*aW+sx];
+					}
+				}
+				float[] aImg = sdxlImage(aSP, aST, aSW, aSH, aSeed, aTdeDir);
+				int[] aP = aPix.clone();
+				if(aImg != null) {
+					fill(aP, aTrans, aW, aH, aFlip, aModel, aImg, aS, aTdeDir, aZ);
+				}
+				return toRGB(aP);
+			}
+			catch(Throwable t) {
+				System.err.println("Smart filling: SDXL failed, the light model instead");
+				t.printStackTrace(System.err);
+				aModel = Model.LIGHT;
+			}
+		}
+		int[] aP = aPix.clone();
+		fill(aP, aTrans, aW, aH, aFlip, aModel, null, null, aTdeDir, aZ);
 		float[] aRes = new float[3*n];
 		for(int p = 0;p < n;p++) {
 			int c = aP[p];
@@ -1425,7 +1472,7 @@ public class SmartFill {
 	 * The hole pixels (not aKnown) of the parts of the holes where a disc of radius aR fits (opening by that disc, with
 	 * chamfer distances): the parts narrower than 2 aR + 1 pixels are left out
 	 */
-	static boolean[] wideHoles(boolean[] aKnown,int aW,int aH,int aR) {
+	public static boolean[] wideHoles(boolean[] aKnown,int aW,int aH,int aR) {
 		int n = aW*aH;
 		int[] aD = distance(aKnown, aW, aH);
 		boolean[] aCore = new boolean[n];
@@ -1448,7 +1495,7 @@ public class SmartFill {
 	/**
 	 * The holes (aTrans > HOLE) need SDXL: enough of their pixels deep inside them (SDXL_DEEP, SDXL_DEEP_PART)
 	 */
-	static boolean largeHoles(float[] aTrans,int aW,int aH) {
+	public static boolean largeHoles(float[] aTrans,int aW,int aH) {
 		int n = aW*aH;
 		boolean[] aKnown = new boolean[n];
 		for(int p = 0;p < n;p++) {
@@ -1468,7 +1515,7 @@ public class SmartFill {
 	 * backgroundDepth(), the lines without any known pixel (a band along the frame) given the depth of the nearest
 	 * pixel of their column that has one (the farther of above and below)
 	 */
-	static float[] backgroundDepthFull(float[] aZ,float[] aTrans,int aW,int aH) {
+	public static float[] backgroundDepthFull(float[] aZ,float[] aTrans,int aW,int aH) {
 		float[] aRes = backgroundDepth(aZ, aTrans, aW, aH);
 		float[] aUp = new float[aH];
 		for(int x = 0;x < aW;x++) {
@@ -1510,7 +1557,7 @@ public class SmartFill {
 	 * the farther of the nearest known pixels on the left and on the right (a hole uncovered by a move is what the
 	 * nearer object hid); 0 when the line has none
 	 */
-	static float[] backgroundDepth(float[] aZ,float[] aTrans,int aW,int aH) {
+	public static float[] backgroundDepth(float[] aZ,float[] aTrans,int aW,int aH) {
 		float[] aRes = aZ.clone();
 		float[] aLeft = new float[aW];
 		for(int y = 0;y < aH;y++) {

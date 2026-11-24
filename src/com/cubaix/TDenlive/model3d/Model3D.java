@@ -28,6 +28,53 @@ public class Model3D {
 	public static final double MIN_PITCH = -89.5;
 	public static final double MAX_PITCH = 89.5;
 
+	/**
+	 * True if the image changes with the time: a turntable, or a video as texture
+	 */
+	public boolean isAnimated() {
+		if(spin != 0) {
+			return true;
+		}
+		for(Object3D aO : objects) {
+			for(String aT : aO.textures()) {
+				if(Texture3D.isMoving(aT)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * True if an object has the media aUID of the media list as texture
+	 */
+	public boolean usesMedia(long aUID) {
+		for(Object3D aO : objects) {
+			for(String aT : aO.textures()) {
+				if(Texture3D.mediaUID(aT) == aUID) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * The objects textured by the media aUID go back to their color; true if there were some
+	 */
+	public boolean releaseMedia(long aUID) {
+		boolean aDone = false;
+		for(Object3D aO : objects) {
+			if(!aO.textures().stream().anyMatch(aT -> Texture3D.mediaUID(aT) == aUID)) {
+				continue;
+			}
+			//The object, or only the faces that had it
+			aO.mapTextures(aT -> Texture3D.mediaUID(aT) == aUID ? com.cubaix.TDenlive.medias.ColorBck.Fill.PLAIN : aT);
+			aDone = true;
+		}
+		return aDone;
+	}
+
 	public Model3D copy() {
 		Model3D aM = new Model3D();
 		aM.name = name;

@@ -412,58 +412,63 @@ public class TDenlive {
 	}
 	
 	/**
-	 * Create the DemoLogo project (~/3Denlive/DemoLogo) from demo/DemoLogo.zip (in the jar, or src/ in dev)
-	 * if its .3De does not exist. The files already there are kept.
+	 * Images of the medias of the media list used as textures of the 3D models (Texture3D.MEDIA): both views,
+	 * rotation included, a video at the time looped over its duration
 	 */
-	void installDemo() {
-		File aRoot = new File(tdeDir).getAbsoluteFile();
-		//One extraction per version (the media paths of the project are relative)
-		String aDir = "DemoLogo_"+TDeVersion;
-		if(new File(aRoot, aDir+File.separatorChar+"DemoLogo.3De").exists()) {
-			return;
-		}
-		try(InputStream aIs = TDenlive.class.getResourceAsStream("/demo/DemoLogo.zip")) {
-			if(aIs == null) {
-				System.err.println("No demo/DemoLogo.zip in the classpath");
-				return;
+	void installTextureMedias() {
+		com.cubaix.TDenlive.model3d.Texture3D.medias = new com.cubaix.TDenlive.model3d.Texture3D.MediaSource() {
+			Media media(long aUID) {
+				Media aM = mediaList != null ? mediaList.getMediaByUID(aUID) : null;
+				return aM instanceof com.cubaix.TDenlive.medias.StereoImage && !(aM instanceof com.cubaix.TDenlive.medias.Model3DMedia) ? aM : null;
 			}
-			java.util.zip.ZipInputStream aZIS = new java.util.zip.ZipInputStream(aIs);
-			java.util.zip.ZipEntry aZE;
-			while((aZE = aZIS.getNextEntry()) != null) {
-				String aName = aZE.getName();
-				if(aName.equals("DemoLogo") || aName.startsWith("DemoLogo/")) {
-					aName = aDir + aName.substring("DemoLogo".length());
+
+			@Override
+			public java.awt.image.BufferedImage[] views(long aUID, int aMode, long aTimeMS) {
+				Media aM = media(aUID);
+				if(aM == null) {
+					return null;
 				}
-				File aF = new File(aRoot, aName).getCanonicalFile();
-				if(!aF.toPath().startsWith(aRoot.getCanonicalFile().toPath())) {
-					//Never outside ~/3Denlive
-					continue;
+				long aT = aTimeMS;
+				if(aM instanceof com.cubaix.TDenlive.medias.StereoMovie) {
+					long aD = aM.getDurationMS();
+					aT = aD > 0 ? aTimeMS % aD : 0;
 				}
-				if(aZE.isDirectory()) {
-					aF.mkdirs();
-					continue;
+				try {
+					synchronized(aM) {
+						aM.reBuild(aMode, aT);
+						return new java.awt.image.BufferedImage[] {aM.getWorkLeft(aMode, aT), aM.getWorkRight(aMode, aT)};
+					}
 				}
-				if(aF.exists()) {
-					continue;
-				}
-				aF.getParentFile().mkdirs();
-				java.nio.file.Files.copy(aZIS, aF.toPath());
-				if(aZE.getTime() > 0) {
-					aF.setLastModified(aZE.getTime());
+				catch(Throwable t) {
+					t.printStackTrace(System.err);
+					return null;
 				}
 			}
-			System.out.println("Demo project installed: "+new File(aRoot, aDir));
-		}
-		catch(Throwable t) {
-			t.printStackTrace(System.err);
-		}
+
+			@Override
+			public boolean isMoving(long aUID) {
+				return media(aUID) instanceof com.cubaix.TDenlive.medias.StereoMovie;
+			}
+
+			@Override
+			public long durationMS(long aUID) {
+				Media aM = media(aUID);
+				return aM instanceof com.cubaix.TDenlive.medias.StereoMovie ? aM.getDurationMS() : 0;
+			}
+
+			@Override
+			public String name(long aUID) {
+				Media aM = media(aUID);
+				return aM != null ? aM.fileName : null;
+			}
+		};
 	}
 
 	public void start(String aProjectPath) throws Exception {
 		config = new TDConfig();
-		installDemo();
 
 		mediaList = new MediaList(this);
+		installTextureMedias();
 	    gui = new TDeGUI(this);
 	    timeLineStack = new TimeLineStack(this);
 	    //Waveforms and film strips appear when the sounds are decoded / the images extracted

@@ -29,6 +29,7 @@ import com.cubaix.TDenlive.TDenlive;
 import com.cubaix.TDenlive.model3d.Math3D;
 import com.cubaix.TDenlive.model3d.Model3D;
 import com.cubaix.TDenlive.model3d.Object3D;
+import com.cubaix.TDenlive.model3d.ObjectCatalog;
 import com.cubaix.TDenlive.shapes.ShapeText;
 
 /**
@@ -79,6 +80,12 @@ public class Model3DGUI implements Model3DView.Source {
 	Button undoButton = null;
 	Button redoButton = null;
 	boolean updating = false;
+	//Kind of the shapes added: 0 = basic shapes (primitives, text), 1 = objects of the library (session)
+	static int addKind = 0;
+	Combo addKindCombo = null;
+	Composite addStack = null;
+	Composite addPrimitives = null;
+	ObjectLibraryGUI objectLibrary = null;
 
 	/**
 	 * @param aModel model to edit (copied), null for a new one
@@ -378,11 +385,23 @@ public class Model3DGUI implements Model3DView.Source {
 		});
 
 		section(aP, "Add");
-		Composite aAdd = row(aP, 3, true);
+		addKindCombo = new Combo(aP, SWT.READ_ONLY);
+		tde.gui.applyColorFont(addKindCombo);
+		addKindCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		addKindCombo.setItems(l("KindBasic"), l("KindObjects"));
+		addKindCombo.select(addKind);
+		addKindCombo.addListener(SWT.Selection, e -> showAddKind(addKindCombo.getSelectionIndex()));
+		addStack = new Composite(aP, SWT.NONE);
+		tde.gui.applyColorFont(addStack);
+		addStack.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		addStack.setLayout(new org.eclipse.swt.custom.StackLayout());
+		addPrimitives = row(addStack, 3, true);
 		for(int t = 0;t <= Object3D.TEXT;t++) {
 			final int aType = t;
-			button(aAdd, SWT.PUSH, l(Object3D.TYPE_NAMES[t]), () -> addObject(aType));
+			button(addPrimitives, SWT.PUSH, l(Object3D.TYPE_NAMES[t]), () -> addObject(aType));
 		}
+		objectLibrary = new ObjectLibraryGUI(tde, addStack, aI -> addAsset(aI));
+		showAddKind(addKind);
 
 		section(aP, "Tool");
 		createToolRows(tde, aP, view, toolButtons, axisButtons);
@@ -583,6 +602,12 @@ public class Model3DGUI implements Model3DView.Source {
 			return aO.name;
 		}
 		String aType = aTDe.gui.lngs.get("Model3D."+Object3D.TYPE_NAMES[aO.type]);
+		if(aO.type == Object3D.ASSET) {
+			ObjectCatalog.Item aI = ObjectCatalog.get(aO.asset);
+			if(aI != null) {
+				aType = ObjectCatalog.name(aI, aTDe.config.lng);
+			}
+		}
 		if(aO.type == Object3D.TEXT) {
 			String aT = aO.text == null ? "" : aO.text.replace("\n", " ");
 			if(aT.length() > 20) {
@@ -667,7 +692,8 @@ public class Model3DGUI implements Model3DView.Source {
 			setSpinners(spinners, aM);
 			duplicateButton.setEnabled(aM != null);
 			deleteButton.setEnabled(aM != null);
-			colorButton.setEnabled(aM != null);
+			//An object of the library has its own colors, unless a texture of the library replaces them
+			colorButton.setEnabled(aM != null && (aM.type != Object3D.ASSET || aM.hasAnyTexture()));
 			textureButton.setEnabled(aM != null);
 			groupButton.setEnabled(aM != null);
 			ungroupButton.setEnabled(aM != null && aM.isGroup());
@@ -834,6 +860,45 @@ public class Model3DGUI implements Model3DView.Source {
 			treeSignature = fillTree(tde, objTree, model, treeSignature, collapsed, view.selection);
 			tde.gui.display.timerExec(700, commitLater);
 		}
+	}
+
+	/**
+	 * Basic shapes or objects of the library under "Add a shape"
+	 */
+	void showAddKind(int aKind) {
+		addKind = Math.max(0, Math.min(1, aKind));
+		org.eclipse.swt.custom.StackLayout aSL = (org.eclipse.swt.custom.StackLayout)addStack.getLayout();
+		aSL.topControl = addKind == 1 ? objectLibrary.getControl() : addPrimitives;
+		//The stack takes the size of the panel shown
+		((GridData)addStack.getLayoutData()).heightHint = aSL.topControl.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
+		addStack.layout(true, true);
+		Composite aPanel = addStack.getParent();
+		aPanel.layout(true, true);
+		if(aPanel.getParent() instanceof org.eclipse.swt.custom.ScrolledComposite) {
+			((org.eclipse.swt.custom.ScrolledComposite)aPanel.getParent()).setMinSize(aPanel.computeSize(290, SWT.DEFAULT));
+		}
+	}
+
+	/**
+	 * Object of the library, on the floor at the target, its proportions kept (largest side 1)
+	 */
+	void addAsset(ObjectCatalog.Item aI) {
+		Object3D aO = new Object3D(Object3D.ASSET);
+		aO.asset = aI.id;
+		aO.id = model.nextId();
+		aO.color = 0xFFFFFF;
+		double[] aSize = aO.mesh().size;
+		double[] aT = model.getTarget();
+		aO.px = view.snap ? Model3DView.snapValue(aT[0], Model3DView.GRID_STEP) : aT[0];
+		aO.pz = view.snap ? Model3DView.snapValue(aT[2], Model3DView.GRID_STEP) : aT[2];
+		aO.py = aSize != null ? aSize[1]/2 : 0.5;
+		model.objects.add(aO);
+		view.selection.clear();
+		view.selection.add(aO.id);
+		commit();
+		refreshPanel();
+		view.redraw();
+		view.canvas.setFocus();
 	}
 
 	void addObject(int aType) {

@@ -1,0 +1,608 @@
+# 3Denlive 3D object library: DE names
+cat|Animals|Tiere
+cat|Farm|Bauernhof
+cat|Pets|Haustiere
+cat|Wild|Wildtiere
+cat|Sea|Meer
+cat|Birds|Vögel
+cat|Insects|Insekten
+cat|Dinosaurs|Dinosaurier
+cat|Buildings|Gebäude
+cat|Houses|Häuser
+cat|City|Stadt
+cat|Countryside|Land
+cat|Historic|Historische Bauten
+cat|Vehicles|Fahrzeuge
+cat|Road|Straße
+cat|Rail|Schiene
+cat|Water|Wasserfahrzeuge
+cat|Air & space|Luft- und Raumfahrt
+cat|Furniture|Möbel
+cat|Living room|Wohnzimmer
+cat|Bedroom|Schlafzimmer
+cat|Dining room|Esszimmer
+cat|Kitchen & bathroom|Küche und Bad
+cat|Office|Büro
+cat|Outdoor|Garten
+cat|Kitchen utensils|Küchenutensilien
+cat|Cookware|Kochgeschirr
+cat|Utensils|Küchenhelfer
+cat|Tableware|Geschirr und Besteck
+cat|Appliances|Küchengeräte
+cat|Food|Lebensmittel
+cat|Fruit|Obst
+cat|Vegetables|Gemüse
+cat|Dishes|Gerichte
+cat|Bakery & desserts|Backwaren und Desserts
+cat|Drinks|Getränke
+cat|Plants & nature|Pflanzen und Natur
+cat|Trees|Bäume
+cat|Plants & flowers|Pflanzen und Blumen
+cat|Tools|Werkzeuge
+cat|Hand tools|Handwerkzeuge
+cat|Workshop|Werkstatt
+cat|Garden & cleaning|Garten und Putzen
+cat|Musical instruments|Musikinstrumente
+cat|Strings|Saiteninstrumente
+cat|Keyboards & winds|Tasten- und Blasinstrumente
+cat|Percussion|Schlaginstrumente
+cat|Toys & games|Spielzeug und Spiele
+cat|Sports & leisure|Sport und Freizeit
+cat|Ball sports|Ballsport
+cat|Outdoors & other|Outdoor und Sonstiges
+cat|Electronics|Elektronik
+cat|Audio & video|Audio und Video
+cat|Computers & gadgets|Computer und Gadgets
+cat|Household|Haushalt
+cat|Decoration|Dekoration
+cat|Ornaments|Dekoartikel
+cat|Statues|Statuen
+cat|Lighting|Beleuchtung
+cat|Street furniture|Stadtmobiliar
+cat|Containers|Behälter
+cat|Personal items|Persönliche Gegenstände
+cat|Office & science|Büro und Wissenschaft
+obj|quaternius-cow|Kuh
+obj|quaternius-bull|Stier
+obj|quaternius-pig|Schwein
+obj|quaternius-sheep|Schaf
+obj|quaternius-horse|Pferd
+obj|quaternius-donkey|Esel
+obj|quaternius-chicken|Huhn
+obj|quaternius-llama|Lama
+obj|quaternius-alpaca|Alpaka
+obj|quaternius-cat|Katze
+obj|quaternius-dog|Hund
+obj|quaternius-pug|Mops
+obj|quaternius-husky|Husky
+obj|quaternius-shiba-inu|Shiba Inu
+obj|quaternius-rabbit|Kaninchen
+obj|quaternius-goldfish|Goldfisch
+obj|quaternius-hedgehog|Igel
+obj|quaternius-deer|Hirsch
+obj|quaternius-fox|Fuchs
+obj|quaternius-wolf|Wolf
+obj|quaternius-panda|Panda
+obj|quaternius-raccoon|Waschbär
+obj|quaternius-zebra|Zebra
+obj|quaternius-frog|Frosch
+obj|quaternius-snake|Schlange
+obj|ph-street-rat|Ratte
+obj|quaternius-bat|Fledermaus
+obj|quaternius-spider|Spinne
+obj|quaternius-bee|Biene
+obj|quaternius-bird|Vogel
+obj|quaternius-shark|Hai
+obj|quaternius-whale|Wal
+obj|quaternius-dolphin|Delfin
+obj|quaternius-clownfish|Clownfisch
+obj|quaternius-blue-tang|Paletten-Doktorfisch
+obj|quaternius-manta-ray|Mantarochen
+obj|quaternius-pufferfish|Kugelfisch
+obj|quaternius-koi-carp|Koi-Karpfen
+obj|quaternius-swordfish|Schwertfisch
+obj|kh-barramundifish|Barramundi
+obj|quaternius-t-rex|T-Rex
+obj|quaternius-triceratops|Triceratops
+obj|quaternius-stegosaurus|Stegosaurus
+obj|quaternius-apatosaurus|Apatosaurus
+obj|quaternius-velociraptor|Velociraptor
+obj|quaternius-parasaurolophus|Parasaurolophus
+obj|kenney-two-storey-house|Zweistöckiges Haus
+obj|kenney-small-house|Kleines Haus
+obj|quaternius-house|Haus
+obj|quaternius-town-house|Stadthaus
+obj|quaternius-half-timbered-house|Fachwerkhaus
+obj|quaternius-hut|Hütte
+obj|quaternius-office-building|Bürogebäude
+obj|quaternius-apartment-block|Wohnblock
+obj|kenney-skyscraper|Wolkenkratzer
+obj|kenney-large-building|Großes Gebäude
+obj|kenney-shop-building|Geschäftshaus
+obj|quaternius-tv-tower|Fernsehturm
+obj|quaternius-water-tower|Wasserturm
+obj|quaternius-market-stand|Marktstand
+obj|quaternius-barn|Scheune
+obj|quaternius-big-barn|Große Scheune
+obj|quaternius-silo|Silo
+obj|quaternius-windmill|Windmühle
+obj|quaternius-chicken-coop|Hühnerstall
+obj|quaternius-well|Brunnen
+obj|quaternius-garden-shed|Gartenhaus
+obj|quaternius-gazebo|Pavillon
+obj|quaternius-water-mill|Wassermühle
+obj|quaternius-castle|Burg
+obj|quaternius-temple|Tempel
+obj|quaternius-torii-gate|Torii
+obj|quaternius-bell-tower|Glockenturm
+obj|quaternius-inn|Gasthaus
+obj|quaternius-blacksmith-s-forge|Schmiede
+obj|quaternius-watchtower|Wachturm
+obj|quaternius-car|Auto
+obj|quaternius-police-car|Polizeiauto
+obj|quaternius-taxi|Taxi
+obj|quaternius-suv|SUV
+obj|quaternius-sports-car|Sportwagen
+obj|quaternius-pickup-truck|Pick-up
+obj|quaternius-truck|Lastwagen
+obj|pp-bus|Bus
+obj|pp-ambulance|Krankenwagen
+obj|pp-fire-engine|Feuerwehrauto
+obj|pp-motorcycle|Motorrad
+obj|pp-bicycle|Fahrrad
+obj|pp-tractor|Traktor
+obj|pp-bulldozer|Planierraupe
+obj|quaternius-steam-locomotive|Dampflok
+obj|quaternius-freight-locomotive|Güterlok
+obj|quaternius-high-speed-train|Hochgeschwindigkeitszug
+obj|quaternius-rowing-boat|Ruderboot
+obj|quaternius-sailing-boat|Segelboot
+obj|quaternius-sailing-ship|Segelschiff
+obj|quaternius-cruise-ship|Kreuzfahrtschiff
+obj|quaternius-viking-ship|Wikingerschiff
+obj|kenney-pirate-ship|Piratenschiff
+obj|pp-airplane|Flugzeug
+obj|pp-jet|Düsenflugzeug
+obj|pp-helicopter|Hubschrauber
+obj|pp-hot-air-balloon|Heißluftballon
+obj|quaternius-spaceship|Raumschiff
+obj|quaternius-moon-rover|Mondfahrzeug
+obj|ph-armchair-01|Viktorianischer Sessel
+obj|ph-modern-arm-chair-01|Moderner Sessel
+obj|ph-mid-century-lounge-chair|Loungesessel
+obj|ph-sofa-01|Sofa
+obj|kenney-designer-sofa|Designersofa
+obj|ph-ottoman-01|Hocker
+obj|ph-coffeetable-01|Couchtisch
+obj|ph-wooden-bookshelf-worn|Bücherregal
+obj|ph-modern-wooden-cabinet|Holzschrank
+obj|quaternius-fireplace|Kamin
+obj|ph-gothicbed-01|Gotisches Bett
+obj|kenney-double-bed|Doppelbett
+obj|kenney-bunk-bed|Etagenbett
+obj|ph-classicnightstand-01|Nachttisch
+obj|ph-gothiccommode-01|Kommode
+obj|ph-gothiccabinet-01|Kleiderschrank
+obj|ph-woodenchair-01|Holzstuhl
+obj|ph-dining-chair-02|Esszimmerstuhl
+obj|ph-round-wooden-table-01|Runder Tisch
+obj|ph-gallinera-table|Esstisch
+obj|ph-bar-chair-round-01|Barhocker
+obj|ph-wooden-stool-01|Holzhocker
+obj|kenney-fridge|Kühlschrank
+obj|kenney-cooker|Herd
+obj|kenney-microwave|Mikrowelle
+obj|kenney-kitchen-sink|Spüle
+obj|kenney-washing-machine|Waschmaschine
+obj|kenney-bathtub|Badewanne
+obj|kenney-toilet|Toilette
+obj|kenney-washbasin|Waschbecken
+obj|kenney-shower|Dusche
+obj|ph-schoolchair-01|Schulstuhl
+obj|ph-schooldesk-01|Schulbank
+obj|ph-metal-office-desk|Schreibtisch
+obj|kenney-desk-chair|Bürostuhl
+obj|ph-wooden-picnic-table|Picknicktisch
+obj|ph-outdoor-table-chair-set-01|Gartentisch mit Stühlen
+obj|ph-painted-wooden-bench|Holzbank
+obj|ph-brass-pan-01|Messingpfanne
+obj|kenney-frying-pan|Bratpfanne
+obj|ph-pot-enamel-01|Emaille-Kochtopf
+obj|kenney-stew-pot|Schmortopf
+obj|ph-wooden-spoon|Holzlöffel
+obj|ph-wooden-cutting-board|Schneidebrett
+obj|kenney-rolling-pin|Nudelholz
+obj|kenney-whisk|Schneebesen
+obj|kenney-kitchen-knife|Küchenmesser
+obj|kenney-spatula|Pfannenwender
+obj|kenney-ladle|Schöpflöffel
+obj|kenney-pepper-mill|Pfeffermühle
+obj|ph-wooden-bowl-01|Holzschale
+obj|ph-carved-wooden-plate|Geschnitzter Holzteller
+obj|ph-jug-01|Keramikkrug
+obj|ph-brass-goblets|Messingbecher
+obj|kh-diffusetransmissionteacup|Teetasse mit Untertasse
+obj|kenney-mug|Becher
+obj|kenney-wine-glass|Weinglas
+obj|kenney-fork|Gabel
+obj|quaternius-chopsticks|Essstäbchen
+obj|ph-vintage-electric-kettle|Wasserkocher
+obj|kenney-blender|Standmixer
+obj|kenney-toaster|Toaster
+obj|kenney-coffee-machine|Kaffeemaschine
+obj|ph-food-apple-01|Apfel
+obj|ph-food-avocado-01|Avocado
+obj|ph-food-kiwi-01|Kiwi
+obj|ph-lemon|Zitrone
+obj|ph-food-pomegranate-01|Granatapfel
+obj|kenney-watermelon|Wassermelone
+obj|kenney-banana|Banane
+obj|kenney-pineapple|Ananas
+obj|kenney-strawberry|Erdbeere
+obj|kenney-grapes|Weintrauben
+obj|kenney-orange|Orange
+obj|ph-yellow-onion|Zwiebel
+obj|kenney-carrot|Karotte
+obj|kenney-broccoli|Brokkoli
+obj|kenney-corn-cob|Maiskolben
+obj|kenney-pumpkin|Kürbis
+obj|kenney-pizza|Pizza
+obj|kenney-burger|Burger
+obj|kenney-french-fries|Pommes frites
+obj|kenney-hot-dog|Hotdog
+obj|kenney-taco|Taco
+obj|kenney-salmon-sushi|Lachs-Sushi
+obj|quaternius-ramen|Ramen
+obj|kenney-cheese|Käse
+obj|ph-croissant|Croissant
+obj|kenney-baguette|Baguette
+obj|ph-carrot-cake|Karottenkuchen
+obj|ph-strawberry-chocolate-cake|Schoko-Erdbeer-Torte
+obj|kenney-birthday-cake|Geburtstagstorte
+obj|kenney-cupcake|Cupcake
+obj|kenney-donut|Donut
+obj|kenney-ice-cream|Eis
+obj|ph-wine-bottles-01|Weinflaschen
+obj|kh-waterbottle|Trinkflasche
+obj|kenney-soda-can|Getränkedose
+obj|quaternius-tree|Baum
+obj|quaternius-pine-tree|Kiefer
+obj|quaternius-snowy-pine|Verschneite Tanne
+obj|quaternius-palm-tree|Palme
+obj|quaternius-birch-tree|Birke
+obj|quaternius-autumn-tree|Herbstbaum
+obj|quaternius-willow|Weide
+obj|quaternius-dead-tree|Toter Baum
+obj|ph-potted-plant-04|Topfpflanze
+obj|quaternius-houseplant|Zimmerpflanze
+obj|ph-calathea-orbifolia-01|Calathea
+obj|ph-fern-02|Farn
+obj|ph-shrub-03|Strauch
+obj|quaternius-flowering-bush|Blühender Busch
+obj|ph-flower-gazania|Gazanien
+obj|quaternius-flowers|Blumen
+obj|kh-glassvaseflowers|Blumen in einer Glasvase
+obj|quaternius-cactus|Kaktus
+obj|quaternius-mushroom|Pilz
+obj|quaternius-water-lily|Seerose
+obj|quaternius-mossy-rock|Bemooster Felsen
+obj|ph-cross-pein-hammer|Hammer
+obj|ph-sledgehammer-01|Vorschlaghammer
+obj|ph-hatchet|Beil
+obj|ph-wooden-axe|Axt
+obj|ph-screwdriver|Schraubendreher
+obj|ph-pliers|Zange
+obj|ph-adjustable-wrench|Rollgabelschlüssel
+obj|ph-pipe-wrench|Rohrzange
+obj|ph-handsaw-wood|Handsäge
+obj|ph-crowbar-01|Brechstange
+obj|ph-measuring-tape-01|Maßband
+obj|ph-vintage-hand-drill|Handbohrer
+obj|ph-drill-01|Bohrmaschine
+obj|ph-metal-toolbox|Werkzeugkasten
+obj|ph-bench-vice-01|Schraubstock
+obj|kenney-workbench|Werkbank
+obj|ph-propane-torch|Lötlampe
+obj|ph-tire-pump|Luftpumpe
+obj|ph-wooden-ladder|Holzleiter
+obj|ph-rusted-spade-01|Spaten
+obj|kenney-shovel|Schaufel
+obj|ph-trowel-01|Pflanzkelle
+obj|ph-watering-can-metal-01|Gießkanne
+obj|ph-garden-sprinkler-01|Rasensprenger
+obj|ph-wooden-broom|Besen
+obj|ph-dustpan|Kehrschaufel
+obj|quaternius-acoustic-guitar|Schwarze E-Gitarre
+obj|pp-electric-guitar|Rote E-Gitarre
+obj|pp-bass-guitar|E-Bass
+obj|ph-ukulele-01|Ukulele
+obj|quaternius-lute|Laute
+obj|pp-violin|Geige
+obj|pp-double-bass|Kontrabass
+obj|pp-harp|Harfe
+obj|pp-piano|Klavier
+obj|pp-electronic-keyboard|Keyboard
+obj|pp-accordion|Akkordeon
+obj|pp-trumpet|Trompete
+obj|pp-saxophone|Saxofon
+obj|pp-flute|Flöte
+obj|pp-harmonica|Mundharmonika
+obj|pp-drum-kit|Schlagzeug
+obj|pp-drum|Trommel
+obj|pp-bongos|Bongos
+obj|pp-cymbal|Becken
+obj|pp-tambourine|Tamburin
+obj|pp-maracas|Maracas
+obj|pp-xylophone|Xylofon
+obj|pp-gong|Gong
+obj|quaternius-bell|Glocke
+obj|pp-guitar-amplifier|Gitarrenverstärker
+obj|ph-rubber-duck-toy|Quietscheente
+obj|pp-doll|Puppe
+obj|pp-toy-train|Spielzeugeisenbahn
+obj|pp-toy-plane|Spielzeugflugzeug
+obj|pp-toy-robot|Spielzeugroboter
+obj|pp-toy-block|Bauklotz
+obj|pp-building-brick|Baustein
+obj|pp-rubik-s-cube|Zauberwürfel
+obj|pp-kite|Drachen
+obj|pp-balloon|Luftballon
+obj|pp-piggy-bank|Sparschwein
+obj|pp-sandcastle|Sandburg
+obj|pp-bouncy-castle|Hüpfburg
+obj|pp-merry-go-round|Karussell
+obj|pp-dice|Würfel
+obj|pp-chess-knight|Schachpferd
+obj|ph-sungka-board|Sungka-Brettspiel
+obj|ph-football|Fußball
+obj|ph-american-football|American Football
+obj|ph-baseball-01|Baseball
+obj|ph-baseball-bat|Baseballschläger
+obj|pp-basketball|Basketball
+obj|pp-volleyball|Volleyball
+obj|pp-tennis-racket|Tennisschläger
+obj|pp-tennis-ball|Tennisball
+obj|pp-table-tennis-paddle|Tischtennisschläger
+obj|pp-golf-club|Golfschläger
+obj|pp-golf-ball|Golfball
+obj|pp-bowling-pins|Bowlingkegel
+obj|pp-pool-table|Billardtisch
+obj|pp-dumbbell|Hantel
+obj|pp-trophy|Pokal
+obj|kenney-skateboard|Skateboard
+obj|pp-surfboard|Surfbrett
+obj|pp-snowboard|Snowboard
+obj|ph-dartboard|Dartscheibe
+obj|quaternius-archery-target|Bogenschießscheibe
+obj|kenney-tent|Zelt
+obj|kenney-campfire|Lagerfeuer
+obj|quaternius-fishing-rod|Angelrute
+obj|ph-television-01|Vintage-Fernseher
+obj|ph-television-02|Fernseher
+obj|ph-boombox|Ghettoblaster
+obj|ph-portable-cassette-player|Kassettenspieler
+obj|kenney-radio|Radio
+obj|kenney-loudspeaker|Lautsprecher
+obj|ph-camera-01|Fotokamera
+obj|ph-vintage-video-camera|Videokamera
+obj|ph-megaphone-01|Megafon
+obj|ph-classic-laptop|Laptop
+obj|quaternius-desktop-computer|Desktop-PC
+obj|quaternius-phone|Telefon
+obj|ph-gamepad|Gamepad
+obj|ph-gaming-console|Spielkonsole
+obj|ph-digital-wrist-watch|Digitaluhr
+obj|ph-vintage-microwave|Mikrowellenherd
+obj|ph-ceiling-fan|Deckenventilator
+obj|ph-cashregister-01|Registrierkasse
+obj|quaternius-solar-panel|Solarmodul
+obj|ph-antique-ceramic-vase-01|Antike Vase
+obj|ph-ceramic-vase-01|Keramikvase
+obj|ph-planter-pot-clay|Tontopf
+obj|ph-standing-picture-frame-01|Bilderrahmen
+obj|ph-throw-pillows-01|Kissen
+obj|ph-chinese-screen-panels|Paravent
+obj|quaternius-round-rug|Runder Teppich
+obj|ph-mantel-clock-01|Kaminuhr
+obj|ph-vintage-grandfather-clock-01|Standuhr
+obj|ph-lambis-shell|Muschel
+obj|ph-marble-bust-01|Marmorbüste
+obj|ph-horse-statue-01|Pferdestatue
+obj|ph-concrete-cat-statue|Katzenstatue
+obj|ph-carved-wooden-elephant|Holzelefant
+obj|ph-garden-gnome|Gartenzwerg
+obj|ph-chandelier-02|Kronleuchter
+obj|ph-desk-lamp-arm-01|Schreibtischlampe
+obj|quaternius-table-lamp|Tischlampe
+obj|kenney-floor-lamp|Stehlampe
+obj|kh-lantern|Laterne
+obj|ph-wooden-lantern-01|Holzlaterne
+obj|ph-vintage-oil-lamp|Öllampe
+obj|quaternius-candles|Kerzen
+obj|ph-street-lamp-02|Straßenlaterne
+obj|quaternius-street-light|Straßenleuchte
+obj|quaternius-traffic-light|Ampel
+obj|quaternius-traffic-cone|Leitkegel
+obj|quaternius-fire-hydrant|Hydrant
+obj|quaternius-park-bench|Parkbank
+obj|ph-wine-barrel-01|Weinfass
+obj|ph-barrel-01|Metallfass
+obj|ph-wicker-basket-01|Weidenkorb
+obj|ph-wooden-bucket-01|Holzeimer
+obj|ph-cardboard-box-01|Karton
+obj|ph-wooden-crate-01|Holzkiste
+obj|ph-plastic-crate-01|Kunststoffkiste
+obj|ph-metal-trash-can|Mülleimer
+obj|ph-plastic-jerrycan|Kanister
+obj|ph-propane-tank|Gasflasche
+obj|quaternius-treasure-chest|Schatztruhe
+obj|ph-medical-box|Erste-Hilfe-Kasten
+obj|ph-vintage-suitcase|Koffer
+obj|quaternius-backpack|Rucksack
+obj|ph-round-spectacles|Brille
+obj|ph-pocket-watch|Taschenuhr
+obj|ph-fishermans-hat|Anglerhut
+obj|ph-binoculars|Fernglas
+obj|ph-magnifying-glass-01|Lupe
+obj|ph-seadogs-compass|Kompass
+obj|ph-life-jacket|Rettungsweste
+obj|quaternius-crown|Krone
+obj|quaternius-padlock|Vorhängeschloss
+obj|ph-vintage-stapler|Hefter
+obj|ph-clipboard|Klemmbrett
+obj|ph-stationery-supplies|Stifte
+obj|ph-binder-notebook|Ringordner
+obj|quaternius-book|Buch
+obj|ph-standing-chalkboard-01|Kreidetafel
+obj|ph-vintage-microscope|Mikroskop
+obj|ov-cow|Kuh
+obj|ov-pig|Schwein
+obj|ov-sheep|Schaf
+obj|ov-goat|Ziege
+obj|ov-horse|Pferd
+obj|ov-donkey|Esel
+obj|ov-hen|Henne
+obj|ov-rooster|Hahn
+obj|ov-mallard|Stockente
+obj|ov-tabby-cat|Getigerte Katze
+obj|ov-kitten|Kätzchen
+obj|ov-pharaoh-hound|Pharaonenhund
+obj|ov-dachshund|Dackel
+obj|ov-brown-rabbit|Braunes Kaninchen
+obj|ov-cockatoo|Kakadu
+obj|ov-lion|Löwe
+obj|ov-tiger|Tiger
+obj|ov-leopard|Leopard
+obj|ov-cheetah|Gepard
+obj|ov-bobcat|Rotluchs
+obj|ov-elephant|Elefant
+obj|ov-giraffe|Giraffe
+obj|ov-rhinoceros|Nashorn
+obj|ov-hippopotamus|Flusspferd
+obj|ov-gorilla|Gorilla
+obj|ov-hyena|Hyäne
+obj|ov-gazelle|Gazelle
+obj|ov-wildebeest|Gnu
+obj|ov-african-buffalo|Afrikanischer Büffel
+obj|ov-warthog|Warzenschwein
+obj|ov-dromedary|Dromedar
+obj|ov-kangaroo|Känguru
+obj|ov-brown-bear|Braunbär
+obj|ov-polar-bear|Eisbär
+obj|ov-giant-panda|Großer Panda
+obj|ov-wolf|Wolf
+obj|ov-red-fox|Rotfuchs
+obj|ov-reindeer|Rentier
+obj|ov-arctic-hare|Polarhase
+obj|ov-crocodile|Krokodil
+obj|ov-komodo-dragon|Komodowaran
+obj|ov-chameleon|Chamäleon
+obj|ov-green-snake|Grüne Schlange
+obj|ov-poison-dart-frog|Pfeilgiftfrosch
+obj|ov-giant-tortoise|Riesenschildkröte
+obj|ov-eagle|Adler
+obj|ov-red-tailed-hawk|Rotschwanzbussard
+obj|ov-turkey-vulture|Truthahngeier
+obj|ov-barn-owl|Schleiereule
+obj|ov-snowy-owl|Schnee-Eule
+obj|ov-penguin|Brillenpinguin
+obj|ov-canada-goose|Kanadagans
+obj|ov-seagull|Möwe
+obj|ov-pigeon|Taube
+obj|ov-crow|Krähe
+obj|ov-sparrow|Spatz
+obj|ov-blue-jay|Blauhäher
+obj|ov-woodpecker|Helmspecht
+obj|ov-great-white-shark|Weißer Hai
+obj|ov-dolphin|Delfin
+obj|ov-orca|Orca
+obj|ov-humpback-whale|Buckelwal
+obj|ov-manta-ray|Mantarochen
+obj|ov-sea-turtle|Meeresschildkröte
+obj|ov-clownfish|Clownfisch
+obj|ov-trout|Forelle
+obj|ov-seahorse|Seepferdchen
+obj|ov-starfish|Seestern
+obj|ov-shrimp|Garnele
+obj|ov-monarch-butterfly|Monarchfalter
+obj|ov-morpho-butterfly|Blauer Morphofalter
+obj|ov-honeybee|Honigbiene
+obj|ov-wasp|Wespe
+obj|ov-ladybug|Marienkäfer
+obj|ov-rhinoceros-beetle|Nashornkäfer
+obj|ov-ant|Ameise
+obj|ov-grasshopper|Heuschrecke
+obj|ov-praying-mantis|Gottesanbeterin
+obj|ov-spider|Spinne
+obj|ov-scorpion|Skorpion
+obj|ov-spinosaurus|Spinosaurus
+obj|ov-ferrari-testarossa|Roter Sportwagen
+obj|ov-lamborghini|Gelber Supersportwagen
+obj|ov-vintage-race-car|Historischer Rennwagen
+obj|ov-pickup|Pick-up
+obj|ov-old-van|Alter Transporter
+obj|ov-coach|Reisebus
+obj|ov-old-truck|Alter Lastwagen
+obj|ov-garbage-truck|Müllwagen
+obj|ov-vintage-tractor|Oldtimer-Traktor
+obj|ov-forklift|Gabelstapler
+obj|ov-military-motorcycle|Militärmotorrad
+obj|ov-scooter|Motorroller
+obj|ov-road-bicycle|Rennrad
+obj|ov-rowing-boat|Holzruderboot
+obj|ov-canoe|Kanu
+obj|ov-kayak|Kajak
+obj|ov-airliner|Verkehrsflugzeug
+obj|ov-spitfire|Spitfire
+obj|ov-seaplane|Wasserflugzeug
+obj|ov-military-helicopter|Militärhubschrauber
+obj|ov-banana|Banane
+obj|ov-mango|Mango
+obj|ov-strawberry|Erdbeere
+obj|ov-peach|Pfirsich
+obj|ov-cherries|Kirschen
+obj|ov-pear|Birne
+obj|ov-cabbage|Kohl
+obj|ov-carrot|Karotte
+obj|ov-pumpkin|Kürbis
+obj|ov-potato|Kartoffel
+obj|ov-burger|Hamburger
+obj|ov-pizza|Pizza
+obj|ov-sushi|Sushi-Platte
+obj|ov-camembert|Camembert
+obj|ov-chocolate-doughnut|Schoko-Donut
+obj|ov-strawberry-cupcake|Erdbeer-Cupcake
+obj|ov-cookie|Schokoladenkeks
+obj|ov-electric-guitar|E-Gitarre
+obj|ov-acoustic-guitar|Akustikgitarre
+obj|ov-violin|Geige
+obj|ov-grand-piano|Flügel
+obj|ov-upright-piano|Klavier
+obj|ov-saxophone|Saxofon
+obj|ov-tuba|Tuba
+obj|ov-vintage-drum-kit|Altes Schlagzeug
+obj|ov-timpani|Pauke
+obj|ov-djembe|Djembe
+obj|ov-conga|Conga
+obj|ov-gramophone|Grammofon
+obj|ov-teddy-bear|Teddybär
+obj|ov-rocking-horse|Schaukelpferd
+obj|ov-wooden-toy-truck|Holzspielzeug-Lastwagen
+obj|ov-music-box|Spieldose
+obj|ov-nutcracker|Nussknacker
+obj|ov-matryoshka|Matroschka
+obj|ov-chess-set|Schachspiel
+obj|ov-playing-cards|Spielkarten
+obj|ov-worn-dice|Abgenutzter Würfel
+obj|ov-basketball|Basketball
+obj|ov-tennis-racket|Tennisschläger
+obj|ov-bowling-ball|Bowlingkugel
+obj|ov-bowling-pin|Bowlingpin
+obj|ov-boxing-glove|Alter Boxhandschuh
+obj|ov-dumbbell|Hantel
+obj|ov-kettlebell|Kettlebell
+obj|ov-skateboard|Skateboard
+obj|ov-wooden-sled|Holzschlitten
+obj|ov-medal|Medaille
+cat|Blocky style|Würfelstil
+cat|Objects|Objekte

@@ -19,6 +19,13 @@ public class Renderer3D {
 		public Set<Integer> selected = null;//Ids of the objects outlined
 		public boolean ids = false;//Id buffer of the result
 		public int outline = 0xFFFF9A1F;
+		//Media textures (Texture3D.MEDIA): processing mode and media time of their images
+		public int mode = com.cubaix.TDenlive.TDConfig.PROCESSING_MODE_WORK;
+		public long timeMS = 0;
+		//>= 0: the media time of the video textures, shown as it is (not looped over their range: preview of a time)
+		public long texTimeMS = -1;
+		//Set by the rendering: a media texture was missing (not loaded yet), drawn in the color of its object
+		public boolean missing = false;
 	}
 
 	public static class Result {
@@ -42,8 +49,31 @@ public class Renderer3D {
 		String procedural;
 		int c1, c2;
 		int level;//Mipmap level of the current triangle
+		//Material of an object of the library: the texels below alpha 0.5 not drawn; the texture
+		//multiplied by the color of the vertices (indices 8, 9, 10 of the points, 0..1)
+		boolean alphaCut = false;
+		boolean tinted = false;
+		//An image / a video (Texture3D.isPicture()): one image per repeat cell, its ratio kept, fitted whole in the
+		//cell (fu, fv >= 1: the image coordinates per cell coordinate, set per triangle from the shape of its part),
+		//enlarged by 1 / k around the middle, moved by offU / offV, the color of the object (outside) around it
+		boolean picture = false;
+		double fu = 1, fv = 1, k = 1, offU = 0, offV = 0;
+		boolean wrapU = false, wrapV = false;
+		int outside = 0;
+		//Texels per uv unit relative to the image (mipmap level): fu * fv * k^2
+		double areaK = 1;
 
 		int sample(double aU, double aV) {
+			if(picture) {
+				double aCu = wrapU ? aU - Math.floor(aU) : aU;
+				double aCv = wrapV ? aV - Math.floor(aV) : aV;
+				double aS = 0.5 + (aCu-0.5)*fu*k + offU;
+				double aT = 0.5 + (aCv-0.5)*fv*k + offV;
+				if(aS < 0 || aS > 1 || aT < 0 || aT > 1) {
+					return outside;
+				}
+				return tex.sampleClamp(aS, aT, level);
+			}
 			if(tex != null) {
 				return tex.sample(aU, aV, level);
 			}
@@ -91,7 +121,7 @@ public class Renderer3D {
 		double[] aPivot = aM.getTarget();
 
 		for(Object3D aO : aM.objects) {
-			drawObject(aM, aO, aCam, aLight, aHalf, aView, aSpin, aPivot, aSpinDeg != 0);
+			drawObject(aM, aO, aCam, aLight, aHalf, aView, aSpin, aPivot, aSpinDeg != 0, aEye, aOpt);
 		}
 		if(aOpt.grid) {
 			drawGrid(aCam);
@@ -118,7 +148,7 @@ public class Renderer3D {
 		return aR;
 	}
 
-	void drawObject(Model3D aModel, Object3D aO, Camera3D aCam, double[] aLight, double[] aHalf, double[] aView, double[] aSpin, double[] aPivot, boolean aSpinning) {
+	void drawObject(Model3D aModel, Object3D aO, Camera3D aCam, double[] aLight, double[] aHalf, double[] aView, double[] aSpin, double[] aPivot, boolean aSpinning, int aEye, Options aOpt) {
 		Mesh3D aMesh = aO.mesh();
 		int aN = aMesh.nbVerts;
 		if(aN == 0) {
@@ -134,32 +164,57 @@ public class Renderer3D {
 		//Normals: inverse transpose of the world matrix
 		double[] aNM = Math3D.transpose(Math3D.invert(aMat));
 		double aBr = (aO.color >> 16) & 0xFF, aBg = (aO.color >> 8) & 0xFF, aBb = aO.color & 0xFF;
-		TexCtx aTex = null;
-		if(aO.hasTexture()) {
-			aTex = new TexCtx();
-			if(com.cubaix.TDenlive.medias.ColorBck.Fill.isBitmap(aO.texture)) {
-				aTex.tex = Texture3D.get(aO.texture);
-				if(aTex.tex == null) {
-					//Image missing: the color of the object
-					aTex = null;
-				}
+		//Object of the library with its own materials (a texture chosen for the object replaces them)
+		boolean aOwn = aMesh.mats != null && !aO.hasAnyTexture();
+		if(aOwn) {
+			drawOwnMaterials(aMesh, aMat, aPos, aNM, aCam, aLight, aHalf, aO.id+1);
+			return;
+		}
+		//Texture of each face (Object3D.faceTexture()), one context per texture; null = the color of the object
+		int aNF = Math.max(1, aMesh.nbFaces);
+		TexCtx[] aFaceTex = new TexCtx[aNF];
+		//Settings of the texture of each face (Object3D.texParams()); one context per texture and settings
+		Object3D.TexParams[] aFaceP = new Object3D.TexParams[aNF];
+		double[] aFaceCos = new double[aNF], aFaceSin = new double[aNF];
+		java.util.HashMap<String, TexCtx> aCtxs = new java.util.HashMap<String, TexCtx>();
+		boolean aAnyTex = false, aAnyPicture = false;
+		for(int f = 0;f < aNF;f++) {
+			aFaceP[f] = aO.texParams(f);
+			aFaceCos[f] = Math.cos(Math.toRadians(aFaceP[f].rot));
+			aFaceSin[f] = Math.sin(Math.toRadians(aFaceP[f].rot));
+			String aT = aO.faceTexture(f);
+			if(aT == null || com.cubaix.TDenlive.medias.ColorBck.Fill.PLAIN.equals(aT)) {
+				continue;
 			}
-			else {
-				aTex.procedural = aO.texture;
-				aTex.c1 = aO.color;
-				aTex.c2 = aO.color2;
+			String aCK = aT + "|" + aFaceP[f].key();
+			if(!aCtxs.containsKey(aCK)) {
+				aCtxs.put(aCK, texCtx(aO, aT, aFaceP[f], aEye, aOpt));
+			}
+			aFaceTex[f] = aCtxs.get(aCK);
+			aAnyTex |= aFaceTex[f] != null;
+			aAnyPicture |= aFaceTex[f] != null && aFaceTex[f].picture;
+		}
+		//Face of each vertex (the faces have their own vertices)
+		int[] aVF = new int[aN];
+		if(aMesh.triFace != null) {
+			for(int t = 0;t < aMesh.nbTris;t++) {
+				int aF = Math.min(aNF-1, aMesh.faceOf(t));
+				aVF[aMesh.tris[t*3]] = aVF[aMesh.tris[t*3+1]] = aVF[aMesh.tris[t*3+2]] = aF;
 			}
 		}
 		double[] aCx = new double[aN], aCy = new double[aN], aCz = new double[aN];
 		float[] aCr = new float[aN], aCg = new float[aN], aCb = new float[aN];
-		double aTexCos = Math.cos(Math.toRadians(aO.texRot)), aTexSin = Math.sin(Math.toRadians(aO.texRot));
 		//Textured: r = diffuse factor, g = highlight (0..255), u, v
-		float[] aTu = aTex != null ? new float[aN] : null, aTv = aTex != null ? new float[aN] : null;
+		float[] aTu = aAnyTex ? new float[aN] : null, aTv = aAnyTex ? new float[aN] : null;
+		double[] aWp = aAnyPicture ? new double[aN*3] : null;
 		for(int v = 0;v < aN;v++) {
 			double[] aL = {aMesh.pos[v*3], aMesh.pos[v*3+1], aMesh.pos[v*3+2]};
 			double[] aW = Math3D.add(Math3D.apply(aMat, aL), aPos);
 			double[] aC = aCam.toCam(aW);
 			aCx[v] = aC[0]; aCy[v] = aC[1]; aCz[v] = aC[2];
+			if(aWp != null) {
+				aWp[v*3] = aW[0]; aWp[v*3+1] = aW[1]; aWp[v*3+2] = aW[2];
+			}
 			double[] aNor = Math3D.normalize(Math3D.apply(aNM, new double[] {aMesh.nor[v*3], aMesh.nor[v*3+1], aMesh.nor[v*3+2]}));
 			if(aMesh.twoSided && Math3D.dot(aNor, Math3D.sub(aCam.pos, aW)) < 0) {
 				aNor = Math3D.mul(aNor, -1);
@@ -167,17 +222,26 @@ public class Renderer3D {
 			double aDif = Math.max(0, Math3D.dot(aNor, aLight));
 			double aSpec = Math.pow(Math.max(0, Math3D.dot(aNor, aHalf)), 32)*0.35;
 			double aK = 0.28 + 0.72*aDif;
+			TexCtx aTex = aFaceTex[aVF[v]];
 			if(aTex != null) {
 				aCr[v] = (float)aK;
 				aCg[v] = (float)(255*aSpec);
-				double aTexK = 100/Math.max(1, aO.texScale);
+				Object3D.TexParams aP = aFaceP[aVF[v]];
+				double aTexCos = aFaceCos[aVF[v]], aTexSin = aFaceSin[aVF[v]];
+				double aTexK = 100/Math.max(1, aP.scale);
 				//Turned around the middle of the face (the texture turns counterclockwise: its
 				//coordinates turn the other way), then repeated and scaled
 				double aU0 = aMesh.uv[v*2]-0.5, aV0 = aMesh.uv[v*2+1]-0.5;
 				double aU = aTexCos*aU0 + aTexSin*aV0 + 0.5;
 				double aV = -aTexSin*aU0 + aTexCos*aV0 + 0.5;
-				aTu[v] = (float)(aU*aO.texRepU*aTexK + aO.texOffU/100);
-				aTv[v] = (float)(aV*aO.texRepV*aTexK + aO.texOffV/100);
+				if(aTex.picture) {
+					//Cells of the repeats; the image fitted in each one by the sampler
+					aTu[v] = (float)(aU*aP.repU);
+					aTv[v] = (float)(aV*aP.repV);
+					continue;
+				}
+				aTu[v] = (float)(aU*aP.repU*aTexK + aP.offU/100);
+				aTv[v] = (float)(aV*aP.repV*aTexK + aP.offV/100);
 				continue;
 			}
 			aCr[v] = (float)Math.min(255, aBr*aK + 255*aSpec);
@@ -186,8 +250,19 @@ public class Renderer3D {
 		}
 		int aId = aO.id+1;
 		double[][] aPoly = new double[8][];
+		//Image: ratio width / height of the cell of each part of the mesh (triangles sharing vertices)
+		double[] aCellRatio = aAnyPicture ? cellRatios(aMesh, aWp, aTu, aTv) : null;
 		for(int t = 0;t < aMesh.nbTris;t++) {
 			int aA = aMesh.tris[t*3], aB = aMesh.tris[t*3+1], aC = aMesh.tris[t*3+2];
+			TexCtx aTex = aFaceTex[Math.min(aNF-1, aMesh.faceOf(t))];
+			if(aTex != null && aTex.picture) {
+				//Fitted whole: the larger side of the image on the cell, the color of the object on the rest
+				double aR = aCellRatio[t];
+				double aImgRatio = aTex.tex.width()/(double)Math.max(1, aTex.tex.height());
+				aTex.fu = Math.max(1, aR/aImgRatio);
+				aTex.fv = Math.max(1, aImgRatio/aR);
+				aTex.areaK = aTex.fu*aTex.fv*aTex.k*aTex.k;
+			}
 			double[] aVa, aVb, aVc;
 			if(aTex != null) {
 				aVa = new double[] {aCx[aA], aCy[aA], aCz[aA], aCr[aA], aCg[aA], 0, aTu[aA], aTv[aA]};
@@ -205,6 +280,166 @@ public class Renderer3D {
 			}
 			//Clipped by the near plane
 			int aNP = clipNear(new double[][] {aVa, aVb, aVc}, aPoly);
+			for(int p = 1;p < aNP-1;p++) {
+				drawTri(aCam, aPoly[0], aPoly[p], aPoly[p+1], aId, aTex);
+			}
+		}
+	}
+
+	/**
+	 * Context of the texture aTexture of the object aO (not PLAIN), null when its image is missing (the color of the
+	 * object; a media not loaded yet sets aOpt.missing)
+	 */
+	static TexCtx texCtx(Object3D aO, String aTexture, Object3D.TexParams aP, int aEye, Options aOpt) {
+		TexCtx aTex = new TexCtx();
+		if(Texture3D.isMedia(aTexture)) {
+			//A media of the media list: the view of the eye at the time
+			aTex.tex = aOpt.texTimeMS >= 0 ? Texture3D.ofMedia(aTexture, aEye, aOpt.mode, aOpt.texTimeMS)
+					: Texture3D.ofMedia(aTexture, aEye, aOpt.mode, aOpt.timeMS, aP.startMS, aP.endMS);
+			if(aTex.tex == null) {
+				aOpt.missing = true;
+				return null;
+			}
+		}
+		else if(com.cubaix.TDenlive.medias.ColorBck.Fill.isBitmap(aTexture)) {
+			aTex.tex = Texture3D.get(aTexture);
+			if(aTex.tex == null) {
+				return null;
+			}
+		}
+		else {
+			aTex.procedural = aTexture;
+			aTex.c1 = aO.color;
+			aTex.c2 = aO.color2;
+			return aTex;
+		}
+		if(Texture3D.isPicture(aTexture)) {
+			aTex.picture = true;
+			aTex.k = 100/Math.max(1, aP.scale);
+			aTex.offU = aP.offU/100;
+			aTex.offV = aP.offV/100;
+			aTex.wrapU = aP.repU > 1;
+			aTex.wrapV = aP.repV > 1;
+			aTex.outside = aO.color & 0xFFFFFF;
+		}
+		return aTex;
+	}
+
+	/**
+	 * Per triangle, the ratio width / height in the world of a texture cell (1 x 1 in aTu / aTv) over its part of the
+	 * mesh: the triangles linked by shared vertices (a face of a cube, the side of a cylinder, a sphere), lengths of
+	 * dP/du and dP/dv averaged over the part (weighted by the uv area), so that one image keeps one shape on a part
+	 */
+	static double[] cellRatios(Mesh3D aMesh, double[] aWp, float[] aTu, float[] aTv) {
+		int aNT = aMesh.nbTris;
+		int[] aParent = new int[aMesh.nbVerts];
+		for(int v = 0;v < aParent.length;v++) {
+			aParent[v] = v;
+		}
+		for(int t = 0;t < aNT;t++) {
+			int aA = find(aParent, aMesh.tris[t*3]);
+			for(int i = 1;i < 3;i++) {
+				int aB = find(aParent, aMesh.tris[t*3+i]);
+				if(aA != aB) {
+					aParent[aB] = aA;
+				}
+			}
+		}
+		java.util.HashMap<Integer, double[]> aSums = new java.util.HashMap<Integer, double[]>();
+		int[] aPart = new int[aNT];
+		for(int t = 0;t < aNT;t++) {
+			int aA = aMesh.tris[t*3], aB = aMesh.tris[t*3+1], aC = aMesh.tris[t*3+2];
+			aPart[t] = find(aParent, aA);
+			double aDu1 = aTu[aB]-aTu[aA], aDv1 = aTv[aB]-aTv[aA], aDu2 = aTu[aC]-aTu[aA], aDv2 = aTv[aC]-aTv[aA];
+			double aDet = aDu1*aDv2 - aDu2*aDv1;
+			if(Math.abs(aDet) < 1e-12) {
+				continue;
+			}
+			double aLu = 0, aLv = 0;
+			double[] aPu = new double[3], aPv = new double[3];
+			for(int c = 0;c < 3;c++) {
+				double aE1 = aWp[aB*3+c]-aWp[aA*3+c], aE2 = aWp[aC*3+c]-aWp[aA*3+c];
+				aPu[c] = (aE1*aDv2 - aE2*aDv1)/aDet;
+				aPv[c] = (aE2*aDu1 - aE1*aDu2)/aDet;
+			}
+			aLu = Math.sqrt(aPu[0]*aPu[0]+aPu[1]*aPu[1]+aPu[2]*aPu[2]);
+			aLv = Math.sqrt(aPv[0]*aPv[0]+aPv[1]*aPv[1]+aPv[2]*aPv[2]);
+			double aW = Math.abs(aDet);
+			double[] aS = aSums.computeIfAbsent(aPart[t], x -> new double[2]);
+			aS[0] += aLu*aW;
+			aS[1] += aLv*aW;
+		}
+		double[] aR = new double[aNT];
+		for(int t = 0;t < aNT;t++) {
+			double[] aS = aSums.get(aPart[t]);
+			aR[t] = aS != null && aS[0] > 0 && aS[1] > 0 ? aS[0]/aS[1] : 1;
+		}
+		return aR;
+	}
+
+	static int find(int[] aParent, int aV) {
+		while(aParent[aV] != aV) {
+			aParent[aV] = aParent[aParent[aV]];
+			aV = aParent[aV];
+		}
+		return aV;
+	}
+
+	/**
+	 * Mesh of an object of the library: per triangle its material (color x vertex color, texture tinted
+	 * by them, alpha mask), lit like the other objects
+	 */
+	void drawOwnMaterials(Mesh3D aMesh, double[] aMat, double[] aPos, double[] aNM, Camera3D aCam, double[] aLight, double[] aHalf, int aId) {
+		int aN = aMesh.nbVerts;
+		double[] aCx = new double[aN], aCy = new double[aN], aCz = new double[aN];
+		float[] aK = new float[aN], aS = new float[aN];
+		for(int v = 0;v < aN;v++) {
+			double[] aW = Math3D.add(Math3D.apply(aMat, new double[] {aMesh.pos[v*3], aMesh.pos[v*3+1], aMesh.pos[v*3+2]}), aPos);
+			double[] aC = aCam.toCam(aW);
+			aCx[v] = aC[0]; aCy[v] = aC[1]; aCz[v] = aC[2];
+			double[] aNor = Math3D.normalize(Math3D.apply(aNM, new double[] {aMesh.nor[v*3], aMesh.nor[v*3+1], aMesh.nor[v*3+2]}));
+			if(aMesh.twoSided && Math3D.dot(aNor, Math3D.sub(aCam.pos, aW)) < 0) {
+				aNor = Math3D.mul(aNor, -1);
+			}
+			double aDif = Math.max(0, Math3D.dot(aNor, aLight));
+			aK[v] = (float)(0.28 + 0.72*aDif);
+			aS[v] = (float)(255*Math.pow(Math.max(0, Math3D.dot(aNor, aHalf)), 32)*0.35);
+		}
+		TexCtx[] aCtx = new TexCtx[aMesh.mats.length];
+		for(int m = 0;m < aCtx.length;m++) {
+			Mesh3D.Material aM = aMesh.mats[m];
+			if(aM.tex != null) {
+				aCtx[m] = new TexCtx();
+				aCtx[m].tex = aM.tex;
+				aCtx[m].alphaCut = aM.alphaCut;
+				aCtx[m].tinted = true;
+			}
+		}
+		double[][] aPoly = new double[8][];
+		double[][] aV = new double[3][];
+		for(int t = 0;t < aMesh.nbTris;t++) {
+			int aMI = aMesh.triMat != null && t < aMesh.triMat.length ? aMesh.triMat[t] : 0;
+			Mesh3D.Material aM = aMesh.mats.length > 0 ? aMesh.mats[Math.max(0, Math.min(aMesh.mats.length-1, aMI))] : new Mesh3D.Material();
+			TexCtx aTex = aMesh.mats.length > 0 ? aCtx[Math.max(0, Math.min(aCtx.length-1, aMI))] : null;
+			for(int k = 0;k < 3;k++) {
+				int i = aMesh.tris[t*3+k];
+				double aR = aM.r, aG = aM.g, aB = aM.b;
+				if(aMesh.vcol != null) {
+					aR *= aMesh.vcol[i*3]; aG *= aMesh.vcol[i*3+1]; aB *= aMesh.vcol[i*3+2];
+				}
+				if(aTex != null) {
+					aV[k] = new double[] {aCx[i], aCy[i], aCz[i], aK[i], aS[i], 0, aMesh.uv[i*2], aMesh.uv[i*2+1], aR, aG, aB};
+				}
+				else {
+					aV[k] = new double[] {aCx[i], aCy[i], aCz[i],
+							Math.min(255, 255*aR*aK[i] + aS[i]), Math.min(255, 255*aG*aK[i] + aS[i]), Math.min(255, 255*aB*aK[i] + aS[i])};
+				}
+			}
+			if(aV[0][2] > Camera3D.NEAR && aV[1][2] > Camera3D.NEAR && aV[2][2] > Camera3D.NEAR) {
+				drawTri(aCam, aV[0], aV[1], aV[2], aId, aTex);
+				continue;
+			}
+			int aNP = clipNear(new double[][] {aV[0], aV[1], aV[2]}, aPoly);
 			for(int p = 1;p < aNP-1;p++) {
 				drawTri(aCam, aPoly[0], aPoly[p], aPoly[p+1], aId, aTex);
 			}
@@ -262,7 +497,7 @@ public class Renderer3D {
 			aVz0 = aA[7]*aIz0; aVz1 = aB[7]*aIz1; aVz2 = aC[7]*aIz2;
 			if(aTex.tex != null) {
 				//Mipmap level: texels of the triangle per pixel of the screen
-				double aTexArea = Math.abs((aB[6]-aA[6])*(aC[7]-aA[7]) - (aC[6]-aA[6])*(aB[7]-aA[7]))*aTex.tex.width()*aTex.tex.height();
+				double aTexArea = Math.abs((aB[6]-aA[6])*(aC[7]-aA[7]) - (aC[6]-aA[6])*(aB[7]-aA[7]))*aTex.tex.width()*aTex.tex.height()*aTex.areaK;
 				aTex.level = aTex.tex.level(Math.sqrt(aTexArea/Math.abs(aArea)));
 			}
 		}
@@ -289,19 +524,30 @@ public class Renderer3D {
 				if(aIz <= zb[i]) {
 					continue;
 				}
-				zb[i] = aIz;
 				if(aTex != null) {
 					double aZ = 1/(aW0*aIz0 + aW1*aIz1 + aW2*aIz2);
 					int aT = aTex.sample((aW0*aUz0 + aW1*aUz1 + aW2*aUz2)*aZ, (aW0*aVz0 + aW1*aVz1 + aW2*aVz2)*aZ);
+					if(aTex.alphaCut && (aT>>>24) < 128) {
+						continue;
+					}
+					zb[i] = aIz;
 					double aK = aW0*aA[3] + aW1*aB[3] + aW2*aC[3];
 					double aS = aW0*aA[4] + aW1*aB[4] + aW2*aC[4];
-					col[i] = 0xFF000000 | (clamp((int)(((aT>>16)&0xFF)*aK + aS)) << 16)
-							| (clamp((int)(((aT>>8)&0xFF)*aK + aS)) << 8) | clamp((int)((aT&0xFF)*aK + aS));
+					double aKr = aK, aKg = aK, aKb = aK;
+					if(aTex.tinted) {
+						//Color of the vertices, interpolated with the perspective
+						aKr *= (aW0*aA[8]*aIz0 + aW1*aB[8]*aIz1 + aW2*aC[8]*aIz2)*aZ;
+						aKg *= (aW0*aA[9]*aIz0 + aW1*aB[9]*aIz1 + aW2*aC[9]*aIz2)*aZ;
+						aKb *= (aW0*aA[10]*aIz0 + aW1*aB[10]*aIz1 + aW2*aC[10]*aIz2)*aZ;
+					}
+					col[i] = 0xFF000000 | (clamp((int)(((aT>>16)&0xFF)*aKr + aS)) << 16)
+							| (clamp((int)(((aT>>8)&0xFF)*aKg + aS)) << 8) | clamp((int)((aT&0xFF)*aKb + aS));
 					if(idb != null) {
 						idb[i] = aId;
 					}
 					continue;
 				}
+				zb[i] = aIz;
 				int aR = (int)(aW0*aA[3] + aW1*aB[3] + aW2*aC[3]);
 				int aG = (int)(aW0*aA[4] + aW1*aB[4] + aW2*aC[4]);
 				int aBl = (int)(aW0*aA[5] + aW1*aB[5] + aW2*aC[5]);

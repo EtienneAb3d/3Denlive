@@ -48,6 +48,10 @@ public class Model3DView {
 		void selectionChanged();
 		/** Other keys (delete, duplicate, undo...): true if used */
 		default boolean extraKey(Event e) {return false;}
+		/** The camera holder changed by the view: orbit, pan, zoom, view buttons (aFinal: end of the action) */
+		default void cameraChanged(boolean aFinal) {}
+		/** True when the direction of the camera is fixed (camera on an axis): no orbit, no view of an angle */
+		default boolean orbitLocked() {return false;}
 	}
 
 	public static final int TOOL_MOVE = 0;
@@ -111,6 +115,7 @@ public class Model3DView {
 		canvas.addListener(SWT.MouseUp, e -> mouseUp(e));
 		canvas.addListener(SWT.MouseVerticalWheel, e -> {
 			zoom(e.count);
+			src.cameraChanged(true);
 			canvas.redraw();
 		});
 		canvas.addListener(SWT.MouseExit, e -> {
@@ -125,7 +130,11 @@ public class Model3DView {
 			}
 			else if(e.detail == SWT.GESTURE_MAGNIFY && e.magnification > 0) {
 				cam().distance = clampDistance(gestureDistance/e.magnification);
+				src.cameraChanged(false);
 				canvas.redraw();
+			}
+			else if(e.detail == SWT.GESTURE_END) {
+				src.cameraChanged(true);
 			}
 		});
 		canvas.addListener(SWT.KeyDown, e -> keyDown(e));
@@ -270,8 +279,12 @@ public class Model3DView {
 	}
 
 	public void setView(double aYaw, double aPitch) {
+		if(src.orbitLocked()) {
+			return;
+		}
 		cam().yaw = aYaw;
 		cam().pitch = aPitch;
+		src.cameraChanged(true);
 		redraw();
 		canvas.setFocus();
 	}
@@ -283,6 +296,7 @@ public class Model3DView {
 		if(aV != cam()) {
 			cam().copyCameraFrom(aV);
 		}
+		src.cameraChanged(true);
 		redraw();
 		canvas.setFocus();
 	}
@@ -296,6 +310,9 @@ public class Model3DView {
 	}
 
 	void orbit(int aDx, int aDy) {
+		if(src.orbitLocked()) {
+			return;
+		}
 		Model3D aC = cam();
 		aC.yaw = (aC.yaw - aDx*0.4) % 360;
 		aC.pitch = Math.max(Model3D.MIN_PITCH, Math.min(Model3D.MAX_PITCH, aC.pitch + aDy*0.4));
@@ -388,10 +405,14 @@ public class Model3DView {
 		}
 		switch(drag) {
 		case DRAG_ORBIT:
-			orbit(aDx, aDy);
+			if(!src.orbitLocked()) {
+				orbit(aDx, aDy);
+				src.cameraChanged(false);
+			}
 			break;
 		case DRAG_PAN:
 			pan(aDx, aDy);
+			src.cameraChanged(false);
 			break;
 		case DRAG_TRANSFORM:
 			applyTransform(e.x, e.y);
@@ -416,6 +437,9 @@ public class Model3DView {
 		}
 		if(aDrag == DRAG_TRANSFORM) {
 			src.changed(true);
+		}
+		if((aDrag == DRAG_ORBIT && !src.orbitLocked()) || aDrag == DRAG_PAN) {
+			src.cameraChanged(true);
 		}
 		redraw();
 	}
@@ -728,6 +752,9 @@ public class Model3DView {
 			case SWT.ARROW_DOWN: orbit(0, 38); break;
 			case SWT.PAGE_UP: zoom(1); break;
 			case SWT.PAGE_DOWN: zoom(-1); break;
+			}
+			if(aKey == SWT.PAGE_UP || aKey == SWT.PAGE_DOWN || !src.orbitLocked()) {
+				src.cameraChanged(true);
 			}
 			return;
 		}

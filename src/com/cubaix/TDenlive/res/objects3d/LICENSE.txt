@@ -1,0 +1,1239 @@
+3Denlive library of 3D objects - licences
+
+The 3D models listed in objects.txt are NOT embedded in the application: each one is downloaded
+from its source at its first use into ~/3Denlive/Models/Objects3D/ and then read from there.
+They keep the licence of their author, given below per pack (CC0 1.0 = public domain dedication,
+no attribution required; CC-BY 3.0 = attribution required: credit the author as listed).
+
+== Pack khronos
+Licence: CC0 1.0
+Author: Khronos glTF Sample Assets contributors
+Source: https://github.com/KhronosGroup/glTF-Sample-Assets
+Objects: 5
+Licence text: https://creativecommons.org/publicdomain/zero/1.0/ (per-model README of the repository)
+  - Barramundi: BarramundiFish
+  - Teacup and saucer: DiffuseTransmissionTeacup
+  - Water bottle: WaterBottle
+  - Flowers in a glass vase: GlassVaseFlowers
+  - Lantern: Lantern
+
+== Pack polyhaven
+Licence: CC0 1.0
+Author: Poly Haven contributors
+Source: https://polyhaven.com/models
+Objects: 139
+Licence text: https://creativecommons.org/publicdomain/zero/1.0/ (Poly Haven: https://polyhaven.com/license)
+  - Rat: https://polyhaven.com/a/street_rat (Sean Buckley)
+  - Victorian armchair: https://polyhaven.com/a/ArmChair_01 (Kirill Sannikov)
+  - Modern armchair: https://polyhaven.com/a/modern_arm_chair_01 (Vibrant Nordic)
+  - Lounge chair: https://polyhaven.com/a/mid_century_lounge_chair (Kuutti Siitonen)
+  - Sofa: https://polyhaven.com/a/Sofa_01 (Kirill Sannikov)
+  - Ottoman: https://polyhaven.com/a/Ottoman_01 (Caspian Fortune)
+  - Coffee table: https://polyhaven.com/a/CoffeeTable_01 (Fernando Quinn)
+  - Bookshelf: https://polyhaven.com/a/wooden_bookshelf_worn (Ulan Cabanilla)
+  - Wooden cabinet: https://polyhaven.com/a/modern_wooden_cabinet (Patrik Pangerl)
+  - Gothic bed: https://polyhaven.com/a/GothicBed_01 (Kirill Sannikov)
+  - Nightstand: https://polyhaven.com/a/ClassicNightstand_01 (Kirill Sannikov)
+  - Chest of drawers: https://polyhaven.com/a/GothicCommode_01 (Kirill Sannikov)
+  - Wardrobe: https://polyhaven.com/a/GothicCabinet_01 (Kirill Sannikov)
+  - Wooden chair: https://polyhaven.com/a/WoodenChair_01 (Jake Mobley)
+  - Dining chair: https://polyhaven.com/a/dining_chair_02 (James Ray Cock)
+  - Round table: https://polyhaven.com/a/round_wooden_table_01 (Ulan Cabanilla)
+  - Dining table: https://polyhaven.com/a/gallinera_table (Ulan Cabanilla)
+  - Bar stool: https://polyhaven.com/a/bar_chair_round_01 (Dairon Sanchez)
+  - Wooden stool: https://polyhaven.com/a/wooden_stool_01 (Kuutti Siitonen)
+  - School chair: https://polyhaven.com/a/SchoolChair_01 (Ethan Place)
+  - School desk: https://polyhaven.com/a/SchoolDesk_01 (Ethan Place)
+  - Office desk: https://polyhaven.com/a/metal_office_desk (Ulan Cabanilla)
+  - Picnic table: https://polyhaven.com/a/wooden_picnic_table (Ulan Cabanilla)
+  - Garden table and chairs: https://polyhaven.com/a/outdoor_table_chair_set_01 (James Ray Cock)
+  - Wooden bench: https://polyhaven.com/a/painted_wooden_bench (Kirill Sannikov)
+  - Brass frying pan: https://polyhaven.com/a/brass_pan_01 (Rico Cilliers)
+  - Enamel cooking pot: https://polyhaven.com/a/pot_enamel_01 (Kuutti Siitonen)
+  - Wooden spoon: https://polyhaven.com/a/wooden_spoon (Ronnie Barter)
+  - Cutting board: https://polyhaven.com/a/wooden_cutting_board (Kuutti Siitonen)
+  - Wooden bowl: https://polyhaven.com/a/wooden_bowl_01 (Oliver Harries)
+  - Carved wooden plate: https://polyhaven.com/a/carved_wooden_plate (Jan Martens)
+  - Ceramic jug: https://polyhaven.com/a/jug_01 (Kuutti Siitonen)
+  - Brass goblets: https://polyhaven.com/a/brass_goblets (Tina)
+  - Electric kettle: https://polyhaven.com/a/vintage_electric_kettle (SV Garip)
+  - Apple: https://polyhaven.com/a/food_apple_01 (Oliver Harries)
+  - Avocado: https://polyhaven.com/a/food_avocado_01 (Oliver Harries)
+  - Kiwi: https://polyhaven.com/a/food_kiwi_01 (Oliver Harries)
+  - Lemon: https://polyhaven.com/a/lemon (Kuutti Siitonen)
+  - Pomegranate: https://polyhaven.com/a/food_pomegranate_01 (Oliver Harries)
+  - Onion: https://polyhaven.com/a/yellow_onion (Kuutti Siitonen)
+  - Croissant: https://polyhaven.com/a/croissant (Greg Zaal, Dario Barresi)
+  - Carrot cake: https://polyhaven.com/a/carrot_cake (Greg Zaal, James Ray Cock)
+  - Strawberry chocolate cake: https://polyhaven.com/a/strawberry_chocolate_cake (Kuutti Siitonen)
+  - Wine bottles: https://polyhaven.com/a/wine_bottles_01 (Rico Cilliers, Jurita Burger)
+  - Potted plant: https://polyhaven.com/a/potted_plant_04 (James Ray Cock)
+  - Calathea: https://polyhaven.com/a/calathea_orbifolia_01 (Rob Tuytel, Rico Cilliers)
+  - Fern: https://polyhaven.com/a/fern_02 (Rob Tuytel, Rico Cilliers)
+  - Shrub: https://polyhaven.com/a/shrub_03 (Rico Cilliers)
+  - Gazania flowers: https://polyhaven.com/a/flower_gazania (James Ray Cock, Jenelle van Heerden)
+  - Hammer: https://polyhaven.com/a/cross_pein_hammer (Tics)
+  - Sledgehammer: https://polyhaven.com/a/sledgehammer_01 (Dylan Guzman)
+  - Hatchet: https://polyhaven.com/a/hatchet (James Ray Cock, Ulan Cabanilla)
+  - Axe: https://polyhaven.com/a/wooden_axe (Ulan Cabanilla)
+  - Screwdriver: https://polyhaven.com/a/screwdriver (PierreB3D)
+  - Pliers: https://polyhaven.com/a/pliers (PierreB3D)
+  - Adjustable wrench: https://polyhaven.com/a/adjustable_wrench (Mateusz Sadek)
+  - Pipe wrench: https://polyhaven.com/a/pipe_wrench (Will Evarts)
+  - Handsaw: https://polyhaven.com/a/handsaw_wood (Konrad Szałankiewicz)
+  - Crowbar: https://polyhaven.com/a/crowbar_01 (Alexander Otterbeck)
+  - Tape measure: https://polyhaven.com/a/measuring_tape_01 (Kuutti Siitonen)
+  - Hand drill: https://polyhaven.com/a/vintage_hand_drill (Yann Kervran, Benjamin McDonnell)
+  - Electric drill: https://polyhaven.com/a/Drill_01 (Fernando Quinn)
+  - Toolbox: https://polyhaven.com/a/metal_toolbox (Mateusz Sadek)
+  - Bench vice: https://polyhaven.com/a/bench_vice_01 (Yann Kervran, Antanas Kep)
+  - Blowtorch: https://polyhaven.com/a/propane_torch (Jan W)
+  - Tire pump: https://polyhaven.com/a/tire_pump (Garrison Gager)
+  - Wooden ladder: https://polyhaven.com/a/wooden_ladder (Miroslav Turura)
+  - Spade: https://polyhaven.com/a/rusted_spade_01 (Blemonade)
+  - Trowel: https://polyhaven.com/a/trowel_01 (Satyaki Mandal)
+  - Watering can: https://polyhaven.com/a/watering_can_metal_01 (Charles Nderitu)
+  - Garden sprinkler: https://polyhaven.com/a/garden_sprinkler_01 (Amal Kumar)
+  - Broom: https://polyhaven.com/a/wooden_broom (Balen)
+  - Dustpan: https://polyhaven.com/a/dustpan (Balen)
+  - Ukulele: https://polyhaven.com/a/Ukulele_01 (Joseph Burgan)
+  - Rubber duck: https://polyhaven.com/a/rubber_duck_toy (Plat251)
+  - Sungka board game: https://polyhaven.com/a/sungka_board (Ulan Cabanilla)
+  - Soccer ball: https://polyhaven.com/a/football (Amal Kumar)
+  - American football: https://polyhaven.com/a/american_football (Riley Queen)
+  - Baseball: https://polyhaven.com/a/baseball_01 (Rico Cilliers)
+  - Baseball bat: https://polyhaven.com/a/baseball_bat (Enrique Martín)
+  - Dartboard: https://polyhaven.com/a/dartboard (Satyaki Mandal)
+  - Vintage television: https://polyhaven.com/a/Television_01 (Gabriel Radić)
+  - Television: https://polyhaven.com/a/television_02 (Benny Weimer)
+  - Boombox: https://polyhaven.com/a/boombox (Thomas Paul Mouilleron)
+  - Cassette player: https://polyhaven.com/a/portable_cassette_player (Mateusz Sadek)
+  - Camera: https://polyhaven.com/a/Camera_01 (Rajil Jose Macatangay)
+  - Video camera: https://polyhaven.com/a/vintage_video_camera (James Ray Cock, Jenelle van Heerden)
+  - Megaphone: https://polyhaven.com/a/Megaphone_01 (Ethan Simon-Law)
+  - Laptop: https://polyhaven.com/a/classic_laptop (Arrangemonk)
+  - Gamepad: https://polyhaven.com/a/gamepad (Josh Dean)
+  - Game console: https://polyhaven.com/a/gaming_console (Sean Buckley)
+  - Digital watch: https://polyhaven.com/a/digital_wrist_watch (Adrian C)
+  - Microwave oven: https://polyhaven.com/a/vintage_microwave (Adam Nekola)
+  - Ceiling fan: https://polyhaven.com/a/ceiling_fan (Ulan Cabanilla)
+  - Cash register: https://polyhaven.com/a/CashRegister_01 (Joe Seabuhr)
+  - Antique vase: https://polyhaven.com/a/antique_ceramic_vase_01 (James Ray Cock)
+  - Ceramic vase: https://polyhaven.com/a/ceramic_vase_01 (James Ray Cock)
+  - Clay flower pot: https://polyhaven.com/a/planter_pot_clay (Amal Kumar)
+  - Picture frame: https://polyhaven.com/a/standing_picture_frame_01 (James Ray Cock)
+  - Cushions: https://polyhaven.com/a/throw_pillows_01 (Serhii Khromov)
+  - Folding screen: https://polyhaven.com/a/chinese_screen_panels (Kirill Sannikov)
+  - Mantel clock: https://polyhaven.com/a/mantel_clock_01 (Yann Kervran, Rico Cilliers)
+  - Grandfather clock: https://polyhaven.com/a/vintage_grandfather_clock_01 (Yann Kervran, James Ray Cock)
+  - Seashell: https://polyhaven.com/a/lambis_shell (Kuutti Siitonen)
+  - Marble bust: https://polyhaven.com/a/marble_bust_01 (Rico Cilliers)
+  - Horse statue: https://polyhaven.com/a/horse_statue_01 (Rico Cilliers)
+  - Cat statue: https://polyhaven.com/a/concrete_cat_statue (Rico Cilliers, Riley Queen)
+  - Wooden elephant: https://polyhaven.com/a/carved_wooden_elephant (Greg Zaal)
+  - Garden gnome: https://polyhaven.com/a/garden_gnome (Bhargav Kubal)
+  - Chandelier: https://polyhaven.com/a/Chandelier_02 (Kirill Sannikov)
+  - Desk lamp: https://polyhaven.com/a/desk_lamp_arm_01 (Yann Kervran, Kuutti Siitonen)
+  - Wooden lantern: https://polyhaven.com/a/wooden_lantern_01 (James Ray Cock)
+  - Oil lamp: https://polyhaven.com/a/vintage_oil_lamp (Monsta3D)
+  - Street lamp: https://polyhaven.com/a/street_lamp_02 (Josh Dean)
+  - Wine barrel: https://polyhaven.com/a/wine_barrel_01 (James Ray Cock)
+  - Metal drum: https://polyhaven.com/a/Barrel_01 (Jorge Camacho)
+  - Wicker basket: https://polyhaven.com/a/wicker_basket_01 (Kuutti Siitonen)
+  - Wooden bucket: https://polyhaven.com/a/wooden_bucket_01 (James Ray Cock)
+  - Cardboard box: https://polyhaven.com/a/cardboard_box_01 (Rahul Chaudhary)
+  - Wooden crate: https://polyhaven.com/a/wooden_crate_01 (James Ray Cock)
+  - Plastic crate: https://polyhaven.com/a/plastic_crate_01 (PierreB3D)
+  - Trash can: https://polyhaven.com/a/metal_trash_can (GurJas Studios)
+  - Jerrycan: https://polyhaven.com/a/plastic_jerrycan (Ulan Cabanilla)
+  - Gas bottle: https://polyhaven.com/a/propane_tank (Slinc)
+  - First aid kit: https://polyhaven.com/a/medical_box (Ulan Cabanilla)
+  - Suitcase: https://polyhaven.com/a/vintage_suitcase (Maximilian Schuster)
+  - Glasses: https://polyhaven.com/a/round_spectacles (Sean Buckley)
+  - Pocket watch: https://polyhaven.com/a/pocket_watch (PierreB3D)
+  - Fisherman's hat: https://polyhaven.com/a/fishermans_hat (PierreB3D)
+  - Binoculars: https://polyhaven.com/a/binoculars (Derek Wight)
+  - Magnifying glass: https://polyhaven.com/a/magnifying_glass_01 (Nazar Borodavka)
+  - Compass: https://polyhaven.com/a/seadogs_compass (Benny Weimer)
+  - Life jacket: https://polyhaven.com/a/life_jacket (PierreB3D)
+  - Stapler: https://polyhaven.com/a/vintage_stapler (Mateusz Sadek)
+  - Clipboard: https://polyhaven.com/a/clipboard (ProgrammerOnCoffee)
+  - Pens and pencils: https://polyhaven.com/a/stationery_supplies (Mateusz Sadek)
+  - Ring binder: https://polyhaven.com/a/binder_notebook (DaDrood)
+  - Chalkboard: https://polyhaven.com/a/standing_chalkboard_01 (ParzivalCG)
+  - Microscope: https://polyhaven.com/a/vintage_microscope (Luis José Fernández Rodríguez)
+
+== Pack polypizza-creativetrio
+Licence: CC0 1.0
+Author: CreativeTrio
+Source: https://poly.pizza/u/CreativeTrio
+Objects: 5
+Licence text: https://creativecommons.org/publicdomain/zero/1.0/
+
+== Pack polypizza-daniel-melchior-ccby
+Licence: CC-BY 3.0
+Author: Daniel Melchior
+Source: https://poly.pizza/u/Daniel%20Melchior
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/3.0/
+  - "Xylophone" by Daniel Melchior, https://poly.pizza/m/a-OYg3WVXfV (CC-BY 3.0)
+
+== Pack polypizza-davis-ccby
+Licence: CC-BY 3.0
+Author: davis
+Source: https://poly.pizza/u/davis
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/3.0/
+  - "Toy plane" by davis, https://poly.pizza/m/RX6ra3i2Gp (CC-BY 3.0)
+
+== Pack polypizza-don-carson-ccby
+Licence: CC-BY 3.0
+Author: Don Carson
+Source: https://poly.pizza/u/Don%20Carson
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/3.0/
+  - "Accordion" by Don Carson, https://poly.pizza/m/0sb_-K7yFXW (CC-BY 3.0)
+
+== Pack polypizza-evol-love-ccby
+Licence: CC-BY 3.0
+Author: Evol-Love
+Source: https://poly.pizza/u/Evol-Love
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/3.0/
+  - "Pool table" by Evol-Love, https://poly.pizza/m/7GzmqI1M0fC (CC-BY 3.0)
+
+== Pack polypizza-geldvillager
+Licence: CC0 1.0
+Author: Geldvillager
+Source: https://poly.pizza/u/Geldvillager
+Objects: 1
+Licence text: https://creativecommons.org/publicdomain/zero/1.0/
+
+== Pack polypizza-greatgavino-ccby
+Licence: CC-BY 3.0
+Author: GreatGavino
+Source: https://poly.pizza/u/GreatGavino
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/3.0/
+  - "Toy block" by GreatGavino, https://poly.pizza/m/RtwMoLvuTl (CC-BY 3.0)
+
+== Pack polypizza-ivan-klus-ccby
+Licence: CC-BY 3.0
+Author: Ivan Klus
+Source: https://poly.pizza/u/Ivan%20Klus
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/3.0/
+  - "Fire engine" by Ivan Klus, https://poly.pizza/m/7iHJ519SwxG (CC-BY 3.0)
+
+== Pack polypizza-jair-trejo-ccby
+Licence: CC-BY 3.0
+Author: Jair Trejo
+Source: https://poly.pizza/u/Jair%20Trejo
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/3.0/
+  - "Toy train" by Jair Trejo, https://poly.pizza/m/2jFwyCzAAaP (CC-BY 3.0)
+
+== Pack polypizza-jarlan-perez-ccby
+Licence: CC-BY 3.0
+Author: Jarlan Perez
+Source: https://poly.pizza/u/Jarlan%20Perez
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/3.0/
+  - "Chess knight" by Jarlan Perez, https://poly.pizza/m/fMIykP6ncx7 (CC-BY 3.0)
+
+== Pack polypizza-jeremy-ccby
+Licence: CC-BY 3.0
+Author: jeremy
+Source: https://poly.pizza/u/jeremy
+Objects: 15
+Licence text: https://creativecommons.org/licenses/by/3.0/
+  - "Bus" by jeremy, https://poly.pizza/m/bsvS0E1eo4R (CC-BY 3.0)
+  - "Ambulance" by jeremy, https://poly.pizza/m/a27WN4TXbwk (CC-BY 3.0)
+  - "Motorcycle" by jeremy, https://poly.pizza/m/0lBe-ApqJs4 (CC-BY 3.0)
+  - "Bicycle" by jeremy, https://poly.pizza/m/axc03j3xKfz (CC-BY 3.0)
+  - "Airplane" by jeremy, https://poly.pizza/m/9Ev6pklkSYp (CC-BY 3.0)
+  - "Jet" by jeremy, https://poly.pizza/m/6fyLMORhgGK (CC-BY 3.0)
+  - "Hot air balloon" by jeremy, https://poly.pizza/m/ascrGCCFjFx (CC-BY 3.0)
+  - "Electric guitar" by jeremy, https://poly.pizza/m/0hg94uOO-sS (CC-BY 3.0)
+  - "Piano" by jeremy, https://poly.pizza/m/7U-93vxPOER (CC-BY 3.0)
+  - "Trumpet" by jeremy, https://poly.pizza/m/0Mj5XgeGtKJ (CC-BY 3.0)
+  - "Saxophone" by jeremy, https://poly.pizza/m/6A2UAKdCNy7 (CC-BY 3.0)
+  - "Flute" by jeremy, https://poly.pizza/m/1o4wzvMd8-s (CC-BY 3.0)
+  - "Drum" by jeremy, https://poly.pizza/m/5Wp2emwd7xw (CC-BY 3.0)
+  - "Volleyball" by jeremy, https://poly.pizza/m/dLNXjvvcDQ_ (CC-BY 3.0)
+  - "Surfboard" by jeremy, https://poly.pizza/m/3js4cQ-O-p2 (CC-BY 3.0)
+
+== Pack polypizza-jeremy-eyring-ccby
+Licence: CC-BY 3.0
+Author: Jeremy Eyring
+Source: https://poly.pizza/u/Jeremy%20Eyring
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/3.0/
+  - "Dice" by Jeremy Eyring, https://poly.pizza/m/2pU6Ie7DcmX (CC-BY 3.0)
+
+== Pack polypizza-kazuma
+Licence: CC0 1.0
+Author: kazuma
+Source: https://poly.pizza/u/kazuma
+Objects: 1
+Licence text: https://creativecommons.org/publicdomain/zero/1.0/
+
+== Pack polypizza-kenney
+Licence: CC0 1.0
+Author: Kenney
+Source: https://poly.pizza/u/Kenney
+Objects: 64
+Licence text: https://creativecommons.org/publicdomain/zero/1.0/
+
+== Pack polypizza-nick-ladd-ccby
+Licence: CC-BY 3.0
+Author: Nick Ladd
+Source: https://poly.pizza/u/Nick%20Ladd
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/3.0/
+  - "Building brick" by Nick Ladd, https://poly.pizza/m/f4-AUM_gO-R (CC-BY 3.0)
+
+== Pack polypizza-paul-spooner-ccby
+Licence: CC-BY 3.0
+Author: Paul Spooner
+Source: https://poly.pizza/u/Paul%20Spooner
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/3.0/
+  - "Double bass" by Paul Spooner, https://poly.pizza/m/5w58dUJPYQc (CC-BY 3.0)
+
+== Pack polypizza-poly-by-google-ccby
+Licence: CC-BY 3.0
+Author: Poly by Google
+Source: https://poly.pizza/u/Poly%20by%20Google
+Objects: 23
+Licence text: https://creativecommons.org/licenses/by/3.0/
+  - "Tractor" by Poly by Google, https://poly.pizza/m/5TGoA5N14c5 (CC-BY 3.0)
+  - "Bulldozer" by Poly by Google, https://poly.pizza/m/eY1N7Rz9Drr (CC-BY 3.0)
+  - "Violin" by Poly by Google, https://poly.pizza/m/4yO-XrJiBlc (CC-BY 3.0)
+  - "Harp" by Poly by Google, https://poly.pizza/m/102E7hcxEPT (CC-BY 3.0)
+  - "Electronic keyboard" by Poly by Google, https://poly.pizza/m/76b3BnT7Elg (CC-BY 3.0)
+  - "Harmonica" by Poly by Google, https://poly.pizza/m/8Aw334FnDZE (CC-BY 3.0)
+  - "Bongos" by Poly by Google, https://poly.pizza/m/4tAGfJTheb4 (CC-BY 3.0)
+  - "Cymbal" by Poly by Google, https://poly.pizza/m/f8SdBE98BXE (CC-BY 3.0)
+  - "Tambourine" by Poly by Google, https://poly.pizza/m/euAY7gvzici (CC-BY 3.0)
+  - "Maracas" by Poly by Google, https://poly.pizza/m/dULnMoBvtBN (CC-BY 3.0)
+  - "Gong" by Poly by Google, https://poly.pizza/m/c3iMv3-DFuh (CC-BY 3.0)
+  - "Guitar amplifier" by Poly by Google, https://poly.pizza/m/3FiWjHDj0Zf (CC-BY 3.0)
+  - "Rubik's cube" by Poly by Google, https://poly.pizza/m/fOzaoeVGlG9 (CC-BY 3.0)
+  - "Kite" by Poly by Google, https://poly.pizza/m/8Qq-NaPoBt6 (CC-BY 3.0)
+  - "Balloon" by Poly by Google, https://poly.pizza/m/d1gDDhM7pTf (CC-BY 3.0)
+  - "Sandcastle" by Poly by Google, https://poly.pizza/m/7SHEIv4x4nv (CC-BY 3.0)
+  - "Bouncy castle" by Poly by Google, https://poly.pizza/m/0oKmmPJ_cD8 (CC-BY 3.0)
+  - "Basketball" by Poly by Google, https://poly.pizza/m/eopD_12UuB8 (CC-BY 3.0)
+  - "Tennis racket" by Poly by Google, https://poly.pizza/m/72XCHXgHlg7 (CC-BY 3.0)
+  - "Tennis ball" by Poly by Google, https://poly.pizza/m/0aPpwgcBbk1 (CC-BY 3.0)
+  - "Table tennis paddle" by Poly by Google, https://poly.pizza/m/1L_wiH1iQHO (CC-BY 3.0)
+  - "Golf ball" by Poly by Google, https://poly.pizza/m/0t2VbUAs0BY (CC-BY 3.0)
+  - "Bowling pins" by Poly by Google, https://poly.pizza/m/7RQbiSQVGNy (CC-BY 3.0)
+
+== Pack polypizza-quaternius
+Licence: CC0 1.0
+Author: Quaternius
+Source: https://poly.pizza/u/Quaternius
+Objects: 125
+Licence text: https://creativecommons.org/publicdomain/zero/1.0/
+
+== Pack polypizza-sirkitree-ccby
+Licence: CC-BY 3.0
+Author: sirkitree
+Source: https://poly.pizza/u/sirkitree
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/3.0/
+  - "Merry-go-round" by sirkitree, https://poly.pizza/m/8BliGG-e55g (CC-BY 3.0)
+
+== Pack polypizza-smoj-ccby
+Licence: CC-BY 3.0
+Author: smoj
+Source: https://poly.pizza/u/smoj
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/3.0/
+  - "Drum kit" by smoj, https://poly.pizza/m/7FCPjy-3xmz (CC-BY 3.0)
+
+== Pack polypizza-tiff-eidmann-ccby
+Licence: CC-BY 3.0
+Author: Tiff Eidmann
+Source: https://poly.pizza/u/Tiff%20Eidmann
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/3.0/
+  - "Toy robot" by Tiff Eidmann, https://poly.pizza/m/5tzTpu3fNHs (CC-BY 3.0)
+
+== Pack polypizza-zsky-ccby
+Licence: CC-BY 3.0
+Author: Zsky
+Source: https://poly.pizza/u/Zsky
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/3.0/
+  - "Bass guitar" by Zsky, https://poly.pizza/m/ByBoHTCdYZ (CC-BY 3.0)
+
+== Packs ov-* (Objaverse mirror of Sketchfab models)
+The ov-* packs are 3D models published on Sketchfab by their authors under CC-BY 4.0, downloaded as is
+(unchanged) from the Objaverse mirror of Allen Institute for AI: https://huggingface.co/datasets/allenai/objaverse
+CC-BY 4.0 = attribution required: credit the author as listed. Licence text: https://creativecommons.org/licenses/by/4.0/
+
+== Pack ov-hendrikreyneke-ccby
+Licence: CC-BY 4.0
+Author: hendrikReyneke (Sketchfab: hendrikReyneke)
+Source: https://sketchfab.com/hendrikReyneke
+Objects: 25
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Cow: "Cow" by hendrikReyneke, https://sketchfab.com/3d-models/dc8185e4e21747fb8b394e40d3ec125a (CC-BY 4.0)
+  - Pig: "Pig" by hendrikReyneke, https://sketchfab.com/3d-models/041ea96fc6ae4839bf9ce16f8ea4ad68 (CC-BY 4.0)
+  - Sheep: "Sheep" by hendrikReyneke, https://sketchfab.com/3d-models/67abff7459f34afca11e3effab62c761 (CC-BY 4.0)
+  - Goat: "Goat" by hendrikReyneke, https://sketchfab.com/3d-models/2624ac2ce2364930ba2d5f70eb7aa1ea (CC-BY 4.0)
+  - Lion: "Lion" by hendrikReyneke, https://sketchfab.com/3d-models/48fc306182ea411a92eb10ceb32a7ca9 (CC-BY 4.0)
+  - Leopard: "Leopard" by hendrikReyneke, https://sketchfab.com/3d-models/0aa47cb5f29647c3964480ec9216468a (CC-BY 4.0)
+  - Cheetah: "Cheetah" by hendrikReyneke, https://sketchfab.com/3d-models/b36caff5df6148c191629c02e6fe36eb (CC-BY 4.0)
+  - Elephant: "Elephant" by hendrikReyneke, https://sketchfab.com/3d-models/64bced0aa85b4723bc398ea579b21350 (CC-BY 4.0)
+  - Giraffe: "Giraffe" by hendrikReyneke, https://sketchfab.com/3d-models/d90db5cff6344a04b45cf95d1f32a8a9 (CC-BY 4.0)
+  - Rhinoceros: "Rhino" by hendrikReyneke, https://sketchfab.com/3d-models/ee112628473b436a8095850dd3caf990 (CC-BY 4.0)
+  - Hippopotamus: "Hippo" by hendrikReyneke, https://sketchfab.com/3d-models/1ff82abde44e47db9b1bb298825e5a55 (CC-BY 4.0)
+  - Gorilla: "Gorilla" by hendrikReyneke, https://sketchfab.com/3d-models/d8df49f051224c1880d061bca05f7ff4 (CC-BY 4.0)
+  - Hyena: "Hyena" by hendrikReyneke, https://sketchfab.com/3d-models/f74b47c36a10443388905407958db591 (CC-BY 4.0)
+  - Gazelle: "Gazelle" by hendrikReyneke, https://sketchfab.com/3d-models/4afbf4bd95764e32b8a29168cb2549da (CC-BY 4.0)
+  - Wildebeest: "Wildebeest" by hendrikReyneke, https://sketchfab.com/3d-models/f01175538f7b4ffe8e2648d772e94c5c (CC-BY 4.0)
+  - African buffalo: "Buffalo" by hendrikReyneke, https://sketchfab.com/3d-models/14d376df3070448ba82e423c2392057b (CC-BY 4.0)
+  - Warthog: "Warthog" by hendrikReyneke, https://sketchfab.com/3d-models/77208f9196744bee8c2326ff3217c55c (CC-BY 4.0)
+  - Crocodile: "Crocodile" by hendrikReyneke, https://sketchfab.com/3d-models/fe2cbf8040f74bd98e4beb55f9bec164 (CC-BY 4.0)
+  - Eagle: "Eagle" by hendrikReyneke, https://sketchfab.com/3d-models/fbcbdaab9c3245de97df48ae6a19f789 (CC-BY 4.0)
+  - Seagull: "Seagull" by hendrikReyneke, https://sketchfab.com/3d-models/4eb62e5c8a2640e382c892e03372550a (CC-BY 4.0)
+  - Pigeon: "Pigeon" by hendrikReyneke, https://sketchfab.com/3d-models/8cdbd8890ed84c228191cbe6241b420d (CC-BY 4.0)
+  - Crow: "Crow" by hendrikReyneke, https://sketchfab.com/3d-models/5ec78c8b6ab54f739adb0b46d216a454 (CC-BY 4.0)
+  - Sparrow: "Sparrow" by hendrikReyneke, https://sketchfab.com/3d-models/fc347fa4d3b84a3c99df887a36c4e2fe (CC-BY 4.0)
+  - Blue jay: "Blue- Jay" by hendrikReyneke, https://sketchfab.com/3d-models/6233ad12a9be46e496e27233b9b3b7de (CC-BY 4.0)
+  - Spinosaurus: "Spinosaurus" by hendrikReyneke, https://sketchfab.com/3d-models/9f38751060eb4661bb54263951d87477 (CC-BY 4.0)
+
+== Pack ov-16nharris-ccby
+Licence: CC-BY 4.0
+Author: Nicole Harris (Sketchfab: 16nharris)
+Source: https://sketchfab.com/16nharris
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Horse: "Horse" by Nicole Harris, https://sketchfab.com/3d-models/dbd3c65e8df94e6d80f5ca95ea0c6977 (CC-BY 4.0)
+
+== Pack ov-triaz686-ccby
+Licence: CC-BY 4.0
+Author: Talha Riaz (Sketchfab: triaz686)
+Source: https://sketchfab.com/triaz686
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Donkey: "Donkey 3D" by Talha Riaz, https://sketchfab.com/3d-models/7730e7c08e7043b787647ba37519d9b9 (CC-BY 4.0)
+
+== Pack ov-polyplant3d-ccby
+Licence: CC-BY 4.0
+Author: polyplant3d (Sketchfab: polyplant3d)
+Source: https://sketchfab.com/polyplant3d
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Hen: "chicken" by polyplant3d, https://sketchfab.com/3d-models/fef7c1969ee2420ea0e1481c3b4e6ec0 (CC-BY 4.0)
+
+== Pack ov-animated3d-us-ccby
+Licence: CC-BY 4.0
+Author: animated3d.us (Sketchfab: animated3d.us)
+Source: https://sketchfab.com/animated3d.us
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Rooster: "Chicken- Free" by animated3d.us, https://sketchfab.com/3d-models/f0acb761248b489689ef87c726d43959 (CC-BY 4.0)
+
+== Pack ov-chaitanyak-ccby
+Licence: CC-BY 4.0
+Author: Chaitanya Krishnan (Sketchfab: chaitanyak)
+Source: https://sketchfab.com/chaitanyak
+Objects: 3
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Mallard duck: "Duck" by Chaitanya Krishnan, https://sketchfab.com/3d-models/278d7637c0da43058ae6bc06b0b99bf2 (CC-BY 4.0)
+  - Brown rabbit: "Rabbit" by Chaitanya Krishnan, https://sketchfab.com/3d-models/2e27ecf2fbfc430198794dfde48e3dfb (CC-BY 4.0)
+  - Grasshopper: "Grasshopper" by Chaitanya Krishnan, https://sketchfab.com/3d-models/77b2f1cfcc9b4e3eac0cef026b2ec674 (CC-BY 4.0)
+
+== Pack ov-erinaekasyaharani-ccby
+Licence: CC-BY 4.0
+Author: Erina eka syaharani (Sketchfab: erinaekasyaharani)
+Source: https://sketchfab.com/erinaekasyaharani
+Objects: 2
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Tabby cat: "cat Walk" by Erina eka syaharani, https://sketchfab.com/3d-models/fc6e597a81ce4dc291dcca6a9e6888ba (CC-BY 4.0)
+  - Monarch butterfly: "Butterfly" by Erina eka syaharani, https://sketchfab.com/3d-models/9e17d5737d564d2e92338c80c8324b78 (CC-BY 4.0)
+
+== Pack ov-doinspire-ccby
+Licence: CC-BY 4.0
+Author: FainoDS (Sketchfab: doinspire)
+Source: https://sketchfab.com/doinspire
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Kitten: "Kitten" by FainoDS, https://sketchfab.com/3d-models/4ae3704cd65b423ab994545988d4db1a (CC-BY 4.0)
+
+== Pack ov-avatarium3d-ccby
+Licence: CC-BY 4.0
+Author: Avatarium 3D (Sketchfab: avatarium3d)
+Source: https://sketchfab.com/avatarium3d
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Pharaoh hound: "Pharaoh Hound Dog no stand" by Avatarium 3D, https://sketchfab.com/3d-models/503683ba48a8455591879c6d82fc5a2c (CC-BY 4.0)
+
+== Pack ov-pusztaiandras-ccby
+Licence: CC-BY 4.0
+Author: PAndras (Sketchfab: PusztaiAndras)
+Source: https://sketchfab.com/PusztaiAndras
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Dachshund: "Dog Dachshund -Tacskó" by PAndras, https://sketchfab.com/3d-models/046f4d21810e4bf68feabe393a6b83cf (CC-BY 4.0)
+
+== Pack ov-alexgiardiniere-ccby
+Licence: CC-BY 4.0
+Author: AlexGiardiniere (Sketchfab: AlexGiardiniere)
+Source: https://sketchfab.com/AlexGiardiniere
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Cockatoo: "Sulphur-Crested Cockatoo" by AlexGiardiniere, https://sketchfab.com/3d-models/18fca4e421094c789c63cd78565e38b6 (CC-BY 4.0)
+
+== Pack ov-jai-gupta-ccby
+Licence: CC-BY 4.0
+Author: Jai.Gupta (Sketchfab: Jai.Gupta)
+Source: https://sketchfab.com/Jai.Gupta
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Tiger: "Tiger" by Jai.Gupta, https://sketchfab.com/3d-models/9488609b11c244b1b4176fb4dd17b718 (CC-BY 4.0)
+
+== Pack ov-cmp-innovation-studio-ccby
+Licence: CC-BY 4.0
+Author: Innovation Studio (Sketchfab: cmp_innovation_studio)
+Source: https://sketchfab.com/cmp_innovation_studio
+Objects: 9
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Bobcat: "Bobcat" by Innovation Studio, https://sketchfab.com/3d-models/c478395f3d5f4effa62224aadf2bb89c (CC-BY 4.0)
+  - Arctic hare: "Arctic Hare" by Innovation Studio, https://sketchfab.com/3d-models/48caf8a64509421b9d8845e8b95bdac1 (CC-BY 4.0)
+  - Red-tailed hawk: "Red-tailed Hawk" by Innovation Studio, https://sketchfab.com/3d-models/a0154c1dde464e54a8017998c1afd4f3 (CC-BY 4.0)
+  - Turkey vulture: "Turkey Vulture" by Innovation Studio, https://sketchfab.com/3d-models/4005811722a54afaba3d0c29d58b657d (CC-BY 4.0)
+  - Barn owl: "Common Barn Owl" by Innovation Studio, https://sketchfab.com/3d-models/19c989a6681145bc999c332699eb852e (CC-BY 4.0)
+  - Snowy owl: "Snowy Owl" by Innovation Studio, https://sketchfab.com/3d-models/e63aacf6b63a41f6bf9b302aad460835 (CC-BY 4.0)
+  - African penguin: "Black-footed Penguin" by Innovation Studio, https://sketchfab.com/3d-models/b10454cd501d4d7187842f471de153b7 (CC-BY 4.0)
+  - Canada goose: "Canada Goose" by Innovation Studio, https://sketchfab.com/3d-models/50f4ace96846465f85f2e9a9f5c84453 (CC-BY 4.0)
+  - Pileated woodpecker: "Pileated Woodpecker" by Innovation Studio, https://sketchfab.com/3d-models/4474051b2496481fa9e59d89531f3cbc (CC-BY 4.0)
+
+== Pack ov-omarme37-ccby
+Licence: CC-BY 4.0
+Author: omarme37 (Sketchfab: omarme37)
+Source: https://sketchfab.com/omarme37
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Dromedary: "camel" by omarme37, https://sketchfab.com/3d-models/44ef2ea4b50a49e395e5e3ebbdc99f98 (CC-BY 4.0)
+
+== Pack ov-dinomaster-ccby
+Licence: CC-BY 4.0
+Author: dinomaster (Sketchfab: dinomaster)
+Source: https://sketchfab.com/dinomaster
+Objects: 4
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Kangaroo: "Kangaroo animation" by dinomaster, https://sketchfab.com/3d-models/b9c8518e06804043b4479eb3e73894f1 (CC-BY 4.0)
+  - Wolf: "wolf" by dinomaster, https://sketchfab.com/3d-models/89ea539d69214bc6ac40cdde06e4fd4c (CC-BY 4.0)
+  - Komodo dragon: "komodo dragon" by dinomaster, https://sketchfab.com/3d-models/4a6e8802d90a475ba1ce0f5f4c263c5c (CC-BY 4.0)
+  - Dolphin: "dolphin" by dinomaster, https://sketchfab.com/3d-models/08a93ccc711c44d89eac6a845c927b4b (CC-BY 4.0)
+
+== Pack ov-sdpm-ccby
+Licence: CC-BY 4.0
+Author: SDPM Esare (Sketchfab: sdpm)
+Source: https://sketchfab.com/sdpm
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Brown bear: "Bear" by SDPM Esare, https://sketchfab.com/3d-models/da9b588f7a7346519f391c3eb9532226 (CC-BY 4.0)
+
+== Pack ov-jeremy-kan-ccby
+Licence: CC-BY 4.0
+Author: jeremy.kan (Sketchfab: jeremy.kan)
+Source: https://sketchfab.com/jeremy.kan
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Polar bear: "Polar Bear" by jeremy.kan, https://sketchfab.com/3d-models/d59974c6545143528cfda75f28392c62 (CC-BY 4.0)
+
+== Pack ov-gentryhseast-ccby
+Licence: CC-BY 4.0
+Author: GentryHS EAST (Sketchfab: gentryhsEAST)
+Source: https://sketchfab.com/gentryhsEAST
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Giant panda: "Giant Panda" by GentryHS EAST, https://sketchfab.com/3d-models/76ce633705f04272b30823c428952a6d (CC-BY 4.0)
+
+== Pack ov-victory-mirosya-ccby
+Licence: CC-BY 4.0
+Author: victory_mirosya (Sketchfab: victory_mirosya)
+Source: https://sketchfab.com/victory_mirosya
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Red fox: "Fox" by victory_mirosya, https://sketchfab.com/3d-models/7a31d0ca279d48e9b65091f191b00de1 (CC-BY 4.0)
+
+== Pack ov-konstaintin-ccby
+Licence: CC-BY 4.0
+Author: konstaintin (Sketchfab: konstaintin)
+Source: https://sketchfab.com/konstaintin
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Reindeer: "deer" by konstaintin, https://sketchfab.com/3d-models/555cb2de36f54e80a588ddd461dab91b (CC-BY 4.0)
+
+== Pack ov-dashdu-ccby
+Licence: CC-BY 4.0
+Author: Abner Wu (Sketchfab: dashdu)
+Source: https://sketchfab.com/dashdu
+Objects: 2
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Chameleon: "Chameleon" by Abner Wu, https://sketchfab.com/3d-models/3877371976754df68d2b93a181bd4893 (CC-BY 4.0)
+  - Orca: "Killer Whale" by Abner Wu, https://sketchfab.com/3d-models/63b680d7e58f463a9868ed7bf163094a (CC-BY 4.0)
+
+== Pack ov-magnus-furberg-ccby
+Licence: CC-BY 4.0
+Author: Magnus_Furberg (Sketchfab: Magnus_Furberg)
+Source: https://sketchfab.com/Magnus_Furberg
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Green snake: "Snake" by Magnus_Furberg, https://sketchfab.com/3d-models/c8ce54d20c8e4169b0a8f0975e90f254 (CC-BY 4.0)
+
+== Pack ov-djmiddi-ccby
+Licence: CC-BY 4.0
+Author: DJMiddi (Sketchfab: DJMiddi)
+Source: https://sketchfab.com/DJMiddi
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Poison dart frog: "Poison Dart Frog" by DJMiddi, https://sketchfab.com/3d-models/0413d92d70f24a68b3afe8643301c515 (CC-BY 4.0)
+
+== Pack ov-nebulousflynn-ccby
+Licence: CC-BY 4.0
+Author: Thomas Flynn (Sketchfab: nebulousflynn)
+Source: https://sketchfab.com/nebulousflynn
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Giant tortoise: "Giant Tortoise, Beauval Zoo, Fr. (Smoothie 3D)" by Thomas Flynn, https://sketchfab.com/3d-models/282c8c0383ba4f8d8dc07d38e2b1b766 (CC-BY 4.0)
+
+== Pack ov-tan-ccby
+Licence: CC-BY 4.0
+Author: Tan (Sketchfab: Tan)
+Source: https://sketchfab.com/Tan
+Objects: 2
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Great white shark: "Shark" by Tan, https://sketchfab.com/3d-models/a80e6367072b499d859157d494c2a235 (CC-BY 4.0)
+  - Blue morpho butterfly: "Butterfly" by Tan, https://sketchfab.com/3d-models/35426d17345e4fd3b0532ed0fee951fa (CC-BY 4.0)
+
+== Pack ov-rzyas-ccby
+Licence: CC-BY 4.0
+Author: Rzyas (Sketchfab: rzyas)
+Source: https://sketchfab.com/rzyas
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Humpback whale: "Whale" by Rzyas, https://sketchfab.com/3d-models/af22823f7494465ba041ea7564fba7df (CC-BY 4.0)
+
+== Pack ov-tasuku-minoura-ccby
+Licence: CC-BY 4.0
+Author: Tasuku_Minoura (Sketchfab: Tasuku_Minoura)
+Source: https://sketchfab.com/Tasuku_Minoura
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Manta ray: "Manta" by Tasuku_Minoura, https://sketchfab.com/3d-models/17d7b1b8435c4f2391527934c8709616 (CC-BY 4.0)
+
+== Pack ov-smplaza-ccby
+Licence: CC-BY 4.0
+Author: PlazaS (Sketchfab: smplaza)
+Source: https://sketchfab.com/smplaza
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Sea turtle: "Sea Turtle 2.0" by PlazaS, https://sketchfab.com/3d-models/2046dd5b34214b52ac5169bd061eab86 (CC-BY 4.0)
+
+== Pack ov-vaptor-ccby
+Licence: CC-BY 4.0
+Author: BlueMesh (Sketchfab: VapTor)
+Source: https://sketchfab.com/VapTor
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Clownfish: "Clown Fish" by BlueMesh, https://sketchfab.com/3d-models/fe11968d55574131b1bfaa8c87566a79 (CC-BY 4.0)
+
+== Pack ov-thunderpwn-ccby
+Licence: CC-BY 4.0
+Author: Thunder (Sketchfab: thunderpwn)
+Source: https://sketchfab.com/thunderpwn
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Trout: "Trout" by Thunder, https://sketchfab.com/3d-models/cc4eef17bff24cb58358cfa1b7e045a4 (CC-BY 4.0)
+
+== Pack ov-jimmygunawan-ccby
+Licence: CC-BY 4.0
+Author: Jimmy Gunawan (Sketchfab: jimmygunawan)
+Source: https://sketchfab.com/jimmygunawan
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Seahorse: "Smoothie 3D + Blender Seahorse" by Jimmy Gunawan, https://sketchfab.com/3d-models/a615760dd5b049c4976ba13011e61e68 (CC-BY 4.0)
+
+== Pack ov-kodai100-ccby
+Licence: CC-BY 4.0
+Author: kodai100 (Sketchfab: kodai100)
+Source: https://sketchfab.com/kodai100
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Starfish: "Starfish" by kodai100, https://sketchfab.com/3d-models/10d31cb05a1844bb89e83ec0827196d9 (CC-BY 4.0)
+
+== Pack ov-zackw-ccby
+Licence: CC-BY 4.0
+Author: zackw (Sketchfab: zackw)
+Source: https://sketchfab.com/zackw
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Shrimp: "Shrimp Rigged" by zackw, https://sketchfab.com/3d-models/2b2e7af2be4549d9b379ccaabdf0962c (CC-BY 4.0)
+
+== Pack ov-pendekar-mouse-ccby
+Licence: CC-BY 4.0
+Author: pendekar_mouse (Sketchfab: pendekar_mouse)
+Source: https://sketchfab.com/pendekar_mouse
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Honeybee: "Bee" by pendekar_mouse, https://sketchfab.com/3d-models/242c1dd3f30843f9a99832cb1efdccc8 (CC-BY 4.0)
+
+== Pack ov-duisengaliyevs-ccby
+Licence: CC-BY 4.0
+Author: Serik Duissengaliyev (Sketchfab: duisengaliyevs)
+Source: https://sketchfab.com/duisengaliyevs
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Wasp: "Wasp" by Serik Duissengaliyev, https://sketchfab.com/3d-models/6a4b9e9fce7a4a2486fcdc45363f48c2 (CC-BY 4.0)
+
+== Pack ov-rafaelbr873d-ccby
+Licence: CC-BY 4.0
+Author: Rafael Rodrigues (Sketchfab: RafaelBR873D)
+Source: https://sketchfab.com/RafaelBR873D
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Ladybird: "Ladybug" by Rafael Rodrigues, https://sketchfab.com/3d-models/899587f5843345649b1ee069d8922071 (CC-BY 4.0)
+
+== Pack ov-protocept-ccby
+Licence: CC-BY 4.0
+Author: Protocept (Sketchfab: Protocept)
+Source: https://sketchfab.com/Protocept
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Rhinoceros beetle: "Beetle" by Protocept, https://sketchfab.com/3d-models/eed56295d62444e09430a006671cf25d (CC-BY 4.0)
+
+== Pack ov-zung115-ccby
+Licence: CC-BY 4.0
+Author: zung115 (Sketchfab: zung115)
+Source: https://sketchfab.com/zung115
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Ant: "Ant" by zung115, https://sketchfab.com/3d-models/322850e9020f4178a52bcd586a3c3c22 (CC-BY 4.0)
+
+== Pack ov-virreal4-ccby
+Licence: CC-BY 4.0
+Author: VirReal4 (Sketchfab: VirReal4)
+Source: https://sketchfab.com/VirReal4
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Praying mantis: "Praying Mantis" by VirReal4, https://sketchfab.com/3d-models/ec088115ec8746d79c41f2db69665f15 (CC-BY 4.0)
+
+== Pack ov-victorkz-ccby
+Licence: CC-BY 4.0
+Author: victorkz (Sketchfab: victorkz)
+Source: https://sketchfab.com/victorkz
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Spider: "Spider" by victorkz, https://sketchfab.com/3d-models/114cbff289ed48f4bba8d20c5c0a8cb1 (CC-BY 4.0)
+
+== Pack ov-anthonyvanoo-ccby
+Licence: CC-BY 4.0
+Author: anthonyvanoo (Sketchfab: anthonyvanoo)
+Source: https://sketchfab.com/anthonyvanoo
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Scorpion: "Scorpion" by anthonyvanoo, https://sketchfab.com/3d-models/4c0fd62d33ab4d2592ee0a1d985a480d (CC-BY 4.0)
+
+== Pack ov-lexyc16-ccby
+Licence: CC-BY 4.0
+Author: Lexyc16 (Sketchfab: Lexyc16)
+Source: https://sketchfab.com/Lexyc16
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Red sports car: "Ferrari Testarossa" by Lexyc16, https://sketchfab.com/3d-models/82b38bec977044be82822ce598abafc6 (CC-BY 4.0)
+
+== Pack ov-andrewswihart-ccby
+Licence: CC-BY 4.0
+Author: Arion Digital (Sketchfab: andrewswihart)
+Source: https://sketchfab.com/andrewswihart
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Yellow supercar: "Lamborghini Aventador" by Arion Digital, https://sketchfab.com/3d-models/888e37a3641d4f7b94bc1a39396e2441 (CC-BY 4.0)
+
+== Pack ov-luis-adrian-designs3d-ccby
+Licence: CC-BY 4.0
+Author: luis.adrian.villagrana (Sketchfab: luis.adrian.designs3D)
+Source: https://sketchfab.com/luis.adrian.designs3D
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Vintage racing car: "Ferrari 375 F1" by luis.adrian.villagrana, https://sketchfab.com/3d-models/9c0fe3afda4a4bbeb66e482f79c1e070 (CC-BY 4.0)
+
+== Pack ov-david-holiday-ccby
+Licence: CC-BY 4.0
+Author: David_Holiday (Sketchfab: David_Holiday)
+Source: https://sketchfab.com/David_Holiday
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Pickup: "Pickup Truck" by David_Holiday, https://sketchfab.com/3d-models/8026dc5f17254c9dbaeae2ee6e4f2779 (CC-BY 4.0)
+
+== Pack ov-orangetheshow-ccby
+Licence: CC-BY 4.0
+Author: the Show Orange (Sketchfab: orangetheshow)
+Source: https://sketchfab.com/orangetheshow
+Objects: 2
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Old van: "Van" by the Show Orange, https://sketchfab.com/3d-models/d366b99f7c4a4582b33d945286431cf5 (CC-BY 4.0)
+  - Old truck: "Truck" by the Show Orange, https://sketchfab.com/3d-models/e3d136bfa4194845b8dd9940619e19ec (CC-BY 4.0)
+
+== Pack ov-junaidamin-ccby
+Licence: CC-BY 4.0
+Author: Junaid Amin (Sketchfab: junaidamin)
+Source: https://sketchfab.com/junaidamin
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Coach: "Bus" by Junaid Amin, https://sketchfab.com/3d-models/e29af46af5be4abd94b2d688695df42e (CC-BY 4.0)
+
+== Pack ov-cardboard-ccby
+Licence: CC-BY 4.0
+Author: Lung_ong (Sketchfab: cardboard)
+Source: https://sketchfab.com/cardboard
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Garbage truck: "Garbage Truck" by Lung_ong, https://sketchfab.com/3d-models/5d505fdbcc594cb3b3f1b30be8240ad7 (CC-BY 4.0)
+
+== Pack ov-gatostas-ccby
+Licence: CC-BY 4.0
+Author: gatostas (Sketchfab: gatostas)
+Source: https://sketchfab.com/gatostas
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Vintage tractor: "Tractor" by gatostas, https://sketchfab.com/3d-models/cdb44565a727480998c6fa80369cc4bb (CC-BY 4.0)
+
+== Pack ov-ffeller-ccby
+Licence: CC-BY 4.0
+Author: FFeller (Sketchfab: FFeller)
+Source: https://sketchfab.com/FFeller
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Forklift: "Forklift" by FFeller, https://sketchfab.com/3d-models/f550f917394449578f5930a46512f169 (CC-BY 4.0)
+
+== Pack ov-axelavez-ccby
+Licence: CC-BY 4.0
+Author: Axel Avez (Sketchfab: AxelAvez)
+Source: https://sketchfab.com/AxelAvez
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Military motorcycle: "Motorcycle" by Axel Avez, https://sketchfab.com/3d-models/04740704967c4b8d8f05d2fa81b2cd52 (CC-BY 4.0)
+
+== Pack ov-rockblade-ccby
+Licence: CC-BY 4.0
+Author: Rockblade_ (Sketchfab: Rockblade_)
+Source: https://sketchfab.com/Rockblade_
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Scooter: "Vespa" by Rockblade_, https://sketchfab.com/3d-models/ceef43451f02438cad0db630930c22d7 (CC-BY 4.0)
+
+== Pack ov-maypassamon-ccby
+Licence: CC-BY 4.0
+Author: maypassamon (Sketchfab: maypassamon)
+Source: https://sketchfab.com/maypassamon
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Road bicycle: "Bicycle" by maypassamon, https://sketchfab.com/3d-models/1814aac2ef374d3b876e1bbafcf05d7d (CC-BY 4.0)
+
+== Pack ov-cronicash-ccby
+Licence: CC-BY 4.0
+Author: cronicash (Sketchfab: cronicash)
+Source: https://sketchfab.com/cronicash
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Wooden rowing boat: "BOAT" by cronicash, https://sketchfab.com/3d-models/09b6b8134bc94abd85eb7e51a6ad5b15 (CC-BY 4.0)
+
+== Pack ov-boatusfoundation-ccby
+Licence: CC-BY 4.0
+Author: BoatUS Foundation (Sketchfab: boatusfoundation)
+Source: https://sketchfab.com/boatusfoundation
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Canoe: "Canoe" by BoatUS Foundation, https://sketchfab.com/3d-models/b2e32f87f5cc4d728404a62d6000f9ae (CC-BY 4.0)
+
+== Pack ov-gribbox-ccby
+Licence: CC-BY 4.0
+Author: gribbox (Sketchfab: gribbox)
+Source: https://sketchfab.com/gribbox
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Kayak: "Kayak" by gribbox, https://sketchfab.com/3d-models/15d71bbd00454e63ad7d23914dc70b66 (CC-BY 4.0)
+
+== Pack ov-manilov-ap-ccby
+Licence: CC-BY 4.0
+Author: manilov.ap (Sketchfab: manilov.ap)
+Source: https://sketchfab.com/manilov.ap
+Objects: 2
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Airliner: "Boeing737" by manilov.ap, https://sketchfab.com/3d-models/259de41be0c7410e86b7e79be33d6b3a (CC-BY 4.0)
+  - Spitfire: "Spitfire" by manilov.ap, https://sketchfab.com/3d-models/3e20bf74f3d448d8ae53616a2f15c8d8 (CC-BY 4.0)
+
+== Pack ov-helijah-ccby
+Licence: CC-BY 4.0
+Author: helijah (Sketchfab: helijah)
+Source: https://sketchfab.com/helijah
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Seaplane: "Cessna L19 - O1 with floats" by helijah, https://sketchfab.com/3d-models/0dc504d11c284f648d93efd6b0e8495b (CC-BY 4.0)
+
+== Pack ov-lxsquid-ccby
+Licence: CC-BY 4.0
+Author: Gigantic Burger (Sketchfab: LxSquid)
+Source: https://sketchfab.com/LxSquid
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Military helicopter: "Helicopter" by Gigantic Burger, https://sketchfab.com/3d-models/ef70283b1dea4ae8b18eec9231ce390e (CC-BY 4.0)
+
+== Pack ov-zdenkoroman-ccby
+Licence: CC-BY 4.0
+Author: grafi (Sketchfab: zdenkoroman)
+Source: https://sketchfab.com/zdenkoroman
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Banana: "Banana 3D scan" by grafi, https://sketchfab.com/3d-models/c4f9b194abca4db7b4cd0ec6270f9d60 (CC-BY 4.0)
+
+== Pack ov-meerschaumdigital-ccby
+Licence: CC-BY 4.0
+Author: Meerschaum Digital (Sketchfab: meerschaumdigital)
+Source: https://sketchfab.com/meerschaumdigital
+Objects: 4
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Mango: "Mango" by Meerschaum Digital, https://sketchfab.com/3d-models/e5fd174d7a2e4ac894e3e69a4550d1e2 (CC-BY 4.0)
+  - Peach: "Peach" by Meerschaum Digital, https://sketchfab.com/3d-models/21e1712c27b847e393ac39214f2762a0 (CC-BY 4.0)
+  - Cabbage: "Cabbage" by Meerschaum Digital, https://sketchfab.com/3d-models/654306fc3ae344c7b9e7a9a40faca45b (CC-BY 4.0)
+  - Carrot: "Carrot" by Meerschaum Digital, https://sketchfab.com/3d-models/4cfcef5d26834657a0e1204d2ff32523 (CC-BY 4.0)
+
+== Pack ov-fenelope-ccby
+Licence: CC-BY 4.0
+Author: Penny (Sketchfab: fenelope)
+Source: https://sketchfab.com/fenelope
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Strawberry: "Strawberry scan" by Penny, https://sketchfab.com/3d-models/e69089e90c194318a3d2932557c8d3ea (CC-BY 4.0)
+
+== Pack ov-siotech2011-ccby
+Licence: CC-BY 4.0
+Author: siotech2011 (Sketchfab: siotech2011)
+Source: https://sketchfab.com/siotech2011
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Cherries: "Cherries" by siotech2011, https://sketchfab.com/3d-models/a6a77f3d44d44c2dacab02b7a55c0b4e (CC-BY 4.0)
+
+== Pack ov-bfg900-ccby
+Licence: CC-BY 4.0
+Author: bfg900 (Sketchfab: bfg900)
+Source: https://sketchfab.com/bfg900
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Pear: "Pear 3D scan" by bfg900, https://sketchfab.com/3d-models/f957a31cde7046e6908e464b588db822 (CC-BY 4.0)
+
+== Pack ov-wojciechmiedziocha-ccby
+Licence: CC-BY 4.0
+Author: wojciechmiedziocha (Sketchfab: wojciechmiedziocha)
+Source: https://sketchfab.com/wojciechmiedziocha
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Pumpkin: "Pumpkin" by wojciechmiedziocha, https://sketchfab.com/3d-models/509e960db3b3443382b0a189f5abfae0 (CC-BY 4.0)
+
+== Pack ov-madman05-ccby
+Licence: CC-BY 4.0
+Author: madman05 (Sketchfab: Madman05)
+Source: https://sketchfab.com/Madman05
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Potato: "potato" by madman05, https://sketchfab.com/3d-models/ada08ecce8184524b640e139050e1fd6 (CC-BY 4.0)
+
+== Pack ov-wolfram9-ccby
+Licence: CC-BY 4.0
+Author: Wolfram9 (Sketchfab: Wolfram9)
+Source: https://sketchfab.com/Wolfram9
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Burger: "Burger" by Wolfram9, https://sketchfab.com/3d-models/b0a20ac5a08f476bb2fd4115192cbd89 (CC-BY 4.0)
+
+== Pack ov-bharat-from-mars-ccby
+Licence: CC-BY 4.0
+Author: bharat_from_mars (Sketchfab: bharat_from_mars)
+Source: https://sketchfab.com/bharat_from_mars
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Pizza: "Pizza" by bharat_from_mars, https://sketchfab.com/3d-models/9e0e5fd9d8c149f894c988817ba80a90 (CC-BY 4.0)
+
+== Pack ov-adriano-castro-ccby
+Licence: CC-BY 4.0
+Author: Adriano Castro (Sketchfab: Adriano_Castro)
+Source: https://sketchfab.com/Adriano_Castro
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Sushi platter: "SUSHI" by Adriano Castro, https://sketchfab.com/3d-models/cf65e7cdf6bf4571932cf4483b57d1e6 (CC-BY 4.0)
+
+== Pack ov-alban-ccby
+Licence: CC-BY 4.0
+Author: alban (Sketchfab: alban)
+Source: https://sketchfab.com/alban
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Camembert: "Camembert" by alban, https://sketchfab.com/3d-models/2a33631736e9487f8d427a9c10e62bb0 (CC-BY 4.0)
+
+== Pack ov-ujjvalvfxartist9211-ccby
+Licence: CC-BY 4.0
+Author: Ujjval Singhal (Sketchfab: ujjvalvfxartist9211)
+Source: https://sketchfab.com/ujjvalvfxartist9211
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Chocolate doughnut: "Doughnut" by Ujjval Singhal, https://sketchfab.com/3d-models/4e3a9dde2dca4c59809c12a13835c015 (CC-BY 4.0)
+
+== Pack ov-greta-m-ccby
+Licence: CC-BY 4.0
+Author: greta.m (Sketchfab: greta.m)
+Source: https://sketchfab.com/greta.m
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Strawberry cupcake: "Cupcake" by greta.m, https://sketchfab.com/3d-models/214e634cf57d479098bd012bf124bc8a (CC-BY 4.0)
+
+== Pack ov-kimsiwon-ccby
+Licence: CC-BY 4.0
+Author: kimsiwon (Sketchfab: kimsiwon)
+Source: https://sketchfab.com/kimsiwon
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Chocolate chip cookie: "cookie" by kimsiwon, https://sketchfab.com/3d-models/1bbcdb1d6dd34bfe8c9176ccfb7d5c3c (CC-BY 4.0)
+
+== Pack ov-jonasschramme-ccby
+Licence: CC-BY 4.0
+Author: Jonas Schramme (Sketchfab: JonasSchramme)
+Source: https://sketchfab.com/JonasSchramme
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Electric guitar: "Guitar: Gibson Les Paul Standard" by Jonas Schramme, https://sketchfab.com/3d-models/d75216a52ff14a56aa40b6fec844ecd2 (CC-BY 4.0)
+
+== Pack ov-ra3id-ccby
+Licence: CC-BY 4.0
+Author: Glowbox 3D (Sketchfab: ra3id)
+Source: https://sketchfab.com/ra3id
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Acoustic guitar: "Acoustic Guitar - steel string" by Glowbox 3D, https://sketchfab.com/3d-models/a8424727a3d54df89d4716966b4ab2ba (CC-BY 4.0)
+
+== Pack ov-microsoft-ccby
+Licence: CC-BY 4.0
+Author: Microsoft (Sketchfab: microsoft)
+Source: https://sketchfab.com/microsoft
+Objects: 2
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Violin: "Violin" by Microsoft, https://sketchfab.com/3d-models/e989583c447141438e4d6376f4189518 (CC-BY 4.0)
+  - Tuba: "Tuba" by Microsoft, https://sketchfab.com/3d-models/b46edac910164056bae92921b350fc36 (CC-BY 4.0)
+
+== Pack ov-farhad-guli-ccby
+Licence: CC-BY 4.0
+Author: farhad.Guli (Sketchfab: farhad.Guli)
+Source: https://sketchfab.com/farhad.Guli
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Grand piano: "Grand Piano" by farhad.Guli, https://sketchfab.com/3d-models/371090c279ff4e77a59acdebc25b5892 (CC-BY 4.0)
+
+== Pack ov-eduardo-dudu2001-ccby
+Licence: CC-BY 4.0
+Author: DarksProducer (Sketchfab: eduardo-dudu2001)
+Source: https://sketchfab.com/eduardo-dudu2001
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Upright piano: "Piano" by DarksProducer, https://sketchfab.com/3d-models/8c3af1362caf45feb2e8eb2b6731926a (CC-BY 4.0)
+
+== Pack ov-mattcaddie-ccby
+Licence: CC-BY 4.0
+Author: Matt Caddie (Sketchfab: MattCaddie)
+Source: https://sketchfab.com/MattCaddie
+Objects: 2
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Saxophone: "Saxophone" by Matt Caddie, https://sketchfab.com/3d-models/f72747715883480b9555a75558b3e9cd (CC-BY 4.0)
+  - Vintage drum kit: "Drums" by Matt Caddie, https://sketchfab.com/3d-models/5bfb43ddec994a21baa0eb5e458cdf09 (CC-BY 4.0)
+
+== Pack ov-taw7904-ccby
+Licence: CC-BY 4.0
+Author: taw7904 (Sketchfab: taw7904)
+Source: https://sketchfab.com/taw7904
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Timpani: "Timpani Drum" by taw7904, https://sketchfab.com/3d-models/9cf701a0db76411294266c5a3665458b (CC-BY 4.0)
+
+== Pack ov-tykrastagames-ccby
+Licence: CC-BY 4.0
+Author: tykrastagames (Sketchfab: tykrastagames)
+Source: https://sketchfab.com/tykrastagames
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Djembe: "Djembe ( African Instrument )" by tykrastagames, https://sketchfab.com/3d-models/c05369adb63b41968de1cb242c22e51d (CC-BY 4.0)
+
+== Pack ov-makou-ccby
+Licence: CC-BY 4.0
+Author: makou (Sketchfab: makou)
+Source: https://sketchfab.com/makou
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Conga: "Conga drum" by makou, https://sketchfab.com/3d-models/1d13ba6ff9974679a995692d4392d648 (CC-BY 4.0)
+
+== Pack ov-loichuet1-ccby
+Licence: CC-BY 4.0
+Author: loichuet1 (Sketchfab: loichuet1)
+Source: https://sketchfab.com/loichuet1
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Gramophone: "Gramophone" by loichuet1, https://sketchfab.com/3d-models/2458f980cf584c45a130df3fc39d47ff (CC-BY 4.0)
+
+== Pack ov-kylontome-ccby
+Licence: CC-BY 4.0
+Author: kylontome (Sketchfab: kylontome)
+Source: https://sketchfab.com/kylontome
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Teddy bear: "Teddy Bear" by kylontome, https://sketchfab.com/3d-models/db618e3f97d641bf9ba04af3f84eb059 (CC-BY 4.0)
+
+== Pack ov-plasmaernst-ccby
+Licence: CC-BY 4.0
+Author: plasmaernst (Sketchfab: plasmaernst)
+Source: https://sketchfab.com/plasmaernst
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Rocking horse: "Rocking Horse" by plasmaernst, https://sketchfab.com/3d-models/c7814a2dd9434847beac62ecb703f1d4 (CC-BY 4.0)
+
+== Pack ov-21franklinc-ccby
+Licence: CC-BY 4.0
+Author: 21franklinc (Sketchfab: 21franklinc)
+Source: https://sketchfab.com/21franklinc
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Wooden toy truck: "Wooden Toy Car" by 21franklinc, https://sketchfab.com/3d-models/6d0841a918c441ff84557d04bdb03f25 (CC-BY 4.0)
+
+== Pack ov-reaps6-ccby
+Licence: CC-BY 4.0
+Author: HenryP-F (Sketchfab: Reaps6)
+Source: https://sketchfab.com/Reaps6
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Music box: "Music Box" by HenryP-F, https://sketchfab.com/3d-models/f76c3804b9df45e3a3e0d4b41f548583 (CC-BY 4.0)
+
+== Pack ov-julialemke-ccby
+Licence: CC-BY 4.0
+Author: Julia Lemke (Sketchfab: julialemke)
+Source: https://sketchfab.com/julialemke
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Nutcracker: "Nutcracker" by Julia Lemke, https://sketchfab.com/3d-models/bb182cd70cd244b291ba0e3020f132ce (CC-BY 4.0)
+
+== Pack ov-gregwerth-ccby
+Licence: CC-BY 4.0
+Author: VanGogh Imaging (Sketchfab: gregwerth)
+Source: https://sketchfab.com/gregwerth
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Matryoshka doll: "Russian Doll" by VanGogh Imaging, https://sketchfab.com/3d-models/aa8036a6d67d4cab8cb7a4ef8e807411 (CC-BY 4.0)
+
+== Pack ov-yanez-designs-ccby
+Licence: CC-BY 4.0
+Author: Yanez Designs (Sketchfab: Yanez-Designs)
+Source: https://sketchfab.com/Yanez-Designs
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Chess set: "Chess Board" by Yanez Designs, https://sketchfab.com/3d-models/a0fb4aa0e75649e0991a2571ab70ea44 (CC-BY 4.0)
+
+== Pack ov-simonustal-ccby
+Licence: CC-BY 4.0
+Author: simonustal (Sketchfab: simonustal)
+Source: https://sketchfab.com/simonustal
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Playing cards: "Playing Cards" by simonustal, https://sketchfab.com/3d-models/8137a484e0b640cf9f30e34be44bff55 (CC-BY 4.0)
+
+== Pack ov-macriciox-ccby
+Licence: CC-BY 4.0
+Author: macriciox (Sketchfab: macriciox)
+Source: https://sketchfab.com/macriciox
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Worn die: "Dice" by macriciox, https://sketchfab.com/3d-models/6ee97010819742a8b8713605695ec703 (CC-BY 4.0)
+
+== Pack ov-ikagogava-ccby
+Licence: CC-BY 4.0
+Author: 24fpsboy (Sketchfab: ikagogava)
+Source: https://sketchfab.com/ikagogava
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Basketball: "Basketball" by 24fpsboy, https://sketchfab.com/3d-models/bb2896720a1e4aefba3ab381d4b4554e (CC-BY 4.0)
+
+== Pack ov-vinokkur-ccby
+Licence: CC-BY 4.0
+Author: vinokkur (Sketchfab: vinokkur)
+Source: https://sketchfab.com/vinokkur
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Tennis racket: "Tennis racket" by vinokkur, https://sketchfab.com/3d-models/f04ea10301984e2eadee7c8456a54405 (CC-BY 4.0)
+
+== Pack ov-pquijano-ccby
+Licence: CC-BY 4.0
+Author: Paolo Quijano (Sketchfab: PQuijano)
+Source: https://sketchfab.com/PQuijano
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Bowling ball: "Bowling Ball Storm Hy-Road Pearl" by Paolo Quijano, https://sketchfab.com/3d-models/10a4ea0579d54a73965a308469bbb973 (CC-BY 4.0)
+
+== Pack ov-tomations-ccby
+Licence: CC-BY 4.0
+Author: Tomations (Sketchfab: Tomations)
+Source: https://sketchfab.com/Tomations
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Bowling pin: "Bowling Pin" by Tomations, https://sketchfab.com/3d-models/39fded55822b4b289e87c56210f9f5ee (CC-BY 4.0)
+
+== Pack ov-urheilumuseo-ccby
+Licence: CC-BY 4.0
+Author: urheilumuseo (Sketchfab: urheilumuseo)
+Source: https://sketchfab.com/urheilumuseo
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Vintage boxing glove: "Boxing Glove from 1952 Olympic Games" by urheilumuseo, https://sketchfab.com/3d-models/a00d2eaa0c1d459f893ae4cbb08b866e (CC-BY 4.0)
+
+== Pack ov-tadeus-ccby
+Licence: CC-BY 4.0
+Author: tadeus (Sketchfab: tadeus)
+Source: https://sketchfab.com/tadeus
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Dumbbell: "Dumbbell" by tadeus, https://sketchfab.com/3d-models/2835f3bdc79a4e46aaf309cde977861c (CC-BY 4.0)
+
+== Pack ov-yarik16-ccby
+Licence: CC-BY 4.0
+Author: Yarik16 (Sketchfab: Yarik16)
+Source: https://sketchfab.com/Yarik16
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Kettlebell: "Kettlebell" by Yarik16, https://sketchfab.com/3d-models/33d7aecfa8504b52b4740e684eb0eaca (CC-BY 4.0)
+
+== Pack ov-george-levchenko-ccby
+Licence: CC-BY 4.0
+Author: George.Levchenko (Sketchfab: George.Levchenko)
+Source: https://sketchfab.com/George.Levchenko
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Skateboard: "Skateboard" by George.Levchenko, https://sketchfab.com/3d-models/daba6e30f78d4604b5167b2f83b0d162 (CC-BY 4.0)
+
+== Pack ov-token-tu-ccby
+Licence: CC-BY 4.0
+Author: token_tu (Sketchfab: token_tu)
+Source: https://sketchfab.com/token_tu
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Wooden sled: "Sledge" by token_tu, https://sketchfab.com/3d-models/743a8be4f26e4122818dec99edf35578 (CC-BY 4.0)
+
+== Pack ov-armtoucher-ccby
+Licence: CC-BY 4.0
+Author: armtoucher (Sketchfab: armtoucher)
+Source: https://sketchfab.com/armtoucher
+Objects: 1
+Licence text: https://creativecommons.org/licenses/by/4.0/
+  - Medal: "medal" by armtoucher, https://sketchfab.com/3d-models/8d2b7074affb44dd84a82c1515980540 (CC-BY 4.0)

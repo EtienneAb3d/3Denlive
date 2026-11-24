@@ -23,11 +23,13 @@
 #          view (view coordinates, l 1 = in, 0 = out), all those of that frame, and its box; none: removed
 #  mask    --obj <k> --view <v> --frame <n> --mask <png>         mask of the object in the view (white = in, the size
 #          of the view in the work frame), replaces its points / box on that frame
-#  delete  --obj <k>                                             object removed everywhere
+#  delete  --obj <k>                                             object removed everywhere (the tracking of the
+#          others kept: nothing computed again)
 #  track   [--stop-file <path>] [--resume <frame>]               propagation over the whole video; --resume: only
 #          from that frame to the end (the frames before kept), plus the frames of the tracking not computed yet
 #          (stopped), when the session was tracked with the same objects since its last rebuild (else the whole
-#          video; TRACKMODE full|resume <first frame> tells which)
+#          video; TRACKMODE full|resume <first frame> tells which); --to <frame>: only up to that frame (a step
+#          of the editor: the frames from the resume to it, forward, or backward when it is before the first prompt)
 #  close                                                         the session forgotten (the model stays loaded)
 #  export  --out <path> --view-size <w>x<h> [--ffmpeg <path> --fps <fps>]   the mask of all the objects, white on
 #          black, the views side by side at their full size: a PNG (one frame) or a video (ffmpeg)
@@ -38,6 +40,8 @@
 #  STEP <done> <total>  frames tracked / written
 #  LABELS <n>           labels of the frame n written
 #  PEAK <stage> <bytes> peak GPU memory reserved (CUDA)
+#  ENDS <obj>:<fwd>:<back>;...  objects that left the image (see END_FRAMES): no longer computed from fwd on, or up
+#          to back backward (- : none); at the end of track / prompt / delete
 #  DONE <text>          end of the request
 #  ERROR <OOM|STOPPED|text>
 import argparse
@@ -54,6 +58,27 @@ STD = [0.229, 0.224, 0.225]
 SEED_GRID = 3
 # Frames kept in memory, processed for the model
 FRAME_CACHE = 12
+# Outputs of the tracked frames kept in the session (not the conditioning frames, the frames clicked): those within
+# KEEP_FRAMES of the frame computed, the memory the model reads (6 previous masks, 15 previous object pointers).
+# Kept all, they filled the GPU memory as the tracking advanced in the video (15 GB at frame 300 for 7 objects in 2
+# views on Apple Silicon: swap, frames 3 times slower)
+KEEP_FRAMES = 16
+# Frames computed again before a tracking resumed far from the last frame tracked (their outputs dropped): the memory
+# of the frame resumed (labels not written again)
+WARM_FRAMES = 6
+# An object absent (empty mask in every view) on END_FRAMES frames in a row is no longer computed after them in that
+# direction (it left the image: its cost stops), until a prompt of it on a later frame (or before, backward)
+END_FRAMES = 5
+# Continuity of a tracked object: the parts of its mask not connected to its mask of the frame before (in the order
+# of the tracking) grown by CONTINUITY_REACH pixels of the 256 x 256 output of the model (about 5 % of the image: the
+# motion of a frame) are dropped, from the result and from the memory of the model. SAM otherwise gave the object to
+# another one entering the image (a person leaving on the right, its mask spread to the one entering on the left,
+# then on it alone): the object never became absent, and was "recycled"
+CONTINUITY_REACH = 12
+CONTINUITY_PART = 0.5
+# Not during the CONTINUITY_AFTER frames after a prompt of the object: SAM completes it from the clicked part (other
+# parts of it appear, not connected)
+CONTINUITY_AFTER = 10
 
 
 def out(*aArgs):
@@ -78,6 +103,12 @@ class State:
 		# Tracking of the session: the objects it was made with and the frames computed since (None: none, or the
 		# session rebuilt: the outputs of the tracked frames, the memory of the next ones, are lost)
 		self.done = None
+		# Objects ended (see END_FRAMES): ends[obj] = {"fwd": first frame no longer computed forward, "back": last
+		# frame no longer computed backward}; absent[obj] = [last frame computed, reverse, frames absent in a row]
+		self.ends = {}
+		self.absent = {}
+		# has[obj] = the frames whose labels hold the object (see forget())
+		self.has = {}
 
 
 _S = State()
@@ -145,6 +176,7 @@ def main(aArgv):
 	aP.add_argument("--mask", default=None)
 	aP.add_argument("--stop-file", default=None)
 	aP.add_argument("--resume", type=int, default=None)
+	aP.add_argument("--to", type=int, default=None)
 	aP.add_argument("--out")
 	aP.add_argument("--view-size", default="")
 	aP.add_argument("--ffmpeg", default="ffmpeg")
@@ -205,7 +237,7 @@ def main(aArgv):
 		if aArgs.op == "delete":
 			return aCtx.delete(aArgs.obj)
 		if aArgs.op == "track":
-			return aCtx.track(aArgs.stop_file, aArgs.resume)
+			return aCtx.track(aArgs.stop_file, aArgs.resume, aArgs.to)
 		if aArgs.op == "export":
 			return aCtx.export(aArgs)
 	raise ValueError("Unknown op " + aArgs.op)
@@ -258,6 +290,9 @@ class Context:
 				_S.views.append([int(float(a)) for a in aV.split(",")])
 		_S.prompts = {}
 		_S.done = None
+		_S.ends = {}
+		_S.absent = {}
+		_S.has = {}
 		_S.sessions = [self.newSession(v) for v in range(len(_S.views))]
 		os.makedirs(_S.labels, exist_ok=True)
 		log("Mask video open: " + str(_S.count) + " frames, views " + str(_S.views))
@@ -321,7 +356,7 @@ class Context:
 				if aPrev is not None:
 					aOld[aIdx] = aPrev
 		try:
-			aOut = self.model(inference_session=aSess, frame_idx=aFrame, reverse=aReverse)
+			aOut = self.runFrame(aSess, aFrame, aReverse)
 		except Exception:
 			for aIdx, aPrev in aOld.items():
 				aSess.output_dict_per_obj[aIdx]["cond_frame_outputs"].setdefault(aFrame, aPrev)
@@ -337,9 +372,168 @@ class Context:
 				aOD["cond_frame_outputs"][aFrame] = aCorr
 		return aOut
 
+	def ended(self, aObj, aFrame):
+		"""The object left the image before that frame (forward) or after it (backward), without a prompt of it
+		since"""
+		aE = _S.ends.get(aObj)
+		if not aE:
+			return False
+		aFrames = {f for aFs in _S.prompts.get(aObj, {}).values() for f in aFs}
+		aF = aE.get("fwd")
+		if aF is not None and aFrame >= aF and not any(aF <= f <= aFrame for f in aFrames):
+			return True
+		aB = aE.get("back")
+		return aB is not None and aFrame <= aB and not any(aFrame <= f <= aB for f in aFrames)
+
+	def runFrame(self, aSess, aFrame, aReverse):
+		"""Sam2VideoModel.forward of transformers 5 (frame_idx given, not streaming) on the objects not ended only,
+		the high resolution masks not kept in the outputs (only used to encode the memory of the frame)"""
+		torch = self.torch
+		m = self.model
+		aIds, aMasks, aEnc, aHigh, aLogits, aFromPts = [], [], [], [], [], []
+		for aIdx in range(aSess.get_obj_num()):
+			aObj = aSess.obj_idx_to_id(aIdx)
+			aNewIn = aObj in aSess.obj_with_new_inputs
+			if not aNewIn and self.ended(aObj, aFrame):
+				continue
+			aFirst = self.firstPrompt(aObj)
+			if not aNewIn and aFirst is not None and (aFrame >= aFirst if aReverse else aFrame < aFirst):
+				# Forward before its first prompt (it does not exist there yet: computed backward, by the pass of its
+				# start), or backward over the frames it was tracked forward: not computed, its labels kept
+				continue
+			aReverseObj = aReverse
+			if not aNewIn and aFrame in aSess.output_dict_per_obj[aIdx]["cond_frame_outputs"]:
+				aPred = aSess.get_output(aIdx, aFrame, "pred_masks", is_conditioning_frame=True)
+				aInit = True
+			else:
+				aInit = False
+				aPts = None
+				aMsk = None
+				if aNewIn:
+					aInit = aFrame not in aSess.frames_tracked_per_obj[aIdx]
+					if aInit:
+						aReverseObj = False
+					aPts = aSess.point_inputs_per_obj[aIdx].get(aFrame, None)
+					aMsk = aSess.mask_inputs_per_obj[aIdx].get(aFrame, None)
+					if aPts is not None or aMsk is not None:
+						aSess.obj_with_new_inputs.remove(aObj)
+				aCur = m._run_single_frame_inference(inference_session=aSess, obj_idx=aIdx, frame_idx=aFrame, batch_size=1,
+						is_init_cond_frame=aInit, point_inputs=aPts, mask_inputs=aMsk, reverse=aReverseObj, streaming=False)
+				if not aInit and aPts is None and aMsk is None and self.sincePrompt(aObj, aFrame, aReverseObj) > CONTINUITY_AFTER:
+					self.continuity(aSess, aIdx, aFrame, aReverseObj, aCur)
+				aSess.store_output(aIdx, aFrame, output_value=aCur, is_conditioning_frame=aInit)
+				aPred = aCur["pred_masks"]
+				if m.num_maskmem > 0:
+					aEnc.append(aIdx)
+					aHigh.append(aCur["high_res_masks"])
+					aLogits.append(aCur["object_score_logits"])
+					aFromPts.append(aPts is not None or aMsk is not None)
+			aIds.append(aObj)
+			aMasks.append(aPred)
+			if not aInit:
+				aSess.frames_tracked_per_obj[aIdx][aFrame] = {"reverse": aReverseObj}
+		m._batch_encode_memories(inference_session=aSess, frame_idx=aFrame, objects_needing_memory_encoding=aEnc,
+				high_res_masks_for_memory=aHigh, object_score_logits_for_memory=aLogits, is_mask_from_pts_per_obj=aFromPts)
+		for aIdx in aEnc:
+			aOD = aSess.output_dict_per_obj[aIdx]
+			for aKey in ("cond_frame_outputs", "non_cond_frame_outputs"):
+				aO = aOD[aKey].get(aFrame)
+				if aO is not None:
+					aO.pop("high_res_masks", None)
+					if "maskmem_features" in aO:
+						# Slices of the memories of all the objects: copied, the batch is freed
+						aO["maskmem_features"] = aO["maskmem_features"].clone()
+						aO["maskmem_pos_enc"] = aO["maskmem_pos_enc"].clone()
+
+		class Out:
+			pass
+		aOut = Out()
+		aOut.object_ids = aIds
+		aOut.pred_masks = torch.cat(aMasks, dim=0) if aMasks else None
+		return aOut
+
+	@staticmethod
+	def firstPrompt(aObj):
+		aFrames = [f for aFs in _S.prompts.get(aObj, {}).values() for f in aFs]
+		return min(aFrames) if aFrames else None
+
+	@staticmethod
+	def sincePrompt(aObj, aFrame, aReverse):
+		"""Frames since the last prompt of the object in the order of the tracking (large: none before)"""
+		aFrames = [f for aFs in _S.prompts.get(aObj, {}).values() for f in aFs]
+		aD = [f - aFrame if aReverse else aFrame - f for f in aFrames]
+		aD = [d for d in aD if d >= 0]
+		return min(aD) if aD else 1 << 30
+
+	def sendEnds(self):
+		"""ENDS obj:fwd:back;... the objects ended (- : none), for the editor"""
+		aParts = []
+		for aObj, aE in sorted(_S.ends.items()):
+			if aObj in _S.prompts and (aE.get("fwd") is not None or aE.get("back") is not None):
+				aParts.append(str(aObj) + ":" + ("-" if aE.get("fwd") is None else str(aE["fwd"])) + ":"
+						+ ("-" if aE.get("back") is None else str(aE["back"])))
+		out("ENDS " + ";".join(aParts))
+
+	def continuity(self, aSess, aIdx, aFrame, aReverse, aCur):
+		"""The parts of the mask of a tracked object (aCur, output of the model) not connected to its mask of the
+		frame before (aFrame -1, or +1 backward) grown by CONTINUITY_REACH dropped (logits made negative in the low and
+		high resolution masks); nothing left: the object absent (score logit negative, encoded as such in the memory)"""
+		torch = self.torch
+		import torch.nn.functional as F
+		aPrevF = aFrame + (1 if aReverse else -1)
+		aOD = aSess.output_dict_per_obj[aIdx]
+		aPrev = aOD["cond_frame_outputs"].get(aPrevF) or aOD["non_cond_frame_outputs"].get(aPrevF)
+		if aPrev is None or aPrev.get("pred_masks") is None:
+			return
+		aCurM = aCur["pred_masks"] > 0
+		if not bool(aCurM.any()):
+			return
+		aPrevM = (aPrev["pred_masks"].to(aCurM.device) > 0).float()
+		# Reach: CONTINUITY_REACH, at least CONTINUITY_PART of the largest side of the object (its parts appear one
+		# after the other: legs behind an obstacle...)
+		aYs = torch.nonzero(aPrevM[0, 0].amax(1) > 0)
+		aXs = torch.nonzero(aPrevM[0, 0].amax(0) > 0)
+		aSide = 0 if len(aYs) == 0 else max(int(aYs[-1] - aYs[0]), int(aXs[-1] - aXs[0])) + 1
+		r = min(aPrevM.shape[-1] // 2, max(CONTINUITY_REACH, int(round(CONTINUITY_PART * aSide))))
+		aGrown = F.max_pool2d(F.max_pool2d(aPrevM, (2 * r + 1, 1), stride=1, padding=(r, 0)), (1, 2 * r + 1), stride=1, padding=(0, r))
+		aKeep = (aGrown > 0) & aCurM
+		# Morphological reconstruction: the connected parts of the mask reached from there (8 neighbors)
+		aCurF = aCurM.float()
+		while True:
+			aN = aKeep
+			for _ in range(16):
+				aN = (F.max_pool2d(aN.float(), 3, stride=1, padding=1) * aCurF) > 0
+			if torch.equal(aN, aKeep):
+				break
+			aKeep = aN
+		aDrop = aCurM & ~aKeep
+		if not bool(aDrop.any()):
+			return
+		aLow = aCur["pred_masks"]
+		aCur["pred_masks"] = torch.where(aDrop, torch.full_like(aLow, -10.0), aLow)
+		aHigh = aCur.get("high_res_masks")
+		if aHigh is not None:
+			aD = F.interpolate(aDrop.float(), size=aHigh.shape[-2:], mode="nearest") > 0
+			aCur["high_res_masks"] = torch.where(aD, torch.full_like(aHigh, -10.0), aHigh)
+		if not bool(aKeep.any()):
+			aCur["object_score_logits"] = torch.full_like(aCur["object_score_logits"], -10.0)
+		aObj = aSess.obj_idx_to_id(aIdx)
+		log("Mask tracking: object " + str(aObj) + " frame " + str(aFrame) + ": " + str(int(aDrop.sum())) + " / "
+				+ str(int(aCurM.sum())) + " points (reach " + str(r) + ") not connected to its mask of the frame before, dropped")
+
+	def prune(self, aFrame):
+		"""Outputs of the tracked frames farther than KEEP_FRAMES from aFrame dropped (the conditioning ones kept)"""
+		for aSess in _S.sessions:
+			for aOD in aSess.output_dict_per_obj.values():
+				aNC = aOD["non_cond_frame_outputs"]
+				for f in [f for f in aNC if abs(f - aFrame) > KEEP_FRAMES]:
+					del aNC[f]
+
 	def toMasks(self, aView, aOut):
 		import torch.nn.functional as F
 		w, h = _S.views[aView][2], _S.views[aView][3]
+		if aOut.pred_masks is None:
+			return {}
 		aM = F.interpolate(aOut.pred_masks.float(), (h, w), mode="bilinear", align_corners=False)
 		aM = (aM[:, 0] > 0.0).cpu().numpy()
 		return {aObj: aM[i] for i, aObj in enumerate(aOut.object_ids)}
@@ -446,6 +640,7 @@ class Context:
 		if aObj < 1 or aObj > MAX_OBJECTS:
 			raise ValueError("Object id out of 1.." + str(MAX_OBJECTS))
 		aObjP = _S.prompts.setdefault(aObj, {})
+		_S.absent.pop(aObj, None)
 		# The other views follow this one (seeded), unless the user gave a prompt in them on this frame
 		aOthers = [v for v in range(len(_S.views)) if v != aView and aObjP.get(v, {}).get(aFrame, {"auto": True})["auto"]]
 		aRemoved = False
@@ -477,14 +672,42 @@ class Context:
 			_S.prompts.pop(aObj, None)
 		if aRemoved:
 			self.rebuild()
+		self.forget(aObj, aFrame)
 		self.writeFrame(aFrame)
+		self.sendEnds()
 		out("DONE prompt")
 		return 0
+
+	def forget(self, aObj, aFrame):
+		"""A prompt of the object changed on aFrame: its masks computed after it (in the order of the tracking) are out
+		of date, removed from the labels (the editor showed them, then computed them again: an old version seen). The
+		frames after it, and, when aFrame is its first prompt, those before it (its backward pass); the other objects
+		are tracked on their own: kept"""
+		import numpy as np
+		from PIL import Image
+		aFirst = self.firstPrompt(aObj)
+		aFs = sorted(n for n in _S.has.get(aObj, ()) if n > aFrame or (aFirst is not None and aFirst >= aFrame and n < aFrame))
+		if not aFs:
+			return
+		aBit = np.uint16(1 << (aObj - 1))
+		for n in aFs:
+			aPath = os.path.join(_S.labels, "%06d.png" % n)
+			if os.path.isfile(aPath):
+				aL = np.asarray(Image.open(aPath), dtype=np.uint16)
+				saveLabels(aPath, aL & ~aBit)
+				out("LABELS " + str(n))
+			_S.has[aObj].discard(n)
+		if _S.done is not None:
+			# Computed again by the next tracking (the backward frames too)
+			_S.done["frames"] -= set(aFs)
+		log("Mask: object " + str(aObj) + " changed on frame " + str(aFrame) + ", its masks of " + str(len(aFs)) + " frames removed")
 
 	def rebuild(self):
 		"""New sessions with the prompts of the objects (after a removal: the model can't forget an object)"""
 		_S.sessions = [self.newSession(v) for v in range(len(_S.views))]
 		_S.done = None
+		_S.ends = {}
+		_S.absent = {}
 		for aObj in sorted(_S.prompts):
 			for aView, aFrames in _S.prompts[aObj].items():
 				for i, (aFrame, aPr) in enumerate(sorted(aFrames.items())):
@@ -496,11 +719,49 @@ class Context:
 						aSess.frames_tracked_per_obj[aSess.obj_id_to_idx(aObj)][aFrame] = {"reverse": False}
 					self.forward(aView, aFrame)
 
+	@staticmethod
+	def removeObject(aSess, aObj):
+		"""The object taken out of the session, the others kept with their memory and outputs (their indexes shifted).
+		The objects are tracked independently (own memory, own outputs): nothing to compute again for the others"""
+		aIdx = aSess._obj_id_to_idx.get(aObj)
+		if aIdx is None:
+			return
+		aIds = [o for o in aSess._obj_id_to_idx if o != aObj]
+		aOld = {o: aSess._obj_id_to_idx[o] for o in aIds}
+		for aName in ("point_inputs_per_obj", "mask_inputs_per_obj", "output_dict_per_obj", "frames_tracked_per_obj"):
+			aD = getattr(aSess, aName)
+			aNew = {i: aD[aOld[o]] for i, o in enumerate(aIds)}
+			aD.clear()
+			aD.update(aNew)
+		aSess._obj_id_to_idx.clear()
+		aSess._obj_idx_to_id.clear()
+		for i, o in enumerate(aIds):
+			aSess._obj_id_to_idx[o] = i
+			aSess._obj_idx_to_id[i] = o
+		aSess.obj_ids = list(aIds)
+		aSess.obj_with_new_inputs = [o for o in aSess.obj_with_new_inputs if o != aObj]
+
 	def delete(self, aObj):
+		"""Object removed: out of the sessions and of the labels; the tracking of the others kept as it is (a tracking
+		then resumes where it would have)"""
 		import numpy as np
 		from PIL import Image
+		_S.ends.pop(aObj, None)
+		_S.absent.pop(aObj, None)
+		_S.has.pop(aObj, None)
 		if _S.prompts.pop(aObj, None) is not None:
-			self.rebuild()
+			for aSess in _S.sessions:
+				self.removeObject(aSess, aObj)
+			if _S.done is not None:
+				_S.done["objs"].discard(aObj)
+				aBack = _S.done.get("backObjs")
+				if aBack:
+					# The backward pass still due: only for the other objects added since
+					aBack.discard(aObj)
+					aStarts = [f for o in aBack if o in _S.prompts for aFs in _S.prompts[o].values() for f in aFs]
+					_S.done["back"] = set(range(0, min(aStarts))) if aStarts else set()
+				if not _S.done["objs"]:
+					_S.done = None
 		# Its bit cleared in the frames already computed
 		aBit = np.uint16(1 << (aObj - 1))
 		for aName in os.listdir(_S.labels):
@@ -509,6 +770,7 @@ class Context:
 				aL = np.asarray(Image.open(aPath), dtype=np.uint16)
 				if (aL & aBit).any():
 					saveLabels(aPath, aL & ~aBit)
+		self.sendEnds()
 		out("DONE delete")
 		return 0
 
@@ -517,8 +779,22 @@ class Context:
 		aW = max(v[0] + v[2] for v in _S.views)
 		aH = max(v[1] + v[3] for v in _S.views)
 		aL = np.zeros((aH, aW), dtype=np.uint16)
+		aPath = os.path.join(_S.labels, "%06d.png" % aFrame)
+		aOld = None
 		for v, (x, y, w, h) in enumerate(_S.views):
 			aMasks = dict(aMasksPerView[v] if aMasksPerView is not None else self.masksAt(v, aFrame))
+			# The objects not computed on this frame (before their first prompt forward...): their labels kept, unless
+			# ended there
+			aKeep = 0
+			for aObj in _S.prompts:
+				if aObj not in aMasks and 1 <= aObj <= MAX_OBJECTS and not self.ended(aObj, aFrame):
+					aKeep |= 1 << (aObj - 1)
+			if aKeep:
+				if aOld is None:
+					from PIL import Image
+					aOld = np.asarray(Image.open(aPath), dtype=np.uint16) if os.path.isfile(aPath) else False
+				if aOld is not False:
+					aL[y:y + h, x:x + w] |= aOld[y:y + h, x:x + w] & np.uint16(aKeep)
 			# A painted mask is the result of its frame as it is (the model output is 256 x 256)
 			for aObj, aObjP in _S.prompts.items():
 				aPr = aObjP.get(v, {}).get(aFrame)
@@ -527,10 +803,16 @@ class Context:
 			for aObj, aM in aMasks.items():
 				if 1 <= aObj <= MAX_OBJECTS and aObj in _S.prompts:
 					aL[y:y + h, x:x + w][aM] |= np.uint16(1 << (aObj - 1))
-		saveLabels(os.path.join(_S.labels, "%06d.png" % aFrame), aL)
+		saveLabels(aPath, aL)
+		aAll = int(np.bitwise_or.reduce(aL.ravel())) if aL.size else 0
+		for aObj in range(1, MAX_OBJECTS + 1):
+			if aAll & (1 << (aObj - 1)):
+				_S.has.setdefault(aObj, set()).add(aFrame)
+			elif aObj in _S.has:
+				_S.has[aObj].discard(aFrame)
 		out("LABELS " + str(aFrame))
 
-	def track(self, aStop, aResume=None):
+	def track(self, aStop, aResume=None, aTo=None):
 		torch = self.torch
 		aStarts = [f for aObjP in _S.prompts.values() for aFrames in aObjP.values() for f in aFrames]
 		if not aStarts:
@@ -549,14 +831,62 @@ class Context:
 			else:
 				aOrder += [(f, True) for f in range(aStart - 1, -1, -1) if f not in _S.done["frames"]]
 			out("TRACKMODE resume " + str(aOrder[0][0] if aOrder else _S.count))
+		elif aResume is not None and _S.done is not None and _S.done["objs"] and _S.done["objs"] <= aObjs:
+			# Objects added since the last tracking (the others unchanged, the session kept): forward from the first
+			# prompt of the new ones, the frames before kept for the others; the new ones get the frames before
+			# their first prompt by a backward pass at the next tracking without --to ("back")
+			aNew = aObjs - _S.done["objs"]
+			aNewStart = min(f for o in aNew for aFrames in _S.prompts[o].values() for f in aFrames)
+			aUndone = [f for f in range(aStart, _S.count) if f not in _S.done["frames"]]
+			s = max(0, min(aResume, aNewStart, aUndone[0] if aUndone else _S.count))
+			aOrder = [(f, False) for f in range(max(s, aStart), _S.count)]
+			_S.done.setdefault("back", set()).update(range(0, aNewStart))
+			_S.done.setdefault("backObjs", set()).update(aNew)
+			_S.done["objs"] = set(aObjs)
+			out("TRACKMODE resume " + str(aOrder[0][0] if aOrder else _S.count))
 		else:
 			# Forward from the first frame clicked to the end, then backward to the start
-			aOrder = [(f, False) for f in range(aStart, _S.count)] + [(f, True) for f in range(aStart - 1, -1, -1)]
+			# (backward from the latest first prompt: the objects clicked later get the frames before it)
+			aLast = max(self.firstPrompt(o) for o in aObjs)
+			aOrder = [(f, False) for f in range(aStart, _S.count)] + [(f, True) for f in range(aLast - 1, -1, -1)]
 			_S.done = {"objs": aObjs, "frames": set()}
 			out("TRACKMODE full " + str(aStart))
+		if aTo is None and _S.done.get("back"):
+			# The frames before the first prompt of objects added: backward, after the forward pass
+			aHave = set(aOrder)
+			aOrder += [(f, True) for f in sorted(_S.done["back"], reverse=True) if (f, True) not in aHave]
+		if aTo is not None:
+			# A step: forward up to it, or backward down to it before the first prompt
+			if aTo >= aStart:
+				aOrder = [(f, r) for f, r in aOrder if not r and f <= aTo]
+			else:
+				aOrder = [(f, r) for f, r in aOrder if r and f >= aTo]
 		# Computed again: not done until then (a stop leaves them to the next resume)
 		_S.done["frames"] -= {f for f, r in aOrder}
 		aT0 = time.time()
+		# The ends found beyond the start of the passes are found again (the frames before them computed again)
+		aFwd0 = min((f for f, r in aOrder if not r), default=None)
+		aBack0 = max((f for f, r in aOrder if r), default=None)
+		for aE in _S.ends.values():
+			if aFwd0 is not None and aE.get("fwd") is not None and aE["fwd"] > aFwd0:
+				aE["fwd"] = None
+			if aBack0 is not None and aE.get("back") is not None and aE["back"] < aBack0:
+				aE["back"] = None
+		if aFwd0 is not None and aFwd0 > aStart:
+			# Resumed where the memory of the frames before was dropped: those frames computed again first
+			aWarm = [f for f in range(max(aStart, aFwd0 - WARM_FRAMES), aFwd0)
+					if any(aIdx in aS.output_dict_per_obj and f in aS.frames_tracked_per_obj.get(aIdx, {})
+						and f not in aS.output_dict_per_obj[aIdx]["non_cond_frame_outputs"]
+						and f not in aS.output_dict_per_obj[aIdx]["cond_frame_outputs"]
+						and not self.ended(aS.obj_idx_to_id(aIdx), f)
+						for aS in _S.sessions for aIdx in range(aS.get_obj_num()))]
+			if aWarm:
+				for f in range(aWarm[0], aFwd0):
+					for v in range(len(_S.views)):
+						if _S.sessions[v].get_obj_num() > 0:
+							self.forward(v, f)
+					self.prune(f)
+				log("Mask tracking: " + str(aFwd0 - aWarm[0]) + " frames computed again for the memory of frame " + str(aFwd0))
 		for i, (aFrame, aReverse) in enumerate(aOrder):
 			if aStop and os.path.exists(aStop):
 				import ai_serve
@@ -570,13 +900,49 @@ class Context:
 				aOut = self.forward(v, aFrame, aReverse)
 				aPer.append(self.toMasks(v, aOut))
 			self.writeFrame(aFrame, aPer)
+			self.prune(aFrame)
+			self.checkEnds(aFrame, aReverse, aPer)
 			_S.done["frames"].add(aFrame)
 			out("STEP " + str(i + 1) + " " + str(len(aOrder)))
-		log("Mask tracking: " + str(len(aOrder)) + " frames x " + str(len(_S.views)) + " views in " + str(round(time.time() - aT0, 1)) + " s")
+		if aTo is None:
+			_S.done["back"] = set()
+			_S.done["backObjs"] = set()
+		if self.device.type == "mps":
+			torch.mps.empty_cache()
+		elif self.device.type == "cuda":
+			torch.cuda.empty_cache()
+		aActive = sorted(o for o in _S.prompts if not self.ended(o, aOrder[-1][0])) if aOrder else []
+		log("Mask tracking: " + str(len(aOrder)) + " frames x " + str(len(_S.views)) + " views in " + str(round(time.time() - aT0, 1)) + " s, objects computed " + str(aActive))
 		if self.device.type == "cuda":
 			out("PEAK mask " + str(torch.cuda.max_memory_reserved(self.device)))
+		self.sendEnds()
 		out("DONE track")
 		return 0
+
+	def checkEnds(self, aFrame, aReverse, aPer):
+		"""Objects absent on END_FRAMES frames in a row (in the order of the tracking) ended after that frame"""
+		for aObj in _S.prompts:
+			if self.ended(aObj, aFrame):
+				continue
+			if not any(aObj in aMasks for aMasks in aPer):
+				# Not computed on this frame (before its first prompt...)
+				continue
+			aSeen = any(aMasks.get(aObj) is not None and aMasks[aObj].any() for aMasks in aPer)
+			aA = _S.absent.get(aObj)
+			if aSeen:
+				_S.absent.pop(aObj, None)
+				continue
+			if aA is not None and aA[1] == aReverse and aA[0] == aFrame + (1 if aReverse else -1):
+				aA[0] = aFrame
+				aA[2] += 1
+			else:
+				aA = _S.absent[aObj] = [aFrame, aReverse, 1]
+			if aA[2] >= END_FRAMES:
+				aE = _S.ends.setdefault(aObj, {})
+				aE["back" if aReverse else "fwd"] = aFrame - 1 if aReverse else aFrame + 1
+				_S.absent.pop(aObj, None)
+				log("Mask tracking: object " + str(aObj) + " absent since " + str(aFrame + ((END_FRAMES - 1) if aReverse else -(END_FRAMES - 1)))
+						+ ", no longer computed " + ("before " if aReverse else "after ") + str(aFrame))
 
 	def export(self, aArgs):
 		import subprocess

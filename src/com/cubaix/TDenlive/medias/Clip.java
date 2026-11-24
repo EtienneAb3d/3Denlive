@@ -1557,7 +1557,10 @@ public class Clip extends Media {
 			//The processor just added gets the focus (the changes are for it)
 			setFocused(aAdded);
 		}
-		tde.gui.processorGUI.setProcessors(processors);
+		//No processors panel (a clip changed from another window while the main window is rebuilt...)
+		if(tde.gui.processorGUI != null) {
+			tde.gui.processorGUI.setProcessors(processors);
+		}
 		return aAdded;
 	}
 

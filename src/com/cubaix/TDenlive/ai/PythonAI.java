@@ -112,6 +112,67 @@ public abstract class PythonAI {
 		}
 	}
 
+	//Model kept loaded alongside the others (the SAM model while the mask / eraser editor is open: its session
+	//keeps the frames tracked; the filling models loaded meanwhile no longer unload it), by its tag prefix
+	static String companionTag = null;
+	static Resident companion = null;
+	//Who asked for it (keepAlongside()): an editor closed late (its work ending in the background) does not end the
+	//keeping asked by the editor opened since
+	static Object companionOwner = null;
+
+	/**
+	 * The model whose tag starts with aTagPrefix stays loaded when another one is loaded (until stopKeeping() with
+	 * the owner returned)
+	 */
+	public static Object keepAlongside(String aTagPrefix) {
+		Object aOwner = new Object();
+		synchronized(SLOT) {
+			companionTag = aTagPrefix;
+			companionOwner = aOwner;
+		}
+		return aOwner;
+	}
+
+	/**
+	 * End of keepAlongside(): the model kept alongside becomes the model kept loaded if there is none, else it is
+	 * unloaded
+	 */
+	public static void stopKeeping(Object aOwner) {
+		Resident aC;
+		synchronized(SLOT) {
+			if(aOwner != companionOwner) {
+				//Asked again since by another one: kept
+				return;
+			}
+			companionOwner = null;
+			companionTag = null;
+			aC = companion;
+			companion = null;
+			if(aC == null) {
+				return;
+			}
+			if(resident == null && aC.residentAlive()) {
+				resident = aC;
+				return;
+			}
+		}
+		System.out.println("AI: model kept alongside unloaded ("+aC.residentKey()+")");
+		aC.unload();
+	}
+
+	/**
+	 * The model kept alongside (keepAlongside()), null if none
+	 */
+	static Resident companion() {
+		synchronized(SLOT) {
+			return companion;
+		}
+	}
+
+	static boolean isCompanion(Resident aR) {
+		return aR != null && companionTag != null && aR.residentTag() != null && aR.residentTag().startsWith(companionTag);
+	}
+
 	/**
 	 * Device argument ("auto" or "cpu") of the model aTag if it is the one kept loaded, else null. A model
 	 * already loaded stays on its device, and its own memory is not counted as missing (memory warnings).
@@ -162,12 +223,28 @@ public abstract class PythonAI {
 	 */
 	public static void beforeLoad(String aKey) {
 		Resident aR;
+		Resident aOldC = null;
 		synchronized(SLOT) {
 			aR = resident;
 			if(aR == null || aR.residentKey().equals(aKey)) {
 				return;
 			}
 			resident = null;
+			if(isCompanion(aR)) {
+				//Kept loaded alongside (a previous companion replaced: unloaded)
+				if(companion != null && companion != aR) {
+					aOldC = companion;
+				}
+				companion = aR;
+				aR = null;
+			}
+		}
+		if(aOldC != null) {
+			aOldC.unload();
+		}
+		if(aR == null) {
+			System.out.println("AI: model kept loaded alongside ("+companion().residentKey()+") to load "+aKey);
+			return;
 		}
 		System.out.println("AI: model unloaded ("+aR.residentKey()+") to load "+aKey);
 		aR.unload();
@@ -191,6 +268,9 @@ public abstract class PythonAI {
 		synchronized(SLOT) {
 			if(resident == aR) {
 				resident = null;
+			}
+			if(companion == aR) {
+				companion = null;
 			}
 		}
 	}

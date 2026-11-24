@@ -17,6 +17,9 @@ public class FfmpegDecoder extends Ffmpeg {
 			
 	public String pathIn = null;
 	public long timeOffset = 0;
+	//Position given to -ss (ms, may be fractional), and time of the first frame given (ms): see setGrid()
+	public double seekMS = 0;
+	public double firstMS = 0;
 	public int nbFrames = -1;
 	String resizeOpt = null;
 	String fpsOpt = null;
@@ -27,8 +30,25 @@ public class FfmpegDecoder extends Ffmpeg {
 	public boolean processing = false;
 	
 	public FfmpegDecoder(String aPathIn,long aTimeOffset,int aNbFrames,String aResize,double aFps) {
+		this(aPathIn, aTimeOffset, aNbFrames, aResize, aFps, -1);
+	}
+
+	/**
+	 * aFileFps > 0: the frames of the file are on its grid k / aFileFps, so the position aTimeOffset is moved to
+	 * the frame nearest to it, k: -ss half a frame before it (ffmpeg gives the first frame at or after the position)
+	 * and firstMS = its exact time. Without it, the first frame given is the one at or after aTimeOffset, while the
+	 * reader took it for aTimeOffset: up to a frame late, a different lag for each video (a mask video then was not
+	 * on the frames of its original)
+	 */
+	public FfmpegDecoder(String aPathIn,long aTimeOffset,int aNbFrames,String aResize,double aFps,double aFileFps) {
 		pathIn = aPathIn;
 		timeOffset = aTimeOffset;
+		seekMS = firstMS = aTimeOffset;
+		if(aFileFps > 0 && aTimeOffset > 0) {
+			long aK = Math.round(aTimeOffset*aFileFps/1000.0);
+			firstMS = aK*1000.0/aFileFps;
+			seekMS = Math.max(0, (aK-0.5)*1000.0/aFileFps);
+		}
 		nbFrames = aNbFrames;
 		resizeOpt = aResize == null || aResize.isEmpty() ? "":" -s "+aResize;
 		fpsOpt = aFps <= 0 ? "" : "-r "+aFps;
@@ -43,7 +63,7 @@ public class FfmpegDecoder extends Ffmpeg {
 			aCmdA.add(ffmpegPath);
 			aCmdA.add("-hide_banner");
 			aCmdA.add("-nostats");//No progress line every 0.5 s while waiting for the reader
-			aCmdA.add("-ss"); aCmdA.add(timeOffset+"ms");
+			aCmdA.add("-ss"); aCmdA.add(String.format(java.util.Locale.ROOT, "%.6f", seekMS/1000.0));
 			aCmdA.add("-i"); aCmdA.add(pathIn);
 			if(resizeOpt != null && !resizeOpt.trim().isEmpty()) {
 				resizeOpt = resizeOpt.trim().replaceAll(" +", " ");

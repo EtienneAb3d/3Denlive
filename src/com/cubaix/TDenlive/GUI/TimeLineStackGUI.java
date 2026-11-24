@@ -233,6 +233,10 @@ public class TimeLineStackGUI extends CanvasPanel {
 		//Content changed: always render again, even if the paint is merged with a self repaint
 		drawRequested = true;
 		super.redraw();
+		//Time relative to the selected clip (selection or clip moved)
+		if(tde.gui.playerControlGUI != null) {
+			tde.gui.playerControlGUI.updateClipClock();
+		}
 		//Duration of the montage on the ruler of the monitor
 		if(tde.gui.monitorRulerGUI != null) {
 			tde.gui.monitorRulerGUI.redraw();

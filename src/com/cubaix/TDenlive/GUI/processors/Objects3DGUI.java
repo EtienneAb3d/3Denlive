@@ -7,6 +7,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
@@ -41,6 +42,10 @@ public class Objects3DGUI extends ProcessorGUI implements Model3DView.Source {
 	Button[] axisButtons = new Button[4];
 	Button snapCheck = null;
 	Button resetButton = null;
+	//Camera of the montage: free (orbit of the view) or on an axis (Objects3D.CAM_*), in the keys
+	Combo camMode = null;
+	//Keys changed by the current camera action (orbit, pan, zoom...)
+	Vector<Integer> camKeys = null;
 	//Model shown at the time cursor (or the main selected key), the camera of the view
 	Model3D model = null;
 	Model3D camera = null;
@@ -100,6 +105,35 @@ public class Objects3DGUI extends ProcessorGUI implements Model3DView.Source {
 		aHGD.widthHint = 100;
 		aHint.setLayoutData(aHGD);
 		aHint.setText(l("HintClip"));
+
+		//Camera of the montage, above the view (which shows it)
+		Composite aCamRow = new Composite(wgt, SWT.NONE);
+		aCamRow.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		tde.gui.applyColorFont(aCamRow);
+		GridLayout aCGL = new GridLayout(2, false);
+		tde.gui.applyNoMargin(aCGL);
+		aCamRow.setLayout(aCGL);
+		Label aCamL = new Label(aCamRow, SWT.NONE);
+		aCamL.setText(l("Camera"));
+		tde.gui.applyColorFont(aCamL);
+		camMode = new Combo(aCamRow, SWT.READ_ONLY | SWT.DROP_DOWN);
+		tde.gui.applyColorFont(camMode);
+		camMode.setItems(l("CamFree"), l("CamX"), l("CamY"), l("CamZ"));
+		camMode.select(Objects3D.CAM_FREE);
+		camMode.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		tde.gui.tip(camMode, "Objects3DCamera");
+		camMode.addListener(SWT.Selection, e -> {
+			if(updating) {
+				return;
+			}
+			int aMode = camMode.getSelectionIndex();
+			lkf.edit(aEK -> ob.setCameraMode(aEK, aMode));
+			refreshModel();
+			refreshPanel();
+			view.redraw();
+			tde.gui.monitorGUI.redraw();
+			tde.gui.timeLinesGUI.redraw();
+		});
 
 		refreshModel();
 		view = new Model3DView(tde, wgt, SWT.BORDER, this, null);
@@ -165,6 +199,12 @@ public class Objects3DGUI extends ProcessorGUI implements Model3DView.Source {
 		}
 		int aMain = ob.getMainSelectedKey();
 		model = aMain >= 0 ? ob.modelForKey(aMain) : ob.modelAt(tde.timeLineStack.getTimePosMS());
+		//The view shows the camera of the montage
+		Objects3D.Cam aCam = aMain >= 0 ? ob.camForKey(aMain) : ob.camAt(tde.timeLineStack.getTimePosMS());
+		aCam.applyTo(camera);
+		if(camMode != null && !camMode.isDisposed() && camMode.getSelectionIndex() != aCam.mode) {
+			camMode.select(aCam.mode);
+		}
 	}
 
 	void refreshPanel() {
@@ -239,6 +279,38 @@ public class Objects3DGUI extends ProcessorGUI implements Model3DView.Source {
 				updating = false;
 			}
 		}
+	}
+
+	@Override
+	public boolean orbitLocked() {
+		return camMode != null && !camMode.isDisposed() && camMode.getSelectionIndex() != Objects3D.CAM_FREE;
+	}
+
+	/**
+	 * Camera of the view changed: the same camera in the selected keys, else in the key at the time cursor
+	 */
+	@Override
+	public void cameraChanged(boolean aFinal) {
+		if(camKeys == null) {
+			camKeys = ob.getSelectedKeys();
+			if(camKeys.isEmpty()) {
+				int aK = lkf.editKey();
+				if(aK >= 0) {
+					camKeys.add(aK);
+				}
+			}
+		}
+		int aMode = Math.max(0, camMode.getSelectionIndex());
+		for(int aK : camKeys) {
+			ob.setCamera(aK, camera, aMode);
+		}
+		if(aFinal) {
+			int aLast = camKeys.isEmpty() ? lkf.getSelection() : camKeys.lastElement();
+			camKeys = null;
+			lkf.setSelection(aLast);
+			tde.gui.timeLinesGUI.redraw();
+		}
+		tde.gui.monitorGUI.redraw();
 	}
 
 	@Override
