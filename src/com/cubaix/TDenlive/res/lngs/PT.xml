@@ -431,6 +431,13 @@
 	<entry label="Stereo">Estéreo e animação</entry>
 	<entry label="Depth">Profundidade</entry>
 	<entry label="Spin">Plataforma giratória (°/s)</entry>
+	<entry label="LampSection">Lâmpada</entry>
+	<entry label="Lamp">Lâmpada</entry>
+	<entry label="LampCamera">Ligada à câmera</entry>
+	<entry label="LampScene">Colocada na cena</entry>
+	<entry label="LampYaw">Azim.</entry>
+	<entry label="LampPitch">Altura</entry>
+	<entry label="LampDistance">Dist.</entry>
 	<entry label="Undo">Anular</entry>
 	<entry label="Redo">Refazer</entry>
 	<entry label="Help">Clique: selecionar (o grupo; Cmd / Ctrl: o próprio objeto; Shift: adicionar / retirar). Arrastar um objeto ou uma pega: ferramenta atual (X / Y / Z: eixo). Arrastar o fundo ou botão direito: órbita, com Shift: panorâmica; roda: zoom. G / R / S: ferramentas, F: enquadrar, 1 / 3 / 7 / 5: vistas, setas: mover a seleção (page up / down: altura), Del: eliminar, Ctrl+D: duplicar, Ctrl+G / Shift+Ctrl+G: agrupar / desagrupar, Ctrl+A: selecionar tudo, Ctrl+Z / Shift+Ctrl+Z: anular / refazer (Cmd no macOS). Os campos são relativos ao grupo do objeto. O quadro de saída é o que o clipe mostra; a convergência está no centro da vista.</entry>
@@ -1644,6 +1651,9 @@
 	<entry label="AskVideo">Transformar cada imagem deste vídeo em cena 3D com %MODEL%?\n%N% imagens (%FPS% por segundo, a cadência da montagem), cerca de %DISK% GB junto ao vídeo. %WHERE%\nAs imagens já calculadas aparecem logo; uma imagem ainda não calculada fica em 2D.</entry>
 	<entry label="OnGpu">Cálculo na GPU (cerca de %S% s por imagem depois de carregado o modelo).</entry>
 	<entry label="OnCpu">Cálculo aqui na CPU (mais lento).</entry>
+	<entry label="OpenTitle">Cenas 3D não calculadas</entry>
+	<entry label="OpenMissing">Este projeto tem %N% clipe(s) de cenas 2D-&gt;3D cujas cenas 3D não estão calculadas neste computador (um pacote de demonstração não contém todas): ficam em 2D até serem calculadas.\n%LIST%\nCalculá-las agora, uma após a outra? %IMAGES% imagens, cerca de %DISK% GB ao lado das mídias. Mais tarde, o botão do processador também as calcula.</entry>
+	<entry label="Images">imagens</entry>
 	<entry label="Frames">Cenas 3D: %DONE% / %N% imagens</entry>
 	<entry label="Decoding">A ler as imagens do vídeo...</entry>
 </EntrySet>
@@ -2034,6 +2044,7 @@ Calcular os mapas de profundidade das duas vistas a partir do clipe (inteligênc
 	<entry label="PackProject">Empacotar o projeto e os seus médias num zip (pasta Packed)</entry>
 	<entry label="Language">Idioma dos menus, botões e mensagens</entry>
 	<entry label="Settings">Definições: idioma da interface, pasta de renderização, qualidade dos modos de trabalho, apresentação e renderização</entry>
+	<entry label="Machine">Avaliação da máquina: o que a IA pode fazer aqui, na GPU ou na CPU, modelo a modelo</entry>
 	<entry label="Render">Renderizar a montagem para um ficheiro de vídeo ou uma sequência de imagens</entry>
 	<entry label="News">Novidades do 3Denlive (site web)</entry>
 	<entry label="Guide">Guia do utilizador (site web)</entry>
@@ -2046,6 +2057,7 @@ Calcular os mapas de profundidade das duas vistas a partir do clipe (inteligênc
 	<entry label="MediaEdit">Reabri-lo no seu editor (os clipes da montagem acompanham as alterações)</entry>
 	<entry label="Objects3DReset">Voltar ao modelo para os objetos selecionados, na chave</entry>
 	<entry label="Objects3DCamera">Câmara da montagem, nas chaves: livre (a órbita, o deslocamento e o zoom da vista mudam a imagem) ou colocada no eixo X, Y ou Z do seu alvo (apenas deslocamento e zoom)</entry>
+	<entry label="Model3DLamp">Lâmpada do modelo: ligada à câmera (ilumina de cima à esquerda da vista, onde quer que esteja a câmera), ou colocada na cena pelo seu azimute e sua altura (graus em torno do alvo, como a câmera) e sua distância: ela fica então no lugar quando a câmera se move e os objetos giram. Num clipe 3D, vai nas chaves.</entry>
 	<entry label="AddAI">Adicionar à lista de médias um vídeo (Wan2.2-TI2V-5B), uma peça de música (MusicGen) ou um efeito sonoro (Woosh) gerado por uma inteligência artificial a partir de um texto</entry>
 	<entry label="ShapesHide">Eliminar a forma selecionada a partir desta chave (fica apenas oculta)</entry>
 	<entry label="ShapesDelete">Eliminar a forma selecionada (DEL)</entry>
@@ -2355,4 +2367,37 @@ Calcular os mapas de profundidade das duas vistas a partir do clipe (inteligênc
 	<entry label="Histogram_Mode">Vermelho, verde e azul sobrepostos, ou a luminância. Marcas vermelhas: pretos ou brancos cortados</entry>
 	<entry label="Waveform_Mode">Luminância, ou vermelho, verde e azul lado a lado (parada); linhas a 0, 25, 50, 75, 100 %</entry>
 	<entry label="Vectorscope_Mode">x2 amplia o centro, para imagens pouco saturadas. Quadrados: cores a 75 %, linha castanha: tons de pele</entry>
+</EntrySet>
+<EntrySet label="Machine">
+	<entry label="Title">Avaliação da máquina</entry>
+	<entry label="Refresh">Atualizar</entry>
+	<entry label="Close">Fechar</entry>
+	<entry label="System">Sistema: %OS% (%ARCH%), %CORES% núcleos, %RAM% GB de memória</entry>
+	<entry label="Gpu">GPU %I%: %NAME%, %TOTAL% GB (%FREE% GB livres agora)</entry>
+	<entry label="GpuMac">GPU: Apple Silicon, memória unificada, cerca de %TOTAL% GB utilizáveis pelos modelos</entry>
+	<entry label="NoGpu">Nenhuma GPU utilizável pela IA (NVIDIA ou Apple Silicon): tudo é calculado na CPU.</entry>
+	<entry label="Function">Função</entry>
+	<entry label="Models">Modelos (uma coluna por modelo)</entry>
+	<entry label="Depth">Mapas de profundidade</entry>
+	<entry label="Fill">Preenchimento dos buracos</entry>
+	<entry label="Scene">Cenas 3D</entry>
+	<entry label="Video">Vídeo IA</entry>
+	<entry label="Music">Música IA</entry>
+	<entry label="Sfx">Efeitos sonoros</entry>
+	<entry label="Asr">Transcrição</entry>
+	<entry label="Tts">Vozes (síntese, tradução)</entry>
+	<entry label="Mask">Máscaras (recorte)</entry>
+	<entry label="Color">Colorização</entry>
+	<entry label="Remix">Separação das faixas</entry>
+	<entry label="Prompt">Assistente de prompt (vídeo)</entry>
+	<entry label="GpuS">GPU</entry>
+	<entry label="Cpu">CPU</entry>
+	<entry label="No">Não</entry>
+	<entry label="Na">—</entry>
+	<entry label="TipGpu">Na GPU: %NEED% GB de memória GPU necessários, %CAP% GB nesta máquina.</entry>
+	<entry label="TipCpu">Na CPU (muito mais lento): %NEED% GB de memória GPU necessários, %CAP% GB nesta máquina.</entry>
+	<entry label="TipCpuNoGpu">Na CPU (muito mais lento): nenhuma GPU que este modelo possa usar aqui.</entry>
+	<entry label="TipNo">Impossível: este modelo precisa de uma GPU com %NEED% GB de memória (%CAP% GB nesta máquina).</entry>
+	<entry label="TipNa">Não disponível neste sistema.</entry>
+	<entry label="Legend">GPU em verde: rápido. CPU em vermelho: possível, mas muito mais lento. Não em vermelho: impossível sem uma GPU suficiente. Cinza: não disponível neste sistema. Avaliado pela memória total da GPU: outras aplicações que a ocupem podem fazer um modelo passar para a CPU no momento do cálculo.</entry>
 </EntrySet>

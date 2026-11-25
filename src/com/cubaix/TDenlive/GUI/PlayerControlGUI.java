@@ -541,7 +541,8 @@ public class PlayerControlGUI extends CompositePanel {
 								showClock(aPlayed.getRequestedTimePosMS());
 							}
 							else {
-								tde.gui.timeLinesGUI.redraw();
+								//Only the cursor moves (the time lines are drawn again when they slide)
+								tde.gui.timeLinesGUI.redrawCursor();
 							}
 						}
 					});
@@ -639,6 +640,8 @@ public class PlayerControlGUI extends CompositePanel {
 		paused = true;
 		playing = false;
 		updateButtons();
+		//The image shown may have been computed ahead of the cursor (MonitorGUI.processI()): the one of the cursor
+		tde.gui.monitorGUI.redraw();
 		return true;
 	}
 

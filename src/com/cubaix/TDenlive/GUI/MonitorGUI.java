@@ -26,6 +26,7 @@ import com.cubaix.TDenlive.TDConfig;
 import com.cubaix.TDenlive.TDenlive;
 import com.cubaix.TDenlive.medias.Clip;
 import com.cubaix.TDenlive.medias.Media;
+import com.cubaix.TDenlive.medias.TimeLineStack;
 import com.cubaix.TDenlive.processors.AnaMixer;
 import com.cubaix.TDenlive.processors.EdgeDetector;
 import com.cubaix.TDenlive.processors.Mixer;
@@ -35,7 +36,7 @@ import com.cubaix.TDenlive.processors.Shapes;
 import com.cubaix.TDenlive.shapes.ShapesEditor;
 
 public class MonitorGUI {
-	static final boolean _TRACE_DRAW_TIME = true;
+	static final boolean _TRACE_DRAW_TIME = false;
 	static int countDraw = 0;
 	
 	public int processingMode = TDConfig.PROCESSING_MODE_WORK;
@@ -53,11 +54,17 @@ public class MonitorGUI {
 	EdgeDetector edgeDetector = null;
 	
 	Mixer mixer = null;
+	//0: idle, 1: the computing thread runs (processI()); changed under procLock with redrawAsked / computeAsked
 	int processing = 0;
-	long processingStart = -1;
-	Image processedI = null;
+	final Object procLock = new Object();
+	//Shown image (UI thread only: set and disposed by showProcessed())
+	com.cubaix.TDenlive.utils.SwtStrips processedI = null;
+	//redraw() while computing: the computing thread goes on with the next image
 	boolean redrawAsked = false;
-	int countWaitingRequests = 0;
+	//redraw() while idle: the next paint computes, even if merged with a paint only showing an image
+	boolean computeAsked = false;
+	//Next paint asked by showProcessed(): only shows the image
+	boolean selfRepaint = false;
 	Rectangle piBounds = null;
 
 	//Rendering in progress (RendererGUI): the last pair produced, mixed in the mode of the monitor, shown instead of
@@ -103,7 +110,10 @@ public class MonitorGUI {
 	void createContents(Composite aParent) {
 		canvas = new Canvas (aParent,
 //				SWT.BORDER |
-				SWT.NO_BACKGROUND 
+				SWT.NO_BACKGROUND
+				//Buffered by SWT / the system (draw() paints on the GC of the event: no image of the canvas size,
+				//which GC.drawImage() would read back pixel by pixel)
+				| SWT.DOUBLE_BUFFERED
 				| SWT.FILL
 				| SWT.V_SCROLL 
 				| SWT.H_SCROLL
@@ -193,7 +203,7 @@ public class MonitorGUI {
 				}
 				monitorListenersToRemove.clear();
 				for(MonitorListener aML : monitorListeners) {
-					int aRGB = processedI.getImageData().getPixel(e.x-piBounds.x, e.y-piBounds.y);
+					int aRGB = processedI.getPixel(e.x-piBounds.x, e.y-piBounds.y);
 					aML.click((e.x-piBounds.x)/(double)piBounds.width,(e.y-piBounds.y)/(double)piBounds.height,aRGB);
 				}
 				for(MonitorListener aML : monitorListenersToRemove) {
@@ -534,66 +544,156 @@ public class MonitorGUI {
 		}
 	}
 	
+	/**
+	 * Computing thread (processing = 1, set by the paint which started it): computes the image, gives it to the UI
+	 * thread (showProcessed()) and goes on at once with the next one if a redraw was asked meanwhile (play), without
+	 * waiting for the paints; one image computed at a time (the images of a frame are kept in the medias)
+	 */
 	void processI() {
-		if(processing != 0) {
-			//Already processing something
-			return;
-		}
-		synchronized (this) {
+		//Time of the last image computed while playing (the next ones never before: videos are read forward)
+		long aLastPlayedT = Long.MIN_VALUE;
+		while(true) {
+			long aStartMS = System.currentTimeMillis();
+			boolean aAhead = false;
 			Media aMedia = media;//Avoid a concurrent change
-			processing = 1;//Processing
-			aMedia.setTimePosMS(media.getRequestedTimePosMS());
-			aMedia.reBuild(processingMode, aMedia.getTimePosMS());
-			if(edgeDetector != null) {
-				edgeDetector.process2Awt(aMedia, processingMode, aMedia.getTimePosMS());
-			}
-			Image aI = mixer.process2Swt(aMedia,processingMode,clientR,aMedia.getTimePosMS());
-			if(processedI != null) {
-				processedI.dispose();
-			}
-			processedI = aI;
-			processing = 2;//Processed
-			if(tde.gui.display.isDisposed()) {
-				//Closed??
-				return;
-			}
-			tde.gui.display.syncExec(new Runnable() {
-				@Override
-				public void run() {
-					if(!canvas.isDisposed()) {
-						redraw();
+			try {
+				synchronized (this) {
+					if(aMedia == null || canvas.isDisposed() || tde.gui.display.isDisposed()) {
+						break;
 					}
+					long aT = aMedia.getRequestedTimePosMS();
+					if(isPlaying()) {
+						//Shown about one image duration later (the fps measure): the image of that time, so that it
+						//is on time with the clock of the play (the sound); the clock itself is never moved
+						aT = Math.max(aLastPlayedT, Math.min(aT+Math.round(frameMS), Math.max(aT, playEndMS(aMedia, aT)-1)));
+						aLastPlayedT = aT;
+						aAhead = aT != aMedia.getRequestedTimePosMS();
+					}
+					aMedia.setTimePosMS(aT);
+					aMedia.reBuild(processingMode, aT);
+					if(edgeDetector != null) {
+						edgeDetector.process2Awt(aMedia, processingMode, aT);
+					}
+					//In bands converted on all the cores
+					com.cubaix.TDenlive.utils.SwtStrips aI = mixer.process2SwtStrips(aMedia,processingMode,clientR,aT);
+					long aDurationMS = System.currentTimeMillis()-aStartMS;
+					//Duration of an image (shown as fps), smoothed: the time computed ahead while playing
+					frameMS = frameMS <= 0 ? aDurationMS : Math.min(MAX_AHEAD_MS, 0.7*frameMS+0.3*aDurationMS);
+					showProcessed(aI, aDurationMS);
 				}
-			});
+			}
+			catch(Throwable t) {
+				t.printStackTrace(System.err);
+			}
+			synchronized (procLock) {
+				if(!redrawAsked) {
+					if(aAhead && !isPlaying() && aMedia == media) {
+						//Paused / stopped after an image computed ahead: the image of the time of the cursor
+						continue;
+					}
+					processing = 0;//May process again
+					return;
+				}
+				//Asked while computing: the next image now
+				redrawAsked = false;
+			}
+		}
+		synchronized (procLock) {
+			processing = 0;
+			redrawAsked = false;
 		}
 	}
-	
+
+	//Smoothed duration of an image (ms), see processI(); bounded
+	volatile double frameMS = 0;
+	static final double MAX_AHEAD_MS = 500;
+	//Set by the full screen window showing this monitor (its own play)
+	FullScreenGUI fullScreen = null;
+
+	/**
+	 * True while the montage or a media is played in this monitor
+	 */
+	boolean isPlaying() {
+		if(fullScreen != null) {
+			return fullScreen.playing;
+		}
+		return tde.gui.playerControlGUI != null && tde.gui.playerControlGUI.playing;
+	}
+
+	/**
+	 * Time where a play from aT stops: the end of the media, or of the selected time range of the montage when
+	 * played from before its end (as PlayerControlGUI.rangeEndFor())
+	 */
+	long playEndMS(Media aMedia,long aT) {
+		long aEnd = aMedia.getMaxTimePosMS();
+		if(aMedia == tde.timeLineStack) {
+			TimeLineStack aTLS = tde.timeLineStack;
+			if(aTLS.hasTimeRange() && aT < aTLS.rangeEndMS) {
+				aEnd = Math.min(aEnd, aTLS.rangeEndMS);
+			}
+		}
+		return aEnd;
+	}
+
+	/**
+	 * Image just computed (computing thread): shown by the UI thread, which disposes the previous one (never while
+	 * it is painted)
+	 */
+	void showProcessed(com.cubaix.TDenlive.utils.SwtStrips aI,long aDurationMS) {
+		if(aI == null) {
+			return;
+		}
+		try {
+			tde.gui.display.asyncExec(() -> {
+				if(canvas.isDisposed()) {
+					aI.dispose();
+					return;
+				}
+				com.cubaix.TDenlive.utils.SwtStrips aOld = processedI;
+				processedI = aI;
+				if(aOld != null && !aOld.isDisposed()) {
+					aOld.dispose();
+				}
+				if(_TRACE_DRAW_TIME) {
+					System.out.println("Draw: "+(countDraw++)+" "+aDurationMS+" ms");
+				}
+				NumberFormat aNF = NumberFormat.getInstance();
+				aNF.setMaximumFractionDigits(3);
+				aNF.setMinimumFractionDigits(3);
+				aNF.setMaximumIntegerDigits(3);
+				aNF.setMinimumIntegerDigits(3);
+				tde.gui.monitorControlGUI.status.setText((aNF.format(1000.0/Math.max(1, aDurationMS))+" fps"));
+				tde.gui.monitorControlGUI.status.setImage(tde.gui.imgsSwt.getIcon("tuneButton.gif"));
+				tde.gui.monitorControlGUI.status.layout(true);
+				//Paint only showing it (no new computation for this paint)
+				selfRepaint = true;
+				canvas.redraw();
+			});
+		}
+		catch(Throwable t) {
+			//Display disposed meanwhile
+			aI.dispose();
+		}
+	}
+
 	public void redraw() {
 		redrawRuler();
-		if(countWaitingRequests > 5) {
-			return;
-		}
-		countWaitingRequests++;
-		if(processing == 1) {
-			//Wait for the image
-			countWaitingRequests--;
-			redrawAsked = true;
-			return;
+		synchronized (procLock) {
+			if(processing == 1) {
+				//Computed after the image in progress (by the same thread)
+				redrawAsked = true;
+				return;
+			}
+			computeAsked = true;
 		}
 		canvas.redraw();
-		countWaitingRequests--;
 	}
 
 	void draw(GC aGC) {
 		Rectangle aClientR = canvas.getClientArea();
-		Image aI = new Image(tde.gui.display, aClientR.width, aClientR.height);
-		GC aGCDL = new GC(aI);
-		drawDbl(aGCDL);
-		int aY = drawWorkCopies(aGCDL, aClientR);
-		drawComputing(aGCDL, aClientR, aY);
-		aGCDL.dispose();
-		aGC.drawImage(aI, aClientR.x, aClientR.y);
-		aI.dispose();
+		drawDbl(aGC);
+		int aY = drawWorkCopies(aGC, aClientR);
+		drawComputing(aGC, aClientR, aY);
 	}
 
 	/**
@@ -701,14 +801,20 @@ public class MonitorGUI {
 			drawGrid(aGC,clientR);
 			return;
 		}
-		if(processedI == null || processing == 0) {
-			processingStart = aStartMS;
-			Thread aTh = new Thread(new Runnable() {
-				@Override
-				public void run() {
-					processI();
-				}
-			});
+		//A paint asked by showProcessed() only shows the image; any other one (redraw(), expose, resize...) computes
+		boolean aSelf = selfRepaint;
+		selfRepaint = false;
+		boolean aStart = false;
+		synchronized (procLock) {
+			if(processing == 0 && (processedI == null || !aSelf || computeAsked)) {
+				processing = 1;//Processing
+				computeAsked = false;
+				aStart = true;
+			}
+		}
+		if(aStart) {
+			Thread aTh = new Thread(this::processI, "Monitor computation");
+			aTh.setDaemon(true);
 			aTh.start();
 		}
 		if(processedI == null) {
@@ -720,33 +826,14 @@ public class MonitorGUI {
 		int aY = (int)((clientR.height - aLeftR.height)/2.0);
 		aGC.setBackground(tde.gui.colorsSwt.WHITE);//DARK_GRAY);
 		aGC.fillRectangle(clientR);
-		aGC.drawImage(processedI,aX, aY);
+		processedI.draw(aGC, aX, aY);
 		aGC.setForeground(tde.gui.colorsSwt.WHITE);
 		aGC.drawRectangle(aX, aY, aLeftR.width-1, aLeftR.height-1);
 		piBounds = new Rectangle(aX, aY, aLeftR.width, aLeftR.height);
 		drawShapesOverlay(aGC, piBounds);
-		
-		if(processing == 2) {
-			long aDuration = System.currentTimeMillis() - processingStart;
-			processingStart = -1;
-			if(_TRACE_DRAW_TIME) {
-				System.out.println("Draw: "+(countDraw++)+" "+aDuration+" ms");
-			}
-			NumberFormat aNF = NumberFormat.getInstance();
-			aNF.setMaximumFractionDigits(3);
-			aNF.setMinimumFractionDigits(3);
-			aNF.setMaximumIntegerDigits(3);
-			aNF.setMinimumIntegerDigits(3);
-			tde.gui.monitorControlGUI.status.setText((aNF.format(1000.0/aDuration)+" fps"));
+		if(!aStart && processing == 0) {
 			tde.gui.monitorControlGUI.status.setImage(tde.gui.imgsSwt.getIcon("tuneButton.gif"));
 			tde.gui.monitorControlGUI.status.layout(true);
-			
-			processing = 0;//May process again
-
-			if(redrawAsked) {
-				redrawAsked = false;
-				redraw();
-			}
 		}
 		drawGrid(aGC,piBounds = new Rectangle(aX, aY, aLeftR.width, aLeftR.height));
 	}

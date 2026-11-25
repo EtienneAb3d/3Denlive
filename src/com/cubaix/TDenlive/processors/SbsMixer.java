@@ -1,5 +1,7 @@
 package com.cubaix.TDenlive.processors;
 
+import com.cubaix.TDenlive.utils.Par;
+
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -17,6 +19,7 @@ import com.cubaix.TDenlive.TDConfig;
 import com.cubaix.TDenlive.TDenlive;
 import com.cubaix.TDenlive.medias.Media;
 import com.cubaix.TDenlive.utils.ImageUtils;
+import com.cubaix.TDenlive.utils.SwtStrips;
 import com.cubaix.TDenlive.xml.XmlObject;
 
 public class SbsMixer extends Mixer {
@@ -73,6 +76,20 @@ public class SbsMixer extends Mixer {
 
 	@Override
 	public Image mix2Swt(final BufferedImage aLI,final BufferedImage aRI,int aProcessingMode,Rectangle aTargetSize) {
+		BufferedImage aBI = mix2Awt(aLI, aRI, aProcessingMode, aTargetSize);
+		return SwtStrips.image(tde.gui.display, ((DataBufferInt)aBI.getRaster().getDataBuffer()).getData(), aBI.getWidth(), aBI.getHeight(), true);
+	}
+
+	@Override
+	public SwtStrips mix2SwtStrips(BufferedImage aLI,BufferedImage aRI,int aProcessingMode,Rectangle aTargetSize) {
+		BufferedImage aBI = mix2Awt(aLI, aRI, aProcessingMode, aTargetSize);
+		return SwtStrips.of(tde.gui.display, ((DataBufferInt)aBI.getRaster().getDataBuffer()).getData(), aBI.getWidth(), aBI.getHeight(), true);
+	}
+
+	/**
+	 * Both images side by side (not HDR), fitted in aTargetSize; their alpha is kept
+	 */
+	BufferedImage mix2Awt(final BufferedImage aLI,final BufferedImage aRI,int aProcessingMode,Rectangle aTargetSize) {
 		final int aW = aLI.getWidth();
 		final int aH = aLI.getHeight();
 		double aFact = Math.min(aTargetSize.width/(double)(2*aW), aTargetSize.height / (double) aH);
@@ -80,7 +97,7 @@ public class SbsMixer extends Mixer {
 		final int aHeight = (int)(aH * aFact);
 		final BufferedImage[] aResized = new BufferedImage[2];
 		try {
-			Thread aThL = new Thread(new Runnable() {
+			Par.Task aThL = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					aResized[0] = ImageUtils.createImage(aWidth, aHeight);
@@ -88,7 +105,7 @@ public class SbsMixer extends Mixer {
 				}
 			});
 			aThL.start();
-			Thread aThR = new Thread(new Runnable() {
+			Par.Task aThR = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					aResized[1] = ImageUtils.createImage(aWidth, aHeight);
@@ -105,32 +122,20 @@ public class SbsMixer extends Mixer {
 	
 		int[] aDBFL = ((DataBufferInt)aResized[0].getRaster().getDataBuffer()).getData();
 		int[] aDBFR = ((DataBufferInt)aResized[1].getRaster().getDataBuffer()).getData();
-		ImageData aID = new ImageData(aWidth*2,aHeight,32,new PaletteData(0xFF0000, 0xFF00, 0xFF));
-		for(int x = 0;x<aWidth;x++) {
-			for(int y = 0;y<aHeight;y++) {
-				int aARGBL = aDBFL[y*aWidth+x];
-				double aAL = ((aARGBL>>24) & 0xFF)/255.0;//Alpha
-				if(mode == 0) {//P
-					aID.setPixel(x, y, aARGBL);
-					aID.setAlpha(x, y, (int)(aAL*255));//Need to set it explicitly 
-				}
-				else if(mode == 1) {//X
-					aID.setPixel(x+aWidth, y, aARGBL);
-					aID.setAlpha(x+aWidth, y, (int)(aAL*255));//Need to set it explicitly 
-				}
-				int aARGBR = aDBFR[y*aWidth+x];
-				double aAR = ((aARGBR>>24) & 0xFF)/255.0;//Alpha
-				if(mode == 0) {//P
-					aID.setPixel(x+aWidth, y, aARGBR);
-					aID.setAlpha(x+aWidth, y, (int)(aAR*255));//Need to set it explicitly
-				}
-				else if(mode == 1) {//X
-					aID.setPixel(x, y, aARGBR);
-					aID.setAlpha(x, y, (int)(aAR*255));//Need to set it explicitly
-				} 
+		BufferedImage aBI = ImageUtils.createImage(aWidth*2, aHeight);
+		int[] aOut = ((DataBufferInt)aBI.getRaster().getDataBuffer()).getData();
+		Par.rows(aHeight, (aY0, aY1) -> {
+		for(int y = aY0;y<aY1;y++) {
+			for(int x = 0;x<aWidth;x++) {
+				//P: left on the left; X: crossed
+				int aXL = mode == 1 ? x+aWidth : x;
+				int aXR = mode == 1 ? x : x+aWidth;
+				aOut[y*aWidth*2+aXL] = aDBFL[y*aWidth+x];
+				aOut[y*aWidth*2+aXR] = aDBFR[y*aWidth+x];
 			}
 		}
-		return new Image(tde.gui.display,aID);
+		});
+		return aBI;
 	}
 	
 	public Image process2SwtHdr(Media aMedia,int aProcessingMode,Rectangle aTargetSize,long aTime) {
@@ -143,7 +148,7 @@ public class SbsMixer extends Mixer {
 		final int aHeight = (int)(aH * aFact);
 		final BufferedImage[] aResized = new BufferedImage[2];
 		try {
-			Thread aThL = new Thread(new Runnable() {
+			Par.Task aThL = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					aResized[0] = ImageUtils.createHdr(aWidth, aHeight);
@@ -151,7 +156,7 @@ public class SbsMixer extends Mixer {
 				}
 			});
 			aThL.start();
-			Thread aThR = new Thread(new Runnable() {
+			Par.Task aThR = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					aResized[1] = ImageUtils.createHdr(aWidth, aHeight);
@@ -169,8 +174,11 @@ public class SbsMixer extends Mixer {
 		float[][] aDBFL = ((DataBufferFloat)aResized[0].getRaster().getDataBuffer()).getBankData();
 		float[][] aDBFR = ((DataBufferFloat)aResized[1].getRaster().getDataBuffer()).getBankData();
 		ImageData aID = new ImageData(aWidth*2,aHeight,32,new PaletteData(0xFF0000, 0xFF00, 0xFF));
-		for(int x = 0;x<aWidth;x++) {
-			for(int y = 0;y<aHeight;y++) {
+		//Allocated before the bands of lines (setAlpha() would allocate it lazily, from several threads)
+		aID.alphaData = new byte[aWidth*2*aHeight];
+		Par.rows(aHeight, (aY0, aY1) -> {
+		for(int y = aY0;y<aY1;y++) {
+			for(int x = 0;x<aWidth;x++) {
 				float aR = aDBFL[0][y*aWidth*4+x*4];//Red
 				float aG = aDBFL[0][y*aWidth*4+x*4+1];//Green
 				float aB = aDBFL[0][y*aWidth*4+x*4+2];//Blue
@@ -208,6 +216,7 @@ public class SbsMixer extends Mixer {
 				}
 			}
 		}
+		});
 		return new Image(tde.gui.display,aID);
 	}
 

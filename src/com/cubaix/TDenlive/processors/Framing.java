@@ -1,5 +1,7 @@
 package com.cubaix.TDenlive.processors;
 
+import com.cubaix.TDenlive.utils.Par;
+
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -241,7 +243,7 @@ public class Framing extends Processor {
 	@Override
 	public void process2Awt(Media aMedia,int aProcessingMode,long aTime) {
 		try {
-			Thread aThL = new Thread(new Runnable() {
+			Par.Task aThL = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					BufferedImage aBIL = aMedia.getWorkLeft(aProcessingMode,aTime);
@@ -253,7 +255,7 @@ public class Framing extends Processor {
 				}
 			});
 			aThL.start();
-			Thread aThR = new Thread(new Runnable() {
+			Par.Task aThR = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					BufferedImage aBIR = aMedia.getWorkRight(aProcessingMode,aTime);

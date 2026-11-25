@@ -1,5 +1,7 @@
 package com.cubaix.TDenlive.processors;
 
+import com.cubaix.TDenlive.utils.Par;
+
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferFloat;
 import java.awt.image.DataBufferInt;
@@ -302,7 +304,7 @@ public class HueSaturation extends Processor {
 		try {
 			final Key aKey = getInterKeyGT(aTime);
 			final int applyTo = aKey.applyTo;
-			Thread aThL = new Thread(new Runnable() {
+			Par.Task aThL = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					if(applyTo == 0 || applyTo == 2) {
@@ -314,7 +316,7 @@ public class HueSaturation extends Processor {
 				}
 			});
 			aThL.start();
-			Thread aThR = new Thread(new Runnable() {
+			Par.Task aThR = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					if(applyTo == 1 || applyTo == 2) {

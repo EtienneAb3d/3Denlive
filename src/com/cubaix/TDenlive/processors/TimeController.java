@@ -94,6 +94,12 @@ public class TimeController extends Processor {
 	}
 
 	@Override
+	public String stateAt(int aProcessingMode,long aTime) {
+		//No effect on images
+		return "";
+	}
+
+	@Override
 	public void process2Awt(Media aMedia, int aProcessingMode, long aTime) {
 		// TODO Auto-generated method stub
 

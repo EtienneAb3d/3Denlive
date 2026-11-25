@@ -1,5 +1,7 @@
 package com.cubaix.TDenlive.processors;
 
+import com.cubaix.TDenlive.utils.Par;
+
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.io.BufferedWriter;
@@ -44,7 +46,7 @@ public class Blurer extends Processor {
 	@Override
 	public void process2Awt(Media aMedia, int aProcessingMode, long aTime) {
 		try {
-			Thread aThL = new Thread(new Runnable() {
+			Par.Task aThL = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					BufferedImage aBIL = aMedia.getFinalLeft(aProcessingMode,aTime);
@@ -58,7 +60,7 @@ public class Blurer extends Processor {
 				}
 			});
 			aThL.start();
-			Thread aThR = new Thread(new Runnable() {
+			Par.Task aThR = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					BufferedImage aBIR = aMedia.getFinalRight(aProcessingMode,aTime);

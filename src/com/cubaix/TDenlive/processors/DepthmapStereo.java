@@ -1,5 +1,7 @@
 package com.cubaix.TDenlive.processors;
 
+import com.cubaix.TDenlive.utils.Par;
+
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
@@ -454,7 +456,7 @@ public class DepthmapStereo extends Processor {
 			//Depth maps mixed on the sources, then converted
 			BufferedImage aBIL = Depthmap.mixDepth(aBISrcL, aBIDML, aKey.m);
 			BufferedImage aBIR = Depthmap.mixDepth(aBISrcR, aBIDMR, aKey.m);
-			Thread aThL = new Thread(new Runnable() {
+			Par.Task aThL = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					BufferedImage aProcessedBIL = 
@@ -465,7 +467,7 @@ public class DepthmapStereo extends Processor {
 				}
 			});
 			aThL.start();
-			Thread aThR = new Thread(new Runnable() {
+			Par.Task aThR = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					BufferedImage aProcessedBIR = 

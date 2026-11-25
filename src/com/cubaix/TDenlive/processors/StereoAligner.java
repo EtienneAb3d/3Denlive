@@ -1,5 +1,7 @@
 package com.cubaix.TDenlive.processors;
 
+import com.cubaix.TDenlive.utils.Par;
+
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -606,6 +608,15 @@ public class StereoAligner extends Processor {
 	}
 
 	@Override
+	public String stateAt(int aProcessingMode,long aTime) {
+		//computeGeometry() from these and the input size; the crop box shown depends on the selection of the clip
+		//(in the signature of the clip)
+		Key aK = getInterKeyGT(aTime);
+		return aK.xL+","+aK.yL+","+aK.xR+","+aK.yR+","+aK.wL+","+aK.hL+","+aK.wR+","+aK.hR+","+aK.rL+","+aK.rR
+				+","+secureCropLeft+","+secureCropRight+","+secureCropTop+","+secureCropBottom+","+secureResize+","+showSecureCropBox;
+	}
+
+	@Override
 	public void process2Awt(Media aMedia,int aProcessingMode,long aTime) {
 		try {
 			BufferedImage aBIL = aMedia.getWorkLeft(aProcessingMode,aTime);
@@ -620,7 +631,7 @@ public class StereoAligner extends Processor {
 			final AffineTransform aFinalR = aGeo.right;
 			final java.awt.Rectangle aCropRect = aGeo.crop;
 
-			Thread aThL = new Thread(new Runnable() {
+			Par.Task aThL = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					BufferedImage aProcessedBIL = ImageUtils.createImage(aWidthOut,aHeightOut,tde.config.processingHdr[aProcessingMode]);
@@ -664,7 +675,7 @@ public class StereoAligner extends Processor {
 				}
 			});
 			aThL.start();
-			Thread aThR = new Thread(new Runnable() {
+			Par.Task aThR = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					BufferedImage aProcessedBIR = ImageUtils.createImage(aWidthOut,aHeightOut,tde.config.processingHdr[aProcessingMode]);

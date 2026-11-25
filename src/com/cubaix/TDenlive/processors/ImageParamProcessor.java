@@ -1,5 +1,7 @@
 package com.cubaix.TDenlive.processors;
 
+import com.cubaix.TDenlive.utils.Par;
+
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferFloat;
@@ -132,8 +134,8 @@ public abstract class ImageParamProcessor extends ParamProcessor {
 			if(isNeutral(aV)) {
 				return;
 			}
-			Thread aThL = new Thread(() -> processView(aMedia, aProcessingMode, aTime, aV, true));
-			Thread aThR = new Thread(() -> processView(aMedia, aProcessingMode, aTime, aV, false));
+			Par.Task aThL = new Par.Task(() -> processView(aMedia, aProcessingMode, aTime, aV, true));
+			Par.Task aThR = new Par.Task(() -> processView(aMedia, aProcessingMode, aTime, aV, false));
 			aThL.start();
 			aThR.start();
 			aThL.join();

@@ -102,12 +102,8 @@ public class ImageUtils {
 	}
 	
 	static public final BufferedImage createImage(int aWidth,int aHeight) {
-		BufferedImage aBI = new BufferedImage(aWidth,aHeight,BufferedImage.TYPE_INT_ARGB);
-        int[] aDBI = ((DataBufferInt)aBI.getRaster().getDataBuffer()).getData();
-        for(int p = 0;p<aDBI.length;p++) {
-        	aDBI[p] = 0;
-        }
-        return aBI;
+		//Transparent black: a new Java array is already all 0
+		return new BufferedImage(aWidth,aHeight,BufferedImage.TYPE_INT_ARGB);
 	}
 
 	static public final BufferedImage createHdr(int aWidth,int aHeight) {
@@ -206,21 +202,8 @@ public class ImageUtils {
 		int aHeight = aBI.getHeight();
 		ImageData aID = new ImageData(aWidth, aHeight, 32, new PaletteData(0xFF0000, 0xFF00, 0xFF));
 		int[] aDBF = ((DataBufferInt)aBI.getRaster().getDataBuffer()).getData();
-		for(int x = 0;x<aWidth;x++) {
-			for(int y = 0;y<aHeight;y++) {
-				int aARGB = aDBF[y*aWidth+x];
-				int aR = (aARGB>>16) & 0xFF;//Red
-				int aG = (aARGB>>8) & 0xFF;//Green
-				int aB = aARGB & 0xFF;//Blue
-				int aA = (aARGB>>24) & 0xFF;//Alpha
-				int aPix = (aA & 0xFF) << 24
-						| (aR & 0xFF) << 16
-						| (aG & 0xFF) << 8
-						| aB & 0xFF
-						;
-				aID.setPixel(x, y, aPix);
-			}
-		}
+		//32 bits lines without padding, each pixel high byte first (as ImageData.setPixel()): the ARGB ints copied as they are
+		java.nio.ByteBuffer.wrap(aID.data).asIntBuffer().put(aDBF, 0, aWidth*aHeight);
 		return new Image(aDisplay,aID);
 	}
 	
@@ -229,8 +212,10 @@ public class ImageUtils {
 		int aHeight = aBI.getHeight();
 		ImageData aID = new ImageData(aWidth, aHeight, 32, new PaletteData(0xFF0000, 0xFF00, 0xFF));
 		float[][] aDBF = ((DataBufferFloat)aBI.getRaster().getDataBuffer()).getBankData();
-		for(int x = 0;x<aWidth;x++) {
-			for(int y = 0;y<aHeight;y++) {
+		//Bands of lines on all the cores (setPixel() of distinct pixels writes distinct bytes)
+		Par.rows(aHeight, (aY0, aY1) -> {
+		for(int y = aY0;y<aY1;y++) {
+			for(int x = 0;x<aWidth;x++) {
 				float aR = aDBF[0][y*aWidth*4+x*4];//Red
 				float aG = aDBF[0][y*aWidth*4+x*4+1];//Green
 				float aB = aDBF[0][y*aWidth*4+x*4+2];//Blue
@@ -243,6 +228,7 @@ public class ImageUtils {
 				aID.setPixel(x, y, aPix);
 			}
 		}
+		});
 		return new Image(aDisplay,aID);
 	}
 }

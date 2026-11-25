@@ -190,37 +190,61 @@ public class Texture3D {
 	static Texture3D fromView(BufferedImage aBI, int aMaxSide) {
 		int aW = aBI.getWidth(), aH = aBI.getHeight();
 		int[] aPix = new int[aW*aH];
+		//The converted pixels (aPix is replaced by each halving)
+		final int[] aPix0 = aPix;
 		java.awt.image.DataBuffer aDB = aBI.getRaster().getDataBuffer();
 		if(aDB instanceof java.awt.image.DataBufferFloat) {
 			//HDR: RGBA floats 0..1 (ImageUtils.createHdr())
 			float[] aF = ((java.awt.image.DataBufferFloat)aDB).getData();
-			for(int p = 0;p < aPix.length;p++) {
-				int aR = Math.max(0, Math.min(255, (int)(aF[p*4]*255 + 0.5)));
-				int aG = Math.max(0, Math.min(255, (int)(aF[p*4+1]*255 + 0.5)));
-				int aB = Math.max(0, Math.min(255, (int)(aF[p*4+2]*255 + 0.5)));
-				aPix[p] = 0xFF000000 | (aR<<16) | (aG<<8) | aB;
-			}
+			final int aFW = aW;
+			//Bands of lines on all the cores (each pixel on its own: the same values)
+			com.cubaix.TDenlive.utils.Par.rows(aH, (aY0, aY1) -> {
+				for(int p = aY0*aFW;p < aY1*aFW;p++) {
+					int aR = Math.max(0, Math.min(255, (int)(aF[p*4]*255 + 0.5)));
+					int aG = Math.max(0, Math.min(255, (int)(aF[p*4+1]*255 + 0.5)));
+					int aB = Math.max(0, Math.min(255, (int)(aF[p*4+2]*255 + 0.5)));
+					aPix0[p] = 0xFF000000 | (aR<<16) | (aG<<8) | aB;
+				}
+			});
+		}
+		else if(aBI.getType() == BufferedImage.TYPE_INT_ARGB && aDB instanceof DataBufferInt
+				&& ((DataBufferInt)aDB).getData().length == aPix0.length && aDB.getOffset() == 0) {
+			//The ARGB values themselves (what getRGB() gives for this type), read directly
+			int[] aSrc = ((DataBufferInt)aDB).getData();
+			final int aFW = aW;
+			com.cubaix.TDenlive.utils.Par.rows(aH, (aY0, aY1) -> {
+				for(int p = aY0*aFW;p < aY1*aFW;p++) {
+					aPix0[p] = aSrc[p] | 0xFF000000;
+				}
+			});
 		}
 		else {
-			aBI.getRGB(0, 0, aW, aH, aPix, 0, aW);
-			for(int p = 0;p < aPix.length;p++) {
-				aPix[p] |= 0xFF000000;
-			}
+			final int aFW = aW;
+			com.cubaix.TDenlive.utils.Par.rows(aH, (aY0, aY1) -> {
+				aBI.getRGB(0, aY0, aFW, aY1-aY0, aPix0, aY0*aFW, aFW);
+				for(int p = aY0*aFW;p < aY1*aFW;p++) {
+					aPix0[p] |= 0xFF000000;
+				}
+			});
 		}
 		//Halved down to the largest side
 		while(aW > aMaxSide || aH > aMaxSide) {
 			int aNW = Math.max(1, aW/2), aNH = Math.max(1, aH/2);
 			int[] aN = new int[aNW*aNH];
-			for(int y = 0;y < aNH;y++) {
+			final int[] aP = aPix;
+			final int aPW = aW, aPH = aH;
+			com.cubaix.TDenlive.utils.Par.rows(aNH, (aY0, aY1) -> {
+			for(int y = aY0;y < aY1;y++) {
 				for(int x = 0;x < aNW;x++) {
-					int aA = aPix[(y*2)*aW+x*2], aB = aPix[(y*2)*aW+Math.min(aW-1, x*2+1)];
-					int aC = aPix[Math.min(aH-1, y*2+1)*aW+x*2], aD = aPix[Math.min(aH-1, y*2+1)*aW+Math.min(aW-1, x*2+1)];
+					int aA = aP[(y*2)*aPW+x*2], aB = aP[(y*2)*aPW+Math.min(aPW-1, x*2+1)];
+					int aC = aP[Math.min(aPH-1, y*2+1)*aPW+x*2], aD = aP[Math.min(aPH-1, y*2+1)*aPW+Math.min(aPW-1, x*2+1)];
 					int aR = (((aA>>16)&0xFF)+((aB>>16)&0xFF)+((aC>>16)&0xFF)+((aD>>16)&0xFF)+2)>>2;
 					int aG = (((aA>>8)&0xFF)+((aB>>8)&0xFF)+((aC>>8)&0xFF)+((aD>>8)&0xFF)+2)>>2;
 					int aBl = ((aA&0xFF)+(aB&0xFF)+(aC&0xFF)+(aD&0xFF)+2)>>2;
 					aN[y*aNW+x] = 0xFF000000|(aR<<16)|(aG<<8)|aBl;
 				}
 			}
+			});
 			aPix = aN;
 			aW = aNW;
 			aH = aNH;
@@ -273,11 +297,14 @@ public class Texture3D {
 			int aNW = Math.max(1, aW/2), aNH = Math.max(1, aH/2);
 			int[] aPrev = aLs.lastElement();
 			int[] aNext = new int[aNW*aNH];
-			for(int y = 0;y < aNH;y++) {
-				int aY0 = Math.min(aH-1, y*2), aY1 = Math.min(aH-1, y*2+1);
+			final int aPW = aW, aPH = aH;
+			//Bands of lines on all the cores (the small levels on this thread)
+			com.cubaix.TDenlive.utils.Par.rows(aNH, (aR0, aR1) -> {
+			for(int y = aR0;y < aR1;y++) {
+				int aY0 = Math.min(aPH-1, y*2), aY1 = Math.min(aPH-1, y*2+1);
 				for(int x = 0;x < aNW;x++) {
-					int aX0 = Math.min(aW-1, x*2), aX1 = Math.min(aW-1, x*2+1);
-					int aA = aPrev[aY0*aW+aX0], aB = aPrev[aY0*aW+aX1], aC = aPrev[aY1*aW+aX0], aD = aPrev[aY1*aW+aX1];
+					int aX0 = Math.min(aPW-1, x*2), aX1 = Math.min(aPW-1, x*2+1);
+					int aA = aPrev[aY0*aPW+aX0], aB = aPrev[aY0*aPW+aX1], aC = aPrev[aY1*aPW+aX0], aD = aPrev[aY1*aPW+aX1];
 					int aR = (((aA>>16)&0xFF)+((aB>>16)&0xFF)+((aC>>16)&0xFF)+((aD>>16)&0xFF)+2)>>2;
 					int aG = (((aA>>8)&0xFF)+((aB>>8)&0xFF)+((aC>>8)&0xFF)+((aD>>8)&0xFF)+2)>>2;
 					int aBl = ((aA&0xFF)+(aB&0xFF)+(aC&0xFF)+(aD&0xFF)+2)>>2;
@@ -285,6 +312,7 @@ public class Texture3D {
 					aNext[y*aNW+x] = (aAl<<24)|(aR<<16)|(aG<<8)|aBl;
 				}
 			}
+			});
 			aLs.add(aNext);
 			aSizes.add(new int[] {aNW, aNH});
 			aW = aNW;

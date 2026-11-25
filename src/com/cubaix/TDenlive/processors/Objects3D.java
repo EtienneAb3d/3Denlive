@@ -28,6 +28,7 @@ import com.cubaix.TDenlive.xml.XmlTag;
  * model in the modeler still applies): position + d, rotation q * R (quaternion, in the space of the
  * group), scale * k. A node without pose in a key: no change. Interpolation: linear, rotations by slerp.
  * A key may also hold the camera (Cam: free, or on the X / Y / Z axis of its target); none = the camera of the model.
+ * And the lamp (model3d.Lamp: tied to the camera, or placed in the scene); none = the lamp of the model.
  */
 public class Objects3D extends Processor {
 	//Camera modes: free (orbit), or looking along an axis (camera on +X, on top, on +Z of the target)
@@ -207,11 +208,14 @@ public class Objects3D extends Processor {
 		HashMap<Integer,Pose> poses = new HashMap<Integer,Pose>();
 		//Camera of the key, null = that of the model of the media
 		Cam cam = null;
+		//Lamp of the key, null = that of the model of the media
+		com.cubaix.TDenlive.model3d.Lamp lamp = null;
 
 		Key copy() {
 			Key aK = new Key();
 			aK.time = time;
 			aK.cam = cam == null ? null : cam.copy();
+			aK.lamp = lamp == null ? null : lamp.copy();
 			for(Map.Entry<Integer,Pose> aE : poses.entrySet()) {
 				aK.poses.put(aE.getKey(), aE.getValue().copy());
 			}
@@ -264,6 +268,9 @@ public class Objects3D extends Processor {
 				if("cam".equalsIgnoreCase(aT.tagName) && aKeys.size() > 0) {
 					aKeys.lastElement().cam = Cam.load(aOs.elementAt(++o).text);
 				}
+				if("lamp".equalsIgnoreCase(aT.tagName) && aKeys.size() > 0) {
+					aKeys.lastElement().lamp = com.cubaix.TDenlive.model3d.Lamp.load(aOs.elementAt(++o).text);
+				}
 			}
 		}
 		if(aKeys.size() <= 0) {
@@ -285,6 +292,9 @@ public class Objects3D extends Processor {
 				aSB.append("								<time>" + aK.time + "</time>\n");
 				if(aK.cam != null) {
 					aSB.append("								<cam>" + aK.cam.save() + "</cam>\n");
+				}
+				if(aK.lamp != null) {
+					aSB.append("								<lamp>" + aK.lamp.save() + "</lamp>\n");
 				}
 				//Same order at each save (the history compares the texts)
 				for(Integer aId : new java.util.TreeSet<Integer>(aK.poses.keySet())) {
@@ -432,6 +442,10 @@ public class Objects3D extends Processor {
 						Cam aBase = Cam.of(getBaseModel());
 						aInter.cam = Cam.lerp(aKey.cam != null ? aKey.cam : aBase, aNext.cam != null ? aNext.cam : aBase, aF);
 					}
+					if(aKey.lamp != null || aNext.lamp != null) {
+						com.cubaix.TDenlive.model3d.Lamp aBase = com.cubaix.TDenlive.model3d.Lamp.of(getBaseModel());
+						aInter.lamp = com.cubaix.TDenlive.model3d.Lamp.lerp(aKey.lamp != null ? aKey.lamp : aBase, aNext.lamp != null ? aNext.lamp : aBase, aF);
+					}
 					return aInter;
 				}
 			}
@@ -464,6 +478,9 @@ public class Objects3D extends Processor {
 		}
 		if(aK.cam != null) {
 			aK.cam.applyTo(aM);
+		}
+		if(aK.lamp != null) {
+			aK.lamp.applyTo(aM);
 		}
 		for(Object3D aO : aM.objects) {
 			Pose aP = aK.poses.get(aO.id);
@@ -535,6 +552,37 @@ public class Objects3D extends Processor {
 	}
 
 	/**
+	 * Lamp of a key (or of the display key): its own, else that of the model of the media
+	 */
+	public com.cubaix.TDenlive.model3d.Lamp lampForKey(int aKey) {
+		Key aK;
+		synchronized (keys) {
+			aK = aKey == DISPLAY_KEY ? displayKey : (aKey >= 0 && aKey < keys.size() ? keys.elementAt(aKey) : null);
+		}
+		return aK != null && aK.lamp != null ? aK.lamp.copy() : com.cubaix.TDenlive.model3d.Lamp.of(getBaseModel());
+	}
+
+	/**
+	 * Lamp at aTimePos (time of the montage)
+	 */
+	public com.cubaix.TDenlive.model3d.Lamp lampAt(long aTimePos) {
+		Key aK = interpolate(keyTime(aTimePos));
+		return aK.lamp != null ? aK.lamp : com.cubaix.TDenlive.model3d.Lamp.of(getBaseModel());
+	}
+
+	/**
+	 * Sets the lamp of a key
+	 */
+	public void setLamp(int aKey, com.cubaix.TDenlive.model3d.Lamp aL) {
+		if(aKey < 0 || aKey >= keys.size()) {
+			return;
+		}
+		synchronized (keys) {
+			keys.elementAt(aKey).lamp = aL.copy();
+		}
+	}
+
+	/**
 	 * Back to the model of the media for a node in a key
 	 */
 	public void resetPose(int aKey, int aId) {
@@ -559,6 +607,9 @@ public class Objects3D extends Processor {
 		if(aK.cam != null && !aK.cam.same(Cam.of(getBaseModel()))) {
 			return false;
 		}
+		if(aK.lamp != null && !aK.lamp.same(com.cubaix.TDenlive.model3d.Lamp.of(getBaseModel()))) {
+			return false;
+		}
 		for(Pose aP : aK.poses.values()) {
 			if(!aP.isIdentity()) {
 				return false;
@@ -570,6 +621,12 @@ public class Objects3D extends Processor {
 	@Override
 	public Image process2Swt(Media aMedia, int aProcessingMode, Rectangle aTargetSize, long aTime) {
 		return null;
+	}
+
+	@Override
+	public String stateAt(int aProcessingMode,long aTime) {
+		//The image of the media when no node moves (its own images say if it changed), else rendered
+		return isIdentityAt(aTime) ? "" : null;
 	}
 
 	@Override

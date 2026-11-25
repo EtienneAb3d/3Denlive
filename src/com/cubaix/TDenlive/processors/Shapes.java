@@ -277,6 +277,28 @@ public class Shapes extends Processor {
 		return null;
 	}
 
+	//Last images drawn by process2Awt(): {signature, left, right}
+	volatile Object[] renderCache = null;
+
+	/**
+	 * Everything the drawing of these shapes depends on (their saved description)
+	 */
+	static String shapesSignature(Vector<Shape> aShapes) {
+		if(aShapes == null) {
+			return "null";
+		}
+		StringBuffer aSB = new StringBuffer();
+		for(Shape aS : aShapes) {
+			aS.saveProject(aSB, "");
+		}
+		return aSB.toString();
+	}
+
+	@Override
+	public String stateAt(int aProcessingMode,long aTime) {
+		return shapesSignature(getShapesAt(aTime));
+	}
+
 	@Override
 	public void process2Awt(Media aMedia,int aProcessingMode,long aTime) {
 		try {
@@ -286,12 +308,28 @@ public class Shapes extends Processor {
 			Vector<Shape> aShapes = getShapesAt(aTime);
 			boolean aHdr = tde.config.processingHdr[aProcessingMode];
 			boolean aFast = tde.config.fastMode && aProcessingMode != TDConfig.PROCESSING_MODE_RENDER;
-			BufferedImage aL = ShapeRenderer.render(aShapes, aW, aH, -1);
-			BufferedImage aR = ShapeRenderer.render(aShapes, aW, aH, 1);
+			//The same shapes as the last image (still between keys, or the clip moved by a following processor): the
+			//same images (the following processors never change their input image)
+			String aSig = aW+"x"+aH+";"+aHdr+";"+aFast+";"+shapesSignature(aShapes);
+			Object[] aC = renderCache;
+			if(aC != null && aSig.equals(aC[0])) {
+				aMedia.setWorkLeft((BufferedImage)aC[1]);
+				aMedia.setWorkRight((BufferedImage)aC[2]);
+				return;
+			}
+			//Both eyes at the same time (the drawing only reads the shapes)
+			final BufferedImage[] aLR = new BufferedImage[2];
+			com.cubaix.TDenlive.utils.Par.Task aThL = new com.cubaix.TDenlive.utils.Par.Task(() -> aLR[0] = ShapeRenderer.render(aShapes, aW, aH, -1));
+			aThL.start();
+			aLR[1] = ShapeRenderer.render(aShapes, aW, aH, 1);
+			aThL.join();
+			BufferedImage aL = aLR[0];
+			BufferedImage aR = aLR[1];
 			if(aHdr) {
 				aL = ImageUtils.toRes(aL, aH, true, aFast, false);
 				aR = ImageUtils.toRes(aR, aH, true, aFast, false);
 			}
+			renderCache = new Object[] {aSig, aL, aR};
 			aMedia.setWorkLeft(aL);
 			aMedia.setWorkRight(aR);
 		}

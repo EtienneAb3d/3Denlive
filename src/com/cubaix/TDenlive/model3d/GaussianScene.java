@@ -358,20 +358,23 @@ public class GaussianScene {
 		float[] sx = new float[nv], sy = new float[nv], iz = new float[nv];
 		double[] r = aV.right, d = aV.down, f = aV.fwd;
 		double aF = aV.focal;
-		for(int k = 0;k < nv;k++) {
-			double dx = pos[3*k]-aV.eye[0], dy = pos[3*k+1]-aV.eye[1], dz = pos[3*k+2]-aV.eye[2];
-			double Z = f[0]*dx+f[1]*dy+f[2]*dz;
-			if(Z < aV.near) {
-				//Behind the eye
-				iz[k] = -1;
-				continue;
+		//Each vertex on its own: by ranges on all the cores
+		com.cubaix.TDenlive.utils.Par.rows(nv, (k0, k1) -> {
+			for(int k = k0;k < k1;k++) {
+				double dx = pos[3*k]-aV.eye[0], dy = pos[3*k+1]-aV.eye[1], dz = pos[3*k+2]-aV.eye[2];
+				double Z = f[0]*dx+f[1]*dy+f[2]*dz;
+				if(Z < aV.near) {
+					//Behind the eye
+					iz[k] = -1;
+					continue;
+				}
+				double X = r[0]*dx+r[1]*dy+r[2]*dz;
+				double Y = d[0]*dx+d[1]*dy+d[2]*dz;
+				sx[k] = (float)(aF*X/Z+aV.cx);
+				sy[k] = (float)(aF*Y/Z+aV.cy);
+				iz[k] = (float)(1/Z);
 			}
-			double X = r[0]*dx+r[1]*dy+r[2]*dz;
-			double Y = d[0]*dx+d[1]*dy+d[2]*dz;
-			sx[k] = (float)(aF*X/Z+aV.cx);
-			sy[k] = (float)(aF*Y/Z+aV.cy);
-			iz[k] = (float)(1/Z);
-		}
+		});
 		//Thresholding: the triangles seen edge on from the camera of the photo (|cos| of their normal with the direction
 		//of the depth below aV.cosCut) are holes; cosines made once per scene (triCos())
 		final float[] aCos = aV.cosCut > 0 ? triCos() : null;
@@ -379,6 +382,9 @@ public class GaussianScene {
 		int aThreads = Math.max(1, Runtime.getRuntime().availableProcessors());
 		int aBandH = Math.max(4, aH/(aThreads*4));
 		int aBands = (aH+aBandH-1)/aBandH;
+		//The triangles of each band, in the order of the grid (the same drawing order as going through all of them: the
+		//same image), so that a band only goes through its own ones
+		final int[][] aBandTris = bandTriangles(gw, gh, sx, sy, iz, aH, aBandH, aBands, aCos, aCosCut);
 		AtomicInteger aNextBand = new AtomicInteger(0);
 		Thread[] aTh = new Thread[aThreads];
 		for(int t = 0;t < aThreads;t++) {
@@ -390,15 +396,13 @@ public class GaussianScene {
 					Arrays.fill(aZB, 0, (y1-y0)*aW, 0f);
 					//No triangle: the background of the view, transparent (a hole of the mesh)
 					Arrays.fill(aOut, y0*aW, y1*aW, aV.bck&0x00FFFFFF);
-					for(int gy = 0;gy < gh-1;gy++) {
-						for(int gx = 0;gx < gw-1;gx++) {
-							int k = gy*gw+gx;
-							if(aCos == null || aCos[2*k] >= aCosCut) {
-								triangle(k, k+1, k+gw, sx, sy, iz, aW, y0, y1, aZB, aOut, aV.depthView);
-							}
-							if(aCos == null || aCos[2*k+1] >= aCosCut) {
-								triangle(k+1, k+gw+1, k+gw, sx, sy, iz, aW, y0, y1, aZB, aOut, aV.depthView);
-							}
+					for(int aT : aBandTris[b]) {
+						int k = aT>>1;
+						if((aT&1) == 0) {
+							triangle(k, k+1, k+gw, sx, sy, iz, aW, y0, y1, aZB, aOut, aV.depthView);
+						}
+						else {
+							triangle(k+1, k+gw+1, k+gw, sx, sy, iz, aW, y0, y1, aZB, aOut, aV.depthView);
 						}
 					}
 					if(aV.depthOut != null) {
@@ -409,6 +413,87 @@ public class GaussianScene {
 			aTh[t].start();
 		}
 		join(aTh);
+	}
+
+	/**
+	 * Triangles (2k: (k, k+1, k+gw), 2k+1: (k+1, k+gw+1, k+gw)) of each band of aBandH lines that triangle() may draw
+	 * in it: in front of the eye, not cut by aCosCut, and lines [ceil(minY-0.5), floor(maxY-0.5)] crossing the band
+	 * (the same test as triangle(); the others are left out by it anyway). In the order of the grid.
+	 */
+	static int[][] bandTriangles(int gw,int gh,float[] sx,float[] sy,float[] iz,int aH,int aBandH,int aBands,float[] aCos,float aCosCut) {
+		//Chunks of rows of the grid on all the cores, each with its lists per band; joined in the order of the chunks
+		//(the order of the grid)
+		int aRows = Math.max(0, gh-1);
+		int aNC = Math.max(1, com.cubaix.TDenlive.utils.Par.bandsFor(aRows));
+		int[][][] aParts = new int[aNC][][];
+		com.cubaix.TDenlive.utils.Par.each(aNC, c -> {
+			int aGy0 = c*aRows/aNC, aGy1 = (c+1)*aRows/aNC;
+			int aNT = 2*(aGy1-aGy0)*gw;
+			//First and last band of each triangle of the chunk (-1: none)
+			int[] aB0 = new int[aNT], aB1 = new int[aNT];
+			int[] aCount = new int[aBands];
+			for(int gy = aGy0;gy < aGy1;gy++) {
+				for(int gx = 0;gx < gw-1;gx++) {
+					int k = gy*gw+gx;
+					for(int h = 0;h < 2;h++) {
+						int t = 2*k+h, u = t-2*aGy0*gw;
+						aB0[u] = -1;
+						if(aCos != null && aCos[t] < aCosCut) {
+							continue;
+						}
+						int a = h == 0 ? k : k+1, b = h == 0 ? k+1 : k+gw+1, cc = k+gw;
+						if(iz[a] <= 0 || iz[b] <= 0 || iz[cc] <= 0) {
+							continue;
+						}
+						float aMinY = Math.min(sy[a], Math.min(sy[b], sy[cc])), aMaxY = Math.max(sy[a], Math.max(sy[b], sy[cc]));
+						int ya = Math.max(0, (int)Math.ceil(aMinY-0.5f)), yb = Math.min(aH-1, (int)Math.floor(aMaxY-0.5f));
+						if(ya > yb) {
+							continue;
+						}
+						aB0[u] = ya/aBandH;
+						aB1[u] = yb/aBandH;
+						for(int bd = aB0[u];bd <= aB1[u];bd++) {
+							aCount[bd]++;
+						}
+					}
+				}
+			}
+			int[][] aLists = new int[aBands][];
+			for(int bd = 0;bd < aBands;bd++) {
+				aLists[bd] = new int[aCount[bd]];
+				aCount[bd] = 0;
+			}
+			for(int gy = aGy0;gy < aGy1;gy++) {
+				for(int gx = 0;gx < gw-1;gx++) {
+					int k = gy*gw+gx;
+					for(int h = 0;h < 2;h++) {
+						int t = 2*k+h, u = t-2*aGy0*gw;
+						if(aB0[u] < 0) {
+							continue;
+						}
+						for(int bd = aB0[u];bd <= aB1[u];bd++) {
+							aLists[bd][aCount[bd]++] = t;
+						}
+					}
+				}
+			}
+			aParts[c] = aLists;
+		});
+		int[][] aLists = new int[aBands][];
+		com.cubaix.TDenlive.utils.Par.each(aBands, bd -> {
+			int aN = 0;
+			for(int c = 0;c < aNC;c++) {
+				aN += aParts[c][bd].length;
+			}
+			int[] aL = new int[aN];
+			int aAt = 0;
+			for(int c = 0;c < aNC;c++) {
+				System.arraycopy(aParts[c][bd], 0, aL, aAt, aParts[c][bd].length);
+				aAt += aParts[c][bd].length;
+			}
+			aLists[bd] = aL;
+		});
+		return aLists;
 	}
 
 	//|cos| of the normal of each triangle of the mesh with the direction of the depth (from the camera of the photo to
@@ -491,7 +576,9 @@ public class GaussianScene {
 		renderMesh(aV2, aW2, aH2, aBig);
 		int aBR = (aV.bck>>16)&0xFF, aBG = (aV.bck>>8)&0xFF, aBB = aV.bck&0xFF;
 		float aK = 1f/(ss*ss);
-		for(int y = 0;y < aH;y++) {
+		//Each pixel on its own: bands of lines on all the cores
+		com.cubaix.TDenlive.utils.Par.rows(aH, (aY0, aY1) -> {
+		for(int y = aY0;y < aY1;y++) {
 			for(int x = 0;x < aW;x++) {
 				int r = 0, g = 0, b = 0, aN = 0;
 				for(int dy = 0;dy < ss;dy++) {
@@ -528,6 +615,7 @@ public class GaussianScene {
 				}
 			}
 		}
+		});
 	}
 
 	/**

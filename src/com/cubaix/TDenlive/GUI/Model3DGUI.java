@@ -77,6 +77,7 @@ public class Model3DGUI implements Model3DView.Source {
 	Scale depthScale = null;
 	Label depthValue = null;
 	Spinner spinSpinner = null;
+	LampFields lampFields = null;
 	Button undoButton = null;
 	Button redoButton = null;
 	boolean updating = false;
@@ -522,6 +523,13 @@ public class Model3DGUI implements Model3DView.Source {
 			}
 		});
 
+		section(aP, "LampSection");
+		lampFields = new LampFields(tde, aP, () -> model, aL -> {
+			aL.applyTo(model);
+			view.redraw();
+			tde.gui.display.timerExec(700, commitLater);
+		});
+
 		Composite aUndo = row(aP, 2, true);
 		((GridData)aUndo.getLayoutData()).verticalIndent = 6;
 		undoButton = button(aUndo, SWT.PUSH, l("Undo"), () -> undo());
@@ -740,6 +748,7 @@ public class Model3DGUI implements Model3DView.Source {
 			depthScale.setSelection((int)Math.round(model.depth*1000));
 			depthValue.setText(depthText());
 			spinSpinner.setSelection((int)Math.round(model.spin));
+			lampFields.set(com.cubaix.TDenlive.model3d.Lamp.of(model));
 			if(!nameText.getText().equals(model.name == null ? "" : model.name)) {
 				nameText.setText(model.name == null ? "" : model.name);
 			}

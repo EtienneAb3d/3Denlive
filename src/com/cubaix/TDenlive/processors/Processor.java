@@ -207,6 +207,16 @@ public abstract class Processor {
 	 * True for the processors working on the sound (only for the audio clips)
 	 */
 	public boolean isAudio() {return false;}
+
+	/**
+	 * Everything the image made by this processor at aTime depends on, besides its input image and the processing
+	 * settings (Clip.staticSignature()): equal at two times, the same output for the same input, so the clip reuses
+	 * its last images (Clip.reBuild()). null: unknown or depending on the time itself, never reused (default; the
+	 * sound processors change no image)
+	 */
+	public String stateAt(int aProcessingMode,long aTime) {
+		return isAudio() ? "" : null;
+	}
 	/**
 	 * Geometry of the image made by this processor (to show and edit the shapes of the clip
 	 * where they are displayed): transform from the pixels of its input image (aInW x aInH)

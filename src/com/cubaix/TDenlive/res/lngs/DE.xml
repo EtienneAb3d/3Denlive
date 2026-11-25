@@ -431,6 +431,13 @@
 	<entry label="Stereo">Stereo und Animation</entry>
 	<entry label="Depth">Tiefe</entry>
 	<entry label="Spin">Drehteller (°/s)</entry>
+	<entry label="LampSection">Lampe</entry>
+	<entry label="Lamp">Lampe</entry>
+	<entry label="LampCamera">An die Kamera gebunden</entry>
+	<entry label="LampScene">In der Szene platziert</entry>
+	<entry label="LampYaw">Azim.</entry>
+	<entry label="LampPitch">Höhe</entry>
+	<entry label="LampDistance">Abst.</entry>
 	<entry label="Undo">Rückgängig</entry>
 	<entry label="Redo">Wiederholen</entry>
 	<entry label="Help">Klick: auswählen (die Gruppe; Cmd / Ctrl: das Objekt selbst; Shift: hinzufügen / entfernen). Objekt oder Anfasser ziehen: aktuelles Werkzeug (X / Y / Z: Achse). Hintergrund ziehen oder rechte Maustaste: umkreisen, mit Shift: schwenken; Mausrad: zoomen. G / R / S: Werkzeuge, F: einpassen, 1 / 3 / 7 / 5: Ansichten, Pfeiltasten: Auswahl verschieben (Bild auf / ab: Höhe), Entf: löschen, Ctrl+D: duplizieren, Ctrl+G / Shift+Ctrl+G: gruppieren / Gruppierung aufheben, Ctrl+A: alles auswählen, Ctrl+Z / Shift+Ctrl+Z: rückgängig / wiederholen (Cmd unter macOS). Die Felder beziehen sich auf die Gruppe des Objekts. Der Ausgaberahmen zeigt, was der Clip darstellt; die Konvergenz liegt in der Mitte der Ansicht.</entry>
@@ -1644,6 +1651,9 @@
 	<entry label="AskVideo">Jedes Bild dieses Videos mit %MODEL% in eine 3D-Szene verwandeln?\n%N% Bilder (%FPS% pro Sekunde, die Bildrate der Montage), etwa %DISK% GB neben dem Video. %WHERE%\nBereits berechnete Bilder werden sofort gezeigt; ein noch nicht berechnetes Bild bleibt 2D.</entry>
 	<entry label="OnGpu">Berechnung auf der GPU (etwa %S% s pro Bild, sobald das Modell geladen ist).</entry>
 	<entry label="OnCpu">Berechnung hier auf der CPU (langsamer).</entry>
+	<entry label="OpenTitle">Nicht berechnete 3D-Szenen</entry>
+	<entry label="OpenMissing">Dieses Projekt hat %N% Clip(s) mit 2D-&gt;3D-Szenen, deren 3D-Szenen auf diesem Computer nicht berechnet sind (ein Demo-Paket enthält nicht alle): Sie bleiben 2D, bis sie berechnet sind.\n%LIST%\nJetzt nacheinander berechnen? %IMAGES% Bilder, etwa %DISK% GB neben den Medien. Später berechnet sie auch die Schaltfläche des Prozessors.</entry>
+	<entry label="Images">Bilder</entry>
 	<entry label="Frames">3D-Szenen: %DONE% / %N% Bilder</entry>
 	<entry label="Decoding">Bilder des Videos werden gelesen...</entry>
 </EntrySet>
@@ -2034,6 +2044,7 @@ Die Tiefenkarten beider Ansichten aus dem Clip berechnen (künstliche Intelligen
 	<entry label="PackProject">Projekt und seine Medien in ein Zip packen (Ordner Packed)</entry>
 	<entry label="Language">Sprache der Menüs, Schaltflächen und Meldungen</entry>
 	<entry label="Settings">Einstellungen: Sprache der Oberfläche, Render-Ordner, Qualität der Arbeits-, Präsentations- und Rendermodi</entry>
+	<entry label="Machine">Bewertung des Rechners: was die KI hier kann, auf der GPU oder der CPU, Modell für Modell</entry>
 	<entry label="Render">Montage als Videodatei oder Bildsequenz rendern</entry>
 	<entry label="News">Neuigkeiten zu 3Denlive (Website)</entry>
 	<entry label="Guide">Benutzerhandbuch (Website)</entry>
@@ -2046,6 +2057,7 @@ Die Tiefenkarten beider Ansichten aus dem Clip berechnen (künstliche Intelligen
 	<entry label="MediaEdit">Erneut im Editor öffnen (die Clips der Montage übernehmen die Änderungen)</entry>
 	<entry label="Objects3DReset">Für die ausgewählten Objekte im Keyframe zum Modell zurückkehren</entry>
 	<entry label="Objects3DCamera">Kamera der Montage, in den Keyframes: frei (Drehen, Verschieben und Zoomen der Ansicht ändern das Bild) oder auf der X-, Y- oder Z-Achse ihres Ziels (nur Verschieben und Zoomen)</entry>
+	<entry label="Model3DLamp">Lampe des Modells: an die Kamera gebunden (sie beleuchtet von oben links der Ansicht, wo immer die Kamera ist), oder in der Szene platziert durch Azimut und Höhe (Grad um das Ziel, wie die Kamera) und Abstand: Sie bleibt dann an ihrem Platz, wenn sich die Kamera bewegt und die Objekte drehen. In einem 3D-Clip kommt sie in die Schlüsselbilder.</entry>
 	<entry label="AddAI">Ein von einer künstlichen Intelligenz aus einem Text generiertes Video (Wan2.2-TI2V-5B), Musikstück (MusicGen) oder Soundeffekt (Woosh) zur Medienliste hinzufügen</entry>
 	<entry label="ShapesHide">Ausgewählte Form ab diesem Keyframe löschen (sie wird nur ausgeblendet)</entry>
 	<entry label="ShapesDelete">Ausgewählte Form löschen (ENTF)</entry>
@@ -2355,4 +2367,37 @@ Die Tiefenkarten beider Ansichten aus dem Clip berechnen (künstliche Intelligen
 	<entry label="Histogram_Mode">Rot, Grün und Blau überlagert oder die Luminanz. Rote Marken: abgeschnittenes Schwarz oder Weiß</entry>
 	<entry label="Waveform_Mode">Luminanz oder Rot, Grün und Blau nebeneinander (Parade); Linien bei 0, 25, 50, 75, 100 %</entry>
 	<entry label="Vectorscope_Mode">x2 vergrößert die Mitte, für wenig gesättigte Bilder. Quadrate: Farben bei 75 %, braune Linie: Hauttöne</entry>
+</EntrySet>
+<EntrySet label="Machine">
+	<entry label="Title">Bewertung des Rechners</entry>
+	<entry label="Refresh">Aktualisieren</entry>
+	<entry label="Close">Schließen</entry>
+	<entry label="System">System: %OS% (%ARCH%), %CORES% Kerne, %RAM% GB Speicher</entry>
+	<entry label="Gpu">GPU %I%: %NAME%, %TOTAL% GB (%FREE% GB derzeit frei)</entry>
+	<entry label="GpuMac">GPU: Apple Silicon, gemeinsamer Speicher, etwa %TOTAL% GB für die Modelle nutzbar</entry>
+	<entry label="NoGpu">Keine für die KI nutzbare GPU (NVIDIA oder Apple Silicon): Alles wird auf der CPU berechnet.</entry>
+	<entry label="Function">Funktion</entry>
+	<entry label="Models">Modelle (eine Spalte pro Modell)</entry>
+	<entry label="Depth">Tiefenkarten</entry>
+	<entry label="Fill">Füllen der Lücken</entry>
+	<entry label="Scene">3D-Szenen</entry>
+	<entry label="Video">KI-Video</entry>
+	<entry label="Music">KI-Musik</entry>
+	<entry label="Sfx">Soundeffekte</entry>
+	<entry label="Asr">Transkription</entry>
+	<entry label="Tts">Stimmen (Sprachsynthese, Übersetzung)</entry>
+	<entry label="Mask">Masken (Freistellen)</entry>
+	<entry label="Color">Kolorierung</entry>
+	<entry label="Remix">Trennung der Spuren</entry>
+	<entry label="Prompt">Prompt-Assistent (Video)</entry>
+	<entry label="GpuS">GPU</entry>
+	<entry label="Cpu">CPU</entry>
+	<entry label="No">Nein</entry>
+	<entry label="Na">—</entry>
+	<entry label="TipGpu">Auf der GPU: %NEED% GB GPU-Speicher nötig, %CAP% GB auf diesem Rechner.</entry>
+	<entry label="TipCpu">Auf der CPU (viel langsamer): %NEED% GB GPU-Speicher nötig, %CAP% GB auf diesem Rechner.</entry>
+	<entry label="TipCpuNoGpu">Auf der CPU (viel langsamer): keine GPU, die dieses Modell hier nutzen kann.</entry>
+	<entry label="TipNo">Nicht möglich: Dieses Modell braucht eine GPU mit %NEED% GB Speicher (%CAP% GB auf diesem Rechner).</entry>
+	<entry label="TipNa">Auf diesem System nicht verfügbar.</entry>
+	<entry label="Legend">Grün GPU: schnell. Rot CPU: möglich, aber viel langsamer. Rot Nein: ohne ausreichende GPU nicht möglich. Grau: auf diesem System nicht verfügbar. Bewertet nach dem gesamten GPU-Speicher: Andere Anwendungen, die ihn belegen, können ein Modell zum Zeitpunkt der Berechnung auf die CPU verlegen.</entry>
 </EntrySet>

@@ -83,6 +83,15 @@ public class TimeLineStackGUI extends CanvasPanel {
 	boolean selfRepaint = false;
 	volatile Rectangle drawBounds = null;
 	Image lastDbl = null;
+	//Drawn over lastDbl at each paint (not in it): the horizontal origin and time scale lastDbl was drawn with,
+	//the vertical extent of the cursor, the cursor position last painted (UI thread)
+	int lastDblOriginX = 0;
+	double lastDblPixPerMS = -1;
+	int lastCursorTopY = 0;
+	int lastCursorBottomY = 0;
+	int shownCursorX = Integer.MIN_VALUE;
+	//Origin for which a new drawing has been asked by redrawCursor() (the time lines slide)
+	int slideOriginX = Integer.MIN_VALUE;
 
 	//Time zoom: pixPerMS = DEFAULT_PIX_PER_MS * 2^(zoom/ZOOM_STEPS_PER_X2), zoom in [-ZOOM_MAX, ZOOM_MAX]
 	static final int ZOOM_MAX = 50;
@@ -907,17 +916,31 @@ public class TimeLineStackGUI extends CanvasPanel {
 								followCursor(aDB.width);
 								BufferedImage aBI = ImageUtils.createImage(aDB.width, aDB.height);
 								Graphics2D aG = (Graphics2D)aBI.getGraphics();
-								Rectangle aR = drawDbl(aG,new Rectangle(0, 0, aDB.width, aDB.height));
+								TimeLineStack aTLS = tde.timeLineStack;
+								final int aOX = origin.x;
+								final double aPPM = aTLS != null ? aTLS.pixPerMS : -1;
+								Rectangle aR = drawDbl(aG,new Rectangle(0, 0, aDB.width, aDB.height),aOX);
+								aG.dispose();
+								final int aTop = aTLS != null ? aTLS.cursorTopY : 0;
+								final int aBottom = aTLS != null ? aTLS.cursorBottomY : 0;
+								//Converted here, not in the UI thread (its pixel conversion by SWT is slow, and the UI
+								//thread is on the path of each image of the monitor while playing)
+								Image aSI = ImageUtils.imageToSwt(tde.gui.display, aBI);
 								tde.gui.display.asyncExec(new Runnable() {
 									@Override
 									public void run() {
 										if(canvas.isDisposed()) {
+											aSI.dispose();
 											return;
 										}
 										if(lastDbl != null) {
 											lastDbl.dispose();
 										}
-										lastDbl = ImageUtils.imageToSwt(tde.gui.display, aBI);
+										lastDbl = aSI;
+										lastDblOriginX = aOX;
+										lastDblPixPerMS = aPPM;
+										lastCursorTopY = aTop;
+										lastCursorBottomY = aBottom;
 										if(aR != null) {
 											//Always: the zoom may change the origin with the same size
 											bounds = aR;
@@ -942,15 +965,93 @@ public class TimeLineStackGUI extends CanvasPanel {
 		}
 		if(lastDbl != null) {
 			aGC.drawImage(lastDbl, 0, 0);
+			drawTimeCursor(aGC);
 		}
 	}
 
-	Rectangle drawDbl(Graphics2D aG,Rectangle aClientR) {
+	Rectangle drawDbl(Graphics2D aG,Rectangle aClientR,int aOriginX) {
 		aG.setColor(tde.gui.colorsAwt.WHITE);
 		aG.fillRect(aClientR.x,aClientR.y,aClientR.width,aClientR.height);
-		if(tde.timeLineStack == null) {
+		TimeLineStack aTLS = tde.timeLineStack;
+		if(aTLS == null) {
 			return null;
 		}
-		return tde.timeLineStack.drawAwt(aG, origin.x, origin.y,aClientR);
+		//The time cursor is drawn over the image at each paint (drawTimeCursor())
+		aTLS.cursorInImage = false;
+		return aTLS.drawAwt(aG, aOriginX, origin.y,aClientR);
+	}
+
+	/**
+	 * X of the time cursor on lastDbl (UI thread), Integer.MIN_VALUE if none
+	 */
+	int cursorX() {
+		TimeLineStack aTLS = tde.timeLineStack;
+		if(aTLS == null || lastDbl == null) {
+			return Integer.MIN_VALUE;
+		}
+		return lastDblOriginX+tde.config.thumbW+(int)(aTLS.getRequestedTimePosMS()*lastDblPixPerMS);
+	}
+
+	/**
+	 * Time cursor over lastDbl (as TimeLineStack.drawAwt() would draw it): the pink line from the ruler down to
+	 * the last line, its triangle on the ruler; not over the heads of the lines
+	 */
+	void drawTimeCursor(GC aGC) {
+		int aX = cursorX();
+		shownCursorX = aX;
+		if(aX == Integer.MIN_VALUE) {
+			return;
+		}
+		Rectangle aCA = canvas.getClientArea();
+		int aTop = lastCursorTopY;
+		aGC.setClipping(tde.config.thumbW+1, 0, Math.max(0, aCA.width-tde.config.thumbW-1), aCA.height);
+		aGC.setForeground(tde.gui.colorsSwt.CUBAIX_PINK);
+		aGC.setLineWidth(1);
+		aGC.setAntialias(SWT.ON);
+		aGC.drawLine(aX, aTop, aX, lastCursorBottomY);
+		aGC.drawLine(aX, aTop, aX-5, aTop-10);
+		aGC.drawLine(aX, aTop, aX+5, aTop-10);
+		aGC.drawLine(aX-5, aTop-10, aX+5, aTop-10);
+		aGC.setClipping((Rectangle)null);
+	}
+
+	/**
+	 * The time moved (play): only the cursor is painted again over the image of the time lines, which is drawn
+	 * again only when they slide to follow the cursor (or the time scale changed)
+	 */
+	public void redrawCursor() {
+		if(canvas == null || canvas.isDisposed()) {
+			return;
+		}
+		//Time relative to the selected clip, cursor of the ruler of the monitor (as redraw())
+		if(tde.gui.playerControlGUI != null) {
+			tde.gui.playerControlGUI.updateClipClock();
+		}
+		if(tde.gui.monitorRulerGUI != null) {
+			tde.gui.monitorRulerGUI.redraw();
+		}
+		TimeLineStack aTLS = tde.timeLineStack;
+		if(lastDbl == null || aTLS == null || aTLS.pixPerMS != lastDblPixPerMS) {
+			redraw();
+			return;
+		}
+		Rectangle aCA = canvas.getClientArea();
+		followCursor(aCA.width);
+		if(origin.x != lastDblOriginX && origin.x != slideOriginX) {
+			//Slides: drawn again (meanwhile the cursor moves on the image shown)
+			slideOriginX = origin.x;
+			redraw();
+			return;
+		}
+		int aNewX = cursorX();
+		int aOldX = shownCursorX;
+		if(aNewX == aOldX) {
+			return;
+		}
+		//Strip of the old and new cursors (its triangle is 11 pixels wide)
+		int aL = aOldX == Integer.MIN_VALUE ? aNewX-6 : Math.min(aOldX, aNewX)-6;
+		int aR = aOldX == Integer.MIN_VALUE ? aNewX+7 : Math.max(aOldX, aNewX)+7;
+		selfRepaint = true;
+		canvas.redraw(aL, 0, aR-aL, aCA.height, false);
 	}
 }

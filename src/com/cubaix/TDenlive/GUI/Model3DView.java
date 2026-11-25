@@ -174,6 +174,8 @@ public class Model3DView {
 		aV.objects = aM.objects;
 		aV.copyCameraFrom(aC);
 		aV.depth = aM.depth;
+		//The lamp of the model (that of the key in a 3D clip)
+		com.cubaix.TDenlive.model3d.Lamp.of(aM).applyTo(aV);
 		return aV;
 	}
 

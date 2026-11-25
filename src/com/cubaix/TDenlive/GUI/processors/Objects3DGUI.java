@@ -44,6 +44,8 @@ public class Objects3DGUI extends ProcessorGUI implements Model3DView.Source {
 	Button resetButton = null;
 	//Camera of the montage: free (orbit of the view) or on an axis (Objects3D.CAM_*), in the keys
 	Combo camMode = null;
+	//Lamp of the montage (model3d.Lamp), in the keys
+	com.cubaix.TDenlive.GUI.LampFields lampFields = null;
 	//Keys changed by the current camera action (orbit, pan, zoom...)
 	Vector<Integer> camKeys = null;
 	//Model shown at the time cursor (or the main selected key), the camera of the view
@@ -134,6 +136,14 @@ public class Objects3DGUI extends ProcessorGUI implements Model3DView.Source {
 			tde.gui.monitorGUI.redraw();
 			tde.gui.timeLinesGUI.redraw();
 		});
+		//Lamp of the montage, in the keys (placed in the scene: from where the lamp tied to the camera lights)
+		lampFields = new com.cubaix.TDenlive.GUI.LampFields(tde, wgt, () -> camera, aL -> {
+			lkf.edit(aEK -> ob.setLamp(aEK, aL));
+			refreshModel();
+			view.redraw();
+			tde.gui.monitorGUI.redraw();
+			tde.gui.timeLinesGUI.redraw();
+		});
 
 		refreshModel();
 		view = new Model3DView(tde, wgt, SWT.BORDER, this, null);
@@ -204,6 +214,9 @@ public class Objects3DGUI extends ProcessorGUI implements Model3DView.Source {
 		aCam.applyTo(camera);
 		if(camMode != null && !camMode.isDisposed() && camMode.getSelectionIndex() != aCam.mode) {
 			camMode.select(aCam.mode);
+		}
+		if(lampFields != null) {
+			lampFields.set(aMain >= 0 ? ob.lampForKey(aMain) : ob.lampAt(tde.timeLineStack.getTimePosMS()));
 		}
 	}
 

@@ -93,6 +93,25 @@ public abstract class Mixer extends Processor {
 	 */
 	public abstract Image mix2Swt(BufferedImage aLI,BufferedImage aRI,int aProcessingMode,Rectangle aTargetSize);
 
+	/**
+	 * Same as mix2Swt(), as bands converted on all the cores (SwtStrips); by default one band
+	 */
+	public com.cubaix.TDenlive.utils.SwtStrips mix2SwtStrips(BufferedImage aLI,BufferedImage aRI,int aProcessingMode,Rectangle aTargetSize) {
+		Image aI = mix2Swt(aLI, aRI, aProcessingMode, aTargetSize);
+		return aI == null ? null : com.cubaix.TDenlive.utils.SwtStrips.of(aI);
+	}
+
+	/**
+	 * Same as process2Swt(), as bands (SwtStrips): mix2SwtStrips() of the final images, one band in HDR
+	 */
+	public com.cubaix.TDenlive.utils.SwtStrips process2SwtStrips(Media aMedia,int aProcessingMode,Rectangle aTargetSize,long aTime) {
+		if(tde.config.processingHdr[aProcessingMode]) {
+			Image aI = process2Swt(aMedia, aProcessingMode, aTargetSize, aTime);
+			return aI == null ? null : com.cubaix.TDenlive.utils.SwtStrips.of(aI);
+		}
+		return mix2SwtStrips(aMedia.getFinalLeft(aProcessingMode,aTime), aMedia.getFinalRight(aProcessingMode,aTime), aProcessingMode, aTargetSize);
+	}
+
 	public void resize(BufferedImage aBI,BufferedImage aSizedBI,int aProcessingMode
 			,int aW,int aH,int aSizedW,int aSizedH) {
 		lastW = aW;

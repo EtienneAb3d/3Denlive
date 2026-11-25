@@ -1,5 +1,7 @@
 package com.cubaix.TDenlive.processors;
 
+import com.cubaix.TDenlive.utils.Par;
+
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
@@ -283,12 +285,21 @@ public class Placer extends Processor {
 	}
 
 	@Override
+	public String stateAt(int aProcessingMode,long aTime) {
+		if(isZero()) {
+			return "0";
+		}
+		Key aK = getInterKeyGT(aTime);
+		return aK.x+","+aK.y+","+aK.scale;
+	}
+
+	@Override
 	public void process2Awt(Media aMedia,int aProcessingMode,long aTime) {
 		if(isZero()) {
 			return;
 		}
 		try {
-			Thread aThL = new Thread(new Runnable() {
+			Par.Task aThL = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					BufferedImage aBIL = aMedia.getWorkLeft(aProcessingMode,aTime);
@@ -314,7 +325,7 @@ public class Placer extends Processor {
 				}
 			});
 			aThL.start();
-			Thread aThR = new Thread(new Runnable() {
+			Par.Task aThR = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					BufferedImage aBIR = aMedia.getWorkRight(aProcessingMode,aTime);

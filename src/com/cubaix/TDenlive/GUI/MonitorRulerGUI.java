@@ -129,7 +129,8 @@ public class MonitorRulerGUI {
 		aTarget.setRequestedTimePosMS(aTime);
 		tde.gui.monitorGUI.redraw();
 		if(aTarget == tde.timeLineStack && tde.gui.timeLinesGUI != null) {
-			tde.gui.timeLinesGUI.redraw();
+			//Only the time changes
+			tde.gui.timeLinesGUI.redrawCursor();
 		}
 		if(tde.gui.playerControlGUI != null) {
 			tde.gui.playerControlGUI.showClock(aTime);

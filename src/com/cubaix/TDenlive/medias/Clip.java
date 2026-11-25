@@ -1039,6 +1039,21 @@ public class Clip extends Media {
 				aC.media.reBuild(aProcessingMode, aMediaTime);
 			}
 		}
+		//Same input images and same state of all the processors as the last image: the same images, without
+		//running the processors (a still clip between equal keys)
+		String aSig = staticSignature(aProcessingMode, aTime);
+		BufferedImage aInL = null, aInR = null;
+		if(aSig != null) {
+			aInL = getWorkLeft(aProcessingMode, aTime);
+			aInR = getWorkRight(aProcessingMode, aTime);
+			Object[] aC = lastStatic;
+			if(aC != null && aSig.equals(aC[0]) && aC[1] == aInL && aC[2] == aInR && aC[3] != null && aC[4] != null) {
+				workLeft = finalLeft = (BufferedImage)aC[3];
+				workRight = finalRight = (BufferedImage)aC[4];
+				return;
+			}
+		}
+		lastStatic = null;
 		for(Processor aP : new Vector<Processor>(processors)) {
 			if(aP.isActive) {
 				aP.process2Awt(this,aProcessingMode,aTime);
@@ -1055,6 +1070,40 @@ public class Clip extends Media {
 		}
 		finalLeft = getWorkLeft(aProcessingMode, aTime);
 		finalRight = getWorkRight(aProcessingMode, aTime);
+		if(aSig != null) {
+			lastStatic = new Object[] {aSig, aInL, aInR, finalLeft, finalRight};
+		}
+	}
+
+	//Last images made from a known state: {staticSignature(), input left, input right, final left, final right}
+	volatile Object[] lastStatic = null;
+
+	/**
+	 * Everything the images of the clip at aTime depend on, besides the images of its media (compared by identity):
+	 * the processing settings, the selection (crop box of StereoAligner) and the state of each active processor
+	 * (Processor.stateAt()); null when not known (a processor without state, a video, a 3D scene, a paired depth
+	 * map clip...): never reused
+	 */
+	String staticSignature(int aProcessingMode,long aTime) {
+		if(!pairedClips.isEmpty() || !(media instanceof StereoImage) || media instanceof StereoMovie
+				|| media instanceof SceneMedia) {
+			return null;
+		}
+		StringBuilder aSB = new StringBuilder();
+		aSB.append(aProcessingMode).append(';').append(tde.config.processingResValues[aProcessingMode])
+			.append(';').append(tde.config.processingHdr[aProcessingMode]).append(';').append(tde.config.outRatio)
+			.append(';').append(tde.config.fastMode).append(';').append(selState);
+		for(Processor aP : new Vector<Processor>(processors)) {
+			if(!aP.isActive) {
+				continue;
+			}
+			String aS = aP.stateAt(aProcessingMode, aTime);
+			if(aS == null) {
+				return null;
+			}
+			aSB.append('|').append(aP.getClassName()).append(':').append(aS);
+		}
+		return aSB.toString();
 	}
 
 	/**

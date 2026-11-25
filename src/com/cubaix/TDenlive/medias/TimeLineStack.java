@@ -1,5 +1,7 @@
 package com.cubaix.TDenlive.medias;
 
+import com.cubaix.TDenlive.utils.Par;
+
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Composite;
@@ -29,7 +31,12 @@ public class TimeLineStack extends Media {
 	public Vector<VideoTimeLine> videoTimeLineStack = new Vector<VideoTimeLine>();
 	public Vector<AudioTimeLine> audioTimeLineStack = new Vector<AudioTimeLine>();
 	public static final double DEFAULT_PIX_PER_MS = 50.0/1000.0;//50 pix per second
-	public double pixPerMS = DEFAULT_PIX_PER_MS;//Time zoom (see TimeLineStackGUI.setZoom()) 
+	public double pixPerMS = DEFAULT_PIX_PER_MS;//Time zoom (see TimeLineStackGUI.setZoom())
+	//Time cursor drawn by drawAwt(); false: drawn apart over the image (TimeLineStackGUI, moved without drawing again)
+	public volatile boolean cursorInImage = true;
+	//Vertical extent of the time cursor (point of its triangle, bottom of the last line), set by drawAwt()
+	public volatile int cursorTopY = 0;
+	public volatile int cursorBottomY = 0;
 	BufferedImage workLeft = null;
 	BufferedImage workRight = null;
 	BufferedImage finalLeft = null;
@@ -54,7 +61,7 @@ public class TimeLineStack extends Media {
 	volatile long dropDurationMS = 0;
 
 	//TEMPORARY: trace of the composition of the lines (left view), to be removed
-	static final boolean _TRACE_COMPOSE = true;
+	static final boolean _TRACE_COMPOSE = false;
 
 	public TimeLineStack(TDenlive aTDe) {
 		super(aTDe);
@@ -960,13 +967,17 @@ public class TimeLineStack extends Media {
 			aGC.drawRect(aSelR.x, aSelR.y, aSelR.width, aSelR.height);
 			aGC.setStroke(new java.awt.BasicStroke(1));
 		}
-		aGC.setColor(tde.gui.colorsAwt.CUBAIX_PINK);
-		int aTimePosX = aX + tde.config.thumbW+(int)(requestedTimePosMS*(double)pixPerMS);
-		aGC.drawLine(aTimePosX, aHC*2, aTimePosX, aY+aH);
-		aGC.drawLine(aTimePosX, aHC*2, aTimePosX-5, aHC*2-10);
-		aGC.drawLine(aTimePosX, aHC*2, aTimePosX+5, aHC*2-10);
-		aGC.drawLine(aTimePosX-5, aHC*2-10, aTimePosX+5, aHC*2-10);
-		
+		cursorTopY = aHC*2;
+		cursorBottomY = aY+aH;
+		if(cursorInImage) {
+			aGC.setColor(tde.gui.colorsAwt.CUBAIX_PINK);
+			int aTimePosX = aX + tde.config.thumbW+(int)(requestedTimePosMS*(double)pixPerMS);
+			aGC.drawLine(aTimePosX, cursorTopY, aTimePosX, cursorBottomY);
+			aGC.drawLine(aTimePosX, cursorTopY, aTimePosX-5, cursorTopY-10);
+			aGC.drawLine(aTimePosX, cursorTopY, aTimePosX+5, cursorTopY-10);
+			aGC.drawLine(aTimePosX-5, cursorTopY-10, aTimePosX+5, cursorTopY-10);
+		}
+
 		return bounds = new Rectangle(aX, aY, aW, aH);
 	}
 
@@ -1392,9 +1403,9 @@ public class TimeLineStack extends Media {
 		workLeft = workRight = finalLeft = finalRight = null;
 		//Copy of the lines: the UI thread may add, move or delete one meanwhile (ConcurrentModificationException)
 		Vector<VideoTimeLine> aLines = new Vector<VideoTimeLine>(videoTimeLineStack);
-		Vector<Thread> aThs = new Vector<Thread>();
+		Vector<Par.Task> aThs = new Vector<Par.Task>();
 		for(VideoTimeLine aTL : aLines) {
-			Thread aTh = new Thread(new Runnable() {
+			Par.Task aTh = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					if(aTL.isActive) {
@@ -1405,7 +1416,7 @@ public class TimeLineStack extends Media {
 			aThs.add(aTh);
 			aTh.start();
 		}
-		for(Thread aTh : aThs) {
+		for(Par.Task aTh : aThs) {
 			try {
 				aTh.join();
 			}
@@ -1414,7 +1425,7 @@ public class TimeLineStack extends Media {
 			}
 		}
 		try {
-			Thread aThL = new Thread(new Runnable() {
+			Par.Task aThL = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					int aWidthOut = (int)(tde.config.outRatio*tde.config.processingResValues[aProcessingMode]);
@@ -1464,7 +1475,7 @@ public class TimeLineStack extends Media {
 				}
 			});
 			aThL.start();
-			Thread aThR = new Thread(new Runnable() {
+			Par.Task aThR = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 

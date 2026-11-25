@@ -1,5 +1,7 @@
 package com.cubaix.TDenlive.processors;
 
+import com.cubaix.TDenlive.utils.Par;
+
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferFloat;
 import java.awt.image.DataBufferInt;
@@ -386,10 +388,16 @@ public class ColorAdapter extends Processor {
 	}
 
 	@Override
+	public String stateAt(int aProcessingMode,long aTime) {
+		Key aK = getInterKeyGT(aTime);
+		return aK.wR+","+aK.tRH+","+aK.rToGB+","+aK.gFromR+","+aK.bFromR+","+aK.tRL+","+aK.rFromGB+","+aK.gToR+","+aK.bToR;
+	}
+
+	@Override
 	public void process2Awt(Media aMedia, int aProcessingMode, long aTime) {
 		try {
 			final Key aKey = getInterKeyGT(aTime);
-			Thread aThL = new Thread(new Runnable() {
+			Par.Task aThL = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					BufferedImage aBIL = aMedia.getWorkLeft(aProcessingMode,aTime);
@@ -399,7 +407,7 @@ public class ColorAdapter extends Processor {
 				}
 			});
 			aThL.start();
-			Thread aThR = new Thread(new Runnable() {
+			Par.Task aThR = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					BufferedImage aBIR = aMedia.getWorkRight(aProcessingMode,aTime);

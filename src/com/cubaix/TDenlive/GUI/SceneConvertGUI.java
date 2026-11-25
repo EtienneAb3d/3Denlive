@@ -54,6 +54,8 @@ public class SceneConvertGUI {
 	volatile SceneGenerator generator = null;
 	//Model of the scenes (that of the processor, Scene3D.sceneModel)
 	final SceneGenerator.Model model;
+	//Run at the end of a computation without error nor cancel (offerMissing(): the next clip)
+	Runnable onDone = null;
 
 	SceneConvertGUI(TDenlive aTDe,Clip aClip,Scene3D aP) {
 		tde = aTDe;
@@ -123,6 +125,103 @@ public class SceneConvertGUI {
 	}
 
 	/**
+	 * Project just opened: the clips of 2D-&gt;3D scenes (active Scene3D) whose scenes are not computed here (a demo
+	 * pack does not hold them all, medias moved...) are listed, and their computation is proposed at once, one clip
+	 * after the other (the same media with the same model only once; the models not supported here are left out)
+	 */
+	public static void offerMissing(TDenlive aTDe) {
+		try {
+			if(running || aTDe.timeLineStack == null) {
+				return;
+			}
+			//Scenes file / folder -> {clip, processor}
+			java.util.LinkedHashMap<String,Object[]> aMissing = new java.util.LinkedHashMap<String,Object[]>();
+			for(com.cubaix.TDenlive.medias.VideoTimeLine aTL : new Vector<com.cubaix.TDenlive.medias.VideoTimeLine>(aTDe.timeLineStack.videoTimeLineStack)) {
+				for(Clip aC : new Vector<Clip>(aTL.clipList)) {
+					for(com.cubaix.TDenlive.processors.Processor aP : new Vector<com.cubaix.TDenlive.processors.Processor>(aC.getProcessors())) {
+						if(!(aP instanceof Scene3D) || !aP.isActive) {
+							continue;
+						}
+						Scene3D aS = (Scene3D)aP;
+						SceneGenerator.Model aModel = SceneGenerator.modelById(aS.sceneModel);
+						if(!ComputedScenes.isConvertible(aC.getMedia()) || !aModel.isSupported()
+								|| ComputedScenes.find(aTDe, aC.getMedia(), aS.sceneModel) != null) {
+							continue;
+						}
+						String aKey = ComputedScenes.path((StereoImage)aC.getMedia(), aModel.id, null).getAbsolutePath();
+						aMissing.putIfAbsent(aKey, new Object[] {aC, aS});
+					}
+				}
+			}
+			if(aMissing.isEmpty()) {
+				return;
+			}
+			double aFps = fps(aTDe);
+			StringBuilder aList = new StringBuilder();
+			long aImages = 0;
+			java.util.LinkedHashSet<SceneGenerator.Model> aModels = new java.util.LinkedHashSet<SceneGenerator.Model>();
+			for(Object[] aCS : aMissing.values()) {
+				StereoImage aSI = (StereoImage)((Clip)aCS[0]).getMedia();
+				boolean aVideo = aSI instanceof StereoMovie;
+				int aFrames = aVideo ? Math.max(1, (int)Math.ceil(aSI.getDurationMS()*aFps/1000.0)) : 1;
+				aImages += aFrames;
+				SceneGenerator.Model aModel = SceneGenerator.modelById(((Scene3D)aCS[1]).sceneModel);
+				aModels.add(aModel);
+				aList.append("- ").append(aSI.fileName)
+					.append(aVideo ? " ("+aFrames+" "+lng(aTDe, "SceneConvert.Images")+")" : "")
+					.append(" - ").append(lng(aTDe, aModel.key())).append('\n');
+			}
+			String aMsg = lng(aTDe, "SceneConvert.OpenMissing").replace("%N%", ""+aMissing.size())
+					.replace("%LIST%", aList.toString()).replace("%IMAGES%", ""+aImages)
+					.replace("%DISK%", DepthModel.gb(aImages*FRAME_BYTES));
+			for(SceneGenerator.Model aModel : aModels) {
+				aMsg += "\n\n"+lng(aTDe, aModel.key())+" : "
+						+lng(aTDe, SceneGenerator.cpuReason(aModel) == null ? "SceneConvert.OnGpu" : "SceneConvert.OnCpu")
+						.replace("%S%", aModel.seconds < 1 ? "< 1" : String.format("%.0f", aModel.seconds));
+				long aDl = SceneGenerator.bytesToDownload(aTDe.tdeDir, aModel);
+				if(aDl > 0) {
+					aMsg += " "+lng(aTDe, "AI.MusicDownload").replace("%GB%", DepthModel.gb(aDl));
+				}
+				aMsg += "\n"+lng(aTDe, aModel.licenceKey);
+			}
+			MessageBox aMB = new MessageBox(aTDe.gui.shell, SWT.ICON_QUESTION|SWT.YES|SWT.NO);
+			aMB.setText(lng(aTDe, "SceneConvert.OpenTitle"));
+			aMB.setMessage(aMsg);
+			if(aMB.open() != SWT.YES) {
+				return;
+			}
+			computeChain(aTDe, new Vector<Object[]>(aMissing.values()), 0);
+		}
+		catch(Throwable t) {
+			t.printStackTrace(System.err);
+		}
+	}
+
+	/**
+	 * The scenes of the clips aTodo from aI, one after the other (a cancel or an error stops)
+	 */
+	static void computeChain(TDenlive aTDe, Vector<Object[]> aTodo, int aI) {
+		if(aI >= aTodo.size() || running) {
+			return;
+		}
+		Clip aC = (Clip)aTodo.get(aI)[0];
+		Scene3D aS = (Scene3D)aTodo.get(aI)[1];
+		if(ComputedScenes.find(aTDe, aC.getMedia(), aS.sceneModel) != null) {
+			//Computed meanwhile
+			aS.scenesChanged();
+			computeChain(aTDe, aTodo, aI+1);
+			return;
+		}
+		StereoImage aSI = (StereoImage)aC.getMedia();
+		boolean aVideo = aSI instanceof StereoMovie;
+		double aFps = fps(aTDe);
+		int aFrames = aVideo ? Math.max(1, (int)Math.ceil(aSI.getDurationMS()*aFps/1000.0)) : 1;
+		SceneConvertGUI aGUI = new SceneConvertGUI(aTDe, aC, aS);
+		aGUI.onDone = () -> computeChain(aTDe, aTodo, aI+1);
+		aGUI.start(aVideo, aFps, aFrames);
+	}
+
+	/**
 	 * Rate of the scenes of a video: that of the montage, 30 at most
 	 */
 	static double fps(TDenlive aTDe) {
@@ -188,16 +287,30 @@ public class SceneConvertGUI {
 			}
 			final String aE = aErr;
 			tde.gui.display.asyncExec(() -> {
-				running = false;
-				proc.scenesChanged();
-				proc.fixAutoCam();
-				if(!shell.isDisposed()) {
-					shell.dispose();
+				try {
+					running = false;
+					proc.scenesChanged();
+					proc.fixAutoCam();
+					if(!shell.isDisposed()) {
+						shell.dispose();
+					}
+					tde.gui.monitorGUI.redraw();
+					//The panel of the clip if it shows it (none at the opening of a project: offerMissing())
+					if(tde.gui.processorGUI != null && !tde.selected.clips.isEmpty() && tde.selected.clips.lastElement() == clip) {
+						tde.gui.processorGUI.setProcessors(clip.getProcessors());
+					}
+					if(aE != null && !canceled) {
+						AiClipGUI.message(tde, SWT.ICON_ERROR, lng(tde, "AI.SceneError")+"\n"+aE);
+					}
 				}
-				tde.gui.monitorGUI.redraw();
-				tde.gui.processorGUI.setProcessors(clip.getProcessors());
-				if(aE != null && !canceled) {
-					AiClipGUI.message(tde, SWT.ICON_ERROR, lng(tde, "AI.SceneError")+"\n"+aE);
+				catch(Throwable t) {
+					t.printStackTrace(System.err);
+				}
+				finally {
+					//The next clip of offerMissing() (not after an error nor a cancel)
+					if(onDone != null && aE == null && !canceled) {
+						onDone.run();
+					}
 				}
 			});
 		}, "3D scenes of a clip");

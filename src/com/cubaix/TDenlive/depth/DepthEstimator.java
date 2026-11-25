@@ -33,6 +33,19 @@ import java.util.Vector;
  * its session is closed, until the end of the process; the child gives everything back to the system.
  */
 public class DepthEstimator implements AutoCloseable {
+
+	/**
+	 * Environment of a child JVM speaking a binary protocol on its stdout: without the options given to all the JVMs
+	 * (JAVA_TOOL_OPTIONS...), which a child would take too: a flight recording or an agent writes text on stdout,
+	 * the protocol is broken and both sides wait for each other
+	 */
+	public static void childJavaEnv(ProcessBuilder aPB) {
+		java.util.Map<String,String> aEnv = aPB.environment();
+		aEnv.remove("JAVA_TOOL_OPTIONS");
+		aEnv.remove("JDK_JAVA_OPTIONS");
+		aEnv.remove("_JAVA_OPTIONS");
+	}
+
 	public static final String ORT_VERSION = "1.31.1";
 	static final String MAVEN = "https://repo1.maven.org/maven2/com/microsoft/onnxruntime/";
 	//Standard jar: CPU everywhere, plus WebGPU (Metal) in its macOS build only
@@ -201,6 +214,29 @@ public class DepthEstimator implements AutoCloseable {
 		return null;
 	}
 
+	/**
+	 * The NVIDIA GPUs (nvidia-smi): {index, name, total bytes, free bytes} each, empty if none
+	 */
+	public static java.util.List<String[]> nvidiaGpus() {
+		java.util.List<String[]> aGpus = new java.util.ArrayList<String[]>();
+		try {
+			String aSmi = findNvidiaSmi(System.getProperty("os.name").toLowerCase());
+			if(aSmi == null) {
+				return aGpus;
+			}
+			for(String aL : run(aSmi, "--query-gpu=index,name,memory.total,memory.free", "--format=csv,noheader,nounits").split("\\R")) {
+				String[] aF = aL.split(",");
+				if(aF.length == 4 && aF[0].trim().matches("[0-9]+") && aF[2].trim().matches("[0-9]+") && aF[3].trim().matches("[0-9]+")) {
+					aGpus.add(new String[] {aF[0].trim(), aF[1].trim(), ""+Long.parseLong(aF[2].trim())*1024*1024, ""+Long.parseLong(aF[3].trim())*1024*1024});
+				}
+			}
+		}
+		catch(Throwable t) {
+			t.printStackTrace(System.err);
+		}
+		return aGpus;
+	}
+
 	static String findNvidiaSmi(String aOs) {
 		String aExe = aOs.contains("windows") ? "nvidia-smi.exe" : "nvidia-smi";
 		Vector<String> aDirs = new Vector<String>();
@@ -247,6 +283,7 @@ public class DepthEstimator implements AutoCloseable {
 		aCmd.add(aTdeDir);
 		aCmd.add(aModel.id);
 		ProcessBuilder aPB = new ProcessBuilder(aCmd);
+		childJavaEnv(aPB);
 		//Logs of the child into the log of the application
 		aPB.redirectError(ProcessBuilder.Redirect.INHERIT);
 		System.out.println("Depth worker: "+String.join(" ", aCmd));

@@ -1989,7 +1989,10 @@ public class SmartFill {
 			for(int aDir = 0;aDir < 2;aDir++) {
 				boolean aH0 = aDir == 0;
 				int aLines = aH0 ? aH : aW, aLen = aH0 ? aW : aH;
-				for(int l = 0;l < aLines;l++) {
+				//Each line (column) on its own, read from aCur and written into aTmp: on all the cores
+				final float[] aIn0 = aCur, aOut0 = aTmp;
+				com.cubaix.TDenlive.utils.Par.rows(aLines, (aL0, aL1) -> {
+				for(int l = aL0;l < aL1;l++) {
 					float r = 0, g = 0, b = 0;
 					int aN = 0;
 					//Sliding window over [i-aR, i+aR]
@@ -1998,28 +2001,29 @@ public class SmartFill {
 						if(aIn >= 0 && aIn < aLen) {
 							int p = aH0 ? l*aW+aIn : aIn*aW+l;
 							if(!aHoles[p]) {
-								r += aCur[3*p]; g += aCur[3*p+1]; b += aCur[3*p+2];
+								r += aIn0[3*p]; g += aIn0[3*p+1]; b += aIn0[3*p+2];
 								aN++;
 							}
 						}
 						if(aOut >= 0 && aOut < aLen) {
 							int p = aH0 ? l*aW+aOut : aOut*aW+l;
 							if(!aHoles[p]) {
-								r -= aCur[3*p]; g -= aCur[3*p+1]; b -= aCur[3*p+2];
+								r -= aIn0[3*p]; g -= aIn0[3*p+1]; b -= aIn0[3*p+2];
 								aN--;
 							}
 						}
 						if(i >= 0 && i < aLen) {
 							int p = aH0 ? l*aW+i : i*aW+l;
 							if(aHoles[p] || aN <= 0) {
-								System.arraycopy(aCur, 3*p, aTmp, 3*p, 3);
+								System.arraycopy(aIn0, 3*p, aOut0, 3*p, 3);
 							}
 							else {
-								aTmp[3*p] = r/aN; aTmp[3*p+1] = g/aN; aTmp[3*p+2] = b/aN;
+								aOut0[3*p] = r/aN; aOut0[3*p+1] = g/aN; aOut0[3*p+2] = b/aN;
 							}
 						}
 					}
 				}
+				});
 				float[] aSwap = aCur;
 				aCur = aTmp;
 				aTmp = aSwap;

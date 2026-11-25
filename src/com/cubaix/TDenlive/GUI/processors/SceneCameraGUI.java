@@ -565,8 +565,33 @@ public class SceneCameraGUI extends ProcessorGUI {
 					: l("SceneImage"));
 			scenesL.setForeground(aCS == null ? tde.gui.colorsSwt.RED : tde.gui.colorsSwt.CUBAIX_BLUE);
 		}
+		if(playing()) {
+			//While playing: the monitor shows the scene; this view (rendered by the UI thread, as heavy as an image of
+			//the monitor) once the time stops
+			tde.gui.display.timerExec(VIEW_DEFER_MS, deferredView);
+			return;
+		}
 		wgt.layout(true, true);
 		renderView(false);
+	}
+
+	//Time without change after which the view is rendered again while playing (the pause, the stop)
+	static final int VIEW_DEFER_MS = 300;
+	//Rescheduled by each change of time (SWT timerExec of the same runnable)
+	final Runnable deferredView = () -> {
+		if(wgt.isDisposed()) {
+			return;
+		}
+		if(playing()) {
+			tde.gui.display.timerExec(VIEW_DEFER_MS, this.deferredView);
+			return;
+		}
+		wgt.layout(true, true);
+		renderView(false);
+	};
+
+	boolean playing() {
+		return tde.gui.playerControlGUI != null && tde.gui.playerControlGUI.isPlaying();
 	}
 
 	/**

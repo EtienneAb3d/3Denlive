@@ -40,6 +40,8 @@ public class FullScreenGUI {
 		shell.setLayout(aLayout);
 
 		monitorGUI = new MonitorGUI(tde, shell);
+		//Its play (images computed ahead while playing)
+		monitorGUI.fullScreen = this;
 		monitorGUI.setMedia(tde.timeLineStack);
 		monitorGUI.canvas.getHorizontalBar().setVisible(false);
 		monitorGUI.canvas.getVerticalBar().setVisible(false);

@@ -311,6 +311,7 @@ public class Inpainter implements PythonAI.Resident, AutoCloseable {
 		aCmd.add(aTdeDir);
 		aCmd.add(aEngine.name());
 		ProcessBuilder aPB = new ProcessBuilder(aCmd);
+		DepthEstimator.childJavaEnv(aPB);
 		aPB.redirectError(ProcessBuilder.Redirect.INHERIT);
 		System.out.println("Inpainting worker: "+String.join(" ", aCmd));
 		worker = aPB.start();

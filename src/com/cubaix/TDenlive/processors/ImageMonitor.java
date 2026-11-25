@@ -25,7 +25,7 @@ public abstract class ImageMonitor extends MonitorProcessor {
 	/** Last scope image */
 	protected volatile BufferedImage scope = null;
 	/** Trace of the analyses in the log (at most one line per second and monitor) */
-	static final boolean _TRACE = true;
+	static final boolean _TRACE = false;
 	long lastTraceMS = 0;
 
 	public ImageMonitor(TDenlive aTDe, Media aTargetMedia) {

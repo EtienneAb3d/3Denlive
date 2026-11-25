@@ -1,5 +1,7 @@
 package com.cubaix.TDenlive.processors;
 
+import com.cubaix.TDenlive.utils.Par;
+
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -17,6 +19,7 @@ import com.cubaix.TDenlive.TDConfig;
 import com.cubaix.TDenlive.TDenlive;
 import com.cubaix.TDenlive.medias.Media;
 import com.cubaix.TDenlive.utils.ImageUtils;
+import com.cubaix.TDenlive.utils.SwtStrips;
 import com.cubaix.TDenlive.xml.XmlObject;
 
 public class AnaMixer extends Mixer {
@@ -68,6 +71,19 @@ public class AnaMixer extends Mixer {
 
 	@Override
 	public Image mix2Swt(final BufferedImage aLI,final BufferedImage aRI,int aProcessingMode,Rectangle aTargetSize) {
+		return ImageUtils.imageToSwt(tde.gui.display, mix2Awt(aLI, aRI, aProcessingMode, aTargetSize));
+	}
+
+	@Override
+	public SwtStrips mix2SwtStrips(BufferedImage aLI,BufferedImage aRI,int aProcessingMode,Rectangle aTargetSize) {
+		BufferedImage aBI = mix2Awt(aLI, aRI, aProcessingMode, aTargetSize);
+		return SwtStrips.of(tde.gui.display, ((DataBufferInt)aBI.getRaster().getDataBuffer()).getData(), aBI.getWidth(), aBI.getHeight(), false);
+	}
+
+	/**
+	 * Mixed image (not HDR) fitted in aTargetSize
+	 */
+	BufferedImage mix2Awt(final BufferedImage aLI,final BufferedImage aRI,int aProcessingMode,Rectangle aTargetSize) {
 		final int aW = aLI.getWidth();
 		final int aH = aLI.getHeight();
 		double aFact = Math.min(aTargetSize.width/(double)aW, aTargetSize.height / (double) aH);
@@ -75,7 +91,7 @@ public class AnaMixer extends Mixer {
 		final int aHeight = (int)(aH * aFact);
 		final BufferedImage[] aResized = new BufferedImage[2];
 		try {
-			Thread aThL = new Thread(new Runnable() {
+			Par.Task aThL = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					aResized[0] = ImageUtils.createImage(aWidth, aHeight);
@@ -83,7 +99,7 @@ public class AnaMixer extends Mixer {
 				}
 			});
 			aThL.start();
-			Thread aThR = new Thread(new Runnable() {
+			Par.Task aThR = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					aResized[1] = ImageUtils.createImage(aWidth, aHeight);
@@ -102,8 +118,9 @@ public class AnaMixer extends Mixer {
 		int[] aDBFR = ((DataBufferInt)aResized[1].getRaster().getDataBuffer()).getData();
 		BufferedImage aBI = ImageUtils.createImage(aWidth, aHeight);
 		int[] aDB = ((DataBufferInt)aBI.getRaster().getDataBuffer()).getData();
-		for(int x = 0;x<aWidth;x++) {
-			for(int y = 0;y<aHeight;y++) {
+		Par.rows(aHeight, (aY0, aY1) -> {
+		for(int y = aY0;y<aY1;y++) {
+			for(int x = 0;x<aWidth;x++) {
 				int aARGBL = aDBFL[y*aWidth+x];
 				int aARGBR = aDBFR[y*aWidth+x];
 				double aAL = ((aARGBL>>24) & 0xFF)/255.0;//Alpha
@@ -244,8 +261,9 @@ public class AnaMixer extends Mixer {
 				}
 			}
 		}
+		});
 		
-		return ImageUtils.imageToSwt(tde.gui.display, aBI);
+		return aBI;
 	}
 	
 	public Image process2SwtHdr(Media aMedia,int aProcessingMode,Rectangle aTargetSize,long aTime) {
@@ -258,7 +276,7 @@ public class AnaMixer extends Mixer {
 		final int aHeight = (int)(aH * aFact);
 		final BufferedImage[] aResized = new BufferedImage[2];
 		try {
-			Thread aThL = new Thread(new Runnable() {
+			Par.Task aThL = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					aResized[0] = ImageUtils.createHdr(aWidth, aHeight);
@@ -266,7 +284,7 @@ public class AnaMixer extends Mixer {
 				}
 			});
 			aThL.start();
-			Thread aThR = new Thread(new Runnable() {
+			Par.Task aThR = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					aResized[1] = ImageUtils.createHdr(aWidth, aHeight);
@@ -285,8 +303,9 @@ public class AnaMixer extends Mixer {
 		float[][] aDBFR = ((DataBufferFloat)aResized[1].getRaster().getDataBuffer()).getBankData();
 		BufferedImage aBI = ImageUtils.createImage(aWidth, aHeight);
 		int[] aDB = ((DataBufferInt)aBI.getRaster().getDataBuffer()).getData();
-		for(int x = 0;x<aWidth;x++) {
-			for(int y = 0;y<aHeight;y++) {
+		Par.rows(aHeight, (aY0, aY1) -> {
+		for(int y = aY0;y<aY1;y++) {
+			for(int x = 0;x<aWidth;x++) {
 				float aAL = aDBFL[0][y*aWidth*4+x*4+3];//Alpha
 				float aAR = aDBFR[0][y*aWidth*4+x*4+3];//Alpha
 				double aRL = aDBFL[0][y*aWidth*4+x*4]*aAL;//Red
@@ -424,6 +443,7 @@ public class AnaMixer extends Mixer {
 				}
 			}
 		}
+		});
 		return ImageUtils.imageToSwt(tde.gui.display, aBI);
 	}
 

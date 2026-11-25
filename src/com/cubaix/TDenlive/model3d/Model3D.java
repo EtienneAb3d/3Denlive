@@ -22,6 +22,12 @@ public class Model3D {
 	public double depth = 0.035;
 	//Turntable: degrees per second around the vertical axis of the target
 	public double spin = 0;
+	//Lamp: tied to the center camera (lights from above on its left, the same for both eyes), or a point of the scene
+	//placed as the camera (yaw / pitch in degrees, distance from the target), which stays while the camera moves
+	public static final int LAMP_CAMERA = 0;
+	public static final int LAMP_SCENE = 1;
+	public int lampMode = LAMP_CAMERA;
+	public double lampYaw = 0, lampPitch = 50, lampDistance = 6;
 	//Last id given (see nextId())
 	public int lastId = -1;
 
@@ -111,8 +117,30 @@ public class Model3D {
 		aM.yaw = yaw; aM.pitch = pitch; aM.distance = distance; aM.fov = fov;
 		aM.depth = depth;
 		aM.spin = spin;
+		aM.lampMode = lampMode; aM.lampYaw = lampYaw; aM.lampPitch = lampPitch; aM.lampDistance = lampDistance;
 		aM.lastId = lastId;
 		return aM;
+	}
+
+	/**
+	 * Position of the lamp of the scene (LAMP_SCENE), placed around the target as the camera
+	 */
+	public double[] lampPosition() {
+		double aYaw = Math.toRadians(lampYaw);
+		double aPitch = Math.toRadians(Math.max(MIN_PITCH, Math.min(MAX_PITCH, lampPitch)));
+		return Math3D.add(getTarget(), Math3D.mul(new double[] {Math.cos(aPitch)*Math.sin(aYaw), Math.sin(aPitch), Math.cos(aPitch)*Math.cos(aYaw)}, Math.max(1e-3, lampDistance)));
+	}
+
+	/**
+	 * The lamp of the scene placed where the lamp tied to the camera lights from (Renderer3D), farther than the camera
+	 */
+	public void lampFromCamera() {
+		Camera3D aC = new Camera3D(this, 0, 0, 1, 0);
+		double[] aView = Math3D.mul(aC.fwd, -1);
+		double[] aL = Math3D.normalize(Math3D.add(Math3D.add(Math3D.mul(aView, 0.75), Math3D.mul(aC.up, 0.6)), Math3D.mul(aC.right, -0.45)));
+		lampYaw = Math.toDegrees(Math.atan2(aL[0], aL[2]));
+		lampPitch = Math.toDegrees(Math.asin(Math.max(-1, Math.min(1, aL[1]))));
+		lampDistance = Math.max(0.1, distance*1.5);
 	}
 
 	/**
@@ -429,6 +457,7 @@ public class Model3D {
 		aSB.append(aIndent+"	<fov>" + fov + "</fov>\n");
 		aSB.append(aIndent+"	<depth>" + depth + "</depth>\n");
 		aSB.append(aIndent+"	<spin>" + spin + "</spin>\n");
+		aSB.append(aIndent+"	<lamp>" + Lamp.of(this).save() + "</lamp>\n");
 		aSB.append(aIndent+"	<lastId>" + lastId + "</lastId>\n");
 		for(Object3D aO : objects) {
 			aO.saveProject(aSB, aIndent+"	");
@@ -479,6 +508,9 @@ public class Model3D {
 			}
 			if("spin".equalsIgnoreCase(aT.tagName)) {
 				spin = Double.parseDouble(aOs.elementAt(++o).text.trim());
+			}
+			if("lamp".equalsIgnoreCase(aT.tagName)) {
+				Lamp.load(aOs.elementAt(++o).text).applyTo(this);
 			}
 			if("lastId".equalsIgnoreCase(aT.tagName)) {
 				lastId = Integer.parseInt(aOs.elementAt(++o).text.trim());

@@ -1,5 +1,7 @@
 package com.cubaix.TDenlive.processors;
 
+import com.cubaix.TDenlive.utils.Par;
+
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Composite;
@@ -306,7 +308,7 @@ public class Cropper extends Processor {
 	public void process2Awt(Media aMedia, int aProcessingMode, long aTime) {
 		try {
 			final Key aK = getInterKeyGT(aTime);
-			Thread aThL = new Thread(new Runnable() {
+			Par.Task aThL = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					BufferedImage aBIL = aMedia.getWorkLeft(aProcessingMode,aTime);
@@ -318,7 +320,7 @@ public class Cropper extends Processor {
 				}
 			});
 			aThL.start();
-			Thread aThR = new Thread(new Runnable() {
+			Par.Task aThR = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
 					BufferedImage aBIR = aMedia.getWorkRight(aProcessingMode,aTime);

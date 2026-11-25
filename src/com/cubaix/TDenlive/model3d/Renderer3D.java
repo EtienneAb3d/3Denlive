@@ -6,7 +6,7 @@ import java.util.Set;
 
 /**
  * Software renderer of a Model3D: z-buffer (1/z), Gouraud shading with a light tied to the center camera
- * (same lighting for both eyes), supersampling for the anti-aliasing, transparent or opaque background.
+ * (same lighting for both eyes) or a lamp placed in the scene (Model3D.lampMode), supersampling for the anti-aliasing, transparent or opaque background.
  * A textured object: texture coordinates interpolated with the perspective, an image sampled at the
  * mipmap level of each triangle (Texture3D), lit by the diffuse factor and the highlight of its vertices.
  */
@@ -143,6 +143,8 @@ public class Renderer3D {
 	static final int PARALLEL_MIN_SAMPLES = 128*128;
 	//Lines per band at least
 	static final int BAND_MIN_LINES = 8;
+	//Vertices / triangles of a mesh from which they are prepared on all the cores
+	static final int PARALLEL_MIN_ITEMS = 2048;
 	//Second eye of renderPair() (the first one on the calling thread)
 	static final java.util.concurrent.ExecutorService EYES = java.util.concurrent.Executors.newCachedThreadPool(aR -> {
 		Thread aT = new Thread(aR, "3De-Render3D-Eye");
@@ -207,11 +209,13 @@ public class Renderer3D {
 		double[] aView = Math3D.mul(aCenter.fwd, -1);
 		double[] aLight = Math3D.normalize(Math3D.add(Math3D.add(Math3D.mul(aView, 0.75), Math3D.mul(aCenter.up, 0.6)), Math3D.mul(aCenter.right, -0.45)));
 		double[] aHalf = Math3D.normalize(Math3D.add(aLight, aView));
+		//Lamp of the scene (Model3D.LAMP_SCENE): from its position to each vertex (it does not turn with the spin)
+		double[] aLampPos = aM.lampMode == Model3D.LAMP_SCENE ? aM.lampPosition() : null;
 		double[] aSpin = Math3D.rotation(new double[] {0, 1, 0}, Math.toRadians(aSpinDeg));
 		double[] aPivot = aM.getTarget();
 
 		for(Object3D aO : aM.objects) {
-			drawObject(aM, aO, aCam, aLight, aHalf, aView, aSpin, aPivot, aSpinDeg != 0, aEye, aOpt);
+			drawObject(aM, aO, aCam, aLight, aHalf, aView, aLampPos, aSpin, aPivot, aSpinDeg != 0, aEye, aOpt);
 		}
 		flush();
 		if(aOpt.grid) {
@@ -239,7 +243,7 @@ public class Renderer3D {
 		return aR;
 	}
 
-	void drawObject(Model3D aModel, Object3D aO, Camera3D aCam, double[] aLight, double[] aHalf, double[] aView, double[] aSpin, double[] aPivot, boolean aSpinning, int aEye, Options aOpt) {
+	void drawObject(Model3D aModel, Object3D aO, Camera3D aCam, double[] aLight, double[] aHalf, double[] aView, double[] aLampPos, double[] aSpin, double[] aPivot, boolean aSpinning, int aEye, Options aOpt) {
 		Mesh3D aMesh = aO.mesh();
 		int aN = aMesh.nbVerts;
 		if(aN == 0) {
@@ -258,7 +262,7 @@ public class Renderer3D {
 		//Object of the library with its own materials (a texture chosen for the object replaces them)
 		boolean aOwn = aMesh.mats != null && !aO.hasAnyTexture();
 		if(aOwn) {
-			drawOwnMaterials(aMesh, aMat, aPos, aNM, aCam, aLight, aHalf, aO.id+1);
+			drawOwnMaterials(aMesh, aMat, aPos, aNM, aCam, aLight, aHalf, aView, aLampPos, aO.id+1);
 			return;
 		}
 		//Texture of each face (Object3D.faceTexture()), one context per texture; null = the color of the object
@@ -310,8 +314,13 @@ public class Renderer3D {
 			if(aMesh.twoSided && Math3D.dot(aNor, Math3D.sub(aCam.pos, aW)) < 0) {
 				aNor = Math3D.mul(aNor, -1);
 			}
-			double aDif = Math.max(0, Math3D.dot(aNor, aLight));
-			double aSpec = Math.pow(Math.max(0, Math3D.dot(aNor, aHalf)), 32)*0.35;
+			double[] aLv = aLight, aHv = aHalf;
+			if(aLampPos != null) {
+				aLv = Math3D.normalize(Math3D.sub(aLampPos, aW));
+				aHv = Math3D.normalize(Math3D.add(aLv, aView));
+			}
+			double aDif = Math.max(0, Math3D.dot(aNor, aLv));
+			double aSpec = Math.pow(Math.max(0, Math3D.dot(aNor, aHv)), 32)*0.35;
 			double aK = 0.28 + 0.72*aDif;
 			TexCtx aTex = aFaceTex[aVF[v]];
 			if(aTex != null) {
@@ -480,21 +489,35 @@ public class Renderer3D {
 	 * Mesh of an object of the library: per triangle its material (color x vertex color, texture tinted
 	 * by them, alpha mask), lit like the other objects
 	 */
-	void drawOwnMaterials(Mesh3D aMesh, double[] aMat, double[] aPos, double[] aNM, Camera3D aCam, double[] aLight, double[] aHalf, int aId) {
+	void drawOwnMaterials(Mesh3D aMesh, double[] aMat, double[] aPos, double[] aNM, Camera3D aCam, double[] aLight, double[] aHalf, double[] aView, double[] aLampPos, int aId) {
 		int aN = aMesh.nbVerts;
 		double[] aCx = new double[aN], aCy = new double[aN], aCz = new double[aN];
 		float[] aK = new float[aN], aS = new float[aN];
-		for(int v = 0;v < aN;v++) {
-			double[] aW = Math3D.add(Math3D.apply(aMat, new double[] {aMesh.pos[v*3], aMesh.pos[v*3+1], aMesh.pos[v*3+2]}), aPos);
-			double[] aC = aCam.toCam(aW);
-			aCx[v] = aC[0]; aCy[v] = aC[1]; aCz[v] = aC[2];
-			double[] aNor = Math3D.normalize(Math3D.apply(aNM, new double[] {aMesh.nor[v*3], aMesh.nor[v*3+1], aMesh.nor[v*3+2]}));
-			if(aMesh.twoSided && Math3D.dot(aNor, Math3D.sub(aCam.pos, aW)) < 0) {
-				aNor = Math3D.mul(aNor, -1);
+		//Each vertex on its own: by ranges on all the cores for the large meshes (the same values)
+		com.cubaix.TDenlive.utils.Par.Rows aVerts = (aV0, aV1) -> {
+			for(int v = aV0;v < aV1;v++) {
+				double[] aW = Math3D.add(Math3D.apply(aMat, new double[] {aMesh.pos[v*3], aMesh.pos[v*3+1], aMesh.pos[v*3+2]}), aPos);
+				double[] aC = aCam.toCam(aW);
+				aCx[v] = aC[0]; aCy[v] = aC[1]; aCz[v] = aC[2];
+				double[] aNor = Math3D.normalize(Math3D.apply(aNM, new double[] {aMesh.nor[v*3], aMesh.nor[v*3+1], aMesh.nor[v*3+2]}));
+				if(aMesh.twoSided && Math3D.dot(aNor, Math3D.sub(aCam.pos, aW)) < 0) {
+					aNor = Math3D.mul(aNor, -1);
+				}
+				double[] aLv = aLight, aHv = aHalf;
+				if(aLampPos != null) {
+					aLv = Math3D.normalize(Math3D.sub(aLampPos, aW));
+					aHv = Math3D.normalize(Math3D.add(aLv, aView));
+				}
+				double aDif = Math.max(0, Math3D.dot(aNor, aLv));
+				aK[v] = (float)(0.28 + 0.72*aDif);
+				aS[v] = (float)(255*Math.pow(Math.max(0, Math3D.dot(aNor, aHv)), 32)*0.35);
 			}
-			double aDif = Math.max(0, Math3D.dot(aNor, aLight));
-			aK[v] = (float)(0.28 + 0.72*aDif);
-			aS[v] = (float)(255*Math.pow(Math.max(0, Math3D.dot(aNor, aHalf)), 32)*0.35);
+		};
+		if(aN >= PARALLEL_MIN_ITEMS) {
+			com.cubaix.TDenlive.utils.Par.rows(aN, aVerts);
+		}
+		else {
+			aVerts.run(0, aN);
 		}
 		TexCtx[] aCtx = new TexCtx[aMesh.mats.length];
 		for(int m = 0;m < aCtx.length;m++) {
@@ -506,34 +529,52 @@ public class Renderer3D {
 				aCtx[m].tinted = true;
 			}
 		}
-		double[][] aPoly = new double[8][];
-		double[][] aV = new double[3][];
-		for(int t = 0;t < aMesh.nbTris;t++) {
-			int aMI = aMesh.triMat != null && t < aMesh.triMat.length ? aMesh.triMat[t] : 0;
-			Mesh3D.Material aM = aMesh.mats.length > 0 ? aMesh.mats[Math.max(0, Math.min(aMesh.mats.length-1, aMI))] : new Mesh3D.Material();
-			TexCtx aTex = aMesh.mats.length > 0 ? aCtx[Math.max(0, Math.min(aCtx.length-1, aMI))] : null;
-			for(int k = 0;k < 3;k++) {
-				int i = aMesh.tris[t*3+k];
-				double aR = aM.r, aG = aM.g, aB = aM.b;
-				if(aMesh.vcol != null) {
-					aR *= aMesh.vcol[i*3]; aG *= aMesh.vcol[i*3+1]; aB *= aMesh.vcol[i*3+2];
+		//Triangles prepared by chunks on all the cores for the large meshes, queued in their order (the same image)
+		//(by batches of FLUSH_TRIS: the memory of the queue stays bounded)
+		for(int aT0 = 0;aT0 < aMesh.nbTris;aT0 += FLUSH_TRIS) {
+		final int aB0 = aT0;
+		final int aNT = Math.min(FLUSH_TRIS, aMesh.nbTris-aT0);
+		int aNC = aNT >= PARALLEL_MIN_ITEMS ? com.cubaix.TDenlive.utils.Par.bandsFor(aNT) : 1;
+		@SuppressWarnings("unchecked")
+		java.util.ArrayList<Tri>[] aChunks = new java.util.ArrayList[aNC];
+		com.cubaix.TDenlive.utils.Par.each(aNC, c -> {
+			java.util.ArrayList<Tri> aOut = new java.util.ArrayList<Tri>();
+			double[][] aPoly = new double[8][];
+			double[][] aV = new double[3][];
+			for(int t = aB0+(int)(aNT*(long)c/aNC);t < aB0+(int)(aNT*(long)(c+1)/aNC);t++) {
+				int aMI = aMesh.triMat != null && t < aMesh.triMat.length ? aMesh.triMat[t] : 0;
+				Mesh3D.Material aM = aMesh.mats.length > 0 ? aMesh.mats[Math.max(0, Math.min(aMesh.mats.length-1, aMI))] : new Mesh3D.Material();
+				TexCtx aTex = aMesh.mats.length > 0 ? aCtx[Math.max(0, Math.min(aCtx.length-1, aMI))] : null;
+				for(int k = 0;k < 3;k++) {
+					int i = aMesh.tris[t*3+k];
+					double aR = aM.r, aG = aM.g, aB = aM.b;
+					if(aMesh.vcol != null) {
+						aR *= aMesh.vcol[i*3]; aG *= aMesh.vcol[i*3+1]; aB *= aMesh.vcol[i*3+2];
+					}
+					if(aTex != null) {
+						aV[k] = new double[] {aCx[i], aCy[i], aCz[i], aK[i], aS[i], 0, aMesh.uv[i*2], aMesh.uv[i*2+1], aR, aG, aB};
+					}
+					else {
+						aV[k] = new double[] {aCx[i], aCy[i], aCz[i],
+								Math.min(255, 255*aR*aK[i] + aS[i]), Math.min(255, 255*aG*aK[i] + aS[i]), Math.min(255, 255*aB*aK[i] + aS[i])};
+					}
 				}
-				if(aTex != null) {
-					aV[k] = new double[] {aCx[i], aCy[i], aCz[i], aK[i], aS[i], 0, aMesh.uv[i*2], aMesh.uv[i*2+1], aR, aG, aB};
+				if(aV[0][2] > Camera3D.NEAR && aV[1][2] > Camera3D.NEAR && aV[2][2] > Camera3D.NEAR) {
+					aOut.add(makeTri(aCam, aV[0], aV[1], aV[2], aId, aTex));
+					continue;
 				}
-				else {
-					aV[k] = new double[] {aCx[i], aCy[i], aCz[i],
-							Math.min(255, 255*aR*aK[i] + aS[i]), Math.min(255, 255*aG*aK[i] + aS[i]), Math.min(255, 255*aB*aK[i] + aS[i])};
+				int aNP = clipNear(new double[][] {aV[0], aV[1], aV[2]}, aPoly);
+				for(int p = 1;p < aNP-1;p++) {
+					aOut.add(makeTri(aCam, aPoly[0], aPoly[p], aPoly[p+1], aId, aTex));
 				}
 			}
-			if(aV[0][2] > Camera3D.NEAR && aV[1][2] > Camera3D.NEAR && aV[2][2] > Camera3D.NEAR) {
-				drawTri(aCam, aV[0], aV[1], aV[2], aId, aTex);
-				continue;
+			aChunks[c] = aOut;
+		});
+		for(java.util.ArrayList<Tri> aOut : aChunks) {
+			for(Tri aT : aOut) {
+				queue(aT);
 			}
-			int aNP = clipNear(new double[][] {aV[0], aV[1], aV[2]}, aPoly);
-			for(int p = 1;p < aNP-1;p++) {
-				drawTri(aCam, aPoly[0], aPoly[p], aPoly[p+1], aId, aTex);
-			}
+		}
 		}
 	}
 
@@ -564,19 +605,39 @@ public class Renderer3D {
 	 * rasterized by flush() in the order of the calls
 	 */
 	void drawTri(Camera3D aCam, double[] aA, double[] aB, double[] aC, int aId, TexCtx aTex) {
+		queue(makeTri(aCam, aA, aB, aC, aId, aTex));
+	}
+
+	/**
+	 * Queued in the order of the calls (null: nothing to draw), rasterized by flush()
+	 */
+	void queue(Tri aT) {
+		if(aT == null) {
+			return;
+		}
+		tris.add(aT);
+		if(tris.size() >= FLUSH_TRIS) {
+			flush();
+		}
+	}
+
+	/**
+	 * The triangle prepared for the rasterization (no side effect: any thread), null if not on the screen
+	 */
+	Tri makeTri(Camera3D aCam, double[] aA, double[] aB, double[] aC, int aId, TexCtx aTex) {
 		double aX0 = aCam.screenX(aA[0], aA[2]), aY0 = aCam.screenY(aA[1], aA[2]);
 		double aX1 = aCam.screenX(aB[0], aB[2]), aY1 = aCam.screenY(aB[1], aB[2]);
 		double aX2 = aCam.screenX(aC[0], aC[2]), aY2 = aCam.screenY(aC[1], aC[2]);
 		double aArea = (aX1-aX0)*(aY2-aY0) - (aX2-aX0)*(aY1-aY0);
 		if(Math.abs(aArea) < 1e-12) {
-			return;
+			return null;
 		}
 		int aMinX = (int)Math.max(0, Math.floor(Math.min(aX0, Math.min(aX1, aX2))));
 		int aMaxX = (int)Math.min(w-1, Math.ceil(Math.max(aX0, Math.max(aX1, aX2))));
 		int aMinY = (int)Math.max(0, Math.floor(Math.min(aY0, Math.min(aY1, aY2))));
 		int aMaxY = (int)Math.min(h-1, Math.ceil(Math.max(aY0, Math.max(aY1, aY2))));
 		if(aMinX > aMaxX || aMinY > aMaxY) {
-			return;
+			return null;
 		}
 		Tri aT = new Tri();
 		aT.a = aA; aT.b = aB; aT.c = aC;
@@ -599,10 +660,7 @@ public class Renderer3D {
 				aT.level = aTex.tex.level(Math.sqrt(aTexArea/Math.abs(aArea)));
 			}
 		}
-		tris.add(aT);
-		if(tris.size() >= FLUSH_TRIS) {
-			flush();
-		}
+		return aT;
 	}
 
 	/**

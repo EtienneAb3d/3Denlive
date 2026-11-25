@@ -138,7 +138,11 @@ public class TDeGUI {
 				}
 				finally {
 					display.syncExec(() -> history.reset());
-					display.asyncExec(() -> InpaintGUI.afterOpen(tde));
+					display.asyncExec(() -> {
+						InpaintGUI.afterOpen(tde);
+						//After its question (modal): the 3D scenes not computed here
+						SceneConvertGUI.offerMissing(tde);
+					});
 				}
 				setWaitCursor(false);
 			}
@@ -587,7 +591,7 @@ public class TDeGUI {
 		aTB.heightHint = h(25);
 		toolBar.setLayoutData(aTB);
 		applyColorFont(toolBar);
-		GridLayout aGL = new GridLayout(14, false);
+		GridLayout aGL = new GridLayout(15, false);
 		applyNoMargin(aGL);
 		toolBar.setLayout(aGL);
 
@@ -679,6 +683,18 @@ public class TDeGUI {
 			public void mouseDoubleClick(MouseEvent arg0) {
 			}
 		});
+
+		//What the AI can do on this machine (GPU / CPU of each model)
+		CLabel aMachine = new CLabel(toolBar,SWT.NONE);
+		aMachine.setImage(tde.gui.imgsSwt.getIcon("machine.png"));
+		aMachine.setAlignment(SWT.CENTER);
+		GridData aMachineGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
+		aMachineGD.widthHint = 32;
+		aMachineGD.heightHint = h(25);
+		aMachine.setLayoutData(aMachineGD);
+		applyColorFont(aMachine);
+		tip(aMachine, "Machine");
+		aMachine.addListener(SWT.MouseDown, e -> new MachineEvalGUI(tde));
 
 		//Current image of the monitor, saved in the render folder
 		CLabel aSaveView = new CLabel(toolBar,SWT.NONE);
