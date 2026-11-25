@@ -141,6 +141,7 @@ public class ProjectFiles {
 			File aDest = freeFile(new File(aDir), aSrc.getName());
 			//Named from the path (and the date for the sound): known before the move
 			File aOldWorkCopy = new File(StringUtils.path2workingcopy(aPath, aWork));
+			File aOldTexCopy = new File(StringUtils.path2texturecopy(aPath, aWork));
 			File aOldSound = AudioReader.cacheFileFor(aPath, aWork);
 			Vector<String[]> aDepths = new Vector<String[]>();
 			for(boolean aVideo : new boolean[] {false, true}) {
@@ -157,6 +158,9 @@ public class ProjectFiles {
 			//Work copy only if it is in the work folder (not an old one next to the media)
 			if(aOldWorkCopy.getAbsoluteFile().getParentFile().equals(new File(aWork).getAbsoluteFile())) {
 				transferWork(aOldWorkCopy, new File(StringUtils.path2workingcopy(aNew, aWork)), aMove);
+			}
+			if(aOldTexCopy.isFile()) {
+				transferWork(aOldTexCopy, new File(StringUtils.path2texturecopy(aNew, aWork)), aMove);
 			}
 			transferWork(aOldSound, AudioReader.cacheFileFor(aNew, aWork), aMove);
 			//The other audio streams decoded (multi-track mixer)

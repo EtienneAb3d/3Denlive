@@ -37,10 +37,21 @@ public class VideoReader {
 	BufferedImage lastImage = null;
 	int lastImageMode = -1;
 	
+	//Texture mode: reads, outside the RENDER mode, its texture copy at the VHS height (StringUtils.path2texturecopy())
+	//instead of the work copy (the 3D models textured by the video, Texture3D.MediaSource)
+	public final boolean texture;
+	//Height of the texture copies
+	public static final int TEXTURE_H = TDConfig.RESVALUES[TDConfig.RES_VHS];
+
 	public VideoReader(TDenlive aTDe,String aPath,VideoReader aSync) {
+		this(aTDe, aPath, aSync, false);
+	}
+
+	public VideoReader(TDenlive aTDe,String aPath,VideoReader aSync,boolean aTexture) {
 		tde = aTDe;
 		path = aPath;
 		sync = aSync;
+		texture = aTexture;
 		
 		//Get a first image at original size
 		read(TDConfig.PROCESSING_MODE_RENDER,0, 1,FfmpegDecoder.FILESIZE,FfmpegDecoder.FILEFPS);
@@ -79,10 +90,14 @@ public class VideoReader {
 	}
 
 	String workPath() {
-		return StringUtils.path2workingcopy(path, tde == null ? null : tde.getWorkCacheDir());
+		String aDir = tde == null ? null : tde.getWorkCacheDir();
+		return texture ? StringUtils.path2texturecopy(path, aDir) : StringUtils.path2workingcopy(path, aDir);
 	}
 
 	int workRes() {
+		if(texture) {
+			return TEXTURE_H;
+		}
 		return tde == null ? TDConfig.RESVALUES[TDConfig.RES_DVD] : tde.config.processingResValues[TDConfig.PROCESSING_MODE_WORK];
 	}
 
@@ -134,11 +149,11 @@ public class VideoReader {
 		}
 		new File(aPathWork).delete();
 		new File(StringUtils.path2processing(aPathWork)).delete();//Left by a session stopped while making it
-		if(tde != null) {
+		if(tde != null && !texture) {
 			new File(StringUtils.oldWorkingCopy(path, tde.getWorkCacheDir())).delete();
 		}
 		double aWorkFps = Math.min(15, origFps > 0 ? origFps : 15);
-		System.out.println("Work copy "+aSize[0]+"x"+aSize[1]+": "+path);
+		System.out.println((texture ? "Texture copy " : "Work copy ")+aSize[0]+"x"+aSize[1]+": "+path);
 		new FfmpegTranscoder().createWorkCopy(path, aPathWork, aSize[0], aSize[1], aWorkFps, () -> {
 			synchronized(MAKING) {
 				MAKING.remove(aPathWork);
@@ -216,7 +231,7 @@ public class VideoReader {
 		Thread aTh = new Thread(() -> {
 			java.util.HashSet<String> aDone = new java.util.HashSet<String>();
 			for(VideoReader aVR : aL) {
-				if(aVR.path != null && aDone.add(aVR.path)) {
+				if(aVR.path != null && aDone.add(aVR.texture+"|"+aVR.path)) {
 					aVR.checkWorkCopy();
 				}
 			}
@@ -231,7 +246,7 @@ public class VideoReader {
 	
 	public void read(int aProcessingMode,long aTimeOffset,int aNbFrames,String aResize,double aFps) {
 		long aTime = System.currentTimeMillis();
-		String aPath = StringUtils.path2workingcopy(path, tde == null ? null : tde.getWorkCacheDir());
+		String aPath = workPath();
 		if(aProcessingMode == TDConfig.PROCESSING_MODE_RENDER || new File(aPath).length() == 0) {
 			aPath = path;
 		}
@@ -288,14 +303,32 @@ public class VideoReader {
 //			readerTh = null;
 //		}
 	}
+	//Closed: no more reading, its feeding thread ends
+	volatile boolean closed = false;
+
+	/**
+	 * No longer used (a stream of texture of StereoMovie.textureViews() replaced): the decoder stopped, the
+	 * feeding thread ended
+	 */
+	public void close() {
+		closed = true;
+		synchronized(buffer) {
+			stopFeed();
+			buffer.clear();
+		}
+		synchronized(READERS) {
+			READERS.remove(this);
+		}
+	}
+
 	void startFeed() {
-		if(readerTh != null && readerTh.isAlive()) {
+		if(closed || (readerTh != null && readerTh.isAlive())) {
 			return;
 		}
 		readerTh = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				while(true) {
+				while(!closed) {
 					try {
 						Thread.sleep(10);
 					}

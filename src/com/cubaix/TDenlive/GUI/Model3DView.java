@@ -792,7 +792,8 @@ public class Model3DView {
 		Model3D aV = viewModel();
 		Rectangle aF = frameRect(1);
 		Renderer3D.Options aOpt = new Renderer3D.Options();
-		aOpt.ss = drag == DRAG_NONE || drag == DRAG_PENDING || drag == DRAG_EMPTY ? 2 : 1;
+		//Preview: no supersampling
+		aOpt.ss = 1;
 		aOpt.bck = BCK;
 		aOpt.grid = showGrid;
 		aOpt.frameH = aF.height;
@@ -944,7 +945,7 @@ public class Model3DView {
 		int aEW = Math.max(1, aF.width/aN);
 		int aEH = Math.max(1, aF.height);
 		Renderer3D.Options aOpt = new Renderer3D.Options();
-		aOpt.ss = drag == DRAG_NONE ? 2 : 1;
+		aOpt.ss = 1;
 		aOpt.bck = BCK;
 		BufferedImage aLI = Renderer3D.render(aV, aEW, aEH, -1, 0, aOpt).image;
 		BufferedImage aRI = Renderer3D.render(aV, aEW, aEH, 1, 0, aOpt).image;

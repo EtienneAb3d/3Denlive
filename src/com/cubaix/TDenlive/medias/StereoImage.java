@@ -106,6 +106,11 @@ public class StereoImage extends Media {
 					o++;
 					anamorphW=aOs.elementAt(o).text;
 				}
+				if("libName".equalsIgnoreCase(aT.tagName)) {
+					o++;
+					libName=com.cubaix.TDenlive.shapes.Shape.decode(aOs.elementAt(o).text.trim());
+					continue;
+				}
 				o = openProjectSub(aOs, o);
 			}
 		}
@@ -139,9 +144,10 @@ public class StereoImage extends Media {
 		aSB.append("			<pathL>" + pathL + "</pathL>\n");
 		aSB.append("			<pathR>" + pathR + "</pathR>\n");
 		aSB.append("			<rotateL>" + rotateL + "</rotateL>\n");
-		aSB.append("			<rotateR>" + rotateL + "</rotateR>\n");
+		aSB.append("			<rotateR>" + rotateR + "</rotateR>\n");
 		aSB.append("			<durationMS>" + durationMS + "</durationMS>\n");
 		aSB.append("			<anamorphW>" + anamorphW + "</anamorphW>\n");
+		saveLibName(aSB);
 		saveProjectSub(aSB);
 		aSB.append("		</"+aType+">\n");
 	}
@@ -465,8 +471,8 @@ public class StereoImage extends Media {
 		aW += 3;
 		
 		aGC.setFont(tde.gui.fontsSwt.robotoBold);
-		aGC.drawText(fileName, aX+aW, aY);
-		Point aTPF = aGC.stringExtent(fileName);
+		aGC.drawText(displayName(), aX+aW, aY);
+		Point aTPF = aGC.stringExtent(displayName());
 
 		aGC.setFont(tde.gui.fontsSwt.roboto);
 		Point aTPS = new Point(0, 0);
@@ -518,8 +524,8 @@ public class StereoImage extends Media {
 		aW += 3;
 		
 		aGC.setFont(tde.gui.fontsAwt.robotoBold);
-		aGC.drawString(fileName, aX+aW, aY);
-		Rectangle2D aTRF = aGC.getFontMetrics().getStringBounds(fileName,aGC);
+		aGC.drawString(displayName(), aX+aW, aY);
+		Rectangle2D aTRF = aGC.getFontMetrics().getStringBounds(displayName(),aGC);
 
 		aGC.setFont(tde.gui.fontsAwt.roboto);
 		Rectangle2D aTRS = new java.awt.Rectangle();

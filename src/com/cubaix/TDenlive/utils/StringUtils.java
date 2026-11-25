@@ -33,6 +33,14 @@ public class StringUtils {
 	}
 
 	/**
+	 * Texture copy of a video in the work folder: the same as path2workingcopy() at the VHS height, read by the 3D
+	 * models that have the video as texture outside the RENDER mode (VideoReader texture mode)
+	 */
+	public static String path2texturecopy(String aPath,String aWorkCacheDir) {
+		return path2workingcopy(aPath, aWorkCacheDir).replaceAll("_3De_WorkCopyHQ[.]mp4$", "_3De_WorkCopyTex.mp4");
+	}
+
+	/**
 	 * Work copy of the same video made by 1.11.6 and before in the work folder (deleted when a new one is made)
 	 */
 	public static String oldWorkingCopy(String aPath,String aWorkCacheDir) {

@@ -3176,7 +3176,7 @@ public class AiClipGUI {
 				}
 				else {
 					aPath = exportLibraryImage(aM);
-					aShown = aM.fileName;
+					aShown = aM.displayName();
 				}
 				if(aPath != null) {
 					aRef.path = aPath;
@@ -3282,7 +3282,7 @@ public class AiClipGUI {
 		final int aTW = 96, aTH = 54;
 		for(Media aM : aImages) {
 			org.eclipse.swt.widgets.TableItem aItem = new org.eclipse.swt.widgets.TableItem(aTable, SWT.NONE);
-			aItem.setText((aM.fileName != null ? aM.fileName : "?")+(aM instanceof StereoMovie ? tde.gui.lngs.get("AI.ImageLibraryVideo")
+			aItem.setText((aM.displayName() != null ? aM.displayName() : "?")+(aM instanceof StereoMovie ? tde.gui.lngs.get("AI.ImageLibraryVideo")
 					: aM instanceof AudioMedia ? tde.gui.lngs.get("AI.LibrarySound") : ""));
 			aItem.setData(aM);
 			try {

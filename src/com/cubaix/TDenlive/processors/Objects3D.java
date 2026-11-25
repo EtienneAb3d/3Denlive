@@ -546,6 +546,14 @@ public class Objects3D extends Processor {
 		}
 	}
 
+	/**
+	 * True if this processor renders the model itself at aTimePos (active, poses or camera not those of the
+	 * media): the image of the media is then not needed (Clip.reBuild() skips its rendering)
+	 */
+	public boolean rendersAt(long aTimePos) {
+		return isActive && !isIdentityAt(aTimePos);
+	}
+
 	boolean isIdentityAt(long aTimePos) {
 		Key aK = interpolate(keyTime(aTimePos));
 		if(aK.cam != null && !aK.cam.same(Cam.of(getBaseModel()))) {
@@ -571,23 +579,31 @@ public class Objects3D extends Processor {
 			return;
 		}
 		try {
-			BufferedImage aBIL = aMedia.getWorkLeft(aProcessingMode, aTime);
-			int aH = tde.config.processingResValues[aProcessingMode];
-			int aW = aBIL != null ? aBIL.getWidth() : (int)(tde.config.outRatio*aH);
-			if(aBIL != null) {
-				aH = aBIL.getHeight();
-			}
+			//The size of the image of the media (Model3DMedia.renderEye()), without rendering it (Clip.reBuild())
+			int aH = Math.max(1, tde.config.processingResValues[aProcessingMode]);
+			int aW = Math.max(1, (int)(aH*tde.config.outRatio));
 			Model3D aM = modelAt(aTime);
 			long aMediaTime = Math.max(0, getClip().mediaTimeMS(aTime));
 			double aSpin = aM.spin*aMediaTime/1000.0;
+			//Textured by images or videos: the monitor at the VHS height, enlarged after
+			int aRH = aM.renderHeight(aProcessingMode, aH);
+			int aRW = aRH == aH ? aW : Math.max(1, (int)Math.round(aW*aRH/(double)aH));
 			Renderer3D.Options aOpt = new Renderer3D.Options();
-			aOpt.ss = aW*(long)aH <= 2200000 ? 2 : 1;
+			//Anti-aliasing for the rendering only
+			aOpt.ss = Renderer3D.ssFor(aProcessingMode, aRW, aRH);
 			//Videos as textures: at the media time of the clip
 			aOpt.mode = aProcessingMode;
 			aOpt.timeMS = aMediaTime;
-			BufferedImage aL = Renderer3D.render(aM, aW, aH, -1, aSpin, aOpt).image;
-			BufferedImage aR = Renderer3D.render(aM, aW, aH, 1, aSpin, aOpt).image;
-			if(tde.config.processingHdr[aProcessingMode]) {
+			//Both eyes at the same time
+			Renderer3D.Result[] aRs = Renderer3D.renderPair(aM, aRW, aRH, aSpin, aOpt);
+			BufferedImage aL = aRs[0].image;
+			BufferedImage aR = aRs[1].image;
+			if(aRH != aH) {
+				boolean aHdr = tde.config.processingHdr[aProcessingMode];
+				aL = Renderer3D.enlarge(aL, aW, aH, aHdr);
+				aR = Renderer3D.enlarge(aR, aW, aH, aHdr);
+			}
+			else if(tde.config.processingHdr[aProcessingMode]) {
 				boolean aFast = tde.config.fastMode && aProcessingMode != TDConfig.PROCESSING_MODE_RENDER;
 				aL = ImageUtils.toRes(aL, aH, true, aFast, false);
 				aR = ImageUtils.toRes(aR, aH, true, aFast, false);

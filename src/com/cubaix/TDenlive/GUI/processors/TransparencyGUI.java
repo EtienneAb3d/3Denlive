@@ -110,7 +110,7 @@ public class TransparencyGUI extends ProcessorGUI {
 			if(aMedia instanceof AudioMedia) {
 				continue;
 			}
-			String aFileName = aMedia.fileName == null ? "?" : aMedia.fileName;
+			String aFileName = aMedia.displayName() == null ? "?" : aMedia.displayName();
 			if(aFileName.indexOf(" / ") > 0) {
 				aFileName = aFileName.substring(0,aFileName.indexOf(" / "));
 			}

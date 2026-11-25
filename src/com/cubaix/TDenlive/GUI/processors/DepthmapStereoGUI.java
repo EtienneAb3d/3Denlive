@@ -115,7 +115,7 @@ public class DepthmapStereoGUI extends ProcessorGUI {
 		//No depth map of the key: the computed ones if any
 		aValTextsR.add(new String[] {"",pl.computed != null ? tde.gui.lngs.get("DepthConvert.Computed") : ""});
 		for(Media aMedia : tde.mediaList.mediaList) {
-			String aFileName = aMedia.fileName;
+			String aFileName = aMedia.displayName() == null ? "?" : aMedia.displayName();
 			if(aFileName.indexOf(" / ") > 0) {
 				aFileName = aFileName.substring(0,aFileName.indexOf(" / "));
 			}

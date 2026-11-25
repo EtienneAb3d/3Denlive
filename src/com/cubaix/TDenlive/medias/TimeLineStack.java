@@ -678,6 +678,27 @@ public class TimeLineStack extends Media {
 	}
 
 	/**
+	 * Processors of the clips of the time lines that use aMedia (Processor.usesMediaKind()): {clip, processor,
+	 * kind of use}, in the order of the lines and of the clips
+	 */
+	public Vector<Object[]> processorUsesOf(Media aMedia) {
+		Vector<Object[]> aUses = new Vector<Object[]>();
+		Vector<VideoTimeLine> aTLs = new Vector<VideoTimeLine>(videoTimeLineStack);
+		aTLs.addAll(audioTimeLineStack);
+		for(VideoTimeLine aTL : aTLs) {
+			for(Clip aC : new Vector<Clip>(aTL.clipList)) {
+				for(Processor aP : new Vector<Processor>(aC.getProcessors())) {
+					String aKind = aP.usesMediaKind(aMedia);
+					if(aKind != null) {
+						aUses.add(new Object[] {aC, aP, aKind});
+					}
+				}
+			}
+		}
+		return aUses;
+	}
+
+	/**
 	 * aMedia leaves the media list: its clips are removed from the time lines (with their twins),
 	 * and the DepthmapStereo / Transparency keys that use it as depth map / mask no longer use it
 	 */

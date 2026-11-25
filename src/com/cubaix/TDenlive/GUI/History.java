@@ -786,8 +786,8 @@ public class History {
 		if(aM == null) {
 			return "";
 		}
-		if(aM.fileName != null && !aM.fileName.trim().isEmpty()) {
-			return new File(aM.fileName).getName();
+		if(aM.displayName() != null && !aM.displayName().trim().isEmpty()) {
+			return new File(aM.displayName()).getName();
 		}
 		return aM.getClass().getSimpleName();
 	}

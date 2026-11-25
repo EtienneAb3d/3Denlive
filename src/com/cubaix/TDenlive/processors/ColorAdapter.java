@@ -426,8 +426,9 @@ public class ColorAdapter extends Processor {
 		BufferedImage aFBI = ImageUtils.createImage(aWidth, aHeight);
 		int[] aFDB = ((DataBufferInt)aFBI.getRaster().getDataBuffer()).getData();
 
-		for(int x = 0;x<aWidth;x++) {
-			for(int y = 0;y<aHeight;y++) {
+		//Line by line (contiguous pixels), the lines on all the cores; same values as one thread
+		java.util.stream.IntStream.range(0, aHeight).parallel().forEach(y -> {
+			for(int x = 0;x<aWidth;x++) {
 				int aARGBL = aDB[y*aWidth+x];
 				int aAlpha = (aARGBL>>24) & 0xFF;//Alpha
 				int aR = (int)((aARGBL>>16) & 0xFF);//Red
@@ -463,7 +464,7 @@ public class ColorAdapter extends Processor {
 						;
 				aFDB[y*aWidth+x] = aPix;
 			}
-		}
+		});
 		return aFBI;
 
 	}
@@ -477,8 +478,9 @@ public class ColorAdapter extends Processor {
 		BufferedImage aFBI = ImageUtils.createHdr(aWidth, aHeight);
 		float[] aFDB = ((DataBufferFloat)aFBI.getRaster().getDataBuffer()).getData();
 
-		for(int x = 0;x<aWidth;x++) {
-			for(int y = 0;y<aHeight;y++) {
+		//Line by line (contiguous pixels), the lines on all the cores; same values as one thread
+		java.util.stream.IntStream.range(0, aHeight).parallel().forEach(y -> {
+			for(int x = 0;x<aWidth;x++) {
 				float aR = aDB[y*aWidth*4+x*4];//Red
 				float aG = aDB[y*aWidth*4+x*4+1];//Green
 				float aB = aDB[y*aWidth*4+x*4+2];//Blue
@@ -511,7 +513,7 @@ public class ColorAdapter extends Processor {
 			    aFDB[y*aWidth*4+x*4+2]=(float)aNewB;//Blue
 			    aFDB[y*aWidth*4+x*4+3]=aAlpha;//Alpha
 			}
-		}
+		});
 		return aFBI;
 
 	}

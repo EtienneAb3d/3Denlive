@@ -87,6 +87,24 @@ public class ProcessorsGUI extends CompositePanel {
 		}
 	}
 
+	/**
+	 * Scrolls the list of the processors to the panel of aP (after the layout)
+	 */
+	public void reveal(Processor aP) {
+		tde.gui.display.asyncExec(() -> {
+			updateScroll();
+			if(scroll == null || scroll.isDisposed() || scrollContent == null || scrollContent.isDisposed()) {
+				return;
+			}
+			for(org.eclipse.swt.widgets.Control aC : scrollContent.getChildren()) {
+				if(aC.getData(PROC_BOX) == aP) {
+					scroll.setOrigin(0, aC.getLocation().y);
+					return;
+				}
+			}
+		});
+	}
+
 	void scrollLater() {
 		if(scrollPending) {
 			return;

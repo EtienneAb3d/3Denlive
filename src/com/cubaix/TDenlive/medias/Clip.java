@@ -1025,7 +1025,9 @@ public class Clip extends Media {
 		}
 		workLeft = workRight = finalLeft = finalRight = null;
 		long aMediaTime = mediaTimeMS(aTime);
-		media.reBuild(aProcessingMode, aMediaTime);
+		if(!rendersOwnImage(aTime)) {
+			media.reBuild(aProcessingMode, aMediaTime);
+		}
 		//Copies: the GUI thread may change the lists meanwhile (precomputation, monitor)
 		Vector<Clip> aPaired = new Vector<Clip>(pairedClips);
 		for(Clip aC : aPaired) {
@@ -1053,6 +1055,22 @@ public class Clip extends Media {
 		}
 		finalLeft = getWorkLeft(aProcessingMode, aTime);
 		finalRight = getWorkRight(aProcessingMode, aTime);
+	}
+
+	/**
+	 * True if a processor of the clip makes its whole image at aTime (Objects3D animating the 3D model): the
+	 * image of the media, replaced, is not rendered
+	 */
+	boolean rendersOwnImage(long aTime) {
+		if(!(media instanceof Model3DMedia)) {
+			return false;
+		}
+		for(Processor aP : new Vector<Processor>(processors)) {
+			if(aP instanceof com.cubaix.TDenlive.processors.Objects3D) {
+				return ((com.cubaix.TDenlive.processors.Objects3D)aP).rendersAt(aTime);
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -1393,7 +1411,8 @@ public class Clip extends Media {
 		drawWave(aGC, aStartPos, bounds, aClippingR);
 		
 		aGC.setFont(tde.gui.fontsAwt.roboto);
-		aGC.drawString(fileName == null ? "" : fileName, bounds.x+3, bounds.y+aGC.getFontMetrics().getAscent());
+		String aName = media != null && media.displayName() != null ? media.displayName() : fileName;
+		aGC.drawString(aName == null ? "" : aName, bounds.x+3, bounds.y+aGC.getFontMetrics().getAscent());
 		
 		if(fadeInMS > 0) {
 			aGC.setColor(tde.gui.colorsAwt.CUBAIX_PINK);

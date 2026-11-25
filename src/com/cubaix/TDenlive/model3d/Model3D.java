@@ -45,6 +45,34 @@ public class Model3D {
 		return false;
 	}
 
+	//Height of the monitor images (all the modes but RENDER) of a model textured by images or videos: VHS
+	public static final int PREVIEW_PICTURE_H = com.cubaix.TDenlive.TDConfig.RESVALUES[com.cubaix.TDenlive.TDConfig.RES_VHS];
+
+	/**
+	 * True if an object (or a face) has an image or a video as texture (media of the media list, image of the disk)
+	 */
+	public boolean hasPictureTexture() {
+		for(Object3D aO : objects) {
+			for(String aT : aO.textures()) {
+				if(Texture3D.isPicture(aT)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Height at which to render the model for the processing mode aMode, aH the height asked: the textures of
+	 * images or videos are heavy, so the monitor (all the modes but RENDER) gets them at the VHS height at most
+	 */
+	public int renderHeight(int aMode, int aH) {
+		if(aMode != com.cubaix.TDenlive.TDConfig.PROCESSING_MODE_RENDER && aH > PREVIEW_PICTURE_H && hasPictureTexture()) {
+			return PREVIEW_PICTURE_H;
+		}
+		return aH;
+	}
+
 	/**
 	 * True if an object has the media aUID of the media list as texture
 	 */

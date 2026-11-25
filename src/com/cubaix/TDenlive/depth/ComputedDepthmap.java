@@ -128,6 +128,7 @@ public class ComputedDepthmap {
 		for(String aF : aFiles) {
 			if(aF.toLowerCase().endsWith(".mp4")) {
 				new File(StringUtils.path2workingcopy(aF, aWorkDir)).delete();
+				new File(StringUtils.path2texturecopy(aF, aWorkDir)).delete();
 			}
 		}
 	}

@@ -20,6 +20,30 @@ public class Model3DMedia extends StereoImage {
 	//Output ratio and media time of the last image
 	double lastProcessedRatio = 0;
 	long lastTime = Long.MIN_VALUE;
+	//Played alone from the media list (Play with the model selected): it turns as in the texture editor
+	//(Texture3DGUI: 2 degrees every 80 ms), one whole turn
+	static final double LIBRARY_SPIN_DEG_PER_S = 25;
+	boolean lastLibraryPlay = false;
+
+	/**
+	 * True while the model is played alone from the media list (playing or paused)
+	 */
+	boolean libraryPlay() {
+		return tde != null && tde.gui != null && tde.gui.playerControlGUI != null && tde.gui.playerControlGUI.isPlayingAlone(this);
+	}
+
+	/**
+	 * Time of the image: 0 when it does not change with the time (not animated, not played alone)
+	 */
+	long imageTime(long aTime) {
+		return !model.isAnimated() && !libraryPlay() ? 0 : Math.max(0, aTime);
+	}
+
+	@Override
+	public long getMaxTimePosMS() {
+		//Played alone: one whole turn at least
+		return libraryPlay() ? Math.max(durationMS, Math.round(360*1000/LIBRARY_SPIN_DEG_PER_S)) : durationMS;
+	}
 	//A media texture was missing at the last image / thumbnail (not loaded yet): made again
 	boolean missing = false;
 	boolean thumbMissing = false;
@@ -96,6 +120,20 @@ public class Model3DMedia extends StereoImage {
 	}
 
 	@Override
+	public java.util.LinkedHashMap<Long, String> usedMedias() {
+		java.util.LinkedHashMap<Long, String> aUs = new java.util.LinkedHashMap<Long, String>();
+		for(com.cubaix.TDenlive.model3d.Object3D aO : model.objects) {
+			for(String aT : aO.textures()) {
+				long aUID = com.cubaix.TDenlive.model3d.Texture3D.mediaUID(aT);
+				if(aUID >= 0) {
+					aUs.put(aUID, "Texture3D");
+				}
+			}
+		}
+		return aUs;
+	}
+
+	@Override
 	public double getDisplayRatio() {
 		//No size of its own: follows the output ratio
 		return 0;
@@ -103,7 +141,7 @@ public class Model3DMedia extends StereoImage {
 
 	@Override
 	public synchronized void reBuild(int aProcessingMode, long aTime) {
-		long aT = !model.isAnimated() ? 0 : Math.max(0, aTime);
+		long aT = imageTime(aTime);
 		if(thumbMissing) {
 			buildThumb();
 		}
@@ -111,7 +149,8 @@ public class Model3DMedia extends StereoImage {
 				&& lastProcessedRes == tde.config.processingResValues[aProcessingMode]
 						&& lastProcessedHdr == tde.config.processingHdr[aProcessingMode]
 								&& lastProcessedRatio == tde.config.outRatio
-										&& lastTime == aT) {
+										&& lastTime == aT
+												&& lastLibraryPlay == libraryPlay()) {
 			return;
 		}
 		workLeft = workRight = null;
@@ -131,13 +170,18 @@ public class Model3DMedia extends StereoImage {
 	 * Both eyes at a media time
 	 */
 	void render(int aProcessingMode, long aTime) {
-		lastTime = !model.isAnimated() ? 0 : Math.max(0, aTime);
+		lastTime = imageTime(aTime);
+		lastLibraryPlay = libraryPlay();
 		missing = false;
-		loadedLeft = renderEye(aProcessingMode, lastTime, -1);
-		loadedRight = renderEye(aProcessingMode, lastTime, 1);
+		//Both eyes at the same time
+		long aT = lastTime;
+		java.util.List<BufferedImage> aEyes = Renderer3D.both(() -> renderEye(aProcessingMode, aT, -1), () -> renderEye(aProcessingMode, aT, 1));
+		loadedLeft = aEyes.get(0);
+		loadedRight = aEyes.get(1);
 		if(origWidth <= 0) {
-			origWidth = loadedLeft.getWidth();
-			origHeight = loadedLeft.getHeight();
+			//Size of the full render (the monitor may render smaller: Model3D.renderHeight())
+			origHeight = Math.max(1, tde.config.processingResValues[aProcessingMode]);
+			origWidth = Math.max(1, (int)(origHeight*tde.config.outRatio));
 		}
 	}
 
@@ -145,16 +189,53 @@ public class Model3DMedia extends StereoImage {
 		int aHeight = Math.max(1, tde.config.processingResValues[aProcessingMode]);
 		lastProcessedRatio = tde.config.outRatio;
 		int aWidth = Math.max(1, (int)(aHeight*lastProcessedRatio));
+		//Textured by images or videos: the monitor at the VHS height, enlarged by getWorkLeft() / getWorkRight()
+		int aRH = model.renderHeight(aProcessingMode, aHeight);
+		if(aRH != aHeight) {
+			aHeight = aRH;
+			aWidth = Math.max(1, (int)(aHeight*lastProcessedRatio));
+		}
 		Renderer3D.Options aOpt = new Renderer3D.Options();
-		//Anti-aliasing up to the full HD, the memory of the samples grows fast beyond
-		aOpt.ss = aWidth*(long)aHeight <= 2200000 ? 2 : 1;
+		//Anti-aliasing for the rendering only
+		aOpt.ss = Renderer3D.ssFor(aProcessingMode, aWidth, aHeight);
 		aOpt.mode = aProcessingMode;
 		aOpt.timeMS = aTime;
-		BufferedImage aBI = Renderer3D.render(model, aWidth, aHeight, aEye, model.spin*aTime/1000.0, aOpt).image;
+		//Its own turntable, plus the turn of a play alone from the media list
+		double aSpin = model.spin*aTime/1000.0 + (libraryPlay() ? LIBRARY_SPIN_DEG_PER_S*aTime/1000.0 : 0);
+		BufferedImage aBI = Renderer3D.render(model, aWidth, aHeight, aEye, aSpin, aOpt).image;
 		if(aOpt.missing) {
 			missing = true;
 		}
 		return aBI;
+	}
+
+	@Override
+	public BufferedImage getWorkLeft(int aProcessingMode, long aTime) {
+		if(workLeft == null) {
+			workLeft = enlarged(loadedLeft, aProcessingMode);
+		}
+		return super.getWorkLeft(aProcessingMode, aTime);
+	}
+
+	@Override
+	public BufferedImage getWorkRight(int aProcessingMode, long aTime) {
+		if(workRight == null) {
+			workRight = enlarged(loadedRight, aProcessingMode);
+		}
+		return super.getWorkRight(aProcessingMode, aTime);
+	}
+
+	/**
+	 * An eye rendered below the height of the mode (Model3D.renderHeight()) enlarged bilinearly to it, else null
+	 * (the usual work image)
+	 */
+	BufferedImage enlarged(BufferedImage aBI, int aProcessingMode) {
+		int aH = Math.max(1, tde.config.processingResValues[aProcessingMode]);
+		if(aBI == null || aBI.getHeight() >= aH) {
+			return null;
+		}
+		int aW = Math.max(1, (int)Math.round(aBI.getWidth()*aH/(double)aBI.getHeight()));
+		return Renderer3D.enlarge(aBI, aW, aH, tde.config.processingHdr[aProcessingMode]);
 	}
 
 	@Override

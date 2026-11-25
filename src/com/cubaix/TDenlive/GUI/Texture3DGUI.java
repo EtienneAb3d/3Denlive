@@ -11,7 +11,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.ColorDialog;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Scale;
@@ -31,9 +30,10 @@ import com.cubaix.TDenlive.utils.StringUtils;
  * turning slowly (zoom slider and mouse wheel, 50 to 800 %), its two colors (the color of the object, and the second color of the procedural
  * textures), the library of the color clips (TextureLibrary; plain color = no texture), the
  * scale of the texture (%, logarithmic), its rotation, the repeats on a face (U / V, linked or not) and its
- * offset (% of a repeat). A shape of several faces (cube, cylinder, text...) gets a "Face" combo: "All faces" chooses
- * the texture of the object (Object3D.texture), a face its own one (Object3D.faceTex; "Same as all faces" removes it);
- * the other settings are shared by the faces.
+ * offset (% of a repeat). One row per face (one for an object without faces): "Modify..." (the textures in a popup:
+ * library of textures, image or video of the disk, media of the media list; for the first face of several: to all
+ * the faces or only to it), a thumbnail of its texture (a video: the image of the start of its range), its name and
+ * where the texture comes from; a click on a row edits the settings of that face (again: all the faces).
  * open() returns an object holding the chosen color and texture (Object3D.copyTextureTo()), or null.
  */
 public class Texture3DGUI {
@@ -62,7 +62,6 @@ public class Texture3DGUI {
 	Scale zoom = null;
 	Label zoomValue = null;
 	Runnable spin = null;
-	TextureLibrary library = null;
 	Button[] colorButtons = new Button[2];
 	Image[] colorImages = new Image[2];
 	Scale scale = null;
@@ -80,8 +79,20 @@ public class Texture3DGUI {
 	int face = -1;
 	//Settings of the texture of the face edited (Object3D.texParams()), stored by commit()
 	Object3D.TexParams cp = null;
-	Combo faceCombo = null;
-	Button sameAsAll = null;
+	//Rows of the faces (Modify, thumbnail of the texture, name, source), the label of the settings edited
+	Composite facesBox = null;
+	java.util.Vector<FaceRow> faceRows = new java.util.Vector<FaceRow>();
+	Label editedLabel = null;
+	static final int FACE_THUMB = 40;
+
+	class FaceRow {
+		int face;
+		String name;
+		Composite row;
+		Label thumb;
+		Image img;
+		Label src;
+	}
 	//Video texture: range of the media time looped (Object3D.texStartMS / texEndMS), shown only for a video
 	Composite rangeRow = null;
 	RangeSlider range = null;
@@ -141,6 +152,11 @@ public class Texture3DGUI {
 			}
 			if(previewImg != null) {
 				previewImg.dispose();
+			}
+			for(FaceRow aR : faceRows) {
+				if(aR.img != null) {
+					aR.img.dispose();
+				}
 			}
 		});
 
@@ -207,65 +223,32 @@ public class Texture3DGUI {
 			colorButtons[c] = aB;
 		}
 
-		//Face whose texture is chosen (shapes of several faces)
+		//The faces and their textures: one row per face (one for an object without faces)
+		Label aFacesTitle = new Label(shell, SWT.NONE);
+		aFacesTitle.setText(l("Texture3D.FacesTitle"));
+		tde.gui.applyColorFont(aFacesTitle);
+		aFacesTitle.setFont(tde.gui.fontsSwt.robotoBold);
+		facesBox = new Composite(shell, SWT.NONE);
+		facesBox.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		tde.gui.applyColorFont(facesBox);
+		GridLayout aFBL = new GridLayout(1, false);
+		tde.gui.applyNoMargin(aFBL);
+		aFBL.verticalSpacing = 2;
+		facesBox.setLayout(aFBL);
 		String[] aFaces = Object3D.faceNames(obj.type);
 		if(aFaces.length > 1) {
-			Composite aFaceRow = new Composite(shell, SWT.NONE);
-			aFaceRow.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-			tde.gui.applyColorFont(aFaceRow);
-			GridLayout aFGL = new GridLayout(3, false);
-			tde.gui.applyNoMargin(aFGL);
-			aFaceRow.setLayout(aFGL);
-			Label aFaceL = new Label(aFaceRow, SWT.NONE);
-			aFaceL.setText(l("Texture3D.Face"));
-			tde.gui.applyColorFont(aFaceL);
-			faceCombo = new Combo(aFaceRow, SWT.READ_ONLY | SWT.DROP_DOWN);
-			tde.gui.applyColorFont(faceCombo);
-			faceCombo.setToolTipText(l("Texture3D.FaceTip"));
-			faceCombo.add(l("Texture3D.AllFaces"));
-			for(String aF : aFaces) {
-				faceCombo.add(l("Texture3D.Face_" + aF));
+			for(int f = 0;f < aFaces.length;f++) {
+				addFaceRow(f, l("Texture3D.Face_" + aFaces[f]));
 			}
-			faceCombo.select(0);
-			faceCombo.addListener(SWT.Selection, e -> {
-				face = faceCombo.getSelectionIndex()-1;
-				previewTexMS = -1;
-				cp = obj.texParams(face).copy();
-				library.setTexture(face < 0 ? obj.texture : obj.faceTexture(face));
-				loadWidgets();
-				refreshWidgets();
-			});
-			sameAsAll = new Button(aFaceRow, SWT.PUSH);
-			sameAsAll.setText(l("Texture3D.SameAsAll"));
-			sameAsAll.setToolTipText(l("Texture3D.SameAsAllTip"));
-			tde.gui.applyColorFont(sameAsAll);
-			sameAsAll.addListener(SWT.Selection, e -> {
-				obj.setFaceTexture(face, null);
-				obj.setFaceParams(face, null);
-				cp = Object3D.TexParams.of(obj);
-				previewTexMS = -1;
-				library.setTexture(obj.faceTexture(face));
-				loadWidgets();
-				refreshWidgets();
-			});
 		}
-
-		library = new TextureLibrary(tde, shell, obj.texture, () -> colorsFill(), aT -> {
-			//Another video: looped whole at first
-			if(com.cubaix.TDenlive.model3d.Texture3D.isMoving(aT) && !aT.equals(editedTexture())) {
-				cp.startMS = 0;
-				cp.endMS = -1;
-				commit();
-			}
-			previewTexMS = -1;
-			if(face < 0) {
-				obj.texture = aT;
-			}
-			else {
-				obj.setFaceTexture(face, aT);
-			}
-			refreshWidgets();
-		}, true);
+		else {
+			addFaceRow(-1, l("Texture3D.ObjectRow"));
+		}
+		//Settings below: of the face chosen, or of all the faces
+		editedLabel = new Label(shell, SWT.NONE);
+		editedLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		tde.gui.applyColorFont(editedLabel);
+		editedLabel.setFont(tde.gui.fontsSwt.robotoBold);
 
 		//Repeats and offset
 		Composite aTiles = new Composite(shell, SWT.NONE);
@@ -489,7 +472,6 @@ public class Texture3DGUI {
 		else {
 			obj.color2 = aCol;
 		}
-		library.colorsChanged();
 		refreshWidgets();
 	}
 
@@ -608,9 +590,6 @@ public class Texture3DGUI {
 					&& !com.cubaix.TDenlive.model3d.Texture3D.isMedia(aT);
 		}
 		colorButtons[1].setEnabled(aProcedural);
-		if(sameAsAll != null) {
-			sameAsAll.setEnabled(face >= 0 && (obj.ownFaceTexture(face) != null || obj.ownFaceParams(face) != null));
-		}
 		for(Spinner aSp : repeats) {
 			aSp.setEnabled(aTextured);
 		}
@@ -643,9 +622,239 @@ public class Texture3DGUI {
 		}
 		colorButtons[0].getParent().layout();
 		updateOffsetLabels();
+		refreshFaces();
 		updateRange();
 		redrawPreview();
 	}
+
+	/**
+	 * Row of the face aFace (-1: the object without faces): Modify, thumbnail, name, source; a click on it edits
+	 * the settings of that face
+	 */
+	void addFaceRow(int aFace, String aName) {
+		FaceRow aR = new FaceRow();
+		aR.face = aFace;
+		aR.name = aName;
+		aR.row = new Composite(facesBox, SWT.NONE);
+		aR.row.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		tde.gui.applyColorFont(aR.row);
+		GridLayout aGL = new GridLayout(4, false);
+		aGL.marginWidth = 3;
+		aGL.marginHeight = 2;
+		aR.row.setLayout(aGL);
+		Button aModify = new Button(aR.row, SWT.PUSH);
+		aModify.setText(l("Texture3D.Modify"));
+		aModify.setToolTipText(l("Texture3D.ModifyTip"));
+		tde.gui.applyColorFont(aModify);
+		aModify.addListener(SWT.Selection, e -> modify(aR));
+		aR.thumb = new Label(aR.row, SWT.BORDER);
+		GridData aTGD = new GridData();
+		aTGD.widthHint = aTGD.heightHint = FACE_THUMB + 2;
+		aR.thumb.setLayoutData(aTGD);
+		Label aN = new Label(aR.row, SWT.NONE);
+		aN.setText(aName);
+		tde.gui.applyColorFont(aN);
+		aN.setFont(tde.gui.fontsSwt.robotoBold);
+		GridData aNGD = new GridData();
+		aNGD.widthHint = 80;
+		aN.setLayoutData(aNGD);
+		//A long path on two lines
+		aR.src = new Label(aR.row, SWT.WRAP);
+		GridData aSGD = new GridData(GridData.FILL_HORIZONTAL);
+		aSGD.widthHint = 300;
+		aR.src.setLayoutData(aSGD);
+		tde.gui.applyColorFont(aR.src);
+		if(aFace >= 0) {
+			for(org.eclipse.swt.widgets.Control aC : new org.eclipse.swt.widgets.Control[] {aR.row, aR.thumb, aN, aR.src}) {
+				aC.addListener(SWT.MouseDown, e -> selectFace(aR.face, true));
+				aC.setToolTipText(l("Texture3D.FaceRowTip"));
+			}
+		}
+		faceRows.add(aR);
+	}
+
+	/**
+	 * The settings below edit the face aFace (its own from the first change), -1 all the faces; aToggle: a click
+	 * on the face already edited goes back to all the faces
+	 */
+	void selectFace(int aFace, boolean aToggle) {
+		face = aToggle && aFace == face ? -1 : aFace;
+		previewTexMS = -1;
+		cp = obj.texParams(face).copy();
+		loadWidgets();
+		refreshWidgets();
+	}
+
+	/**
+	 * Another texture for the face of the row: chosen in the library of textures, an image or a video of the
+	 * disk, or a media of the media list; for the first face of several, to all the faces or only to it
+	 */
+	void modify(FaceRow aR) {
+		if(aR.face >= 0) {
+			selectFace(aR.face, false);
+		}
+		String aCur = aR.face < 0 ? obj.texture : obj.faceTexture(aR.face);
+		String aT = chooseTexture(aR.name, aCur);
+		if(aT == null) {
+			return;
+		}
+		boolean aAll = aR.face < 0;
+		if(aR.face == 0 && faceRows.size() > 1) {
+			int aAnswer = askAllFaces(aR.name);
+			if(aAnswer < 0) {
+				return;
+			}
+			aAll = aAnswer == 1;
+		}
+		applyTexture(aR.face, aT, aAll);
+	}
+
+	/**
+	 * aT on the face aFace, or on all the faces (the texture of the object, the own textures of the faces removed,
+	 * their settings kept)
+	 */
+	void applyTexture(int aFace, String aT, boolean aAll) {
+		String aOld = aAll ? obj.texture : obj.faceTexture(aFace);
+		if(aAll) {
+			obj.texture = aT;
+			for(int f = 0;f < Object3D.faceNames(obj.type).length;f++) {
+				obj.setFaceTexture(f, null);
+			}
+			face = faceRows.size() > 1 ? -1 : face;
+		}
+		else {
+			obj.setFaceTexture(aFace, aT);
+			face = aFace;
+		}
+		cp = obj.texParams(face).copy();
+		//Another video: looped whole at first
+		if(com.cubaix.TDenlive.model3d.Texture3D.isMoving(aT) && !aT.equals(aOld)) {
+			cp.startMS = 0;
+			cp.endMS = -1;
+			commit();
+		}
+		previewTexMS = -1;
+		loadWidgets();
+		refreshWidgets();
+	}
+
+	/**
+	 * Popup of the textures (library of textures, image or video of the disk, media of the media list) for aName,
+	 * aCurrent shown selected; the texture clicked, null if canceled
+	 */
+	String chooseTexture(String aName, String aCurrent) {
+		Shell aS = new Shell(shell, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+		aS.setText(l("Texture3D.ChooseTitle").replace("%s", aName));
+		aS.setLayout(new GridLayout(1, false));
+		tde.gui.applyColorFont(aS);
+		final String[] aRes = {null};
+		new TextureLibrary(tde, aS, aCurrent, () -> colorsFill(), aT -> {
+			aRes[0] = aT;
+			aS.close();
+		}, true);
+		Button aCancel = new Button(aS, SWT.PUSH);
+		aCancel.setText(l("ColorBck.Cancel"));
+		tde.gui.applyColorFont(aCancel);
+		aCancel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+		aCancel.addListener(SWT.Selection, e -> aS.close());
+		centerAndRun(aS);
+		return aRes[0];
+	}
+
+	/**
+	 * 1: all the faces, 0: only the face aName, -1: canceled
+	 */
+	int askAllFaces(String aName) {
+		Shell aS = new Shell(shell, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+		aS.setText(l("Texture3D.Title"));
+		aS.setLayout(new GridLayout(1, false));
+		tde.gui.applyColorFont(aS);
+		Label aQ = new Label(aS, SWT.WRAP);
+		aQ.setText(l("Texture3D.AllFacesQuestion").replace("%s", aName));
+		tde.gui.applyColorFont(aQ);
+		Composite aBs = new Composite(aS, SWT.NONE);
+		aBs.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+		tde.gui.applyColorFont(aBs);
+		aBs.setLayout(new GridLayout(3, false));
+		final int[] aRes = {-1};
+		String[] aTexts = {l("Texture3D.ApplyAllFaces"), l("Texture3D.ApplyOnlyFace").replace("%s", aName), l("ColorBck.Cancel")};
+		int[] aVals = {1, 0, -1};
+		for(int b = 0;b < 3;b++) {
+			Button aB = new Button(aBs, SWT.PUSH);
+			aB.setText(aTexts[b]);
+			tde.gui.applyColorFont(aB);
+			final int aV = aVals[b];
+			aB.addListener(SWT.Selection, e -> {
+				aRes[0] = aV;
+				aS.close();
+			});
+			if(b == 0) {
+				aS.setDefaultButton(aB);
+			}
+		}
+		centerAndRun(aS);
+		return aRes[0];
+	}
+
+	/**
+	 * A popup of this window centered on it, until it is closed
+	 */
+	void centerAndRun(Shell aS) {
+		aS.pack();
+		Rectangle aP = shell.getBounds();
+		Rectangle aB = aS.getBounds();
+		aS.setLocation(aP.x + (aP.width - aB.width) / 2, aP.y + (aP.height - aB.height) / 2);
+		aS.open();
+		while(!aS.isDisposed()) {
+			if(!tde.gui.display.readAndDispatch()) {
+				tde.gui.display.sleep();
+			}
+		}
+	}
+
+	/**
+	 * Thumbnails and sources of the faces, the face edited highlighted, the label of the settings
+	 */
+	void refreshFaces() {
+		ColorBck.Fill aColors = colorsFill();
+		for(FaceRow aR : faceRows) {
+			if(aR.row.isDisposed()) {
+				continue;
+			}
+			String aT = aR.face < 0 ? obj.texture : obj.faceTexture(aR.face);
+			if(aR.img != null) {
+				aR.thumb.setImage(null);
+				aR.img.dispose();
+			}
+			//A video: the image of the start of the range of the face
+			long aStart = com.cubaix.TDenlive.model3d.Texture3D.isMoving(aT) ? Math.max(0, obj.texParams(aR.face).startMS) : -1;
+			aR.img = ImageUtils.imageToSwt(tde.gui.display, TextureLibrary.thumbOf(tde, aT, aColors, FACE_THUMB, aStart));
+			aR.thumb.setImage(aR.img);
+			String aSrc = TextureLibrary.sourceOf(tde, aT);
+			aR.src.setText(aSrc);
+			aR.src.setToolTipText(aSrc);
+			boolean aEdited = aR.face >= 0 && aR.face == face;
+			Color aBg = aEdited ? tde.gui.colorsSwt.PINK_L92 : shell.getBackground();
+			aR.row.setBackground(aBg);
+			for(org.eclipse.swt.widgets.Control aC : aR.row.getChildren()) {
+				if(!(aC instanceof Button)) {
+					aC.setBackground(aBg);
+				}
+			}
+		}
+		if(editedLabel != null && !editedLabel.isDisposed()) {
+			String aName = null;
+			for(FaceRow aR : faceRows) {
+				if(aR.face >= 0 && aR.face == face) {
+					aName = aR.name;
+				}
+			}
+			editedLabel.setText(faceRows.size() <= 1 ? l("Texture3D.SettingsTitle")
+					: aName == null ? l("Texture3D.SettingsAll") : l("Texture3D.SettingsFace").replace("%s", aName));
+		}
+		facesBox.layout(true, true);
+	}
+
 
 	/**
 	 * Texture of the face edited (that of the object for all faces)
@@ -730,6 +939,8 @@ public class Texture3DGUI {
 			aO.ry = previewAngle;
 		}
 		Renderer3D.Options aOpt = new Renderer3D.Options();
+		//Preview: no supersampling
+		aOpt.ss = 1;
 		aOpt.bck = 0xFF505050;
 		//Video texture: the image of the thumb moved, else the start of its range
 		aOpt.texTimeMS = previewTexMS;

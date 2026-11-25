@@ -299,6 +299,11 @@ public class Transparency extends Processor {
 	/**
 	 * True if a key uses aMedia (of the media list) as mask
 	 */
+	@Override
+	public String usesMediaKind(Media aMedia) {
+		return usesMaskMedia(aMedia) ? "Mask" : null;
+	}
+
 	public boolean usesMaskMedia(Media aMedia) {
 		for(Key aK : keys) {
 			if(aK.maskClip != null && aK.maskClip.getMedia() == aMedia) {

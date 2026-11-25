@@ -30,6 +30,32 @@ public abstract class Media extends Drawable {
 	Vector<TimeListener> timeListenersRemove = new Vector<TimeListener>();
 	
 	public String fileName = null;
+	//Name given in the media list (MediaPropsGUI), null = the file name; saved as <libName> when set
+	public String libName = null;
+
+	/**
+	 * Name shown for the media (media list, clips, choices): the one given in the media list, else the file name
+	 */
+	public String displayName() {
+		return libName != null && !libName.trim().isEmpty() ? libName.trim() : fileName;
+	}
+
+	/**
+	 * Medias of the media list this one uses, by UID, with the kind of use (language key MediaProps.Use_<kind>):
+	 * none by default (Model3DMedia: its textures)
+	 */
+	public java.util.LinkedHashMap<Long, String> usedMedias() {
+		return new java.util.LinkedHashMap<Long, String>();
+	}
+
+	/**
+	 * <libName> of the project, only when a name was given (encoded: any character)
+	 */
+	public void saveLibName(StringBuffer aSB) {
+		if(libName != null && !libName.trim().isEmpty()) {
+			aSB.append("			<libName>" + com.cubaix.TDenlive.shapes.Shape.encode(libName.trim()) + "</libName>\n");
+		}
+	}
 	public String metaData = "";
 	public int origRes = 0;
 	public double origRatio = 16.0/9.0;

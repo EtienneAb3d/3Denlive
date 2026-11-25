@@ -364,6 +364,8 @@ public class ObjectLibraryGUI {
 		}
 		previewModel.objects.get(0).ry = previewAngle;
 		Renderer3D.Options aOpt = new Renderer3D.Options();
+		//Preview: no supersampling
+		aOpt.ss = 1;
 		aOpt.bck = 0xFF505050;
 		return Renderer3D.render(previewModel, aW, aH, 0, 0, aOpt).image;
 	}

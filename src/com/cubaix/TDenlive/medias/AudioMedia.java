@@ -55,6 +55,10 @@ public class AudioMedia extends Media {
 					o++;
 					durationMS=Long.parseLong(aOs.elementAt(o).text);
 				}
+				if("libName".equalsIgnoreCase(aT.tagName)) {
+					o++;
+					libName=com.cubaix.TDenlive.shapes.Shape.decode(aOs.elementAt(o).text.trim());
+				}
 			}
 		}
 		return o;
@@ -75,6 +79,7 @@ public class AudioMedia extends Media {
 		aSB.append("			<UID>" + UID + "</UID>\n");
 		aSB.append("			<path>" + path + "</path>\n");
 		aSB.append("			<durationMS>" + durationMS + "</durationMS>\n");
+		saveLibName(aSB);
 		aSB.append("		</AudioMedia>\n");
 	}
 
@@ -223,8 +228,8 @@ public class AudioMedia extends Media {
 		aW += 3;
 
 		aGC.setFont(tde.gui.fontsSwt.robotoBold);
-		aGC.drawText(fileName, aX+aW, aY);
-		Point aTPF = aGC.stringExtent(fileName);
+		aGC.drawText(displayName(), aX+aW, aY);
+		Point aTPF = aGC.stringExtent(displayName());
 
 		aGC.setFont(tde.gui.fontsSwt.roboto);
 		String aKind = tde.gui.lngs.get("MediaOpen.Audio");

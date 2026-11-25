@@ -424,6 +424,11 @@ public class TDenlive {
 
 			@Override
 			public java.awt.image.BufferedImage[] views(long aUID, int aMode, long aTimeMS) {
+				return views(aUID, aMode, aTimeMS, "");
+			}
+
+			@Override
+			public java.awt.image.BufferedImage[] views(long aUID, int aMode, long aTimeMS, String aStream) {
 				Media aM = media(aUID);
 				if(aM == null) {
 					return null;
@@ -432,6 +437,10 @@ public class TDenlive {
 				if(aM instanceof com.cubaix.TDenlive.medias.StereoMovie) {
 					long aD = aM.getDurationMS();
 					aT = aD > 0 ? aTimeMS % aD : 0;
+					if(aMode != TDConfig.PROCESSING_MODE_RENDER) {
+						//The monitor: its texture copy at the VHS height (WorkCache), with readers of its own
+						return ((com.cubaix.TDenlive.medias.StereoMovie)aM).textureViews(aT, aStream);
+					}
 				}
 				try {
 					synchronized(aM) {
@@ -459,7 +468,7 @@ public class TDenlive {
 			@Override
 			public String name(long aUID) {
 				Media aM = media(aUID);
-				return aM != null ? aM.fileName : null;
+				return aM != null ? aM.displayName() : null;
 			}
 		};
 	}

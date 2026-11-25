@@ -11,6 +11,30 @@ import java.util.Set;
  * mipmap level of each triangle (Texture3D), lit by the diffuse factor and the highlight of its vertices.
  */
 public class Renderer3D {
+	/**
+	 * aBI enlarged bilinearly to aW x aH (an image rendered smaller for the monitor, Model3D.renderHeight()),
+	 * HDR when aHdr; aBI itself when already at that size and not to be made HDR
+	 */
+	public static BufferedImage enlarge(BufferedImage aBI, int aW, int aH, boolean aHdr) {
+		if(aBI == null || (!aHdr && aBI.getWidth() == aW && aBI.getHeight() == aH)) {
+			return aBI;
+		}
+		BufferedImage aOut = com.cubaix.TDenlive.utils.ImageUtils.createImage(Math.max(1, aW), Math.max(1, aH), aHdr);
+		java.awt.Graphics2D aG = (java.awt.Graphics2D)aOut.getGraphics();
+		aG.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		aG.drawImage(aBI, 0, 0, aOut.getWidth(), aOut.getHeight(), null);
+		aG.dispose();
+		return aOut;
+	}
+
+	/**
+	 * Supersampling of the images of the processing mode aMode at aW x aH: none outside RENDER (monitor, previews:
+	 * 4 times fewer samples), 2 x 2 for the rendering up to the full HD (the memory of the samples grows fast beyond)
+	 */
+	public static int ssFor(int aMode, int aW, int aH) {
+		return aMode == com.cubaix.TDenlive.TDConfig.PROCESSING_MODE_RENDER && aW*(long)aH <= 2200000 ? 2 : 1;
+	}
+
 	public static class Options {
 		public int ss = 2;//Supersampling (1 = none)
 		public int bck = 0;//ARGB, 0 = transparent
@@ -63,19 +87,23 @@ public class Renderer3D {
 		//Texels per uv unit relative to the image (mipmap level): fu * fv * k^2
 		double areaK = 1;
 
-		int sample(double aU, double aV) {
+		/**
+		 * Color at (aU, aV); aLevel, aFu, aFv: those of the triangle (Tri), the context being shared by the
+		 * triangles rasterized in parallel
+		 */
+		int sample(double aU, double aV, int aLevel, double aFu, double aFv) {
 			if(picture) {
 				double aCu = wrapU ? aU - Math.floor(aU) : aU;
 				double aCv = wrapV ? aV - Math.floor(aV) : aV;
-				double aS = 0.5 + (aCu-0.5)*fu*k + offU;
-				double aT = 0.5 + (aCv-0.5)*fv*k + offV;
+				double aS = 0.5 + (aCu-0.5)*aFu*k + offU;
+				double aT = 0.5 + (aCv-0.5)*aFv*k + offV;
 				if(aS < 0 || aS > 1 || aT < 0 || aT > 1) {
 					return outside;
 				}
-				return tex.sampleClamp(aS, aT, level);
+				return tex.sampleClamp(aS, aT, aLevel);
 			}
 			if(tex != null) {
-				return tex.sample(aU, aV, level);
+				return tex.sample(aU, aV, aLevel);
 			}
 			double aM = com.cubaix.TDenlive.medias.ColorBck.Fill.mix(procedural, aU-Math.floor(aU), 1-(aV-Math.floor(aV)));
 			int aR = (int)(((c1>>16)&0xFF) + (((c2>>16)&0xFF)-((c1>>16)&0xFF))*aM + 0.5);
@@ -90,6 +118,68 @@ public class Renderer3D {
 	int[] col;
 	float[] zb;
 	int[] idb;
+
+	/**
+	 * Triangle ready to be rasterized: its screen bounds, barycentric planes, 1/z, u/z, v/z, and the texture
+	 * values of its own (mipmap level, image fit), the TexCtx being shared
+	 */
+	static final class Tri {
+		double[] a, b, c;
+		int id;
+		TexCtx tex;
+		int level;
+		double fu = 1, fv = 1;
+		int minX, maxX, minY, maxY;
+		double a0, b0, c0, a1, b1, c1;
+		double iz0, iz1, iz2;
+		double uz0, uz1, uz2, vz0, vz1, vz2;
+	}
+
+	//Triangles queued by drawTri(), rasterized in order by flush() (bands of lines on all the cores)
+	final java.util.ArrayList<Tri> tris = new java.util.ArrayList<Tri>();
+	//Queue flushed beyond this count (memory of the large meshes)
+	static final int FLUSH_TRIS = 20000;
+	//Samples below which the rasterization stays on the calling thread (thumbnails, small previews)
+	static final int PARALLEL_MIN_SAMPLES = 128*128;
+	//Lines per band at least
+	static final int BAND_MIN_LINES = 8;
+	//Second eye of renderPair() (the first one on the calling thread)
+	static final java.util.concurrent.ExecutorService EYES = java.util.concurrent.Executors.newCachedThreadPool(aR -> {
+		Thread aT = new Thread(aR, "3De-Render3D-Eye");
+		aT.setDaemon(true);
+		return aT;
+	});
+
+	/**
+	 * Both eyes {left, right} computed at the same time: aLeft on another thread, aRight on this one
+	 */
+	public static <T> java.util.List<T> both(java.util.function.Supplier<T> aLeft, java.util.function.Supplier<T> aRight) {
+		java.util.concurrent.Future<T> aF = EYES.submit(aLeft::get);
+		T aR = aRight.get();
+		try {
+			return java.util.Arrays.asList(aF.get(), aR);
+		}
+		catch(java.util.concurrent.ExecutionException e) {
+			Throwable aC = e.getCause() != null ? e.getCause() : e;
+			if(aC instanceof RuntimeException) {
+				throw (RuntimeException)aC;
+			}
+			throw new RuntimeException(aC);
+		}
+		catch(InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Both eyes of the model, computed at the same time
+	 */
+	public static Result[] renderPair(Model3D aM, int aW, int aH, double aSpinDeg, Options aOpt) {
+		Options aO = aOpt == null ? new Options() : aOpt;
+		java.util.List<Result> aRs = both(() -> render(aM, aW, aH, -1, aSpinDeg, aO), () -> render(aM, aW, aH, 1, aSpinDeg, aO));
+		return new Result[] {aRs.get(0), aRs.get(1)};
+	}
 
 	/**
 	 * Image of the model seen by one eye (-1 left, 0 center, 1 right), turned by aSpinDeg around the
@@ -123,6 +213,7 @@ public class Renderer3D {
 		for(Object3D aO : aM.objects) {
 			drawObject(aM, aO, aCam, aLight, aHalf, aView, aSpin, aPivot, aSpinDeg != 0, aEye, aOpt);
 		}
+		flush();
 		if(aOpt.grid) {
 			drawGrid(aCam);
 		}
@@ -469,7 +560,8 @@ public class Renderer3D {
 	}
 
 	/**
-	 * Triangle of camera points {x, y, z, r, g, b}, or textured {x, y, z, diffuse, highlight, -, u, v}
+	 * Triangle of camera points {x, y, z, r, g, b}, or textured {x, y, z, diffuse, highlight, -, u, v}: queued,
+	 * rasterized by flush() in the order of the calls
 	 */
 	void drawTri(Camera3D aCam, double[] aA, double[] aB, double[] aC, int aId, TexCtx aTex) {
 		double aX0 = aCam.screenX(aA[0], aA[2]), aY0 = aCam.screenY(aA[1], aA[2]);
@@ -486,23 +578,78 @@ public class Renderer3D {
 		if(aMinX > aMaxX || aMinY > aMaxY) {
 			return;
 		}
+		Tri aT = new Tri();
+		aT.a = aA; aT.b = aB; aT.c = aC;
+		aT.id = aId;
+		aT.tex = aTex;
+		aT.minX = aMinX; aT.maxX = aMaxX; aT.minY = aMinY; aT.maxY = aMaxY;
 		//Barycentric weights: w = a*x + b*y + c
-		double aA0 = (aY1-aY2)/aArea, aB0 = (aX2-aX1)/aArea, aC0 = (aX1*aY2-aX2*aY1)/aArea;
-		double aA1 = (aY2-aY0)/aArea, aB1 = (aX0-aX2)/aArea, aC1 = (aX2*aY0-aX0*aY2)/aArea;
-		double aIz0 = 1/aA[2], aIz1 = 1/aB[2], aIz2 = 1/aC[2];
+		aT.a0 = (aY1-aY2)/aArea; aT.b0 = (aX2-aX1)/aArea; aT.c0 = (aX1*aY2-aX2*aY1)/aArea;
+		aT.a1 = (aY2-aY0)/aArea; aT.b1 = (aX0-aX2)/aArea; aT.c1 = (aX2*aY0-aX0*aY2)/aArea;
+		aT.iz0 = 1/aA[2]; aT.iz1 = 1/aB[2]; aT.iz2 = 1/aC[2];
 		//Texture: u/z and v/z are linear on the screen
-		double aUz0 = 0, aUz1 = 0, aUz2 = 0, aVz0 = 0, aVz1 = 0, aVz2 = 0;
 		if(aTex != null) {
-			aUz0 = aA[6]*aIz0; aUz1 = aB[6]*aIz1; aUz2 = aC[6]*aIz2;
-			aVz0 = aA[7]*aIz0; aVz1 = aB[7]*aIz1; aVz2 = aC[7]*aIz2;
+			aT.uz0 = aA[6]*aT.iz0; aT.uz1 = aB[6]*aT.iz1; aT.uz2 = aC[6]*aT.iz2;
+			aT.vz0 = aA[7]*aT.iz0; aT.vz1 = aB[7]*aT.iz1; aT.vz2 = aC[7]*aT.iz2;
+			aT.fu = aTex.fu;
+			aT.fv = aTex.fv;
 			if(aTex.tex != null) {
 				//Mipmap level: texels of the triangle per pixel of the screen
 				double aTexArea = Math.abs((aB[6]-aA[6])*(aC[7]-aA[7]) - (aC[6]-aA[6])*(aB[7]-aA[7]))*aTex.tex.width()*aTex.tex.height()*aTex.areaK;
-				aTex.level = aTex.tex.level(Math.sqrt(aTexArea/Math.abs(aArea)));
+				aT.level = aTex.tex.level(Math.sqrt(aTexArea/Math.abs(aArea)));
 			}
 		}
+		tris.add(aT);
+		if(tris.size() >= FLUSH_TRIS) {
+			flush();
+		}
+	}
+
+	/**
+	 * Rasterizes the queued triangles, in their order, by bands of lines on all the cores (each band owns its
+	 * samples: the same image as one thread), then empties the queue
+	 */
+	void flush() {
+		if(tris.isEmpty()) {
+			return;
+		}
+		Tri[] aTs = tris.toArray(new Tri[0]);
+		tris.clear();
+		int aCores = Runtime.getRuntime().availableProcessors();
+		int aBands = w*(long)h < PARALLEL_MIN_SAMPLES || aCores <= 1 ? 1 : Math.max(1, Math.min(aCores*4, h/BAND_MIN_LINES));
+		if(aBands == 1) {
+			rasterBand(aTs, 0, h);
+			return;
+		}
+		int aNB = aBands;
+		java.util.stream.IntStream.range(0, aNB).parallel().forEach(b -> rasterBand(aTs, (int)(h*(long)b/aNB), (int)(h*(long)(b+1)/aNB)));
+	}
+
+	/**
+	 * The triangles aTs on the lines [aY0, aY1[
+	 */
+	void rasterBand(Tri[] aTs, int aY0, int aY1) {
+		for(Tri aT : aTs) {
+			if(aT.maxY < aY0 || aT.minY >= aY1) {
+				continue;
+			}
+			raster(aT, Math.max(aY0, aT.minY), Math.min(aY1-1, aT.maxY));
+		}
+	}
+
+	/**
+	 * Samples of the triangle aT on the lines aYFrom..aYTo
+	 */
+	void raster(Tri aT, int aYFrom, int aYTo) {
+		double[] aA = aT.a, aB = aT.b, aC = aT.c;
+		TexCtx aTex = aT.tex;
+		int aId = aT.id;
+		double aA0 = aT.a0, aB0 = aT.b0, aC0 = aT.c0, aA1 = aT.a1, aB1 = aT.b1, aC1 = aT.c1;
+		double aIz0 = aT.iz0, aIz1 = aT.iz1, aIz2 = aT.iz2;
+		double aUz0 = aT.uz0, aUz1 = aT.uz1, aUz2 = aT.uz2, aVz0 = aT.vz0, aVz1 = aT.vz1, aVz2 = aT.vz2;
+		int aMinX = aT.minX, aMaxX = aT.maxX;
 		final double aEps = -1e-7;
-		for(int y = aMinY;y <= aMaxY;y++) {
+		for(int y = aYFrom;y <= aYTo;y++) {
 			double aPy = y+0.5;
 			int aRow = y*w;
 			for(int x = aMinX;x <= aMaxX;x++) {
@@ -526,8 +673,8 @@ public class Renderer3D {
 				}
 				if(aTex != null) {
 					double aZ = 1/(aW0*aIz0 + aW1*aIz1 + aW2*aIz2);
-					int aT = aTex.sample((aW0*aUz0 + aW1*aUz1 + aW2*aUz2)*aZ, (aW0*aVz0 + aW1*aVz1 + aW2*aVz2)*aZ);
-					if(aTex.alphaCut && (aT>>>24) < 128) {
+					int aTx = aTex.sample((aW0*aUz0 + aW1*aUz1 + aW2*aUz2)*aZ, (aW0*aVz0 + aW1*aVz1 + aW2*aVz2)*aZ, aT.level, aT.fu, aT.fv);
+					if(aTex.alphaCut && (aTx>>>24) < 128) {
 						continue;
 					}
 					zb[i] = aIz;
@@ -540,8 +687,8 @@ public class Renderer3D {
 						aKg *= (aW0*aA[9]*aIz0 + aW1*aB[9]*aIz1 + aW2*aC[9]*aIz2)*aZ;
 						aKb *= (aW0*aA[10]*aIz0 + aW1*aB[10]*aIz1 + aW2*aC[10]*aIz2)*aZ;
 					}
-					col[i] = 0xFF000000 | (clamp((int)(((aT>>16)&0xFF)*aKr + aS)) << 16)
-							| (clamp((int)(((aT>>8)&0xFF)*aKg + aS)) << 8) | clamp((int)((aT&0xFF)*aKb + aS));
+					col[i] = 0xFF000000 | (clamp((int)(((aTx>>16)&0xFF)*aKr + aS)) << 16)
+							| (clamp((int)(((aTx>>8)&0xFF)*aKg + aS)) << 8) | clamp((int)((aTx&0xFF)*aKb + aS));
 					if(idb != null) {
 						idb[i] = aId;
 					}
@@ -634,7 +781,11 @@ public class Renderer3D {
 			return;
 		}
 		int aNb = aSS*aSS;
-		for(int y = 0;y < aH;y++) {
+		java.util.stream.IntStream aYs = java.util.stream.IntStream.range(0, aH);
+		if(w*(long)h >= PARALLEL_MIN_SAMPLES) {
+			aYs = aYs.parallel();
+		}
+		aYs.forEach(y -> {
 			for(int x = 0;x < aW;x++) {
 				long aSa = 0, aSr = 0, aSg = 0, aSb = 0;
 				for(int sy = 0;sy < aSS;sy++) {
@@ -655,7 +806,7 @@ public class Renderer3D {
 				int aA = (int)(aSa/aNb);
 				aOut[y*aW+x] = (aA << 24) | ((int)(aSr/aSa) << 16) | ((int)(aSg/aSa) << 8) | (int)(aSb/aSa);
 			}
-		}
+		});
 	}
 
 	/**

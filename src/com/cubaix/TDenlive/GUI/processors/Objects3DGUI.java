@@ -403,9 +403,58 @@ public class Objects3DGUI extends ProcessorGUI implements Model3DView.Source {
 			}
 			updateKey();
 			lkf.checkAddMode(tde.timeLineStack.getTimePosMS());
-			refreshModel();
-			refreshPanel();
-			view.redraw();
+			if(isPlaying()) {
+				//While playing, only the key row follows: the editable view (a full render of the model, its video
+				//textures read at another place) is shown again once the play is over
+				previewStale = true;
+				watchPlayEnd();
+				return;
+			}
+			refreshPreview();
 		});
 	}
+
+	//View, tree and fields not refreshed during the play (see timeChanged())
+	boolean previewStale = false;
+	boolean watchingPlayEnd = false;
+
+	boolean isPlaying() {
+		return tde.gui.playerControlGUI != null && tde.gui.playerControlGUI.isPlaying();
+	}
+
+	void refreshPreview() {
+		previewStale = false;
+		refreshModel();
+		refreshPanel();
+		view.redraw();
+	}
+
+	/**
+	 * Refresh of the view at the end of the play (stop or pause: the time may not change any more)
+	 */
+	void watchPlayEnd() {
+		if(watchingPlayEnd) {
+			return;
+		}
+		watchingPlayEnd = true;
+		tde.gui.display.timerExec(PLAY_END_CHECK_MS, new Runnable() {
+			@Override
+			public void run() {
+				if(wgt.isDisposed()) {
+					watchingPlayEnd = false;
+					return;
+				}
+				if(isPlaying()) {
+					tde.gui.display.timerExec(PLAY_END_CHECK_MS, this);
+					return;
+				}
+				watchingPlayEnd = false;
+				if(previewStale) {
+					refreshPreview();
+				}
+			}
+		});
+	}
+
+	static final int PLAY_END_CHECK_MS = 150;
 }

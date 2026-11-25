@@ -22,6 +22,8 @@ public class Texture3D {
 	public static final String MEDIA = "media:";
 	//Largest side of a texture made from a media (halved down to it)
 	static final int MEDIA_MAX_SIDE = 2048;
+	//Same for the monitor (all the modes but RENDER): rendered at the VHS height (Model3D.renderHeight())
+	static final int MEDIA_PREVIEW_MAX_SIDE = 512;
 
 	/**
 	 * Images of the medias of the media list (set by the application)
@@ -32,6 +34,15 @@ public class Texture3D {
 		 * missing (not loaded yet, removed)
 		 */
 		BufferedImage[] views(long aUID, int aMode, long aTimeMS);
+
+		/**
+		 * Same for the stream aStream: the images of one sequence of times (a loop range of a face), read by a
+		 * reader of their own outside RENDER, so that two faces showing the same video at different times don't
+		 * make one reader seek back and forth at each image
+		 */
+		default BufferedImage[] views(long aUID, int aMode, long aTimeMS, String aStream) {
+			return views(aUID, aMode, aTimeMS);
+		}
 
 		/**
 		 * True if its image changes with the time (a video)
@@ -52,7 +63,8 @@ public class Texture3D {
 	public static MediaSource medias = null;
 
 	/**
-	 * Textures of the medias: last frame per media and mode
+	 * Textures of the medias: last frame per media, mode and stream (loop range: two faces of one video at
+	 * different times keep their own frame)
 	 */
 	static class MediaFrame {
 		long time;
@@ -124,7 +136,7 @@ public class Texture3D {
 	 * missing
 	 */
 	public static Texture3D ofMedia(String aTexture, int aEye, int aMode, long aTimeMS) {
-		return ofMedia(aTexture, aEye, aMode, aTimeMS, 0, -1);
+		return ofMedia(aTexture, aEye, aMode, aTimeMS, 0, -2);
 	}
 
 	/**
@@ -137,7 +149,9 @@ public class Texture3D {
 		}
 		boolean aMoving = medias.isMoving(aUID);
 		long aT = aMoving ? loopTime(aTimeMS, aStartMS, aEndMS, medias.durationMS(aUID)) : 0;
-		String aKey = aUID + "|" + aMode;
+		//One stream per loop range (the time of the preview of a range: its own one)
+		String aStream = aStartMS + ";" + aEndMS;
+		String aKey = aUID + "|" + aMode + "|" + aStream;
 		MediaFrame aF;
 		synchronized(FRAMES) {
 			aF = FRAMES.get(aKey);
@@ -149,17 +163,18 @@ public class Texture3D {
 		}
 		synchronized(aF) {
 			if(!aMoving || aF.time != aT || aF.left == null) {
-				BufferedImage[] aVs = medias.views(aUID, aMode, aT);
+				BufferedImage[] aVs = medias.views(aUID, aMode, aT, aStream);
 				if(aVs == null || aVs[0] == null) {
 					return null;
 				}
 				BufferedImage aR = aVs.length > 1 && aVs[1] != null ? aVs[1] : aVs[0];
 				//A still image: the same images, the same textures
+				int aMax = aMode == com.cubaix.TDenlive.TDConfig.PROCESSING_MODE_RENDER ? MEDIA_MAX_SIDE : MEDIA_PREVIEW_MAX_SIDE;
 				if(aVs[0] != aF.srcL || aF.left == null) {
-					aF.left = fromView(aVs[0]);
+					aF.left = fromView(aVs[0], aMax);
 				}
 				if(aR != aF.srcR || aF.right == null) {
-					aF.right = aR == aVs[0] ? aF.left : fromView(aR);
+					aF.right = aR == aVs[0] ? aF.left : fromView(aR, aMax);
 				}
 				aF.srcL = aVs[0];
 				aF.srcR = aR;
@@ -170,9 +185,9 @@ public class Texture3D {
 	}
 
 	/**
-	 * Opaque texture of a view of a media (8 bits or HDR), reduced to MEDIA_MAX_SIDE at most
+	 * Opaque texture of a view of a media (8 bits or HDR), halved down to aMaxSide at most
 	 */
-	static Texture3D fromView(BufferedImage aBI) {
+	static Texture3D fromView(BufferedImage aBI, int aMaxSide) {
 		int aW = aBI.getWidth(), aH = aBI.getHeight();
 		int[] aPix = new int[aW*aH];
 		java.awt.image.DataBuffer aDB = aBI.getRaster().getDataBuffer();
@@ -193,7 +208,7 @@ public class Texture3D {
 			}
 		}
 		//Halved down to the largest side
-		while(aW > MEDIA_MAX_SIDE || aH > MEDIA_MAX_SIDE) {
+		while(aW > aMaxSide || aH > aMaxSide) {
 			int aNW = Math.max(1, aW/2), aNH = Math.max(1, aH/2);
 			int[] aN = new int[aNW*aNH];
 			for(int y = 0;y < aNH;y++) {

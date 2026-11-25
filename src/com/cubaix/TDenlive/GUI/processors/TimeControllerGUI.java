@@ -11,6 +11,7 @@ import com.cubaix.TDenlive.TDenlive;
 import com.cubaix.TDenlive.GUI.widgets.LabelImageButton;
 import com.cubaix.TDenlive.GUI.widgets.LabelText;
 import com.cubaix.TDenlive.medias.Clip;
+import com.cubaix.TDenlive.medias.Media;
 import com.cubaix.TDenlive.processors.Processor;
 import com.cubaix.TDenlive.processors.TimeController;
 
@@ -45,7 +46,8 @@ public class TimeControllerGUI extends ProcessorGUI {
 		aName.setBackground(tde.gui.colorsSwt.WHITE);
 		aName.setForeground(tde.gui.colorsSwt.CUBAIX_BLUE);
 		aName.setFont(tde.gui.fontsSwt.robotoBold);
-		aName.setText(tc.targetMedia.fileName);
+		Media aShownM = tc.targetMedia instanceof Clip && ((Clip)tc.targetMedia).getMedia() != null ? ((Clip)tc.targetMedia).getMedia() : tc.targetMedia;
+		aName.setText(aShownM.displayName() != null ? aShownM.displayName() : "");
 		aName.setAlignment(SWT.CENTER);
 		
 		Clip aClip = (Clip)tc.targetMedia;

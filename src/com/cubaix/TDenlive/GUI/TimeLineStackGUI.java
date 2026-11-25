@@ -228,6 +228,38 @@ public class TimeLineStackGUI extends CanvasPanel {
 		redraw();
 	}
 
+	/**
+	 * Scrolls the time lines vertically so that the line aTL is visible (below the fixed ruler); nothing when
+	 * it already is (MediaPropsGUI: occurrences of a media)
+	 */
+	public void showLine(VideoTimeLine aTL) {
+		if(aTL == null || aTL.bounds == null || canvas == null || canvas.isDisposed()) {
+			return;
+		}
+		Rectangle aClient = canvas.getClientArea();
+		TimeLineStack aTLS = tde.timeLineStack;
+		int aTop = aTLS.rulerBounds != null ? aTLS.rulerBounds.height : 0;
+		int aY = aTL.bounds.y, aH = aTL.bounds.height;
+		int aShift = 0;
+		if(aY < aTop) {
+			aShift = aTop - aY;
+		}
+		else if(aY + aH > aClient.height) {
+			//Its bottom shown, its top first when it is taller than the view
+			aShift = Math.max(aClient.height - (aY + aH), aTop - aY);
+		}
+		if(aShift == 0) {
+			return;
+		}
+		int aMaxScroll = Math.max(0, (bounds != null ? bounds.height : 0) - aClient.height);
+		origin.y = Math.max(-aMaxScroll, Math.min(0, origin.y + aShift));
+		org.eclipse.swt.widgets.ScrollBar aVBar = canvas.getVerticalBar();
+		if(aVBar != null) {
+			aVBar.setSelection(-origin.y);
+		}
+		redraw();
+	}
+
 	@Override
 	public void redraw() {
 		//Content changed: always render again, even if the paint is merged with a self repaint

@@ -398,6 +398,12 @@ public class PlayerControlGUI extends CompositePanel {
 		if(clipClock == null || clipClock.isDisposed()) {
 			return;
 		}
+		if(org.eclipse.swt.widgets.Display.getCurrent() == null) {
+			//Called from another thread (TimeLineStackGUI.redraw() at the opening of a project): an SWT exception
+			//there stopped the opening before TDenlive.markSaved(), and the project was said modified at the end
+			tde.gui.display.asyncExec(this::updateClipClock);
+			return;
+		}
 		boolean aHasClip = tde.selected.clips.size() > 0;
 		if(clipClock.isFocusControl() && aHasClip && StringUtils.clock2Time(clipClock.getText()) < 0) {
 			return;
@@ -703,6 +709,13 @@ public class PlayerControlGUI extends CompositePanel {
 	 */
 	public boolean isPlaying() {
 		return playing;
+	}
+
+	/**
+	 * True if aMedia is played alone from the media list (playing or paused)
+	 */
+	public boolean isPlayingAlone(Media aMedia) {
+		return (playing || paused) && playedIsLib && playedMedia == aMedia;
 	}
 
 	void setPlaying(boolean aPlaying) {

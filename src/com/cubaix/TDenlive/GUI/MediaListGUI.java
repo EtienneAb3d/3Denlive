@@ -106,22 +106,8 @@ public class MediaListGUI extends CanvasPanel {
 				return;
 			}
 			tde.mediaList.select(e.x, e.y, true);
-			tde.gui.setMultiPropsPanel(TDeGUI.MULTIPROPSPANEL_PROPS);
-			tde.gui.setMultiMonitorPanel(TDeGUI.MULTIMONITORPANEL_MONITOR);
-			if(tde.selected.medias.size() == 1) {
-				//First image of the media (Play then plays it alone)
-				tde.selected.medias.elementAt(0).setRequestedTimePosMS(0);
-				tde.gui.playerControlGUI.showClock(0);
-				tde.gui.monitorGUI.setMedia(tde.selected.medias.elementAt(0));
-				tde.gui.propsGUI.setMedia(tde.selected.medias.elementAt(0));
-			}
-			else {
-				tde.gui.monitorGUI.clean();
-				tde.gui.propsGUI.clean();
-			}
-			canvas.redraw();
+			showSelection();
 		});
-		
 		canvas.addListener(SWT.MouseDoubleClick,e -> {
 			if(buttonAt(e.x, e.y) != 0) {
 				return;
@@ -220,6 +206,71 @@ public class MediaListGUI extends CanvasPanel {
 	}
 
 	/**
+	 * Monitor and media panel after a change of the selection of the media list (click, selectMedia())
+	 */
+	void showSelection() {
+		tde.gui.setMultiPropsPanel(TDeGUI.MULTIPROPSPANEL_PROPS);
+		tde.gui.setMultiMonitorPanel(TDeGUI.MULTIMONITORPANEL_MONITOR);
+		if(tde.selected.medias.size() == 1) {
+			//First image of the media (Play then plays it alone)
+			tde.selected.medias.elementAt(0).setRequestedTimePosMS(0);
+			tde.gui.playerControlGUI.showClock(0);
+			tde.gui.monitorGUI.setMedia(tde.selected.medias.elementAt(0));
+			tde.gui.propsGUI.setMedia(tde.selected.medias.elementAt(0));
+		}
+		else {
+			tde.gui.monitorGUI.clean();
+			tde.gui.propsGUI.clean();
+		}
+		canvas.redraw();
+	}
+
+	/**
+	 * Selects aMedia alone, as a click on it (MediaPropsGUI: medias using it / used by it), and scrolls the media
+	 * list to it
+	 */
+	public void selectMedia(Media aMedia) {
+		if(aMedia == null || !tde.mediaList.mediaList.contains(aMedia)) {
+			return;
+		}
+		tde.selected.medias.clear();
+		for(Media aM : tde.mediaList.mediaList) {
+			aM.selState = aM == aMedia ? com.cubaix.TDenlive.GUI.Drawable.THUMBSELSTATE_SELECTED : com.cubaix.TDenlive.GUI.Drawable.THUMBSELSTATE_NONE;
+		}
+		tde.selected.medias.add(aMedia);
+		showMedia(aMedia);
+		showSelection();
+	}
+
+	/**
+	 * Vertical scroll so that aMedia is visible (its bounds are those of the last drawing)
+	 */
+	void showMedia(Media aMedia) {
+		if(aMedia.bounds == null || canvas.isDisposed()) {
+			return;
+		}
+		org.eclipse.swt.graphics.Rectangle aClient = canvas.getClientArea();
+		int aY = aMedia.bounds.y, aH = aMedia.bounds.height;
+		int aShift = 0;
+		if(aY < 0) {
+			aShift = -aY;
+		}
+		else if(aY + aH > aClient.height) {
+			aShift = Math.max(aClient.height - (aY + aH), -aY);
+		}
+		if(aShift == 0) {
+			return;
+		}
+		int aMaxScroll = Math.max(0, (bounds != null ? bounds.height : 0) - aClient.height);
+		origin.y = Math.max(-aMaxScroll, Math.min(0, origin.y + aShift));
+		org.eclipse.swt.widgets.ScrollBar aVBar = canvas.getVerticalBar();
+		if(aVBar != null) {
+			aVBar.setSelection(-origin.y);
+		}
+	}
+
+
+	/**
 	 * Remove a media from the list, after a confirmation if it is used in the montage
 	 * (its clips are removed from the time lines too)
 	 */
@@ -237,7 +288,7 @@ public class MediaListGUI extends CanvasPanel {
 			}
 		}
 		if(aClips.size() > 0 || aDepths.size() > 0 || aModels.size() > 0) {
-			String aName = aMedia.fileName == null ? "?" : new File(aMedia.fileName).getName();
+			String aName = aMedia.displayName() == null ? "?" : new File(aMedia.displayName()).getName();
 			String aMsg = tde.gui.lngs.get(aClips.size() > 0 ? "MediaTrash.Used" : "MediaTrash.UsedDepthOnly")
 					.replace("%s", aName).replace("%n", ""+aClips.size());
 			if(aClips.size() > 0 && aDepths.size() > 0) {

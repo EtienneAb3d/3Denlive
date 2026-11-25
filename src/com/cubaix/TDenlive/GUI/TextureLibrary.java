@@ -86,12 +86,98 @@ public class TextureLibrary {
 			if(aN == null) {
 				return aTDe.gui.lngs.get("Texture3D.MediaMissing");
 			}
-			return aN + (Texture3D.medias.isMoving(aUID) ? aTDe.gui.lngs.get("Texture3D.Video") : "");
+			//(the leading space of the language entry is not kept)
+			return aN + (Texture3D.medias.isMoving(aUID) ? " " + aTDe.gui.lngs.get("Texture3D.Video").trim() : "");
 		}
 		if(ColorBck.Fill.isFile(aTexture)) {
 			return ColorBck.Fill.baseName(aTexture);
 		}
 		return aTDe.gui.lngs.get("ColorBck.Tex_" + ColorBck.Fill.baseName(aTexture));
+	}
+
+	/**
+	 * Thumbnail aSize x aSize of a texture: a media of the media list (its thumbnail) or an image (whole, its
+	 * ratio kept, on gray), a procedural texture or the plain color in aColors (two tiles per side)
+	 */
+	public static BufferedImage thumbOf(TDenlive aTDe, String aTexture, ColorBck.Fill aColors, int aSize) {
+		return thumbOf(aTDe, aTexture, aColors, aSize, -1);
+	}
+
+	/**
+	 * Same, a video at the media time aVideoMS (>= 0; its left view, read by a stream of its own), else its
+	 * thumbnail of the media list
+	 */
+	public static BufferedImage thumbOf(TDenlive aTDe, String aTexture, ColorBck.Fill aColors, int aSize, long aVideoMS) {
+		BufferedImage aOut = ImageUtils.createImage(aSize, aSize);
+		java.awt.Graphics2D aG = aOut.createGraphics();
+		aG.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		try {
+			String aT = aTexture == null ? ColorBck.Fill.PLAIN : aTexture;
+			BufferedImage aSrc = null;
+			if(Texture3D.isMedia(aT)) {
+				com.cubaix.TDenlive.medias.Media aM = aTDe.mediaList != null ? aTDe.mediaList.getMediaByUID(Texture3D.mediaUID(aT)) : null;
+				aSrc = aM != null ? aM.getThumbAwt() : null;
+				if(aM != null && aVideoMS >= 0 && Texture3D.isMoving(aT) && Texture3D.medias != null) {
+					BufferedImage[] aVs = Texture3D.medias.views(aM.UID, com.cubaix.TDenlive.TDConfig.PROCESSING_MODE_WORK, aVideoMS, "thumb");
+					if(aVs != null && aVs[0] != null) {
+						aSrc = aVs[0];
+					}
+				}
+				if(aSrc == null) {
+					aG.setColor(java.awt.Color.DARK_GRAY);
+					aG.fillRect(0, 0, aSize, aSize);
+					return aOut;
+				}
+			}
+			else if(ColorBck.Fill.isBitmap(aT)) {
+				aSrc = ColorBck.Fill.bitmap(aT);
+			}
+			if(aSrc != null) {
+				aG.setColor(new java.awt.Color(0x50, 0x50, 0x50));
+				aG.fillRect(0, 0, aSize, aSize);
+				double aK = Math.min(aSize/(double)aSrc.getWidth(), aSize/(double)aSrc.getHeight());
+				int aW = Math.max(1, (int)Math.round(aSrc.getWidth()*aK)), aH = Math.max(1, (int)Math.round(aSrc.getHeight()*aK));
+				aG.drawImage(aSrc, (aSize-aW)/2, (aSize-aH)/2, aW, aH, null);
+				return aOut;
+			}
+			ColorBck.Fill aF = aColors.copy();
+			aF.texture = aT;
+			if(ColorBck.Fill.CHECKER.equals(aT)) {
+				aF.color = ColorBck.Fill.CHECKER_GRAY;
+				aF.color2 = ColorBck.Fill.CHECKER_WHITE;
+				aF.tileW = aF.tileH = 100;
+			}
+			else {
+				aF.tileW = aF.tileH = 50;
+			}
+			aF.tileX = aF.tileY = 0;
+			aF.paint(aOut);
+		}
+		catch(Throwable t) {
+			t.printStackTrace(System.err);
+		}
+		finally {
+			aG.dispose();
+		}
+		return aOut;
+	}
+
+	/**
+	 * Where a texture comes from: the plain color, a texture of the library of textures, the path of an image of
+	 * the disk, or the name of a media of the media list
+	 */
+	public static String sourceOf(TDenlive aTDe, String aTexture) {
+		String aT = aTexture == null ? ColorBck.Fill.PLAIN : aTexture;
+		if(ColorBck.Fill.PLAIN.equals(aT)) {
+			return aTDe.gui.lngs.get("Texture3D.SrcPlain");
+		}
+		if(Texture3D.isMedia(aT)) {
+			return aTDe.gui.lngs.get("Texture3D.SrcMedia").replace("%s", label(aTDe, aT));
+		}
+		if(ColorBck.Fill.isFile(aT)) {
+			return aTDe.gui.lngs.get("Texture3D.SrcFile").replace("%s", aT.substring(ColorBck.Fill.FILE.length()));
+		}
+		return aTDe.gui.lngs.get("Texture3D.SrcTextures").replace("%s", label(aTDe, aT));
 	}
 
 	void createContents() {

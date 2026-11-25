@@ -29,6 +29,10 @@ public class StereoMovie extends StereoImage {
 	String stripKey = null;
 	//No sound track used (e.g. a depth map video: the sound is the one of the clip)
 	public boolean noSound = false;
+	//Readers of the texture copies (VHS height), for the 3D models textured by this video (textureViews()): one
+	//pair {left, right} per stream (loop range of a face), the most recently used last, TEX_STREAMS at most
+	final java.util.LinkedHashMap<String, VideoReader[]> texReaders = new java.util.LinkedHashMap<String, VideoReader[]>(8, 0.75f, true);
+	static final int TEX_STREAMS = 4;
 	
 	public StereoMovie(TDenlive aTDe) {
 		super(aTDe);
@@ -252,10 +256,106 @@ public class StereoMovie extends StereoImage {
 	}
 	
 	/**
+	 * Both views {left, right} of the video at the media time aTime for the 3D models that have it as texture,
+	 * outside the RENDER mode: read from its texture copies at the VHS height in the WorkCache (made in the
+	 * background, the original reduced to that size meanwhile), by readers of their own (the clips of the video
+	 * keep theirs and the state of the media is not touched), rotation and anamorphosis included; null if missing
+	 */
+	public BufferedImage[] textureViews(long aTime) {
+		return textureViews(aTime, "");
+	}
+
+	/**
+	 * Same for the stream aStream (loop range of a face): its own readers, so that two faces showing this video
+	 * at different times each read it forward, without seeking at each image
+	 */
+	public BufferedImage[] textureViews(long aTime, String aStream) {
+		if(pathL == null) {
+			return null;
+		}
+		VideoReader[] aRs;
+		synchronized(texReaders) {
+			aRs = texReaders.get(aStream);
+			if(aRs == null) {
+				aRs = new VideoReader[2];
+				texReaders.put(aStream, aRs);
+				//The stream used the longest ago closed
+				while(texReaders.size() > TEX_STREAMS) {
+					java.util.Map.Entry<String, VideoReader[]> aOld = texReaders.entrySet().iterator().next();
+					texReaders.remove(aOld.getKey());
+					for(VideoReader aVR : aOld.getValue()) {
+						if(aVR != null) {
+							aVR.close();
+						}
+					}
+				}
+			}
+		}
+		synchronized(aRs) {
+			try {
+				if(aRs[0] == null) {
+					aRs[0] = new VideoReader(tde, pathL, null, true);
+				}
+				VideoReader texLeftReader = aRs[0];
+				int aMode = com.cubaix.TDenlive.TDConfig.PROCESSING_MODE_WORK;
+				BufferedImage aOrig = texLeftReader.getImage(aMode, aTime);
+				if(aOrig == null) {
+					return null;
+				}
+				BufferedImage aL, aR;
+				if(origStereo == 1 || origStereo == 2) {
+					//Side by side in one file: crossed (right view on the left) or parallel
+					int aW = Math.max(1, aOrig.getWidth()/2), aH = aOrig.getHeight();
+					BufferedImage aFirst = half(aOrig, 0, aW, aH);
+					BufferedImage aSecond = half(aOrig, aW, aW, aH);
+					aL = origStereo == 2 ? aFirst : aSecond;
+					aR = origStereo == 2 ? aSecond : aFirst;
+				}
+				else {
+					aL = aOrig;
+					aR = aOrig;
+					if(pathR != null && !pathR.equals(pathL)) {
+						if(aRs[1] == null) {
+							aRs[1] = new VideoReader(tde, pathR, texLeftReader, true);
+						}
+						BufferedImage aOR = aRs[1].getImage(aMode, aTime);
+						if(aOR != null) {
+							aR = aOR;
+						}
+					}
+				}
+				BufferedImage aOL = orient(aL, rotateL);
+				BufferedImage aORt = aR == aL && rotateR.equals(rotateL) ? aOL : orient(aR, rotateR);
+				return new BufferedImage[] {aOL, aORt};
+			}
+			catch(Throwable t) {
+				t.printStackTrace(System.err);
+				return null;
+			}
+		}
+	}
+
+	/** Copy of the half of aBI starting at aX (a sub image shares the whole buffer of aBI) */
+	static BufferedImage half(BufferedImage aBI, int aX, int aW, int aH) {
+		BufferedImage aOut = ImageUtils.createImage(aW, aH);
+		Graphics2D aG = (Graphics2D)aOut.getGraphics();
+		aG.drawImage(aBI, -aX, 0, null);
+		aG.dispose();
+		return aOut;
+	}
+
+	/**
 	 * Same rotation and anamorphosis as the left view (see StereoImage.rotate())
 	 */
 	public BufferedImage orient(BufferedImage aBI) {
-		if(rotateL.equals("0") && anamorphW.equals("1")) {
+		return orient(aBI, rotateL);
+	}
+
+	/**
+	 * Rotation aRotate (degrees) and the anamorphosis of the media
+	 */
+	BufferedImage orient(BufferedImage aBI, String aRotate) {
+		if(aRotate.equals("0") && anamorphW.equals("1")) {
 			return aBI;
 		}
 		int aWidth = aBI.getWidth();
@@ -263,7 +363,7 @@ public class StereoMovie extends StereoImage {
 		double aAnamorph = Double.parseDouble(anamorphW);
 		BufferedImage aOut;
 		AffineTransform aAT;
-		if(rotateL.equals("180") || rotateL.equals("0")) {
+		if(aRotate.equals("180") || aRotate.equals("0")) {
 			aOut = ImageUtils.createImage((int)(aAnamorph*aWidth),aHeight);
 			aAT = AffineTransform.getTranslateInstance(aWidth/2,aHeight/2);
 		}
@@ -271,7 +371,7 @@ public class StereoMovie extends StereoImage {
 			aOut = ImageUtils.createImage(aHeight,(int)(aAnamorph*aWidth));
 			aAT = AffineTransform.getTranslateInstance(aHeight/2,aWidth/2);
 		}
-		aAT.concatenate(AffineTransform.getRotateInstance(Math.PI*Double.parseDouble(rotateL)/180.0));
+		aAT.concatenate(AffineTransform.getRotateInstance(Math.PI*Double.parseDouble(aRotate)/180.0));
 		aAT.concatenate(AffineTransform.getTranslateInstance(-aWidth/2,-aHeight/2));
 		aAT.concatenate(AffineTransform.getScaleInstance(aAnamorph, 1.0));
 		Graphics2D aG = (Graphics2D)aOut.getGraphics();
@@ -295,18 +395,21 @@ public class StereoMovie extends StereoImage {
 			if(aPath == null || (aPath == pathR && pathR.equals(pathL))) {
 				continue;
 			}
-			try {
-				File aFrom = new File(StringUtils.path2workingcopy(aPath, aFromDir));
-				File aTo = new File(StringUtils.path2workingcopy(aPath, aToDir));
-				//Not a legacy one next to the video (still found from the new folder), not one being made
-				if(!aFrom.isFile() || aTo.exists() || !aFrom.getAbsoluteFile().getParentFile().equals(new File(aFromDir).getAbsoluteFile())) {
-					continue;
+			//The work copy and the texture copy (3D models)
+			for(boolean aTex : new boolean[] {false, true}) {
+				try {
+					File aFrom = new File(aTex ? StringUtils.path2texturecopy(aPath, aFromDir) : StringUtils.path2workingcopy(aPath, aFromDir));
+					File aTo = new File(aTex ? StringUtils.path2texturecopy(aPath, aToDir) : StringUtils.path2workingcopy(aPath, aToDir));
+					//Not a legacy one next to the video (still found from the new folder), not one being made
+					if(!aFrom.isFile() || aTo.exists() || !aFrom.getAbsoluteFile().getParentFile().equals(new File(aFromDir).getAbsoluteFile())) {
+						continue;
+					}
+					aTo.getAbsoluteFile().getParentFile().mkdirs();
+					Files.copy(aFrom.toPath(), aTo.toPath());
 				}
-				aTo.getAbsoluteFile().getParentFile().mkdirs();
-				Files.copy(aFrom.toPath(), aTo.toPath());
-			}
-			catch(Throwable t) {
-				t.printStackTrace(System.err);
+				catch(Throwable t) {
+					t.printStackTrace(System.err);
+				}
 			}
 		}
 	}

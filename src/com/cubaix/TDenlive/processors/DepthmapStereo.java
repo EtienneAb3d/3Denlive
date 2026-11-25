@@ -304,6 +304,11 @@ public class DepthmapStereo extends Processor {
 	/**
 	 * True if a key uses aMedia (of the media list) as depth map
 	 */
+	@Override
+	public String usesMediaKind(Media aMedia) {
+		return usesDepthMedia(aMedia) ? "DepthMap" : null;
+	}
+
 	public boolean usesDepthMedia(Media aMedia) {
 		for(Key aK : keys) {
 			if(aK.depthmapClipMedia != null && aK.depthmapClipMedia.getMedia() == aMedia) {

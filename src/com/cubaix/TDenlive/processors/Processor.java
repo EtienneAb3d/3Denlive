@@ -220,4 +220,12 @@ public abstract class Processor {
 		return new AffineTransform();
 	}
 
+
+	/**
+	 * Kind of use of the media aMedia of the media list by this processor (language key MediaProps.Use_<kind>),
+	 * null if it does not use it (DepthmapStereo: depth map of a key, Transparency: mask of a key)
+	 */
+	public String usesMediaKind(com.cubaix.TDenlive.medias.Media aMedia) {
+		return null;
+	}
 }

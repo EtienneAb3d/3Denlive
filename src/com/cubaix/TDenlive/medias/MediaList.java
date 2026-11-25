@@ -558,4 +558,21 @@ public class MediaList extends Drawable {
 			aM.select(aX, aY,aOutUnselect);
 		}
 	}
+
+	/**
+	 * Medias of the list that use aMedia (Media.usedMedias()), with the kind of use
+	 */
+	public java.util.LinkedHashMap<Media, String> usersOf(Media aMedia) {
+		java.util.LinkedHashMap<Media, String> aUs = new java.util.LinkedHashMap<Media, String>();
+		for(Media aM : new Vector<Media>(mediaList)) {
+			if(aM == aMedia) {
+				continue;
+			}
+			String aKind = aM.usedMedias().get(aMedia.UID);
+			if(aKind != null) {
+				aUs.put(aM, aKind);
+			}
+		}
+		return aUs;
+	}
 }
