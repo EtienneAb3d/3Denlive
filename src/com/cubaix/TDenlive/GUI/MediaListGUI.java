@@ -59,10 +59,96 @@ public class MediaListGUI extends CanvasPanel {
 			@Override
 			public void dragFinished(DragSourceEvent e) {
 				draggedMedia = null;
+				reorderClear();
 				tde.timeLineStack.clearDropPreview();
 				tde.gui.timeLinesGUI.redraw();
 			}
 		});
+	}
+
+	//Order changed by a drag in the list: the media dragged goes before reorderBefore (null: at the end), line of
+	//the place shown at reorderY (-1: none)
+	int reorderY = -1;
+	Media reorderBefore = null;
+
+	/**
+	 * A media of the list dragged over it at aX, aY (canvas): the place where it would go shown; false if it is not
+	 * a media of the list
+	 */
+	public boolean reorderOver(int aX, int aY) {
+		Media aDragged = draggedMedia;
+		if(aDragged == null) {
+			reorderClear();
+			return false;
+		}
+		Media aBefore = null;
+		int aLineY = -1;
+		synchronized(tde.mediaList.mediaList) {
+			for(Media aM : tde.mediaList.mediaList) {
+				Rectangle aB = aM.bounds;
+				if(aB == null) {
+					//Hidden (rendering of a montage)
+					continue;
+				}
+				if(aY < aB.y+aB.height/2) {
+					aBefore = aM;
+					aLineY = aB.y-2;
+					break;
+				}
+				aLineY = aB.y+aB.height+1;
+			}
+		}
+		if(aLineY != reorderY || aBefore != reorderBefore) {
+			reorderY = aLineY;
+			reorderBefore = aBefore;
+			canvas.redraw();
+		}
+		return true;
+	}
+
+	/**
+	 * The media dragged put at the place of the drop at aX, aY (canvas): computed again from it (SWT sends
+	 * dragLeave just before drop, which cleared the place shown)
+	 */
+	public void reorderDrop(Media aDragged, int aX, int aY) {
+		System.out.println("Media list reorder: "+(aDragged == null ? "null" : aDragged.displayName())+" at y="+aY);
+		reorderClear();
+		if(aDragged == null) {
+			return;
+		}
+		//The media before which it goes (null: at the end), as reorderOver()
+		Media aBefore = null;
+		synchronized(tde.mediaList.mediaList) {
+			for(Media aM : tde.mediaList.mediaList) {
+				Rectangle aB = aM.bounds;
+				if(aB != null && aY < aB.y+aB.height/2) {
+					aBefore = aM;
+					break;
+				}
+			}
+		}
+		if(aBefore == aDragged) {
+			return;
+		}
+		synchronized(tde.mediaList.mediaList) {
+			Vector<Media> aL = tde.mediaList.mediaList;
+			if(!aL.remove(aDragged)) {
+				return;
+			}
+			int aIdx = aBefore == null ? aL.size() : aL.indexOf(aBefore);
+			aL.add(aIdx < 0 ? aL.size() : aIdx, aDragged);
+		}
+		canvas.redraw();
+	}
+
+	public void reorderClear() {
+		if(reorderY >= 0 || reorderBefore != null) {
+			reorderY = -1;
+			reorderBefore = null;
+			if(!canvas.isDisposed()) {
+				canvas.redraw();
+			}
+		}
 	}
 
 	void createContents(Composite aParent) {
@@ -209,6 +295,10 @@ public class MediaListGUI extends CanvasPanel {
 	 * Monitor and media panel after a change of the selection of the media list (click, selectMedia())
 	 */
 	void showSelection() {
+		//One selection for both libraries
+		if(tde.gui.montageListGUI != null) {
+			tde.gui.montageListGUI.unselect();
+		}
 		tde.gui.setMultiPropsPanel(TDeGUI.MULTIPROPSPANEL_PROPS);
 		tde.gui.setMultiMonitorPanel(TDeGUI.MULTIMONITORPANEL_MONITOR);
 		if(tde.selected.medias.size() == 1) {
@@ -240,6 +330,23 @@ public class MediaListGUI extends CanvasPanel {
 		tde.selected.medias.add(aMedia);
 		showMedia(aMedia);
 		showSelection();
+	}
+
+	/**
+	 * Shows aMedia selected alone in the media list, scrolled to it, without changing the monitor nor the panels
+	 * (click on a clip of the time lines: the media of the clip)
+	 */
+	public void revealMedia(Media aMedia) {
+		if(aMedia == null || canvas.isDisposed() || !tde.mediaList.mediaList.contains(aMedia)) {
+			return;
+		}
+		tde.selected.medias.clear();
+		for(Media aM : tde.mediaList.mediaList) {
+			aM.selState = aM == aMedia ? com.cubaix.TDenlive.GUI.Drawable.THUMBSELSTATE_SELECTED : com.cubaix.TDenlive.GUI.Drawable.THUMBSELSTATE_NONE;
+		}
+		tde.selected.medias.add(aMedia);
+		showMedia(aMedia);
+		canvas.redraw();
 	}
 
 	/**
@@ -278,8 +385,13 @@ public class MediaListGUI extends CanvasPanel {
 		if(!tde.mediaList.mediaList.contains(aMedia)) {
 			return;
 		}
-		Vector<Clip> aClips = tde.timeLineStack.clipsOf(aMedia);
-		Vector<Clip> aDepths = tde.timeLineStack.depthUsesOf(aMedia);
+		//In all the montages
+		Vector<Clip> aClips = new Vector<Clip>();
+		Vector<Clip> aDepths = new Vector<Clip>();
+		for(com.cubaix.TDenlive.medias.TimeLineStack aS : tde.allStacks()) {
+			aClips.addAll(aS.clipsOf(aMedia));
+			aDepths.addAll(aS.depthUsesOf(aMedia));
+		}
 		//3D models textured by it
 		Vector<com.cubaix.TDenlive.medias.Model3DMedia> aModels = new Vector<com.cubaix.TDenlive.medias.Model3DMedia>();
 		for(Media aM : tde.mediaList.mediaList) {
@@ -323,7 +435,9 @@ public class MediaListGUI extends CanvasPanel {
 					|| (aPG != null && aPG.processors != null && aPG.processors == aC.getProcessors());
 		}
 		try {
-			tde.timeLineStack.releaseMedia(aMedia);
+			for(com.cubaix.TDenlive.medias.TimeLineStack aS : tde.allStacks()) {
+				aS.releaseMedia(aMedia);
+			}
 			tde.mediaList.removeMedia(aMedia);
 			//The objects textured by it take their color again
 			for(com.cubaix.TDenlive.medias.Model3DMedia aMM : aModels) {
@@ -360,6 +474,11 @@ public class MediaListGUI extends CanvasPanel {
 		aGC.setBackground(tde.gui.colorsSwt.WHITE);
 		aGC.fillRectangle(aClientR);
 		Rectangle aR = tde.mediaList.drawSwt(aGC, origin.x, origin.y,aClientR);
+		if(reorderY >= 0) {
+			//Place of the media dragged in the list
+			aGC.setBackground(tde.gui.colorsSwt.CUBAIX_BLUE);
+			aGC.fillRectangle(aClientR.x+2, reorderY-1, aClientR.width-4, 3);
+		}
 		if(aR.width != bounds.width || aR.height != bounds.height) {
 			bounds = aR;
 			adjustScrollBars();

@@ -18,6 +18,8 @@ import com.cubaix.TDenlive.utils.StringUtils;
  * with the time cursor (inverted triangle, as on the ruler of the time lines) that a click or a drag moves
  */
 public class MonitorRulerGUI {
+	//Text of the precomputation of the AI hole filling (clickable), null if not drawn
+	volatile org.eclipse.swt.graphics.Rectangle inpaintBounds = null;
 	//Room for half the cursor at both ends
 	static final int MARGIN = 8;
 	//Graduation steps, the first whose labels do not overlap is taken
@@ -41,7 +43,13 @@ public class MonitorRulerGUI {
 		canvas.addListener(SWT.Paint, e -> draw(e.gc));
 		canvas.addListener(SWT.Resize, e -> canvas.redraw());
 		canvas.addListener(SWT.MouseDown, e -> {
-			if(e.button != 1 || (tde.gui.monitorGUI != null && tde.gui.monitorGUI.isRendering())) {
+			org.eclipse.swt.graphics.Rectangle aIB = inpaintBounds;
+			if(e.button == 1 && aIB != null && aIB.contains(e.x, e.y)) {
+				//The progress window of the precomputation (interrupt / resume), shown again
+				InpaintProgressGUI.reopen(tde);
+				return;
+			}
+			if(e.button != 1 || (tde.gui.monitorGUI != null && tde.gui.monitorGUI.isRenderingOutput())) {
 				//Not while a rendering moves the cursor
 				return;
 			}
@@ -203,7 +211,9 @@ public class MonitorRulerGUI {
 		aGC.drawLine(aCX, aH-1, aCX+5, aH-11);
 		aGC.drawLine(aCX-5, aH-11, aCX+5, aH-11);
 
-		//AI hole filling of the depth map conversions being precomputed (see processors.Inpainting)
+		//AI hole filling of the depth map conversions being precomputed (see processors.Inpainting); a click on its text
+		//shows its progress window again
+		inpaintBounds = null;
 		int[] aInp = com.cubaix.TDenlive.processors.Inpainting.Precomputer.status();
 		if(aInp != null && aTarget == tde.timeLineStack) {
 			String aText = tde.gui.lngs.get("Inpaint.Precomputing")
@@ -213,6 +223,7 @@ public class MonitorRulerGUI {
 			}
 			Point aTP = aGC.textExtent(aText);
 			int aTX = Math.max(0, (aW-aTP.x)/2);
+			inpaintBounds = new org.eclipse.swt.graphics.Rectangle(aTX-4, 0, aTP.x+8, aTP.y);
 			aGC.setBackground(tde.gui.colorsSwt.WHITE);
 			aGC.fillRectangle(aTX-4, 0, aTP.x+8, aTP.y);
 			aGC.setForeground(tde.gui.colorsSwt.VIOLET);

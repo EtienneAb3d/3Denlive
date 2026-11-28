@@ -45,6 +45,9 @@ public class FfmpegEncoder extends Ffmpeg {
 	int[] formats = null;
 	//Colors at full resolution (H.264 High 4:4:4): for the anaglyphs, whose eyes are in the colors
 	boolean full444 = false;
+	//HDR output (TDConfig.OUTPUT_HDR "HLG" / "PQ"): images given as raw rgb48le already in BT.2020 and that transfer
+	//(Renderer.hdrFrame()), encoded in HEVC 10 bits; null = SDR, BMP images, H.264 8 bits
+	String hdr = null;
 	String audioPathIn = null;//Mixed sound track (WAV), null if none
 	public int width = 1280;
 	public int height = 720;
@@ -73,7 +76,16 @@ public class FfmpegEncoder extends Ffmpeg {
 			,int aWidth,int aHeight
 			,double aFps,String aFfmpegVideoOpts
 			,String[] aPathsOut,int[] aFormats,String aAudioPathIn,boolean aFull444) {
+		this(aTDe, aWidth, aHeight, aFps, aFfmpegVideoOpts, aPathsOut, aFormats, aAudioPathIn, aFull444, null);
+	}
+
+	/** aHdr: "HLG" / "PQ" for an HDR output (raw images, see hdr), null for SDR */
+	public FfmpegEncoder(TDenlive aTDe
+			,int aWidth,int aHeight
+			,double aFps,String aFfmpegVideoOpts
+			,String[] aPathsOut,int[] aFormats,String aAudioPathIn,boolean aFull444,String aHdr) {
 		tde = aTDe;
+		hdr = isHdr(aHdr) ? aHdr : null;
 		full444 = aFull444;
 		pathsOut = aPathsOut;
 		formats = aFormats;
@@ -92,10 +104,18 @@ public class FfmpegEncoder extends Ffmpeg {
 			String ffmpegPath = getFfmpeg();
 			ArrayList<String> aCmdA = new ArrayList<String>();
 			aCmdA.add(ffmpegPath);
-			aCmdA.add("-pix_fmt"); aCmdA.add("bgr24");
-			aCmdA.add("-r"); aCmdA.add(""+fps);
-//			aCmdA.add("-c:a"); aCmdA.add("copy");
-			aCmdA.add("-c:v"); aCmdA.add("bmp");
+			if(hdr != null) {
+				//Parallel images (2 x width) of 16 bits per color
+				aCmdA.add("-f"); aCmdA.add("rawvideo");
+				aCmdA.add("-pix_fmt"); aCmdA.add("rgb48le");
+				aCmdA.add("-s"); aCmdA.add((2*width)+"x"+height);
+				aCmdA.add("-r"); aCmdA.add(""+fps);
+			}
+			else {
+				aCmdA.add("-pix_fmt"); aCmdA.add("bgr24");
+				aCmdA.add("-r"); aCmdA.add(""+fps);
+				aCmdA.add("-c:v"); aCmdA.add("bmp");
+			}
 			aCmdA.add("-i"); aCmdA.add("pipe:0");
 			if(audioPathIn != null) {
 				aCmdA.add("-i"); aCmdA.add(audioPathIn);
@@ -117,6 +137,8 @@ public class FfmpegEncoder extends Ffmpeg {
 				aGraph.append(";[s").append(o).append("]")
 					//A single view (or an anaglyph) is half the width: even sizes for the 4:2:0 encoding
 					.append(aF == null ? "null" : aF+",crop=trunc(iw/2)*2:trunc(ih/2)*2")
+					//The BT.2020 matrix to YUV (the RGB values are already BT.2020)
+					.append(hdr != null && isVideo(pathsOut[o]) ? ",scale=out_color_matrix=bt2020:out_range=tv" : "")
 					.append("[o").append(o).append("]");
 			}
 			aCmdA.add("-filter_complex"); aCmdA.add(aGraph.toString());
@@ -131,7 +153,30 @@ public class FfmpegEncoder extends Ffmpeg {
 				}
 				aCmdA.add("-r"); aCmdA.add(""+fps);
 				aCmdA.add("-y"); //Overwrite the output file (if it exists)
-				if(aPath.toLowerCase().endsWith(".mp4")) {
+				if(hdr != null && isVideo(aPath)) {
+					String aTrc = "PQ".equals(hdr) ? "smpte2084" : "arib-std-b67";
+					aCmdA.add("-c:v"); aCmdA.add("libx265");
+					aCmdA.add("-pix_fmt"); aCmdA.add(full444 ? "yuv444p10le" : "yuv420p10le");
+					aCmdA.add("-crf"); aCmdA.add("20");
+					//Played by the players of Apple
+					aCmdA.add("-tag:v"); aCmdA.add("hvc1");
+					aCmdA.add("-color_primaries"); aCmdA.add("bt2020");
+					aCmdA.add("-color_trc"); aCmdA.add(aTrc);
+					aCmdA.add("-colorspace"); aCmdA.add("bt2020nc");
+					aCmdA.add("-color_range"); aCmdA.add("tv");
+					String aX265 = "colorprim=bt2020:transfer="+aTrc+":colormatrix=bt2020nc:range=limited";
+					if("PQ".equals(hdr)) {
+						//HDR10: mastering display P3 D65 1000 nits, light levels
+						aX265 += ":hdr10=1:repeat-headers=1:master-display=G(13250,34500)B(7500,3000)R(34000,16000)WP(15635,16450)L(10000000,1)"
+								+":max-cll="+(int)Math.round(HDR_MAX_NITS)+",400";
+					}
+					aCmdA.add("-x265-params"); aCmdA.add(aX265);
+					if(aWithAudio) {
+						aCmdA.add("-c:a"); aCmdA.add("aac");
+						aCmdA.add("-b:a"); aCmdA.add("192k");
+					}
+				}
+				else if(aPath.toLowerCase().endsWith(".mp4")) {
 					aCmdA.add("-c:v"); aCmdA.add("libx264");
 					if(formats[o] == FORMAT_P) {
 						//Side by side, left first (no flag for right first: none for the crossed one)
@@ -182,6 +227,24 @@ public class FfmpegEncoder extends Ffmpeg {
 		aTh.start();
 	}
 	
+	//Highest light level of the HDR10 outputs (MaxCLL), nits
+	static final double HDR_MAX_NITS = 1000;
+
+	public static boolean isHdr(String aHdr) {
+		return "HLG".equals(aHdr) || "PQ".equals(aHdr);
+	}
+
+	/** A video file (not an image sequence): the only outputs that may be HDR */
+	public static boolean isVideo(String aPathOut) {
+		String aP = aPathOut.toLowerCase();
+		return !aP.contains("%") && aP.matches(".*[.](mp4|mov|mkv|m4v)");
+	}
+
+	/** Raw image of hdr (Renderer.hdrFrame()) */
+	public void addRaw(byte[] aRaw) {
+		addBmp(aRaw);
+	}
+
 	//Image sequences (3De_%04d_P.png...) can't hold a sound track
 	public static boolean canHaveAudio(String aPathOut) {
 		String aP = aPathOut.toLowerCase();

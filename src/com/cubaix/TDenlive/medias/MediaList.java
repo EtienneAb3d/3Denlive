@@ -80,6 +80,11 @@ public class MediaList extends Drawable {
 					mediaList.add(aSI);
 					o = aSI.openProject(aOs, o);
 				}
+				if("MontagePlaceholder".equalsIgnoreCase(aT.tagName)) {
+					MontagePlaceholder aMP = new MontagePlaceholder(tde);
+					mediaList.add(aMP);
+					o = aMP.openProject(aOs, o);
+				}
 				if("StereoMovie".equalsIgnoreCase(aT.tagName)) {
 					StereoMovie aSM = new StereoMovie(tde);
 					mediaList.add(aSM);
@@ -146,6 +151,35 @@ public class MediaList extends Drawable {
 			aSI = new StereoImage(tde);
 		}
 		aSI.loadImageLR(aPathL,aPathR,aProcessingMode,aTime);
+		mediaList.add(aSI);
+		tde.updateFirstMediaRatio();
+	}
+
+	/**
+	 * An anaglyph image or video of the kind aType (Anaglyph.TYPES): its views taken from its color layers
+	 */
+	public void loadImageAnaglyph(String aPath,String aType,int aProcessingMode,long aTime) throws Exception {
+		if(aPath.toLowerCase().endsWith(".mpo")) {
+			loadImageMPO(aPath);
+			return;
+		}
+		if(aPath.toLowerCase().matches(SCENE_FILE_RE) || aPath.toLowerCase().matches(AUDIO_FILE_RE)) {
+			//Their own reading, whatever the format asked
+			loadImageLR(aPath, aPath, aProcessingMode, aTime);
+			return;
+		}
+		StereoImage aSI = null;
+		if(aPath.toLowerCase().matches(VIDEO_FILE_RE)) {
+			aSI = new StereoMovie(tde);
+		}
+		else if(aPath.toLowerCase().matches(SVG_FILE_RE)) {
+			aSI = new StereoSvg(tde);
+		}
+		else {
+			aSI = new StereoImage(tde);
+		}
+		aSI.anaglyph = aType;
+		aSI.loadImageLR(aPath,aPath,aProcessingMode,aTime);
 		mediaList.add(aSI);
 		tde.updateFirstMediaRatio();
 	}
@@ -386,7 +420,8 @@ public class MediaList extends Drawable {
 		}
 		if(aM instanceof StereoImage) {
 			StereoImage aSI = (StereoImage)aM;
-			return aSI.origStereo != 0 || (aSI.pathR != null && !aSI.pathR.equals(aSI.pathL));
+			return aSI.origStereo != 0 || com.cubaix.TDenlive.utils.Anaglyph.isAnaglyph(aSI.anaglyph)
+					|| (aSI.pathR != null && !aSI.pathR.equals(aSI.pathL));
 		}
 		return false;
 	}
@@ -497,6 +532,11 @@ public class MediaList extends Drawable {
 		}
 		synchronized (mediaList) {
 			for(Media aM : mediaList) {
+				if(Montage.of(tde, aM) != null) {
+					//The rendering of a montage: shown by the montage list
+					aM.bounds = null;
+					continue;
+				}
 				int aRowY = aY+aH;
 				Rectangle aR = aM.drawSwt(aGC, aX, aY+aH,aClippingR);
 				drawBadges(aGC, aM, aX, aRowY);

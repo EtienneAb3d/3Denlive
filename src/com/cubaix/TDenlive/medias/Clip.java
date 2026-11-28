@@ -1148,6 +1148,15 @@ public class Clip extends Media {
 		return workRight = media.getWorkRight(aProcessingMode,aTime);
 	}
 
+	/**
+	 * The images of the last reBuild() ({left, right}, null if none), without waiting
+	 */
+	public BufferedImage[] lastFinal() {
+		BufferedImage aL = finalLeft;
+		BufferedImage aR = finalRight;
+		return aL == null || aR == null ? null : new BufferedImage[] {aL, aR};
+	}
+
 	@Override
 	public BufferedImage getFinalLeft(int aProcessingMode,long aTime) {
 		if(aTime < startTimeMS || aTime >= startTimeMS+durationMS) {

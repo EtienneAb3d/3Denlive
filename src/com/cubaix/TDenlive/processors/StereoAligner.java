@@ -640,7 +640,7 @@ public class StereoAligner extends Processor {
 						aGL.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 						aGL.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
 					}
-					aGL.drawImage(aBIL,aFinalL,null);
+					com.cubaix.TDenlive.utils.FloatDraw.draw(aGL, aProcessedBIL, aBIL, aFinalL, 1f);
 					aGL.setComposite(AlphaComposite.Clear);
 					if(secureCropLeft
 							//always with auto align
@@ -684,7 +684,7 @@ public class StereoAligner extends Processor {
 						aGR.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 						aGR.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
 					}
-					aGR.drawImage(aBIR,aFinalR,null);
+					com.cubaix.TDenlive.utils.FloatDraw.draw(aGR, aProcessedBIR, aBIR, aFinalR, 1f);
 					aGR.setComposite(AlphaComposite.Clear);
 					if(secureCropLeft
 							//always with auto align

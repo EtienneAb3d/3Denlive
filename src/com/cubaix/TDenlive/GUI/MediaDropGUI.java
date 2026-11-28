@@ -11,10 +11,12 @@ import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
@@ -31,14 +33,17 @@ import com.cubaix.TDenlive.utils.ProjectFiles;
  * folder is proposed as for the open window, and they are loaded in a thread.
  */
 public class MediaDropGUI {
-	static final int FLAT = 0, PARALLEL = 1, CROSSED = 2, LEFT_RIGHT = 3;
-	static final String[] TYPE_KEYS = {"OpenFlat", "OpenP", "OpenX", "OpenLR"};
+	static final int FLAT = 0, PARALLEL = 1, CROSSED = 2, LEFT_RIGHT = 3, ANAGLYPH = 4;
+	static final String[] TYPE_KEYS = {"OpenFlat", "OpenP", "OpenX", "OpenLR", "OpenAnaglyph"};
+	//Kind of anaglyph last chosen (session, Anaglyph.TYPES): the one of the ANAGLYPH type
+	public static String lastAnaglyph = com.cubaix.TDenlive.utils.Anaglyph.TYPES[0];
 	//Last type chosen (session): the default button of the next drop
 	static int lastType = FLAT;
 
 	public static void install(TDenlive aTDe, Control aControl) {
 		DropTarget aDT = new DropTarget(aControl, DND.DROP_COPY | DND.DROP_MOVE | DND.DROP_LINK | DND.DROP_DEFAULT);
-		aDT.setTransfer(new Transfer[] {FileTransfer.getInstance()});
+		//Files of the file manager, and the medias of the list itself dragged to change their order
+		aDT.setTransfer(new Transfer[] {FileTransfer.getInstance(), org.eclipse.swt.dnd.TextTransfer.getInstance()});
 		aDT.addDropListener(new DropTargetAdapter() {
 			@Override
 			public void dragEnter(DropTargetEvent e) {
@@ -55,7 +60,26 @@ public class MediaDropGUI {
 				accept(e);
 			}
 
+			@Override
+			public void dragLeave(DropTargetEvent e) {
+				if(aTDe.gui.mediaListGUI != null) {
+					aTDe.gui.mediaListGUI.reorderClear();
+				}
+			}
+
 			void accept(DropTargetEvent e) {
+				//A media of the list moved in it
+				if(MediaListGUI.draggedMedia != null) {
+					for(org.eclipse.swt.dnd.TransferData aTD : e.dataTypes) {
+						if(org.eclipse.swt.dnd.TextTransfer.getInstance().isSupportedType(aTD)) {
+							e.currentDataType = aTD;
+							break;
+						}
+					}
+					Point aP = aControl.toControl(e.x, e.y);
+					e.detail = aTDe.gui.mediaListGUI != null && aTDe.gui.mediaListGUI.reorderOver(aP.x, aP.y) ? DND.DROP_MOVE : DND.DROP_NONE;
+					return;
+				}
 				boolean aFiles = false;
 				for(org.eclipse.swt.dnd.TransferData aTD : e.dataTypes) {
 					if(FileTransfer.getInstance().isSupportedType(aTD)) {
@@ -70,6 +94,21 @@ public class MediaDropGUI {
 
 			@Override
 			public void drop(DropTargetEvent e) {
+				if(e.data instanceof String && ((String)e.data).startsWith(MediaListGUI.MEDIA_DRAG_PREFIX)) {
+					if(aTDe.gui.mediaListGUI != null) {
+						Point aP = aControl.toControl(e.x, e.y);
+						//The media by the UID of the data (the dragged one may be cleared already)
+						com.cubaix.TDenlive.medias.Media aM = null;
+						try {
+							aM = aTDe.mediaList.getMediaByUID(Long.parseLong(((String)e.data).substring(MediaListGUI.MEDIA_DRAG_PREFIX.length())));
+						}
+						catch(Throwable t) {
+							t.printStackTrace(System.err);
+						}
+						aTDe.gui.mediaListGUI.reorderDrop(aM, aP.x, aP.y);
+					}
+					return;
+				}
 				if(!(e.data instanceof String[])) {
 					return;
 				}
@@ -150,6 +189,9 @@ public class MediaDropGUI {
 						}
 						else if(aT == CROSSED) {
 							aTDe.mediaList.loadImageX(aP, TDConfig.PROCESSING_MODE_RENDER, 0);
+						}
+						else if(aT == ANAGLYPH) {
+							aTDe.mediaList.loadImageAnaglyph(aP, lastAnaglyph, TDConfig.PROCESSING_MODE_RENDER, 0);
 						}
 						else {
 							aTDe.mediaList.loadImageLR(aP, aP, TDConfig.PROCESSING_MODE_RENDER, 0);
@@ -232,7 +274,17 @@ public class MediaDropGUI {
 		Button aDefault = null;
 		for(int t = 0;t < TYPE_KEYS.length;t++) {
 			final int aT = t;
-			Button aB = new Button(aD, SWT.PUSH);
+			Composite aRow = aD;
+			if(t == ANAGLYPH) {
+				//The button, then the kind of anaglyph
+				aRow = new Composite(aD, SWT.NONE);
+				GridLayout aRL = new GridLayout(2, false);
+				aRL.marginWidth = aRL.marginHeight = 0;
+				aRow.setLayout(aRL);
+				aRow.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+				aTDe.gui.applyColorFont(aRow);
+			}
+			Button aB = new Button(aRow, SWT.PUSH);
 			aTDe.gui.applyColorFont(aB);
 			aB.setText(aTDe.gui.lngs.get("MediaOpen."+TYPE_KEYS[t]));
 			aB.setImage(aTDe.gui.imgsSwt.getIcon("openObject.png"));
@@ -244,6 +296,9 @@ public class MediaDropGUI {
 				aTip = aEven ? aTDe.gui.lngs.get("MediaOpen.DropPairs") : aTDe.gui.lngs.get("MediaOpen.DropOdd");
 			}
 			aB.setToolTipText(aTip);
+			if(t == ANAGLYPH) {
+				anaglyphCombo(aTDe, aRow);
+			}
 			aB.addListener(SWT.Selection, e -> {
 				aChoice[0] = aT;
 				aD.dispose();
@@ -274,6 +329,24 @@ public class MediaDropGUI {
 			}
 		}
 		return aChoice[0];
+	}
+
+	/** Combo of the kinds of anaglyph (lastAnaglyph selected, and set at each choice) */
+	public static org.eclipse.swt.widgets.Combo anaglyphCombo(TDenlive aTDe, Composite aParent) {
+		org.eclipse.swt.widgets.Combo aC = new org.eclipse.swt.widgets.Combo(aParent, SWT.READ_ONLY);
+		aTDe.gui.applyColorFont(aC);
+		String[] aTypes = com.cubaix.TDenlive.utils.Anaglyph.TYPES;
+		for(String aT : aTypes) {
+			aC.add(aTDe.gui.lngs.get("Anaglyph.Type_"+aT));
+		}
+		aC.select(Math.max(0, com.cubaix.TDenlive.utils.Anaglyph.indexOf(lastAnaglyph)));
+		aC.setToolTipText(aTDe.gui.lngs.get("Tip.AnaglyphType"));
+		aC.addListener(SWT.Selection, e -> {
+			if(aC.getSelectionIndex() >= 0) {
+				lastAnaglyph = aTypes[aC.getSelectionIndex()];
+			}
+		});
+		return aC;
 	}
 
 	/**

@@ -75,7 +75,7 @@ public class Scripter extends Processor {
 	public void saveProject(StringBuffer aSB) throws Exception {
 		aSB.append("						<Scripter>\n");
 		for(Key aK : keys) {
-			aSB.append("							<script>" + aK.script + "</script>\n");
+			aSB.append("							<script>" + com.cubaix.TDenlive.utils.ProjectFiles.forSave(aK.script) + "</script>\n");
 			aSB.append("							<time>" + aK.time + "</time>\n");
 		}
 		aSB.append("						</Scripter>\n");
@@ -193,8 +193,10 @@ public class Scripter extends Processor {
 	}
 
 	String findPath(String aPath) {
-		if(new File(aPath).exists()) {
-			return aPath;
+		//Relative to the project folder (written so), or moved with it
+		String aFound = com.cubaix.TDenlive.utils.ProjectFiles.resolve(tde, aPath);
+		if(aFound != null) {
+			return aFound;
 		}
 		if(new File(tde.projectDir+File.separatorChar+new File(aPath).getName()).exists()) {
 			return tde.projectDir+File.separatorChar+new File(aPath).getName();

@@ -153,6 +153,71 @@ public class SceneCameraGUI extends ProcessorGUI {
 		wgt.setBackground(tde.gui.colorsSwt.WHITE);
 		wgt.setForeground(tde.gui.colorsSwt.CUBAIX_BLUE);
 
+		//Actions first: computation of the scenes / filling of this view
+		if(sc instanceof Scene3D) {
+			Composite aBR = new Composite(wgt, SWT.NONE);
+			tde.gui.applyColorFont(aBR);
+			aBR.setBackground(tde.gui.colorsSwt.WHITE);
+			aBR.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+			GridLayout aBGL = new GridLayout(3, false);
+			tde.gui.applyNoMargin(aBGL);
+			aBR.setLayout(aBGL);
+			LabelImageButton aCB = new LabelImageButton(tde, aBR, l("Compute"), "rhino.gif") {
+				@Override
+				public void clicked() {
+					SceneConvertGUI.convert(tde, (Clip)sc.targetMedia, (Scene3D)sc);
+				}
+			}.tip("SceneConvert");
+			aCB.getContainer().setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+			//State of the scenes right of the compute button, then "Fill this view" (SDXL only)
+			scenesL = new Label(aBR, SWT.WRAP);
+			tde.gui.applyColorFont(scenesL);
+			GridData aSGD = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER);
+			aSGD.widthHint = 100;
+			scenesL.setLayoutData(aSGD);
+			addFillNowButton(aBR);
+		}
+		else {
+			addFillNowButton(wgt);
+		}
+
+		//Display: depths in gray, interpolation (the mesh of the visible Gaussians, else the Gaussians), thresholding
+		//(settings of the clip, not keyed), on one row
+		Composite aFillRow = new Composite(wgt, SWT.NONE);
+		tde.gui.applyColorFont(aFillRow);
+		aFillRow.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		GridLayout aFRGL = new GridLayout(3, false);
+		tde.gui.applyNoMargin(aFRGL);
+		aFillRow.setLayout(aFRGL);
+		//The estimated depths in gray instead of the colors
+		Button aDepthB = new Button(aFillRow, SWT.CHECK);
+		tde.gui.applyColorFont(aDepthB);
+		aDepthB.setText(l("Depth"));
+		tde.gui.tip(aDepthB, "SceneDepth");
+		aDepthB.setSelection(sc.depthView);
+		aDepthB.addListener(SWT.Selection, e -> {
+			sc.depthView = aDepthB.getSelection();
+			renderView(false);
+			tde.gui.monitorGUI.redraw();
+		});
+		Button aInterpB = new Button(aFillRow, SWT.CHECK);
+		tde.gui.applyColorFont(aInterpB);
+		aInterpB.setText(l("Interp"));
+		tde.gui.tip(aInterpB, "SceneInterp");
+		aInterpB.setSelection(sc.interp);
+		aInterpB.addListener(SWT.Selection, e -> {
+			sc.interp = aInterpB.getSelection();
+			renderView(false);
+			tde.gui.monitorGUI.redraw();
+		});
+		//Thresholding: the triangles seen edge on (|cos| below the threshold) shown as holes
+		Button aCutB = new Button(aFillRow, SWT.CHECK);
+		tde.gui.applyColorFont(aCutB);
+		aCutB.setText(l("Cut"));
+		tde.gui.tip(aCutB, "SceneCut");
+		aCutB.setSelection(sc.cutView);
+
+		//Settings: model of the scenes, model of the filling
 		if(sc instanceof Scene3D) {
 			//Model computing the scenes (used by the next computation)
 			Composite aMR = new Composite(wgt, SWT.NONE);
@@ -195,26 +260,6 @@ public class SceneCameraGUI extends ProcessorGUI {
 				}
 			});
 			addFillRow(aMR);
-			Composite aBR = new Composite(wgt, SWT.NONE);
-			tde.gui.applyColorFont(aBR);
-			aBR.setBackground(tde.gui.colorsSwt.WHITE);
-			aBR.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-			GridLayout aBGL = new GridLayout(2, false);
-			tde.gui.applyNoMargin(aBGL);
-			aBR.setLayout(aBGL);
-			LabelImageButton aCB = new LabelImageButton(tde, aBR, l("Compute"), "rhino.gif") {
-				@Override
-				public void clicked() {
-					SceneConvertGUI.convert(tde, (Clip)sc.targetMedia, (Scene3D)sc);
-				}
-			}.tip("SceneConvert");
-			aCB.getContainer().setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
-			addFillNowButton(aBR);
-			scenesL = new Label(wgt, SWT.WRAP);
-			tde.gui.applyColorFont(scenesL);
-			GridData aSGD = new GridData(GridData.FILL_HORIZONTAL);
-			aSGD.widthHint = 100;
-			scenesL.setLayoutData(aSGD);
 		}
 		else {
 			Composite aFR = new Composite(wgt, SWT.NONE);
@@ -225,128 +270,21 @@ public class SceneCameraGUI extends ProcessorGUI {
 			tde.gui.applyNoMargin(aFGL);
 			aFR.setLayout(aFGL);
 			addFillRow(aFR);
-			addFillNowButton(wgt);
 		}
 
-		lkf = new LabelKeyFrame(tde, wgt, sc, "K") {
-			@Override
-			public void change(int aKey) {
-				refreshCam();
-				refreshWidgets();
-				tde.gui.monitorGUI.redraw();
-			}
-			@Override
-			public void move(int aTime) {
-				tde.timeLineStack.setRequestedTimePosMS(((Clip)sc.targetMedia).getStartTimeMS()+aTime);
-				tde.gui.timeLinesGUI.redraw();
-				tde.gui.monitorGUI.redraw();
-			}
-		};
-		updateKey();
-		Label aHint = new Label(wgt, SWT.WRAP);
-		tde.gui.applyColorFont(aHint);
-		GridData aHGD = new GridData(GridData.FILL_HORIZONTAL);
-		aHGD.widthHint = 100;
-		aHint.setLayoutData(aHGD);
-		aHint.setText(l("Hint").replace("%MOD%", "cocoa".equals(SWT.getPlatform()) ? "Cmd" : "Ctrl"));
-
-		view = new Canvas(wgt, SWT.BORDER | SWT.DOUBLE_BUFFERED);
-		GridData aVGD = new GridData(GridData.FILL_HORIZONTAL);
-		aVGD.heightHint = VIEW_H;
-		aVGD.widthHint = 100;
-		view.setLayoutData(aVGD);
-		view.addListener(SWT.Paint, e -> paint(e.gc));
-		view.addListener(SWT.Resize, e -> renderView(false));
-		view.addListener(SWT.Dispose, e -> {
-			if(viewI != null) {
-				viewI.dispose();
-				viewI = null;
-			}
-		});
-		installMouse();
-
-		baseLS = new LabelScale(tde, wgt, "B", 0, 0, STEPS, 0) {
-			@Override
-			public void change(int aValue) {
-				if(updating) {
-					return;
-				}
-				double aB = baseFromSlider(aValue);
-				lkf.edit(aEK -> {
-					StereoCam aC = sc.camForKey(aEK);
-					aC.base = aB;
-					sc.setCam(aEK, aC);
-				});
-				changed(!isDragging());
-			}
-		}.tip("SceneBase");
-		screenLS = new LabelScale(tde, wgt, "P", 0, 0, STEPS, 0) {
-			@Override
-			public void change(int aValue) {
-				if(updating) {
-					return;
-				}
-				double aS = screenFromSlider(aValue);
-				lkf.edit(aEK -> {
-					StereoCam aC = sc.camForKey(aEK);
-					aC.screen = aS;
-					sc.setCam(aEK, aC);
-				});
-				changed(!isDragging());
-			}
-		}.tip("SceneScreen");
-		valuesL = new Label(wgt, SWT.NONE);
-		tde.gui.applyColorFont(valuesL);
-		valuesL.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-		//Interpolation (the mesh of the visible Gaussians, else the Gaussians), then the smart filling (settings of the
-		//clip, not keyed), on one row
-		Composite aFillRow = new Composite(wgt, SWT.NONE);
-		tde.gui.applyColorFont(aFillRow);
-		aFillRow.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		GridLayout aFRGL = new GridLayout(4, false);
-		tde.gui.applyNoMargin(aFRGL);
-		aFillRow.setLayout(aFRGL);
-		//The estimated depths in gray instead of the colors
-		Button aDepthB = new Button(aFillRow, SWT.CHECK);
-		tde.gui.applyColorFont(aDepthB);
-		aDepthB.setText(l("Depth"));
-		tde.gui.tip(aDepthB, "SceneDepth");
-		aDepthB.setSelection(sc.depthView);
-		aDepthB.addListener(SWT.Selection, e -> {
-			sc.depthView = aDepthB.getSelection();
-			renderView(false);
-			tde.gui.monitorGUI.redraw();
-		});
-		Button aInterpB = new Button(aFillRow, SWT.CHECK);
-		tde.gui.applyColorFont(aInterpB);
-		aInterpB.setText(l("Interp"));
-		tde.gui.tip(aInterpB, "SceneInterp");
-		aInterpB.setSelection(sc.interp);
-		aInterpB.addListener(SWT.Selection, e -> {
-			sc.interp = aInterpB.getSelection();
-			renderView(false);
-			tde.gui.monitorGUI.redraw();
-		});
-		//Thresholding: the triangles seen edge on (|cos| below the threshold) shown as holes
-		Button aCutB = new Button(aFillRow, SWT.CHECK);
-		tde.gui.applyColorFont(aCutB);
-		aCutB.setText(l("Cut"));
-		tde.gui.tip(aCutB, "SceneCut");
-		aCutB.setSelection(sc.cutView);
-		Button aFillB = new Button(aFillRow, SWT.CHECK);
+		//Smart filling and its carry-overs (settings of the clip, not keyed): left eye -> right eye, previous images ->
+		//this one, enabled with the smart filling, on one row below the filling model
+		Composite aCarryRow = new Composite(wgt, SWT.NONE);
+		tde.gui.applyColorFont(aCarryRow);
+		aCarryRow.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		GridLayout aCRGL = new GridLayout(3, false);
+		tde.gui.applyNoMargin(aCRGL);
+		aCarryRow.setLayout(aCRGL);
+		Button aFillB = new Button(aCarryRow, SWT.CHECK);
 		tde.gui.applyColorFont(aFillB);
 		aFillB.setText(l("SmartFill"));
 		tde.gui.tip(aFillB, "SceneSmartFill");
 		aFillB.setSelection(sc.smartFill);
-		//Carry-overs of the smart filling (settings of the clip, not keyed): left eye -> right eye, previous images ->
-		//this one, on a row below, enabled with the smart filling
-		Composite aCarryRow = new Composite(wgt, SWT.NONE);
-		tde.gui.applyColorFont(aCarryRow);
-		aCarryRow.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		GridLayout aCRGL = new GridLayout(2, false);
-		tde.gui.applyNoMargin(aCRGL);
-		aCarryRow.setLayout(aCRGL);
 		Button aPairB = new Button(aCarryRow, SWT.CHECK);
 		tde.gui.applyColorFont(aPairB);
 		aPairB.setText(l("PairCarry"));
@@ -458,6 +396,78 @@ public class SceneCameraGUI extends ProcessorGUI {
 			tde.gui.monitorGUI.redraw();
 		});
 
+		//Keys of the cameras, their view and their sliders
+		lkf = new LabelKeyFrame(tde, wgt, sc, "K") {
+			@Override
+			public void change(int aKey) {
+				refreshCam();
+				refreshWidgets();
+				tde.gui.monitorGUI.redraw();
+			}
+			@Override
+			public void move(int aTime) {
+				tde.timeLineStack.setRequestedTimePosMS(((Clip)sc.targetMedia).getStartTimeMS()+aTime);
+				tde.gui.timeLinesGUI.redraw();
+				tde.gui.monitorGUI.redraw();
+			}
+		};
+		updateKey();
+		Label aHint = new Label(wgt, SWT.WRAP);
+		tde.gui.applyColorFont(aHint);
+		GridData aHGD = new GridData(GridData.FILL_HORIZONTAL);
+		aHGD.widthHint = 100;
+		aHint.setLayoutData(aHGD);
+		aHint.setText(l("Hint").replace("%MOD%", "cocoa".equals(SWT.getPlatform()) ? "Cmd" : "Ctrl"));
+
+		view = new Canvas(wgt, SWT.BORDER | SWT.DOUBLE_BUFFERED);
+		GridData aVGD = new GridData(GridData.FILL_HORIZONTAL);
+		aVGD.heightHint = VIEW_H;
+		aVGD.widthHint = 100;
+		view.setLayoutData(aVGD);
+		view.addListener(SWT.Paint, e -> paint(e.gc));
+		view.addListener(SWT.Resize, e -> renderView(false));
+		view.addListener(SWT.Dispose, e -> {
+			if(viewI != null) {
+				viewI.dispose();
+				viewI = null;
+			}
+		});
+		installMouse();
+
+		baseLS = new LabelScale(tde, wgt, "B", 0, 0, STEPS, 0) {
+			@Override
+			public void change(int aValue) {
+				if(updating) {
+					return;
+				}
+				double aB = baseFromSlider(aValue);
+				lkf.edit(aEK -> {
+					StereoCam aC = sc.camForKey(aEK);
+					aC.base = aB;
+					sc.setCam(aEK, aC);
+				});
+				changed(!isDragging());
+			}
+		}.tip("SceneBase");
+		screenLS = new LabelScale(tde, wgt, "P", 0, 0, STEPS, 0) {
+			@Override
+			public void change(int aValue) {
+				if(updating) {
+					return;
+				}
+				double aS = screenFromSlider(aValue);
+				lkf.edit(aEK -> {
+					StereoCam aC = sc.camForKey(aEK);
+					aC.screen = aS;
+					sc.setCam(aEK, aC);
+				});
+				changed(!isDragging());
+			}
+		}.tip("SceneScreen");
+		valuesL = new Label(wgt, SWT.NONE);
+		tde.gui.applyColorFont(valuesL);
+		valuesL.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
 		new LabelImageButton(tde, wgt, l("Reset"), "moveRC.png") {
 			@Override
 			public void clicked() {
@@ -563,7 +573,10 @@ public class SceneCameraGUI extends ProcessorGUI {
 			scenesL.setText(aCS == null ? l("NoScene")
 					: aCS.video ? l("ScenesVideo").replace("%DONE%", ""+aCS.framesDone()).replace("%N%", ""+aCS.frames)
 					: l("SceneImage"));
-			scenesL.setForeground(aCS == null ? tde.gui.colorsSwt.RED : tde.gui.colorsSwt.CUBAIX_BLUE);
+			//A status, in violet as all the statuses of the processor panels
+			scenesL.setForeground(tde.gui.colorsSwt.VIOLET);
+			//Its row laid out again (the text may change length)
+			scenesL.getParent().layout(true);
 		}
 		if(playing()) {
 			//While playing: the monitor shows the scene; this view (rendered by the UI thread, as heavy as an image of

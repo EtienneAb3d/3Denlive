@@ -251,6 +251,47 @@ public class OpenMediaGUI {
 			}
 		}.tip("OpenFlat");
 
+		//Anaglyph: one file, its views taken from its color layers, of the kind chosen in the combo
+		org.eclipse.swt.widgets.Composite aAnaRow = new org.eclipse.swt.widgets.Composite(shell, SWT.NONE);
+		GridLayout aARL = new GridLayout(2, false);
+		aARL.marginWidth = aARL.marginHeight = 0;
+		aAnaRow.setLayout(aARL);
+		tde.gui.applyColorFont(aAnaRow);
+		new LabelImageButton(tde,aAnaRow,tde.gui.lngs.get("MediaOpen.OpenAnaglyph"),"openObject.png"){
+			@Override
+			public void clicked() {
+				String aPath = fileChoose(currentMediaDir == null ? currentMediaDir = tde.tdeDir:currentMediaDir);
+				if(aPath != null){
+					currentMediaDir = new File(aPath).getParent();
+					savePath();
+					final String aChosen = aPath;
+					final String aType = MediaDropGUI.lastAnaglyph;
+					final boolean aCopy = askCopy(aPath);
+					tde.gui.setWaitCursor(true,shell);
+					Thread aTh = new Thread(() -> {
+						String aP = aCopy ? ProjectFiles.importFile(tde, aChosen, false, null) : aChosen;
+						try {
+							tde.mediaList.loadImageAnaglyph(aP,aType,TDConfig.PROCESSING_MODE_RENDER,0);
+						}
+						catch(Throwable t) {
+							t.printStackTrace(System.err);
+						}
+						tde.gui.display.syncExec(() -> {
+							if(shell.isDisposed()) {
+								return;
+							}
+							showPreview();
+							preview.layout(true);
+							tde.gui.mediaListGUI.redraw();
+							tde.gui.setWaitCursor(false,shell);
+						});
+					});
+					aTh.start();
+				}
+			}
+		}.tip("OpenAnaglyph");
+		MediaDropGUI.anaglyphCombo(tde, aAnaRow);
+
 		new LabelImageButton(tde,shell,tde.gui.lngs.get("MediaOpen.OpenAudio"),"sound.gif"){
 			@Override
 			public void clicked() {
@@ -390,7 +431,7 @@ public class OpenMediaGUI {
 	String fileChoose(String filterPath,boolean aAudio) {
 		FileDialog aFD = new FileDialog (shell, SWT.OPEN);
 		String [] filterNames = new String [] {aAudio ? "Sound Files" : "Image Files", "All Files (*)"};
-		String aExts = aAudio ? AUDIO_EXTS : "*.gif;*.png;*.xpm;*.jpg;*.jpeg;*.webp;*.tiff;*.mpo;"
+		String aExts = aAudio ? AUDIO_EXTS : "*.gif;*.png;*.xpm;*.jpg;*.jpeg;*.webp;*.heic;*.heif;*.avif;*.tiff;*.mpo;"
 				+ "*.mp4;*.m4v;*.mpg;*.mpeg;*.avi;*.mov;*.mkv;*.webm;*.vob;*.ogv;*.wmv;*.ts;*.mts;*.m2ts;*.flv;*.dv;"
 				+ "*.svg;*.ply;";
 		String [] filterExtensions = new String [] {aExts+aExts.toUpperCase(), "*"};

@@ -26,6 +26,8 @@ public class VideoReader {
 	public int currentWidth = 0;
 	public int currentHeight = 0;
 	public String currentResize = ""; 
+	//The decoder gives float HDR images (wantsHdr() when it was started)
+	boolean currentHdr = false;
 	
 	Thread readerTh = null;
 	FfmpegDecoder decoder = null;
@@ -254,7 +256,8 @@ public class VideoReader {
 			//Frame grid of the file read: the work copy at 15 fps at most, else the original (known after the first
 			//reading, at 0)
 			double aFileFps = durationMS < 0 || origFps <= 0 ? -1 : aPath.equals(path) ? origFps : Math.min(15, origFps);
-			decoder = new FfmpegDecoder(aPath,aTimeOffset,-1,aResize,aFps,aFileFps);
+			currentHdr = wantsHdr(aProcessingMode) && aPath.equals(path);
+			decoder = new FfmpegDecoder(aPath,aTimeOffset,-1,aResize,aFps,aFileFps,currentHdr);
 			countFrames = 0;
 			currentResize = aResize;
 		}
@@ -365,6 +368,16 @@ public class VideoReader {
 		readerTh.start();
 	}
 	
+	/**
+	 * HDR end to end: in the RENDER mode of an HDR rendering (Ffmpeg.hdrRendering: HLG / PQ output, HDR processing),
+	 * an HDR video is decoded as float images with its highlights instead of being tone mapped to SDR
+	 */
+	boolean wantsHdr(int aProcessingMode) {
+		//Not an anaglyph: its layers kept apart in SDR (Ffmpeg.anaglyphFilter())
+		return aProcessingMode == TDConfig.PROCESSING_MODE_RENDER && Ffmpeg.hdrRendering && !texture && !Ffmpeg.isAnaglyph(path)
+				&& Ffmpeg.hdrTransfer(path) != null && Ffmpeg.hasZscale();
+	}
+
 	String evalResize(int aProcessingMode) {
 		if(aProcessingMode == TDConfig.PROCESSING_MODE_RENDER) {
 			//Allways in original size when rendering, for best quality
@@ -384,6 +397,7 @@ public class VideoReader {
 		synchronized (buffer) {
 			String aResize = evalResize(aProcessingMode);
 			if((currentResize != aResize && !currentResize.equals(aResize)) 
+					|| (decoder != null && currentHdr != wantsHdr(aProcessingMode))
 					|| (aProcessingMode == TDConfig.PROCESSING_MODE_RENDER && origHeight != currentHeight)
 					|| (sync != null && decoder != null && decoder.timeOffset != sync.decoder.timeOffset)) {
 				stopFeed();

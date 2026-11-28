@@ -77,14 +77,35 @@ public class FfmpegTranscoder extends Ffmpeg {
 					ArrayList<String> aCmdA = new ArrayList<String>();
 					aCmdA.add(ffmpegPath);
 					aCmdA.add("-i"); aCmdA.add(aPI);
+					//HDR video: the copy is tone mapped to SDR BT.709 (read as such afterwards)
+					String aSdr = sdrFilter(aPI);
+					//Anaglyph: its layers are views, coded as RGB (libx264rgb: the 3 layers at the same quality; measured on
+					//an HLG anaglyph, error of the red layer on fine details 1.1 / 255 against 8.0 in 4:2:0 and 2.9 in 4:4:4)
+					boolean aAna = isAnaglyph(aPI);
+					if(aAna) {
+						//Tagged SDR in the frames (the encoder takes them from the filters, not from -color_trc)
+						aSdr = (aSdr == null ? "format=gbrp" : aSdr)+",setparams=color_primaries=bt709:color_trc=bt709:colorspace=gbr";
+						aCmdA.add("-vf"); aCmdA.add(aSdr);
+						//Read back as SDR as it is (not tone mapped again: the HDR tags of the source would be copied)
+						aCmdA.add("-color_primaries"); aCmdA.add("bt709");
+						aCmdA.add("-color_trc"); aCmdA.add("bt709");
+						aCmdA.add("-colorspace"); aCmdA.add("rgb");
+						aSdr = null;
+					}
+					if(aSdr != null) {
+						aCmdA.add("-vf"); aCmdA.add(aSdr);
+						aCmdA.add("-color_primaries"); aCmdA.add("bt709");
+						aCmdA.add("-color_trc"); aCmdA.add("bt709");
+						aCmdA.add("-colorspace"); aCmdA.add("bt709");
+					}
 					aCmdA.add("-s"); aCmdA.add(aWidth+"x"+aHeight);
 					aCmdA.add("-r"); aCmdA.add(""+aFps);
 					aCmdA.add("-an"); //No audio
 					//Constant quality (a fixed 300 kbit/s gave blocks at the work resolution of the monitor)
-					aCmdA.add("-vcodec"); aCmdA.add("libx264");
+					aCmdA.add("-vcodec"); aCmdA.add(aAna ? "libx264rgb" : "libx264");
 					aCmdA.add("-crf"); aCmdA.add("18");
 					aCmdA.add("-preset"); aCmdA.add("veryfast");
-					aCmdA.add("-pix_fmt"); aCmdA.add("yuv420p");
+					aCmdA.add("-pix_fmt"); aCmdA.add(aAna ? "gbrp" : "yuv420p");
 					aCmdA.add(StringUtils.path2processing(aPW));
 					String[] aCmd = new String[aCmdA.size()];
 					StringBuffer aCmdSB = new StringBuffer();

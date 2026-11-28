@@ -53,7 +53,7 @@ public abstract class ImageParamProcessor extends ParamProcessor {
 			if(aBI.getType() != BufferedImage.TYPE_INT_ARGB) {
 				BufferedImage aC = ImageUtils.createImage(aW, aH);
 				Graphics2D aG = (Graphics2D)aC.getGraphics();
-				aG.drawImage(aBI, 0, 0, null);
+				aG.drawImage(com.cubaix.TDenlive.utils.FloatDraw.clamped(aBI), 0, 0, null);
 				aG.dispose();
 				aBI = aC;
 			}

@@ -28,6 +28,9 @@ public class FfmpegDecoder extends Ffmpeg {
 	StreamReader ffmpegErr = null;
 	InputStream is = null;
 	public boolean processing = false;
+	//HDR video given as float images (HDR rendering end to end, see VideoReader.wantsHdr()): PFM of linear light,
+	//instead of 8-bit BMP tone mapped to SDR
+	public final boolean hdrOut;
 	
 	public FfmpegDecoder(String aPathIn,long aTimeOffset,int aNbFrames,String aResize,double aFps) {
 		this(aPathIn, aTimeOffset, aNbFrames, aResize, aFps, -1);
@@ -41,6 +44,12 @@ public class FfmpegDecoder extends Ffmpeg {
 	 * on the frames of its original)
 	 */
 	public FfmpegDecoder(String aPathIn,long aTimeOffset,int aNbFrames,String aResize,double aFps,double aFileFps) {
+		this(aPathIn, aTimeOffset, aNbFrames, aResize, aFps, aFileFps, false);
+	}
+
+	/** aHdrOut: an HDR video read as float images with its highlights (getImg()), see hdrOut */
+	public FfmpegDecoder(String aPathIn,long aTimeOffset,int aNbFrames,String aResize,double aFps,double aFileFps,boolean aHdrOut) {
+		hdrOut = aHdrOut;
 		pathIn = aPathIn;
 		timeOffset = aTimeOffset;
 		seekMS = firstMS = aTimeOffset;
@@ -65,6 +74,11 @@ public class FfmpegDecoder extends Ffmpeg {
 			aCmdA.add("-nostats");//No progress line every 0.5 s while waiting for the reader
 			aCmdA.add("-ss"); aCmdA.add(String.format(java.util.Locale.ROOT, "%.6f", seekMS/1000.0));
 			aCmdA.add("-i"); aCmdA.add(pathIn);
+			//HDR video: kept HDR in linear light (float images), or tone mapped to SDR (8-bit images)
+			String aSdr = hdrOut ? hdrLinearFilter() : sdrFilter(pathIn);
+			if(aSdr != null) {
+				aCmdA.add("-vf"); aCmdA.add(aSdr);
+			}
 			if(resizeOpt != null && !resizeOpt.trim().isEmpty()) {
 				resizeOpt = resizeOpt.trim().replaceAll(" +", " ");
 				aCmdA.add(resizeOpt.split(" ")[0]); aCmdA.add(resizeOpt.split(" ")[1]);//+ " -s "+(2*1280)+"x"+720
@@ -76,8 +90,14 @@ public class FfmpegDecoder extends Ffmpeg {
 			if(nbFrames > 0) {
 				aCmdA.add("-frames"); aCmdA.add(""+nbFrames);
 			}
-			aCmdA.add("-vcodec"); aCmdA.add("bmp");
-			aCmdA.add("-pix_fmt"); aCmdA.add("bgr24");//rgb24"
+			if(hdrOut) {
+				aCmdA.add("-vcodec"); aCmdA.add("pfm");
+				aCmdA.add("-pix_fmt"); aCmdA.add("gbrpf32le");
+			}
+			else {
+				aCmdA.add("-vcodec"); aCmdA.add("bmp");
+				aCmdA.add("-pix_fmt"); aCmdA.add("bgr24");//rgb24"
+			}
 			aCmdA.add("-f"); aCmdA.add("image2pipe");
 			aCmdA.add("pipe:1");
 			String[] aCmd = new String[aCmdA.size()];
@@ -112,7 +132,7 @@ public class FfmpegDecoder extends Ffmpeg {
 	
 	public BufferedImage getImg() {
 		try {
-			return readBmp(is);
+			return hdrOut ? readPfm(is) : readBmp(is);
 		}
 		catch(Throwable t) {
 			t.printStackTrace(System.err);

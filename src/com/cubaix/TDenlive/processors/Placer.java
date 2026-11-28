@@ -319,7 +319,7 @@ public class Placer extends Processor {
 						aGL2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 						aGL2.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
 					}
-					aGL2.drawImage(aBIL,aATL,null);
+					com.cubaix.TDenlive.utils.FloatDraw.draw(aGL2, aProcessedBIL, aBIL, aATL, 1f);
 					aGL2.dispose();
 					aMedia.setWorkLeft(aProcessedBIL);
 				}
@@ -345,7 +345,7 @@ public class Placer extends Processor {
 						aGR2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 						aGR2.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
 					}
-					aGR2.drawImage(aBIR,aATR,null);
+					com.cubaix.TDenlive.utils.FloatDraw.draw(aGR2, aProcessedBIR, aBIR, aATR, 1f);
 					aGR2.dispose();
 					aMedia.setWorkRight(aProcessedBIR);
 				}

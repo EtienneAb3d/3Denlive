@@ -361,7 +361,7 @@ public class TextureLibrary {
 	void loadImage() {
 		FileDialog aFD = new FileDialog(parent.getShell(), SWT.OPEN);
 		aFD.setText(tde.gui.lngs.get(withMedias ? "Texture3D.LoadFile" : "ColorBck.LoadImage"));
-		String aExts = "*.jpg;*.jpeg;*.png;*.webp;*.bmp;*.gif;*.tif;*.tiff;*.pgm";
+		String aExts = "*.jpg;*.jpeg;*.png;*.webp;*.heic;*.heif;*.avif;*.bmp;*.gif;*.tif;*.tiff;*.pgm";
 		if(withMedias) {
 			aExts += ";" + AiClipGUI.VIDEO_EXTS.substring(0, AiClipGUI.VIDEO_EXTS.length()-1);
 		}
@@ -446,6 +446,9 @@ public class TextureLibrary {
 				}
 				else if(aT == MediaDropGUI.CROSSED) {
 					tde.mediaList.loadImageX(aP, com.cubaix.TDenlive.TDConfig.PROCESSING_MODE_RENDER, 0);
+				}
+				else if(aT == MediaDropGUI.ANAGLYPH) {
+					tde.mediaList.loadImageAnaglyph(aP, MediaDropGUI.lastAnaglyph, com.cubaix.TDenlive.TDConfig.PROCESSING_MODE_RENDER, 0);
 				}
 				else {
 					tde.mediaList.loadImageLR(aP, aP, com.cubaix.TDenlive.TDConfig.PROCESSING_MODE_RENDER, 0);

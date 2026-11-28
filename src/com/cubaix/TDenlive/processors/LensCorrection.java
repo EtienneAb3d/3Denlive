@@ -401,7 +401,7 @@ public class LensCorrection extends Processor {
 					checkFilterLeft(aKey,aWidth,aHeight);
 					BufferedImage aI = new BufferedImage(aWidth,aHeight, BufferedImage.TYPE_3BYTE_BGR);
 					Graphics2D aG = (Graphics2D)aI.getGraphics();
-					aG.drawImage(aBIL,0,0,null);
+					aG.drawImage(com.cubaix.TDenlive.utils.FloatDraw.clamped(aBIL),0,0,null);
 					aG.dispose();
 					BufferedImage aL = ImageUtils.createImage(aWidth, aHeight, tde.config.processingHdr[aProcessingMode]);
 					aG = (Graphics2D)aL.getGraphics();
@@ -420,7 +420,7 @@ public class LensCorrection extends Processor {
 					checkFilterRight(aKey,aWidth,aHeight);
 					BufferedImage aI = new BufferedImage(aWidth,aHeight, BufferedImage.TYPE_3BYTE_BGR);
 					Graphics2D aG = (Graphics2D)aI.getGraphics();
-					aG.drawImage(aBIR,0,0,null);
+					aG.drawImage(com.cubaix.TDenlive.utils.FloatDraw.clamped(aBIR),0,0,null);
 					aG.dispose();
 					BufferedImage aR = ImageUtils.createImage(aWidth, aHeight, tde.config.processingHdr[aProcessingMode]);
 					aG = (Graphics2D)aR.getGraphics();

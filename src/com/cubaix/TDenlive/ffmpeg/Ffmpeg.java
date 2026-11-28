@@ -59,6 +59,142 @@ public class Ffmpeg {
 		return sharedPath;
 	}
 
+	//Transfer of the HDR videos (hdrTransfer()) by path|size|date: "HLG", "PQ" or "" (SDR / unknown)
+	static final java.util.Map<String, String> HDR_TRANSFER = new java.util.concurrent.ConcurrentHashMap<String, String>();
+	static volatile Boolean hasZscale = null;
+
+	/**
+	 * "HLG" or "PQ" when the first video stream of aPath is HDR (transfer arib-std-b67 / smpte2084 in the description
+	 * of ffmpeg -i), else null; cached by path, size and date
+	 */
+	public static String hdrTransfer(String aPath) {
+		if(aPath == null) {
+			return null;
+		}
+		File aF = new File(aPath);
+		if(!aF.isFile()) {
+			return null;
+		}
+		String aKey = aF.getAbsolutePath()+"|"+aF.length()+"|"+aF.lastModified();
+		String aT = HDR_TRANSFER.get(aKey);
+		if(aT == null) {
+			aT = "";
+			String aFfmpeg = ffmpegPath();
+			if(aFfmpeg != null) {
+				try {
+					Process aP = new ProcessBuilder(aFfmpeg, "-nostdin", "-hide_banner", "-i", aPath).redirectErrorStream(true).start();
+					try(BufferedReader aR = new BufferedReader(new InputStreamReader(aP.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
+						String aL;
+						while((aL = aR.readLine()) != null) {
+							if(aT.isEmpty() && aL.contains("Stream #") && aL.contains("Video:")) {
+								aT = aL.contains("arib-std-b67") ? "HLG" : aL.contains("smpte2084") ? "PQ" : "";
+								//The first video stream only
+								if(!aT.isEmpty()) {
+									break;
+								}
+							}
+						}
+					}
+					aP.destroy();
+				}
+				catch(Throwable t) {
+					t.printStackTrace(System.err);
+				}
+			}
+			HDR_TRANSFER.put(aKey, aT);
+		}
+		return aT.isEmpty() ? null : aT;
+	}
+
+	/**
+	 * Set by the rendering window while it renders an HDR video (HLG / PQ) with the HDR processing (floating point
+	 * images): the HDR videos are then decoded in the RENDER mode with their highlights (VideoReader.wantsHdr()),
+	 * not tone mapped to SDR
+	 */
+	public static volatile boolean hdrRendering = false;
+
+	/** The ffmpeg found has the zscale filter (libzimg), needed by the tone mapping */
+	public static boolean hasZscale() {
+		if(hasZscale == null) {
+			boolean aHas = false;
+			String aFfmpeg = ffmpegPath();
+			if(aFfmpeg != null) {
+				try {
+					Process aP = new ProcessBuilder(aFfmpeg, "-hide_banner", "-filters").redirectErrorStream(true).start();
+					try(BufferedReader aR = new BufferedReader(new InputStreamReader(aP.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
+						String aL;
+						while((aL = aR.readLine()) != null) {
+							if(aL.matches("^\\s*\\S+\\s+zscale\\s.*")) {
+								aHas = true;
+							}
+						}
+					}
+					aP.waitFor();
+				}
+				catch(Throwable t) {
+					t.printStackTrace(System.err);
+				}
+			}
+			hasZscale = aHas;
+			if(!aHas) {
+				System.err.println("ffmpeg without zscale: the HDR videos are read without tone mapping");
+			}
+		}
+		return hasZscale;
+	}
+
+	/**
+	 * Tone mapping of an HDR video (HLG / PQ, BT.2020) to SDR BT.709 for the 8-bit images of the application (monitor,
+	 * work copies, film strips, SDR renderings), so that it is not shown dark and dull: linear light (100 nits = SDR
+	 * white), BT.2020 -> BT.709, Mobius curve (keeps the levels up to the white, compresses the highlights), BT.709.
+	 * Null for an SDR video (or without zscale). To put first in the -vf of a decoding of aPath
+	 */
+	public static String sdrFilter(String aPath) {
+		if(isAnaglyph(aPath)) {
+			return anaglyphFilter(aPath);
+		}
+		if(hdrTransfer(aPath) == null || !hasZscale()) {
+			return null;
+		}
+		return "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=mobius:desat=0"
+				+ ",zscale=t=bt709:m=bt709:r=tv,format=yuv420p";
+	}
+
+	//Videos imported as anaglyphs (absolute paths, StereoImage.loadImageLR()): their color layers are views, kept apart
+	static final java.util.Set<String> ANAGLYPHS = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+	public static void markAnaglyph(String aPath) {
+		if(aPath != null) {
+			ANAGLYPHS.add(new File(aPath).getAbsolutePath());
+		}
+	}
+
+	public static boolean isAnaglyph(String aPath) {
+		return aPath != null && ANAGLYPHS.contains(new File(aPath).getAbsolutePath());
+	}
+
+	/**
+	 * Decoding of an anaglyph video: each color layer is a view, so nothing may mix them. The tone mapping of
+	 * sdrFilter() does (BT.2020 -> BT.709 primaries: R709 = 1.66 R - 0.59 G - 0.07 B, the dark post of the cyan view
+	 * became a bright ghost in the red view; the Mobius curve scaling the 3 layers by the strongest; the 4:2:0 output
+	 * halving the colors, where the red / cyan separation lies). HLG: shown as it is (its signal is made for SDR
+	 * screens), only the YUV BT.2020 -> RGB conversion at full color resolution; PQ: each layer to linear light then
+	 * to BT.709 on its own (highlights clipped); SDR: null (plain decoding, full color resolution)
+	 */
+	static String anaglyphFilter(String aPath) {
+		String aT = hdrTransfer(aPath);
+		if(aT == null) {
+			return null;
+		}
+		if("HLG".equals(aT)) {
+			return "scale=in_color_matrix=bt2020:in_range=tv:flags=bicubic+accurate_rnd+full_chroma_int,format=gbrp";
+		}
+		if(!hasZscale()) {
+			return null;
+		}
+		return "zscale=t=linear:npl=100,format=gbrpf32le,zscale=t=bt709,format=gbrp";
+	}
+
 	static String findFfmpeg() {
 		if(new File("/usr/bin/ffmpeg").exists()) {
 			return "/usr/bin/ffmpeg";
@@ -105,6 +241,88 @@ public class Ffmpeg {
 	 * Each file is first cut with the size of its header: ImageIO alone may leave the padding
 	 * of the last row (width*3 not multiple of 4) in the stream, and then misread all the next images.
 	 */
+	/** Filter of an HDR video for hdrDecode: linear light (1 = SDR white at 203 nits, BT.2408), BT.709 primaries */
+	public static String hdrLinearFilter() {
+		return "zscale=t=linear:npl=203,format=gbrpf32le,zscale=p=bt709,format=gbrpf32le";
+	}
+
+	//Linear light -> value of the float images (sRGB curve, extended above 1), indexed by the square root of the
+	//linear value: SQRT_MAX^2 = 64 x the SDR white (13000 nits, above the 10000 of PQ)
+	static final int ENC_SIZE = 1 << 16;
+	static final double SQRT_MAX = 8;
+	static float[] ENC = null;
+
+	static synchronized float[] encodeTable() {
+		if(ENC == null) {
+			float[] aT = new float[ENC_SIZE+1];
+			for(int i = 0;i <= ENC_SIZE;i++) {
+				double s = i*SQRT_MAX/ENC_SIZE, l = s*s;
+				aT[i] = (float)(l <= 0.0031308 ? 12.92*l : 1.055*Math.pow(l, 1/2.4)-0.055);
+			}
+			ENC = aT;
+		}
+		return ENC;
+	}
+
+	/**
+	 * Next image of a PFM stream (ffmpeg -vcodec pfm, gbrpf32le of hdrLinearFilter(): linear light, lines bottom to
+	 * top) as a float image of the application (ImageUtils.createHdr(): values on the sRGB curve, 1 = SDR white,
+	 * the highlights above 1, negative values of colors out of BT.709 clamped to 0, opaque); null at the end
+	 */
+	public static java.awt.image.BufferedImage readPfm(InputStream aIS) throws IOException {
+		String aMagic = pfmToken(aIS);
+		if(aMagic == null) {
+			return null;
+		}
+		if(!aMagic.equals("PF")) {
+			throw new IOException("Not a color PFM stream: "+aMagic);
+		}
+		int aW = Integer.parseInt(pfmToken(aIS));
+		int aH = Integer.parseInt(pfmToken(aIS));
+		double aScale = Double.parseDouble(pfmToken(aIS));
+		boolean aLE = aScale < 0;
+		byte[] aData = new byte[aW*aH*12];
+		new java.io.DataInputStream(aIS).readFully(aData);
+		java.awt.image.BufferedImage aBI = com.cubaix.TDenlive.utils.ImageUtils.createHdr(aW, aH);
+		final float[] aD = ((java.awt.image.DataBufferFloat)aBI.getRaster().getDataBuffer()).getData();
+		final float[] aT = encodeTable();
+		final java.nio.FloatBuffer aFB = java.nio.ByteBuffer.wrap(aData).order(aLE ? java.nio.ByteOrder.LITTLE_ENDIAN : java.nio.ByteOrder.BIG_ENDIAN).asFloatBuffer();
+		com.cubaix.TDenlive.utils.Par.rows(aH, (aY0, aY1) -> {
+			for(int y = aY0;y < aY1;y++) {
+				int i = (aH-1-y)*aW*3;
+				int o = y*aW*4;
+				for(int x = 0;x < aW;x++) {
+					for(int c = 0;c < 3;c++) {
+						float l = aFB.get(i++);
+						double s = l <= 0 ? 0 : Math.min(SQRT_MAX, Math.sqrt(l));
+						aD[o++] = aT[(int)(s*(ENC_SIZE/SQRT_MAX)+0.5)];
+					}
+					aD[o++] = 1f;
+				}
+			}
+		});
+		return aBI;
+	}
+
+	/** Next token of a PFM header (ends at a white space, one consumed), null at the end of the stream */
+	static String pfmToken(InputStream aIS) throws IOException {
+		StringBuilder aSB = new StringBuilder();
+		int c;
+		while((c = aIS.read()) >= 0) {
+			if(Character.isWhitespace(c)) {
+				if(aSB.length() > 0) {
+					return aSB.toString();
+				}
+				continue;
+			}
+			aSB.append((char)c);
+		}
+		if(aSB.length() > 0) {
+			throw new IOException("Truncated PFM header");
+		}
+		return null;
+	}
+
 	public static java.awt.image.BufferedImage readBmp(InputStream aIS) throws IOException {
 		java.io.DataInputStream aDIS = new java.io.DataInputStream(aIS);
 		byte[] aHeader = new byte[14];

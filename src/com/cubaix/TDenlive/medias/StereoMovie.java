@@ -83,9 +83,18 @@ public class StereoMovie extends StereoImage {
 			}
 			aBI = rightReader.getImage(aProcessingMode,aTime);
 		}
-		if(origWidth <= 0) {
-			origWidth = aBI.getWidth();
-			origHeight = aBI.getHeight();
+		//Size of the file (first image decoded at full size by the reader), not of the image read: in the work
+		//modes it comes from the work copy (1024x576 for a 4K video)
+		VideoReader aReader = aIsLeft ? leftReader : rightReader;
+		if(origWidth <= 0 || (aIsLeft && aReader != null && aReader.origWidth > 0 && origWidth != aReader.origWidth)) {
+			if(aReader != null && aReader.origWidth > 0) {
+				origWidth = aReader.origWidth;
+				origHeight = aReader.origHeight;
+			}
+			else if(origWidth <= 0) {
+				origWidth = aBI.getWidth();
+				origHeight = aBI.getHeight();
+			}
 		}
 		return aBI;
 	}
@@ -215,6 +224,8 @@ public class StereoMovie extends StereoImage {
 			}
 			super.buildThumb();
 			thumbKey = aKey;
+			//Chosen again for this orientation
+			thumbChosen = false;
 		}
 	}
 	
@@ -241,6 +252,95 @@ public class StereoMovie extends StereoImage {
 		}
 	}
 	
+	//The thumbnail of the media list is the first image that is not empty (ImageUtils.isEmptyImage()), from the end
+	//of the opening fades of its montage for the rendering of a montage (TimeLineStack.firstFullImageMS()), taken
+	//among the images of the film strip once extracted; thumbChosen: done (or the first image is fine)
+	volatile boolean thumbChosen = false;
+	boolean choosingThumb = false;
+
+	@Override
+	public BufferedImage getThumbAwt() {
+		chooseThumb();
+		return super.getThumbAwt();
+	}
+
+	@Override
+	public org.eclipse.swt.graphics.Image getThumbSwt() {
+		chooseThumb();
+		return super.getThumbSwt();
+	}
+
+	/** Media time from which the thumbnail is looked for: the end of the opening fades of its montage, else 0 */
+	long thumbFromMS() {
+		Montage aM = Montage.of(tde, this);
+		return aM == null || aM.isMain() ? 0 : aM.stack.firstFullImageMS();
+	}
+
+	void chooseThumb() {
+		if(thumbChosen || choosingThumb || pathL == null || "null".equals(pathL)) {
+			return;
+		}
+		synchronized(this) {
+			if(thumbChosen || choosingThumb) {
+				return;
+			}
+			choosingThumb = true;
+			try {
+				long aFrom = thumbFromMS();
+				BufferedImage aFirst = super.getThumbAwt();
+				if(aFrom <= 0 && aFirst != null && !ImageUtils.isEmptyImage(aFirst)) {
+					//The first image is fine
+					thumbChosen = true;
+					return;
+				}
+				VideoThumbnailer aVT = getThumbnailer();
+				if(aVT == null) {
+					return;
+				}
+				int aStart = aVT.getIndex(aFrom);
+				if(aStart < 0) {
+					//Not extracted yet: asked again at the next drawing
+					return;
+				}
+				for(int i = aStart;;i++) {
+					BufferedImage aS = aVT.get(i);
+					if(aS == null) {
+						if(aVT.isDone()) {
+							//None: the image at the end of the fades, else the first one
+							if(aFrom > 0) {
+								setThumb(getThumbAwtAt(aFrom));
+							}
+							thumbChosen = true;
+						}
+						return;
+					}
+					if(!ImageUtils.isEmptyImage(aS)) {
+						setThumb(getThumbAwtAt(i*aVT.intervalMS));
+						thumbChosen = true;
+						return;
+					}
+				}
+			}
+			catch(Throwable t) {
+				t.printStackTrace(System.err);
+				thumbChosen = true;
+			}
+			finally {
+				choosingThumb = false;
+			}
+		}
+	}
+
+	void setThumb(BufferedImage aBI) {
+		if(aBI == null) {
+			return;
+		}
+		setThumbAwt(aBI);
+		if(tde.gui != null && tde.gui.display != null && !tde.gui.display.isDisposed()) {
+			setThumbSwt(ImageUtils.imageToSwt(tde.gui.display, aBI, false));
+		}
+	}
+
 	VideoThumbnailer getThumbnailer() {
 		if(thumbnailer == null && pathL != null && durationMS > 0) {
 			synchronized (stripCache) {
@@ -311,6 +411,10 @@ public class StereoMovie extends StereoImage {
 					aL = origStereo == 2 ? aFirst : aSecond;
 					aR = origStereo == 2 ? aSecond : aFirst;
 				}
+				else if(com.cubaix.TDenlive.utils.Anaglyph.isAnaglyph(anaglyph)) {
+					aL = com.cubaix.TDenlive.utils.Anaglyph.view(aOrig, anaglyph, true);
+					aR = com.cubaix.TDenlive.utils.Anaglyph.view(aOrig, anaglyph, false);
+				}
 				else {
 					aL = aOrig;
 					aR = aOrig;
@@ -337,9 +441,9 @@ public class StereoMovie extends StereoImage {
 
 	/** Copy of the half of aBI starting at aX (a sub image shares the whole buffer of aBI) */
 	static BufferedImage half(BufferedImage aBI, int aX, int aW, int aH) {
-		BufferedImage aOut = ImageUtils.createImage(aW, aH);
+		BufferedImage aOut = ImageUtils.createImage(aW, aH, com.cubaix.TDenlive.utils.FloatDraw.isFloat(aBI));
 		Graphics2D aG = (Graphics2D)aOut.getGraphics();
-		aG.drawImage(aBI, -aX, 0, null);
+		com.cubaix.TDenlive.utils.FloatDraw.draw(aG, aOut, aBI, -aX, 0, 0, 0);
 		aG.dispose();
 		return aOut;
 	}
@@ -364,18 +468,18 @@ public class StereoMovie extends StereoImage {
 		BufferedImage aOut;
 		AffineTransform aAT;
 		if(aRotate.equals("180") || aRotate.equals("0")) {
-			aOut = ImageUtils.createImage((int)(aAnamorph*aWidth),aHeight);
+			aOut = ImageUtils.createImage((int)(aAnamorph*aWidth),aHeight,com.cubaix.TDenlive.utils.FloatDraw.isFloat(aBI));
 			aAT = AffineTransform.getTranslateInstance(aWidth/2,aHeight/2);
 		}
 		else {
-			aOut = ImageUtils.createImage(aHeight,(int)(aAnamorph*aWidth));
+			aOut = ImageUtils.createImage(aHeight,(int)(aAnamorph*aWidth),com.cubaix.TDenlive.utils.FloatDraw.isFloat(aBI));
 			aAT = AffineTransform.getTranslateInstance(aHeight/2,aWidth/2);
 		}
 		aAT.concatenate(AffineTransform.getRotateInstance(Math.PI*Double.parseDouble(aRotate)/180.0));
 		aAT.concatenate(AffineTransform.getTranslateInstance(-aWidth/2,-aHeight/2));
 		aAT.concatenate(AffineTransform.getScaleInstance(aAnamorph, 1.0));
 		Graphics2D aG = (Graphics2D)aOut.getGraphics();
-		aG.drawImage(aBI, aAT, null);
+		com.cubaix.TDenlive.utils.FloatDraw.draw(aG, aOut, aBI, aAT, 1f);
 		aG.dispose();
 		return aOut;
 	}

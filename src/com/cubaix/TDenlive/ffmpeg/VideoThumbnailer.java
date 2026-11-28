@@ -64,6 +64,11 @@ public class VideoThumbnailer extends Ffmpeg {
 				aIn = aWork;
 			}
 			StringBuffer aVF = new StringBuffer();
+			//HDR video (an old work copy may keep the HDR tags): tone mapped to SDR
+			String aSdr = sdrFilter(aIn);
+			if(aSdr != null) {
+				aVF.append(aSdr).append(",");
+			}
 			if(cropFilter != null) {
 				aVF.append(cropFilter).append(",");
 			}
@@ -129,6 +134,11 @@ public class VideoThumbnailer extends Ffmpeg {
 			return done ? aSize-1 : -1;
 		}
 		return aIdx;
+	}
+
+	/** All the images are extracted */
+	public boolean isDone() {
+		return done;
 	}
 
 	public BufferedImage get(int aIdx) {

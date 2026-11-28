@@ -1,5 +1,7 @@
 package com.cubaix.TDenlive.GUI.processors;
 
+import com.cubaix.TDenlive.GUI.InpaintGUI;
+
 import java.util.Vector;
 
 import org.eclipse.swt.SWT;
@@ -52,10 +54,13 @@ public class DepthmapGUI extends ProcessorGUI {
 			aSelectedKey = 0;
 		}
 
-		//Depth map(s) computed from the clip (Depth Anything V2), and on its right the depth map shown instead of the result
+		//Depth map(s) computed from the clip (Depth Anything V2), and on its right the resume of an interrupted computation
 		Composite aDepthRow = new Composite(wgt, SWT.NONE);
 		aDepthRow.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		GridLayout aDRGL = new GridLayout(2, false);
+		//Interrupted computation of the depth maps of the video: resumed from its last frame
+		boolean aPartial = pl.targetMedia instanceof Clip && ((Clip)pl.targetMedia).getMedia() instanceof com.cubaix.TDenlive.medias.StereoImage
+				&& com.cubaix.TDenlive.depth.ComputedDepthmap.partialModel(tde, (com.cubaix.TDenlive.medias.StereoImage)((Clip)pl.targetMedia).getMedia()) != null;
+		GridLayout aDRGL = new GridLayout(3, false);
 		tde.gui.applyNoMargin(aDRGL);
 		aDepthRow.setLayout(aDRGL);
 		tde.gui.applyColorFont(aDepthRow);
@@ -65,12 +70,31 @@ public class DepthmapGUI extends ProcessorGUI {
 				DepthmapConvertGUI.convert(tde, (Clip)pl.targetMedia, pl, true);
 			}
 		}.tip("DepthConvert");
-		final Button aShowB = new Button(aDepthRow, SWT.CHECK);
+		//Status of the computed depth maps, right of the compute button
+		DepthmapConvertGUI.addState(tde, aDepthRow, () -> pl.computed, pl.targetMedia instanceof Clip ? (Clip)pl.targetMedia : null, "DepthConvert.StateNone2D");
+		if(aPartial) {
+			DepthmapConvertGUI.attachPartial(tde, (Clip)pl.targetMedia, pl);
+			new LabelImageButton(tde,aDepthRow,tde.gui.lngs.get("DepthConvert.Resume"),"play.gif") {
+				@Override
+				public void clicked() {
+					DepthmapConvertGUI.resume(tde, (Clip)pl.targetMedia, pl);
+				}
+			}.tip("DepthResume");
+		}
+
+		//Below: the depth map shown instead of the result, and on its right the holes shown unfilled
+		Composite aShowRow = new Composite(wgt, SWT.NONE);
+		aShowRow.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		GridLayout aSRGL = new GridLayout(2, false);
+		tde.gui.applyNoMargin(aSRGL);
+		aShowRow.setLayout(aSRGL);
+		tde.gui.applyColorFont(aShowRow);
+		final Button aShowB = new Button(aShowRow, SWT.CHECK);
 		tde.gui.applyColorFont(aShowB);
 		tde.gui.tip(aShowB, "DepthShow");
 		aShowB.setText(tde.gui.lngs.get("DepthConvert.Show"));
 		aShowB.setSelection(pl.showDepth);
-		aShowB.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_CENTER));
+		aShowB.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER));
 		aShowB.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
@@ -82,6 +106,47 @@ public class DepthmapGUI extends ProcessorGUI {
 				widgetSelected(arg0);
 			}
 		});
+		final Button aHolesB = new Button(aShowRow, SWT.CHECK);
+		tde.gui.applyColorFont(aHolesB);
+		tde.gui.tip(aHolesB, "DepthShowHoles");
+		aHolesB.setText(tde.gui.lngs.get("DepthConvert.ShowHoles"));
+		aHolesB.setSelection(pl.showHoles);
+		aHolesB.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER));
+		aHolesB.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent arg0) {
+				//Unchecked: the precomputation of the filling asked first when images are missing
+				boolean aShow = aHolesB.getSelection();
+				InpaintGUI.showHolesChanged(tde, pl.inpainting, aShow, () -> pl.showHoles = aShow);
+				tde.gui.monitorGUI.redraw();
+			}
+			@Override
+			public void widgetDefaultSelected(SelectionEvent arg0) {
+				widgetSelected(arg0);
+			}
+		});
+
+		//Direction of the depth map, below the display options
+		final Button aBIFB = new Button(wgt, SWT.CHECK);
+		tde.gui.applyColorFont(aBIFB);
+		tde.gui.tip(aBIFB, "BlackIsFront");
+		GridData aBIFGD = new GridData(GridData.FILL_HORIZONTAL);
+		aBIFGD.heightHint = tde.gui.h(20);
+		aBIFB.setLayoutData(aBIFGD);
+		aBIFB.setSelection(pl.getBlackIsFront(aSelectedKey));
+		aBIFB.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent arg0) {
+				lkf.edit(aEK -> pl.setBlackIsFront(aEK, aBIFB.getSelection()));
+				tde.gui.monitorGUI.redraw();
+			}
+			@Override
+			public void widgetDefaultSelected(SelectionEvent arg0) {
+				lkf.edit(aEK -> pl.setBlackIsFront(aEK, aBIFB.getSelection()));
+				tde.gui.monitorGUI.redraw();
+			}
+		});
+		aBIFB.setText(tde.gui.lngs.get("Depthmap.BlackIsFront"));
 
 		//Hole filling method per processing level: interpolation or an inpainting model (settings of the clip, not keyed)
 		com.cubaix.TDenlive.GUI.InpaintGUI.addButton(tde, wgt, pl.inpainting);
@@ -106,26 +171,6 @@ public class DepthmapGUI extends ProcessorGUI {
 		};
 		lkf.setSelection(aSelectedKey);
 
-		final Button aBIFB = new Button(wgt, SWT.CHECK);
-		tde.gui.applyColorFont(aBIFB);
-		tde.gui.tip(aBIFB, "BlackIsFront");
-		GridData aBIFGD = new GridData(GridData.FILL_HORIZONTAL);
-		aBIFGD.heightHint = tde.gui.h(20);
-		aBIFB.setLayoutData(aBIFGD);
-		aBIFB.setSelection(pl.getBlackIsFront(aSelectedKey));
-		aBIFB.addSelectionListener(new SelectionListener() {
-			@Override
-			public void widgetSelected(SelectionEvent arg0) {
-				lkf.edit(aEK -> pl.setBlackIsFront(aEK, aBIFB.getSelection()));
-				tde.gui.monitorGUI.redraw();
-			}
-			@Override
-			public void widgetDefaultSelected(SelectionEvent arg0) {
-				lkf.edit(aEK -> pl.setBlackIsFront(aEK, aBIFB.getSelection()));
-				tde.gui.monitorGUI.redraw();
-			}
-		});
-		aBIFB.setText(tde.gui.lngs.get("Depthmap.BlackIsFront"));
 		
 
 		dLS = new LabelScale(tde,wgt,"Z",-10000,0,10000,(int)(-pl.getD(aSelectedKey)*30000)) {

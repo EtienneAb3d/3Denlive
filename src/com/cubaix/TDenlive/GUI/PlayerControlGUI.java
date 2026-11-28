@@ -42,6 +42,8 @@ public class PlayerControlGUI extends CompositePanel {
 	boolean settingClock = false;
 	//Step in seconds of the back / forward arrows
 	Text step = null;
+	//Zoom of the monitor in percent
+	Label zoomLabel = null;
 
 	public PlayerControlGUI(TDenlive aTDe, Composite aParent) {
 		super(aTDe, aParent);
@@ -56,7 +58,7 @@ public class PlayerControlGUI extends CompositePanel {
 		aTB.heightHint = tde.gui.h(25);
 		toolBar.setLayoutData(aTB);
 		tde.gui.applyColorFont(toolBar);
-		GridLayout aGL = new GridLayout(20, false);
+		GridLayout aGL = new GridLayout(22, false);
 		tde.gui.applyNoMargin(aGL);
 		toolBar.setLayout(aGL);
 
@@ -117,6 +119,25 @@ public class PlayerControlGUI extends CompositePanel {
 		stopHere.addListener(SWT.MouseDown, e -> stopHere());
 		updateButtons();
 
+		//Start of the montage (or of the library media shown in the monitor), left of the clock
+		Label aMontageStart = new Label(toolBar,SWT.NONE);
+		aMontageStart.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+		aMontageStart.setImage(tde.gui.imgsSwt.getIcon("montageStart.png"));
+		aMontageStart.setBackground(tde.gui.colorsSwt.WHITE);
+		tde.gui.tip(aMontageStart, "MontageStart");
+		aMontageStart.addListener(SWT.MouseDown,e -> goToEdge(false));
+
+		//Previous / next image on each side of the clock
+		Label aLeft = new Label(toolBar,SWT.NONE);
+		aLeft.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+		aLeft.setImage(tde.gui.imgsSwt.getIcon("arrowLeftSmallCubaixBlue.gif"));
+		aLeft.setBackground(tde.gui.colorsSwt.WHITE);
+		tde.gui.tip(aLeft, "PrevFrame");
+		aLeft.addListener(SWT.MouseDown,e -> {
+			tde.timeLineStack.setRequestedTimePosMS(Math.max(0, tde.timeLineStack.getRequestedTimePosMS()-(int)(1000.0/tde.config.outFps)));
+			tde.gui.monitorGUI.redraw();
+		});
+
 		//Editable clock: a valid time jumps there, an invalid one turns the field red
 		clock = framedField(SWT.CENTER);
 		clock.setText(StringUtils.time2Clock(0));
@@ -149,24 +170,6 @@ public class PlayerControlGUI extends CompositePanel {
 			}
 		});
 
-		//Space of a button between the clock and the start / frame / end buttons
-		buttonSpace();
-
-		Label aStart = new Label(toolBar,SWT.NONE);
-		aStart.setLayoutData(new GridData(GridData.FILL_VERTICAL));
-		aStart.setImage(tde.gui.imgsSwt.getIcon("arrowLeftWall.gif"));
-		aStart.setBackground(tde.gui.colorsSwt.WHITE);
-		tde.gui.tip(aStart, "ClipStart");
-		aStart.addListener(SWT.MouseDown,e -> goToTime(getStartEnd()[0]));
-		Label aLeft = new Label(toolBar,SWT.NONE);
-		aLeft.setLayoutData(new GridData(GridData.FILL_VERTICAL));
-		aLeft.setImage(tde.gui.imgsSwt.getIcon("arrowLeftSmallCubaixBlue.gif"));
-		aLeft.setBackground(tde.gui.colorsSwt.WHITE);
-		tde.gui.tip(aLeft, "PrevFrame");
-		aLeft.addListener(SWT.MouseDown,e -> {
-			tde.timeLineStack.setRequestedTimePosMS(Math.max(0, tde.timeLineStack.getRequestedTimePosMS()-(int)(1000.0/tde.config.outFps)));
-			tde.gui.monitorGUI.redraw();
-		});
 		Label aRight = new Label(toolBar,SWT.NONE);
 		aRight.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 		aRight.setImage(tde.gui.imgsSwt.getIcon("arrowRightSmallCubaixBlue.gif"));
@@ -179,19 +182,28 @@ public class PlayerControlGUI extends CompositePanel {
 			tde.timeLineStack.setRequestedTimePosMS(aNext);
 			tde.gui.monitorGUI.redraw();
 		});
-		Label aEnd = new Label(toolBar,SWT.NONE);
-		aEnd.setLayoutData(new GridData(GridData.FILL_VERTICAL));
-		aEnd.setImage(tde.gui.imgsSwt.getIcon("arrowRightWall.gif"));
-		aEnd.setBackground(tde.gui.colorsSwt.WHITE);
-		tde.gui.tip(aEnd, "ClipEnd");
-		aEnd.addListener(SWT.MouseDown,e -> goToTime(getStartEnd()[1]));
 
-		//Space of a button, then the step in seconds and its back / forward arrows
+		//End of the montage (or of the library media shown in the monitor), right of the clock
+		Label aMontageEnd = new Label(toolBar,SWT.NONE);
+		aMontageEnd.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+		aMontageEnd.setImage(tde.gui.imgsSwt.getIcon("montageEnd.png"));
+		aMontageEnd.setBackground(tde.gui.colorsSwt.WHITE);
+		tde.gui.tip(aMontageEnd, "MontageEnd");
+		aMontageEnd.addListener(SWT.MouseDown,e -> goToEdge(true));
+
+
+		//Space of a button, then the step in seconds between its back / forward arrows
 		Label aStepSpace = new Label(toolBar,SWT.NONE);
 		tde.gui.applyColorFont(aStepSpace);
 		GridData aSSGD = new GridData();
 		aSSGD.widthHint = 25;
 		aStepSpace.setLayoutData(aSSGD);
+		Label aStepBack = new Label(toolBar,SWT.NONE);
+		aStepBack.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+		aStepBack.setImage(tde.gui.imgsSwt.getIcon("doubleArrowLeft.png"));
+		aStepBack.setBackground(tde.gui.colorsSwt.WHITE);
+		tde.gui.tip(aStepBack, "StepBack");
+		aStepBack.addListener(SWT.MouseDown,e -> stepBy(-1));
 		step = framedField(SWT.RIGHT);
 		step.setText("1");
 		tde.gui.tip(step, "StepSeconds");
@@ -205,12 +217,6 @@ public class PlayerControlGUI extends CompositePanel {
 		aStepUnit.setText("s");
 		tde.gui.applyColorFont(aStepUnit);
 		aStepUnit.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
-		Label aStepBack = new Label(toolBar,SWT.NONE);
-		aStepBack.setLayoutData(new GridData(GridData.FILL_VERTICAL));
-		aStepBack.setImage(tde.gui.imgsSwt.getIcon("doubleArrowLeft.png"));
-		aStepBack.setBackground(tde.gui.colorsSwt.WHITE);
-		tde.gui.tip(aStepBack, "StepBack");
-		aStepBack.addListener(SWT.MouseDown,e -> stepBy(-1));
 		Label aStepForward = new Label(toolBar,SWT.NONE);
 		aStepForward.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 		aStepForward.setImage(tde.gui.imgsSwt.getIcon("doubleArrowRight.png"));
@@ -220,6 +226,12 @@ public class PlayerControlGUI extends CompositePanel {
 
 		//Space of a button, then the time relative to the selected clip, editable as the clock
 		buttonSpace();
+		Label aStart = new Label(toolBar,SWT.NONE);
+		aStart.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+		aStart.setImage(tde.gui.imgsSwt.getIcon("clipStart.png"));
+		aStart.setBackground(tde.gui.colorsSwt.WHITE);
+		tde.gui.tip(aStart, "ClipStart");
+		aStart.addListener(SWT.MouseDown,e -> goToTime(getStartEnd()[0]));
 		clipClock = framedField(SWT.CENTER);
 		clipClock.setText(StringUtils.time2Clock(0));
 		tde.gui.tip(clipClock, "ClipClock");
@@ -250,33 +262,17 @@ public class PlayerControlGUI extends CompositePanel {
 			}
 		});
 		updateClipClock();
+		Label aEnd = new Label(toolBar,SWT.NONE);
+		aEnd.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+		aEnd.setImage(tde.gui.imgsSwt.getIcon("clipEnd.png"));
+		aEnd.setBackground(tde.gui.colorsSwt.WHITE);
+		tde.gui.tip(aEnd, "ClipEnd");
+		aEnd.addListener(SWT.MouseDown,e -> goToTime(getStartEnd()[1]));
 
 		Label aBlank = new Label(toolBar,SWT.NONE);
 		tde.gui.applyColorFont(aBlank);
 		aBlank.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
-		Label aZoomIn = new Label(toolBar,SWT.NONE);
-		aZoomIn.setImage(tde.gui.imgsSwt.getIcon("zoomplus.gif"));
-		aZoomIn.setAlignment(SWT.CENTER);
-		GridData aZIGD = new GridData();
-		aZIGD.widthHint = 25;
-		aZIGD.heightHint = tde.gui.h(25);
-		aZoomIn.setLayoutData(aZIGD);
-		tde.gui.applyColorFont(aZoomIn);
-		tde.gui.tip(aZoomIn, "MonitorZoomIn");
-		aZoomIn.addMouseListener(new MouseListener() {
-			@Override
-			public void mouseUp(MouseEvent arg0) {
-			}
-			@Override
-			public void mouseDown(MouseEvent arg0) {
-				tde.gui.monitorGUI.zoomIn();
-			}
-			@Override
-			public void mouseDoubleClick(MouseEvent arg0) {
-			}
-		});
-
 		Label aZoomOut = new Label(toolBar,SWT.NONE);
 		aZoomOut.setImage(tde.gui.imgsSwt.getIcon("zoomminus.gif"));
 		aZoomOut.setAlignment(SWT.CENTER);
@@ -293,6 +289,37 @@ public class PlayerControlGUI extends CompositePanel {
 			@Override
 			public void mouseDown(MouseEvent arg0) {
 				tde.gui.monitorGUI.zoomOut();
+			}
+			@Override
+			public void mouseDoubleClick(MouseEvent arg0) {
+			}
+		});
+
+		//Zoom of the monitor in percent, between its - / + buttons (updated at each paint of the monitor)
+		zoomLabel = new Label(toolBar,SWT.CENTER);
+		zoomLabel.setText("100 %");
+		tde.gui.applyColorFont(zoomLabel);
+		GridData aZPGD = new GridData(SWT.CENTER, SWT.CENTER, false, false);
+		aZPGD.widthHint = Math.max(48, zoomLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT).x + 8);
+		zoomLabel.setLayoutData(aZPGD);
+		tde.gui.tip(zoomLabel, "MonitorZoomPercent");
+
+		Label aZoomIn = new Label(toolBar,SWT.NONE);
+		aZoomIn.setImage(tde.gui.imgsSwt.getIcon("zoomplus.gif"));
+		aZoomIn.setAlignment(SWT.CENTER);
+		GridData aZIGD = new GridData();
+		aZIGD.widthHint = 25;
+		aZIGD.heightHint = tde.gui.h(25);
+		aZoomIn.setLayoutData(aZIGD);
+		tde.gui.applyColorFont(aZoomIn);
+		tde.gui.tip(aZoomIn, "MonitorZoomIn");
+		aZoomIn.addMouseListener(new MouseListener() {
+			@Override
+			public void mouseUp(MouseEvent arg0) {
+			}
+			@Override
+			public void mouseDown(MouseEvent arg0) {
+				tde.gui.monitorGUI.zoomIn();
 			}
 			@Override
 			public void mouseDoubleClick(MouseEvent arg0) {
@@ -341,6 +368,42 @@ public class PlayerControlGUI extends CompositePanel {
 		tde.timeLineStack.setRequestedTimePosMS(aTime);
 		tde.gui.monitorGUI.redraw();
 		tde.gui.timeLinesGUI.redraw();
+	}
+
+	/**
+	 * Start (aEnd false) or end of the library media shown in the monitor (as the clock), otherwise of the montage.
+	 * While playing, the play goes on from there.
+	 */
+	void goToEdge(boolean aEnd) {
+		Media aShown = tde.gui.monitorGUI.getMedia();
+		Media aTarget = aShown != null && aShown != tde.timeLineStack && tde.mediaList.mediaList.contains(aShown)
+				? aShown : tde.timeLineStack;
+		long aTime = aEnd ? Math.max(0, aTarget.getMaxTimePosMS()-1) : 0;
+		if(playing && aTarget == playedMedia) {
+			startPlay(playedMedia, playedIsLib, aTime, returnPosMS);
+			return;
+		}
+		if(aTarget == tde.timeLineStack) {
+			goToTime(aTime);
+		}
+		else {
+			aTarget.setRequestedTimePosMS(aTime);
+			tde.gui.monitorGUI.redraw();
+			showClock(aTime);
+		}
+	}
+
+	/**
+	 * Zoom of the monitor shown in percent between its - / + buttons (SWT thread)
+	 */
+	public void showZoom(double aZoom) {
+		if(zoomLabel == null || zoomLabel.isDisposed()) {
+			return;
+		}
+		String aText = Math.round(aZoom*100) + " %";
+		if(!aText.equals(zoomLabel.getText())) {
+			zoomLabel.setText(aText);
+		}
 	}
 
 	/**

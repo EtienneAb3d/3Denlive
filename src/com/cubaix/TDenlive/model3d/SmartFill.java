@@ -1925,7 +1925,7 @@ public class SmartFill {
 	 * Push-pull: the pixels of weight < 1 completed from a pyramid of the weighted colors (halved each level, enlarged
 	 * bilinearly): a smooth continuation of the colors around, without any pattern
 	 */
-	static void pushPull(float[] aRGB,float[] aWt,int aW,int aH) {
+	public static void pushPull(float[] aRGB,float[] aWt,int aW,int aH) {
 		if(aW <= 1 && aH <= 1) {
 			return;
 		}

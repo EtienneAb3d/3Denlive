@@ -22,6 +22,95 @@ import com.cubaix.TDenlive.medias.Media;
  * The files go to the root of the project folder (a name already taken gets _2, _3...).
  */
 public class ProjectFiles {
+	//Folder of the project file being written (TDenlive.projectXml(String)): the paths of the files inside it are
+	//written relative to it (forSave()); null otherwise (history, signatures, packing: absolute paths)
+	static final ThreadLocal<String> SAVE_DIR = new ThreadLocal<String>();
+
+	/**
+	 * A path as written in the project file: relative to its folder, with '/', when the file is inside it (the
+	 * project folder can be moved or renamed), else as it is (absolute); unchanged outside the writing of a project
+	 * file. Read back by resolve()
+	 */
+	public static String forSave(String aPath) {
+		String aDir = SAVE_DIR.get();
+		if(aDir == null || aPath == null || aPath.isEmpty() || "null".equals(aPath) || !new File(aPath).isAbsolute()) {
+			return aPath;
+		}
+		try {
+			java.nio.file.Path aD = new File(aDir).getAbsoluteFile().toPath().normalize();
+			java.nio.file.Path aP = new File(aPath).getAbsoluteFile().toPath().normalize();
+			if(aP.startsWith(aD) && !aP.equals(aD)) {
+				return aD.relativize(aP).toString().replace(File.separatorChar, '/');
+			}
+		}
+		catch(Throwable t) {
+			t.printStackTrace(System.err);
+		}
+		return aPath;
+	}
+
+	/** Runs aXml with the paths inside aDir written relative to it (forSave()) */
+	public static <T> T withSaveDir(String aDir, java.util.concurrent.Callable<T> aXml) throws Exception {
+		String aOld = SAVE_DIR.get();
+		SAVE_DIR.set(aDir);
+		try {
+			return aXml.call();
+		}
+		finally {
+			if(aOld == null) {
+				SAVE_DIR.remove();
+			}
+			else {
+				SAVE_DIR.set(aOld);
+			}
+		}
+	}
+
+	//Levels of sub folders tried by resolve() (Montages/, AI/, Snapshots/, Clips/... and deeper)
+	static final int RESOLVE_LEVELS = 4;
+
+	/**
+	 * A media path of a project file, found again after the project folder was moved or renamed: aPath itself when
+	 * it exists, else relative to the project folder, else its last 1 to RESOLVE_LEVELS components under the project
+	 * folder then under the last folder used (an absolute path .../OldProject/Montages/x.mp4 found as
+	 * <project folder>/Montages/x.mp4, the file name alone at the root first); null when not found
+	 */
+	public static String resolve(TDenlive aTDe, String aPath) {
+		if(aPath == null || aPath.isEmpty() || "null".equals(aPath)) {
+			return null;
+		}
+		File aF = new File(aPath);
+		//Relative (written so when inside the project folder): from the project folder, never from the working
+		//directory of the application
+		if(!aF.isAbsolute() && aTDe.projectDir != null && new File(aTDe.projectDir, aPath).exists()) {
+			return new File(aTDe.projectDir, aPath).getPath();
+		}
+		if(aF.isAbsolute() && aF.exists()) {
+			return aPath;
+		}
+		String[] aDirs = {aTDe.projectDir, aTDe.lastDir};
+		//Components of the path, the file name last
+		java.util.ArrayList<String> aParts = new java.util.ArrayList<String>();
+		for(File aP = aF;aP != null && !aP.getName().isEmpty();aP = aP.getParentFile()) {
+			aParts.add(0, aP.getName());
+		}
+		for(String aDir : aDirs) {
+			if(aDir == null) {
+				continue;
+			}
+			for(int n = 1;n <= Math.min(RESOLVE_LEVELS, aParts.size());n++) {
+				File aC = new File(aDir);
+				for(int k = aParts.size()-n;k < aParts.size();k++) {
+					aC = new File(aC, aParts.get(k));
+				}
+				if(aC.exists()) {
+					return aC.getPath();
+				}
+			}
+		}
+		return null;
+	}
+
 
 	/**
 	 * Folder of the saved project, null if the project was never saved
@@ -127,7 +216,15 @@ public class ProjectFiles {
 	 */
 	public static String importFile(TDenlive aTDe,String aPath,boolean aMove,boolean[] aMoved) {
 		String aDir = projectDir(aTDe);
-		if(aDir == null || aPath == null || !new File(aPath).isFile() || isInside(aPath, aDir)) {
+		return aDir == null ? aPath : importFile(aTDe, aPath, aMove, aMoved, new File(aDir));
+	}
+
+	/**
+	 * Same into aDestDir (a sub folder of the project folder: renderings of the montages, see Montage)
+	 */
+	public static String importFile(TDenlive aTDe,String aPath,boolean aMove,boolean[] aMoved,File aDestDir) {
+		String aDir = aDestDir.getPath();
+		if(projectDir(aTDe) == null || aPath == null || !new File(aPath).isFile() || isInside(aPath, aDir)) {
 			return aPath;
 		}
 		try {
@@ -147,7 +244,7 @@ public class ProjectFiles {
 			for(boolean aVideo : new boolean[] {false, true}) {
 				String aD = ComputedDepthmap.depthPath(aPath, null, aVideo);
 				if(new File(aD).isFile()) {
-					aDepths.add(new String[] {aD, ComputedDepthmap.depthPath(aDest.getPath(), null, aVideo)});
+					aDepths.add(new String[] {aD, ComputedDepthmap.depthPath(aDest.getPath(), null, aVideo, com.cubaix.TDenlive.ffmpeg.Ffmpeg.isAnaglyph(aPath))});
 				}
 			}
 			boolean aDone = transfer(aSrc, aDest, aMove);
@@ -205,9 +302,12 @@ public class ProjectFiles {
 				}
 			}
 		}
-		String aXml = aTDe.projectXml();
+		//Written in the project folder: the files inside it relative (those moved / copied there too)
+		String aDir = aTDe.projectDir;
+		String aXml = aTDe.projectXml(aDir);
 		for(Map.Entry<String,String> aE : aNews.entrySet()) {
-			aXml = aXml.replace(">"+aE.getKey()+"<", ">"+aE.getValue()+"<");
+			String aNew = withSaveDir(aDir, () -> forSave(aE.getValue()));
+			aXml = aXml.replace(">"+aE.getKey()+"<", ">"+aNew+"<");
 		}
 		return aXml;
 	}

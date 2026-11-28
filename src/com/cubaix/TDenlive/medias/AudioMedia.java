@@ -77,23 +77,16 @@ public class AudioMedia extends Media {
 	public void saveProject(StringBuffer aSB) throws Exception {
 		aSB.append("		<AudioMedia>\n");
 		aSB.append("			<UID>" + UID + "</UID>\n");
-		aSB.append("			<path>" + path + "</path>\n");
+		aSB.append("			<path>" + com.cubaix.TDenlive.utils.ProjectFiles.forSave(path) + "</path>\n");
 		aSB.append("			<durationMS>" + durationMS + "</durationMS>\n");
 		saveLibName(aSB);
 		aSB.append("		</AudioMedia>\n");
 	}
 
 	String findPath(String aPath) {
-		if(new File(aPath).exists()) {
-			return aPath;
-		}
-		if(tde.projectDir != null && new File(tde.projectDir+File.separatorChar+new File(aPath).getName()).exists()) {
-			return tde.projectDir+File.separatorChar+new File(aPath).getName();
-		}
-		if(tde.lastDir != null && new File(tde.lastDir+File.separatorChar+new File(aPath).getName()).exists()) {
-			return tde.lastDir+File.separatorChar+new File(aPath).getName();
-		}
-		return aPath;
+		//Also after a move of the project folder (sub folders kept: AI/...)
+		String aFound = com.cubaix.TDenlive.utils.ProjectFiles.resolve(tde, aPath);
+		return aFound != null ? aFound : aPath;
 	}
 
 	public void load(String aPath) {
@@ -104,7 +97,9 @@ public class AudioMedia extends Media {
 		if(aDuration > 0) {
 			durationMS = aDuration;
 		}
-		metaData = fileName+"\n"+path+"\n"+getDurationClock()+"\n";
+		StringBuffer aSB = new StringBuffer(fileName+"\n"+path+"\n"+getDurationClock()+"\n");
+		addStreamInfo(aSB, path);
+		metaData = aSB.toString();
 		buildThumb();
 	}
 

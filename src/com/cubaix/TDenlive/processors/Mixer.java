@@ -128,7 +128,8 @@ public abstract class Mixer extends Processor {
 			aGL2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 			aGL2.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
 		}
-		aGL2.drawImage(aBI,0,0,aSizedW,aSizedH
+		//Display: a float image (HDR) clamped (Java2D wraps the values above 1)
+		aGL2.drawImage(com.cubaix.TDenlive.utils.FloatDraw.clamped(aBI),0,0,aSizedW,aSizedH
 				,(int)(x*aW+aW*0.5*(1.0-1.0/zoom)),(int)(y*aH+aH*0.5*(1.0-1.0/zoom))
 				,(int)(x*aW+aW*0.5*(1.0-1.0/zoom)+aW/zoom), (int)(y*aH+aH*0.5*(1.0-1.0/zoom)+aH/zoom),null);
 		aGL2.dispose();

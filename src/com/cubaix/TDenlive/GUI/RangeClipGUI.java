@@ -60,7 +60,8 @@ public class RangeClipGUI {
 			aMB.open();
 			return;
 		}
-		running = new RangeClipGUI(aTDe);
+		//The renderings of the montages it includes made again first if out of date (or kept, asked)
+		MontageRenderGUI.beforeRender(aTDe, () -> running = new RangeClipGUI(aTDe));
 	}
 
 	RangeClipGUI(TDenlive aTDe) {

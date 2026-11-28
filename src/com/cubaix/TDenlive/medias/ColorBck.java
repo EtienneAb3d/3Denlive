@@ -476,7 +476,7 @@ public class ColorBck extends StereoImage {
 			if(fill.isFile()) {
 				//The path alone in its tag: gathered, packed and renamed like the paths of the medias
 				aSB.append("			<texture>file</texture>\n");
-				aSB.append("			<texturePath>" + fill.filePath() + "</texturePath>\n");
+				aSB.append("			<texturePath>" + com.cubaix.TDenlive.utils.ProjectFiles.forSave(fill.filePath()) + "</texturePath>\n");
 			}
 			else {
 				aSB.append("			<texture>" + fill.texture + "</texture>\n");

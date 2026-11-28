@@ -61,9 +61,59 @@ public class TDenlive {
 	public TDeGUI gui = null;
 	
 	public MediaList mediaList = null;
+	//Time lines of the active montage (montage.stack): shown, played and rendered
 	public TimeLineStack timeLineStack = null;
+	//Montages of the project, the main one (the whole project) first; the active one (see Montage)
+	public Vector<com.cubaix.TDenlive.medias.Montage> montages = new Vector<com.cubaix.TDenlive.medias.Montage>();
+	public com.cubaix.TDenlive.medias.Montage montage = null;
 	
 	public Selected selected = new Selected();
+
+	public com.cubaix.TDenlive.medias.Montage mainMontage() {
+		return montages.isEmpty() ? null : montages.firstElement();
+	}
+
+	public com.cubaix.TDenlive.medias.Montage montageByUID(long aUID) {
+		for(com.cubaix.TDenlive.medias.Montage aM : new Vector<com.cubaix.TDenlive.medias.Montage>(montages)) {
+			if(aM.UID == aUID) {
+				return aM;
+			}
+		}
+		return null;
+	}
+
+	/** The montage of a stack, null if none */
+	public com.cubaix.TDenlive.medias.Montage montageOf(TimeLineStack aStack) {
+		for(com.cubaix.TDenlive.medias.Montage aM : new Vector<com.cubaix.TDenlive.medias.Montage>(montages)) {
+			if(aM.stack == aStack) {
+				return aM;
+			}
+		}
+		return null;
+	}
+
+	/** The time lines of all the montages, the active one first */
+	public Vector<TimeLineStack> allStacks() {
+		Vector<TimeLineStack> aSs = new Vector<TimeLineStack>();
+		if(timeLineStack != null) {
+			aSs.add(timeLineStack);
+		}
+		for(com.cubaix.TDenlive.medias.Montage aM : new Vector<com.cubaix.TDenlive.medias.Montage>(montages)) {
+			if(!aSs.contains(aM.stack)) {
+				aSs.add(aM.stack);
+			}
+		}
+		return aSs;
+	}
+
+	/** Makes aM the active montage (its time lines are timeLineStack): the views follow in TDeGUI.showMontage() */
+	public void setActiveMontage(com.cubaix.TDenlive.medias.Montage aM) {
+		if(aM == null) {
+			return;
+		}
+		montage = aM;
+		timeLineStack = aM.stack;
+	}
 
 	//Project file content at the last opening or saving: the montage is modified if it differs
 	String savedXml = null;
@@ -157,7 +207,8 @@ public class TDenlive {
 			}
 		}
 		//Depth maps computed for the clips, in the work folder when they could not go next to their media
-		for(VideoTimeLine aTL : timeLineStack.videoTimeLineStack) {
+		for(TimeLineStack aTLS : allStacks())
+		for(VideoTimeLine aTL : aTLS.videoTimeLineStack) {
 			for(Clip aC : aTL.clipList) {
 				Processor aDP = aC.getDepthProcessor();
 				ComputedDepthmap aCD = aDP instanceof Depthmap ? ((Depthmap)aDP).computed
@@ -185,6 +236,9 @@ public class TDenlive {
 	public void updateFirstMediaRatio() {
 		double aRatio = TDConfig.RATIOVALUES[TDConfig.RATIO_16_9];
 		for(Media aM : mediaList.mediaList) {
+			if(com.cubaix.TDenlive.medias.Montage.of(this, aM) != null) {
+				continue;
+			}
 			double aR = aM.getDisplayRatio();
 			if(aR > 0) {
 				aRatio = aR;
@@ -203,6 +257,12 @@ public class TDenlive {
 			public void run() {
 				mediaList.mediaList.clear();
 				updateFirstMediaRatio();
+				//The main montage only, active
+				com.cubaix.TDenlive.medias.Montage aMain = mainMontage();
+				montages.clear();
+				montages.add(aMain);
+				aMain.name = null;
+				setActiveMontage(aMain);
 				timeLineStack.videoTimeLineStack.clear();
 				timeLineStack.audioTimeLineStack.clear();
 				gui.setMultiPropsPanel(gui.MULTIPROPSPANEL_PROPS);
@@ -241,14 +301,30 @@ public class TDenlive {
 					if("TimeLineList".equalsIgnoreCase(aT.tagName)) {
 						o = timeLineStack.openProject(aOs, o);
 					}
+					if("masterName".equalsIgnoreCase(aT.tagName)) {
+						o = com.cubaix.TDenlive.medias.Montage.openMasterName(this, aOs, o);
+						continue;
+					}
+					if("Montage".equalsIgnoreCase(aT.tagName)) {
+						com.cubaix.TDenlive.medias.Montage[] aM = new com.cubaix.TDenlive.medias.Montage[1];
+						o = com.cubaix.TDenlive.medias.Montage.openProject(this, aOs, o, aM, null);
+						if(aM[0] != null) {
+							montages.add(aM[0]);
+						}
+					}
 				}
 			}
+			//Renderings of the montages: up to date or not as saved
+			com.cubaix.TDenlive.medias.Montage.afterOpen(this);
 			//The saved ratio of a "1st media" project may be outdated
 			updateFirstMediaRatio();
 			if(gui.monitorControlGUI != null) {
 				gui.monitorControlGUI.setRatio(config.outRatioName);
 			}
 			gui.mediaListGUI.redraw();
+			if(gui.montageListGUI != null) {
+				gui.montageListGUI.redraw();
+			}
 			gui.timeLinesGUI.redraw();
 			//Show the montage in the monitor (as when clicking the timelines), instead of a black preview
 			gui.display.syncExec(new Runnable() {
@@ -267,6 +343,17 @@ public class TDenlive {
 	/**
 	 * The project file content (current state of the montage)
 	 */
+	/**
+	 * The project file content written in the folder aDir: the paths of the files inside it relative to it
+	 * (ProjectFiles.forSave()); aDir null: projectXml()
+	 */
+	public String projectXml(String aDir) throws Exception {
+		if(aDir == null) {
+			return projectXml();
+		}
+		return com.cubaix.TDenlive.utils.ProjectFiles.withSaveDir(aDir, () -> projectXml());
+	}
+
 	public String projectXml() throws Exception {
 		StringBuffer aSB = new StringBuffer();
 		aSB.append("<3De>\n");
@@ -276,8 +363,19 @@ public class TDenlive {
 		mediaList.saveProject(aSB);
 		aSB.append("	</MediaList>\n");
 		aSB.append("	<TimeLineList>\n");
-		timeLineStack.saveProject(aSB);
+		//The main montage (the whole project), as before the montages
+		(mainMontage() != null ? mainMontage().stack : timeLineStack).saveProject(aSB);
 		aSB.append("	</TimeLineList>\n");
+		com.cubaix.TDenlive.medias.Montage.saveMasterName(this, aSB);
+		if(montages.size() > 1) {
+			aSB.append("	<Montages>\n");
+			for(com.cubaix.TDenlive.medias.Montage aM : new Vector<com.cubaix.TDenlive.medias.Montage>(montages)) {
+				if(!aM.isMain()) {
+					aM.saveProject(aSB);
+				}
+			}
+			aSB.append("	</Montages>\n");
+		}
 		aSB.append("</3De>\n");
 		return aSB.toString();
 	}
@@ -300,6 +398,8 @@ public class TDenlive {
 		java.util.HashSet<String> aNames = new java.util.HashSet<String>();
 		aNames.add((aName+".3De").toLowerCase());
 		for(Media aM : mediaList.mediaList) {
+			//The renderings of the montages in their sub folder, as in the project folder
+			String aSub = com.cubaix.TDenlive.medias.Montage.of(this, aM) != null ? com.cubaix.TDenlive.medias.Montage.DIR+"/" : "";
 			for(String aP : aM.getFilePaths()) {
 				if(aFiles.containsKey(aP)) {
 					continue;
@@ -311,16 +411,17 @@ public class TDenlive {
 				String aFileName = new File(aP).getName();
 				String aBase = aFileName.replaceAll("[.][^.]*$", "");
 				String aExt = aFileName.substring(aBase.length());
-				for(int n = 2;aNames.contains(aFileName.toLowerCase());n++) {
+				for(int n = 2;aNames.contains((aSub+aFileName).toLowerCase());n++) {
 					aFileName = aBase+"_"+n+aExt;
 				}
-				aNames.add(aFileName.toLowerCase());
-				aFiles.put(aP, aFileName);
+				aNames.add((aSub+aFileName).toLowerCase());
+				aFiles.put(aP, aSub+aFileName);
 			}
 		}
 		//Depth maps computed for the clips: next to their media, named after its packed name
 		java.util.LinkedHashMap<String,String> aDepthFiles = new java.util.LinkedHashMap<String,String>();
-		for(VideoTimeLine aTL : timeLineStack.videoTimeLineStack) {
+		for(TimeLineStack aTLS : allStacks())
+		for(VideoTimeLine aTL : aTLS.videoTimeLineStack) {
 			for(Clip aC : aTL.clipList) {
 				Processor aDP = aC.getDepthProcessor();
 				ComputedDepthmap aCD = aDP instanceof Depthmap ? ((Depthmap)aDP).computed
@@ -333,7 +434,10 @@ public class TDenlive {
 					String aDepth = aCD.files[Math.min(i, aCD.files.length-1)];
 					String aPacked = aFiles.get(aSrcs[i]);
 					if(aPacked != null && new File(aDepth).isFile() && !aDepthFiles.containsKey(aDepth)) {
-						aDepthFiles.put(aDepth, new File(ComputedDepthmap.depthPath(aPacked, "", aDepth.toLowerCase().endsWith(".mp4"))).getName());
+						String aPackedSub = new File(aPacked).getParent();
+						aDepthFiles.put(aDepth, (aPackedSub == null ? "" : aPackedSub.replace(File.separatorChar, '/')+"/")
+								+new File(ComputedDepthmap.depthPath(aPacked, "", aDepth.toLowerCase().endsWith(".mp4"),
+										new File(aDepth).getName().contains(ComputedDepthmap.SUFFIX_ANAGLYPH))).getName());
 					}
 				}
 			}
@@ -394,13 +498,21 @@ public class TDenlive {
 
 	public boolean saveProject(String aPath) {
 		try {
-			String aXml = projectXml();
+			//The renderings of the montages: in the project folder, saved out of date when they are (see Montage)
+			if(new File(aPath).getAbsoluteFile().getParentFile().equals(projectDir == null ? null : new File(projectDir).getAbsoluteFile())) {
+				com.cubaix.TDenlive.medias.Montage.keepRendersInProject(this);
+			}
+			com.cubaix.TDenlive.medias.Montage.refreshStates(this);
+			//The files inside the folder of the project file written relative to it (folder movable)
+			String aXml = projectXml(new File(aPath).getAbsoluteFile().getParent());
 			BufferedWriter aBW = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(aPath), "UTF-8"));
 			aBW.write(aXml);
 			aBW.flush();
 			aBW.close();
 			//The decoded sounds go with the project
 			AudioReader.copyCachesTo(getWorkCacheDir());
+			//The images precomputed by the AI hole filling, as videos (background): found again at the next opening
+			com.cubaix.TDenlive.processors.InpaintVideos.save(this);
 			//And the fonts of its texts (only those used)
 			ProjectFonts.save(aPath, aXml);
 			return true;
@@ -480,6 +592,8 @@ public class TDenlive {
 		installTextureMedias();
 	    gui = new TDeGUI(this);
 	    timeLineStack = new TimeLineStack(this);
+	    montage = new com.cubaix.TDenlive.medias.Montage(com.cubaix.TDenlive.medias.Montage.MAIN_UID, null, timeLineStack);
+	    montages.add(montage);
 	    //Waveforms and film strips appear when the sounds are decoded / the images extracted
 	    Runnable aRedrawTimeLines = () -> {
 	    	if(gui.display.isDisposed()) {
@@ -492,7 +606,21 @@ public class TDenlive {
 	    	});
 	    };
 	    AudioReader.decodedListener = aRedrawTimeLines;
-	    VideoThumbnailer.readyListener = aRedrawTimeLines;
+	    //The thumbnails of the lists are chosen among the images of the film strips (StereoMovie.chooseThumb())
+	    VideoThumbnailer.readyListener = () -> {
+	    	aRedrawTimeLines.run();
+	    	if(gui.display.isDisposed()) {
+	    		return;
+	    	}
+	    	gui.display.asyncExec(() -> {
+	    		if(gui.mediaListGUI != null) {
+	    			gui.mediaListGUI.redraw();
+	    		}
+	    		if(gui.montageListGUI != null) {
+	    			gui.montageListGUI.redraw();
+	    		}
+	    	});
+	    };
 
 	    //An empty montage has nothing to save
 	    markSaved();

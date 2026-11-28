@@ -460,7 +460,9 @@ public class SceneConvertGUI {
 		aCmd.add("-v"); aCmd.add("error");
 		aCmd.add("-i"); aCmd.add(aSM.getPathL());
 		aCmd.add("-an");
-		aCmd.add("-vf"); aCmd.add(aCrop+"fps="+String.format(java.util.Locale.ROOT, "%.3f", aFps)+",scale='min("+FRAME_W+",iw)':-2");
+		//HDR video: tone mapped to SDR
+		String aSdr = Ffmpeg.sdrFilter(aSM.getPathL());
+		aCmd.add("-vf"); aCmd.add((aSdr == null ? "" : aSdr+",")+aCrop+"fps="+String.format(java.util.Locale.ROOT, "%.3f", aFps)+",scale='min("+FRAME_W+",iw)':-2");
 		aCmd.add("-frames:v"); aCmd.add(""+aFrames);
 		aCmd.add("-f"); aCmd.add("image2pipe");
 		aCmd.add("-vcodec"); aCmd.add("bmp");

@@ -96,6 +96,19 @@ public class TimeControllerGUI extends ProcessorGUI {
 				}
 			}.tip("DuplicateClipUp");
 
+			//Heavy clip computed apart: it goes into a new montage, whose rendering takes its place
+			new LabelImageButton(tde,aWGT,tde.gui.lngs.get("TimeController.ClipToNewMontage"),"plusSquared.gif") {
+				@Override
+				public void clicked() {
+					if(tde.gui.montageListGUI == null || com.cubaix.TDenlive.GUI.MontageRenderGUI.isRunning()) {
+						return;
+					}
+					java.util.Vector<com.cubaix.TDenlive.medias.Clip> aOne = new java.util.Vector<com.cubaix.TDenlive.medias.Clip>();
+					aOne.add(aClip);
+					tde.gui.display.asyncExec(() -> tde.gui.montageListGUI.extractClips(aOne));
+				}
+			}.tip("ClipToNewMontage");
+
 		}
 		
 		if(aClip.getMedia() != null && aClip.getMedia().getAudioReader() != null) {

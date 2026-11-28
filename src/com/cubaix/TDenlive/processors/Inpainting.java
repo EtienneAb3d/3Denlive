@@ -1,5 +1,6 @@
 package com.cubaix.TDenlive.processors;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
@@ -36,7 +37,9 @@ import com.cubaix.TDenlive.medias.VideoTimeLine;
  * the interpolation only remains when the model gives nothing: cache miss, failure).
  * The cache, the index and the temporal smoothing are at the reduced size.
  * Results cached by content: key = hash of the source view, its depth map, the parameters at the time and the
- * size; value = the replaced pixels (files of a temporary folder, deleted at the end of the application).
+ * size; value = the replaced pixels (files of a temporary folder, deleted at the end of the application). The
+ * images of the clips are kept with the project as videos (InpaintVideos: written at each save and at the end of
+ * a precomputation, decoded into that folder at the opening).
  * Method of the clip per processing level (method[], GUI.InpaintGUI panel; INTERPOLATION until configured):
  * work resolution and full screen preview: INTERPOLATION or PRECOMPUTE (the model, precomputed); final
  * rendering: INTERPOLATION, PRECOMPUTE or AT_RENDER (the model, computed only by the rendering).
@@ -52,7 +55,8 @@ import com.cubaix.TDenlive.medias.VideoTimeLine;
  * rendering from 0 (RendererGUI: floor(1000 k / fps)).
  */
 public class Inpainting {
-	public enum Plan {NONE, LIVE, CACHE, PRECOMPUTE}
+	//HOLES: the holes left as for a model (the small holes of the stretched surfaces too) but not filled: shown as they are
+	public enum Plan {NONE, LIVE, CACHE, PRECOMPUTE, HOLES}
 	//Below 10 images per second: precomputed
 	static final double SLOW_MS = 100;
 
@@ -66,6 +70,10 @@ public class Inpainting {
 	public final int[] method = {INTERPOLATION, INTERPOLATION, INTERPOLATION};
 	//The model is used by at least one mode
 	public boolean enabled = false;
+	//Images of the clip done / to do for its precomputation (Precomputer.nextTask()) and when counted
+	public volatile int countDone = 0;
+	public volatile int countTotal = 0;
+	public volatile long countedMS = 0;
 	//Time of an image when the model runs (ms, both views), per mode, -1 if not measured
 	final double[] msPerFrame = {-1, -1, -1, -1};
 	//Time spent in the model for the image in progress
@@ -82,6 +90,74 @@ public class Inpainting {
 	Inpainting(Processor aProc,LongFunction<String> aParams) {
 		proc = aProc;
 		params = aParams;
+	}
+
+	/**
+	 * Computation done again from the start ("Recompute the disocclusion" button): the images of the clip are
+	 * removed from the cache (the other clips that used the same ones compute them again too), the precomputation
+	 * resumed
+	 */
+	public void recompute() {
+		Set<String> aKeys = new HashSet<String>();
+		synchronized(index) {
+			for(TreeMap<Long,Vector<Frame>> aByTime : index.values()) {
+				for(Vector<Frame> aFs : aByTime.values()) {
+					for(Frame aF : aFs) {
+						aKeys.add(aF.key);
+						if(aF.smoothKey != null) {
+							aKeys.add(aF.smoothKey);
+						}
+						if(aF.smoothTarget != null) {
+							aKeys.add(aF.smoothTarget);
+						}
+					}
+				}
+			}
+			index.clear();
+			indexVersion++;
+		}
+		doneSigs.clear();
+		for(String aK : aKeys) {
+			cached().remove(aK);
+			try {
+				cacheFile(aK).delete();
+			}
+			catch(Throwable t) {
+				t.printStackTrace(System.err);
+			}
+		}
+		//The other clips holding some of them
+		if(proc.tde != null) {
+			for(Inpainting aO : Precomputer.all(proc.tde)) {
+				if(aO == this) {
+					continue;
+				}
+				boolean aUsed = false;
+				synchronized(aO.index) {
+					for(TreeMap<Long,Vector<Frame>> aByTime : aO.index.values()) {
+						for(Vector<Frame> aFs : aByTime.values()) {
+							aUsed |= aFs.removeIf(aF -> aKeys.contains(aF.key));
+							for(Frame aF : aFs) {
+								if(aF.smoothKey != null && aKeys.contains(aF.smoothKey)) {
+									aF.smoothKey = null;
+									aF.smoothTarget = null;
+									aUsed = true;
+								}
+							}
+						}
+					}
+					aO.indexVersion++;
+				}
+				if(aUsed) {
+					aO.doneSigs.clear();
+				}
+			}
+		}
+		countDone = 0;
+		msPerFrame[0] = msPerFrame[1] = msPerFrame[2] = msPerFrame[3] = -1;
+		Inpainter.resetError();
+		failedMS = 0;
+		Precomputer.resumeComputing();
 	}
 
 	/**
@@ -247,6 +323,19 @@ public class Inpainting {
 		return Long.toHexString(aH1)+Long.toHexString(aH2)+Long.toHexString(aH3)+"_"+aW+"x"+aH+"_"+aS[0]+"x"+aS[1]+(aIsL ? "L" : "R");
 	}
 
+	static final String PATCH_EXT = ".bin";
+
+	/**
+	 * Keys of the patches of the session cache
+	 */
+	static Set<String> cached() {
+		return cached;
+	}
+
+	/**
+	 * Patch file of the session cache (temporary folder, deleted at the end of the application: the patches of a
+	 * project are kept as videos, see InpaintVideos)
+	 */
 	static synchronized File cacheFile(String aKey) throws Exception {
 		if(cacheDir == null) {
 			cacheDir = Files.createTempDirectory("3De_Inpaint_").toFile();
@@ -261,7 +350,28 @@ public class Inpainting {
 				aDir.delete();
 			}));
 		}
-		return new File(cacheDir, aKey+".bin");
+		return new File(cacheDir, aKey+PATCH_EXT);
+	}
+
+	/**
+	 * The hole filling settings of the clips of all the montages, by clip UID + processor class
+	 */
+	static Map<String,Inpainting> owners(TDenlive aTDe) {
+		Map<String,Inpainting> aAll = new HashMap<String,Inpainting>();
+		for(com.cubaix.TDenlive.medias.TimeLineStack aTLS : aTDe.allStacks()) {
+			for(VideoTimeLine aTL : new Vector<VideoTimeLine>(aTLS.videoTimeLineStack)) {
+				for(Clip aClip : new Vector<Clip>(aTL.clipList)) {
+					for(Processor aP : new Vector<Processor>(aClip.getProcessors())) {
+						Inpainting aInp = aP instanceof Depthmap ? ((Depthmap)aP).inpainting
+								: (aP instanceof DepthmapStereo ? ((DepthmapStereo)aP).inpainting : null);
+						if(aInp != null) {
+							aAll.put(aClip.UID+"_"+aP.getClass().getSimpleName(), aInp);
+						}
+					}
+				}
+			}
+		}
+		return aAll;
 	}
 
 	/**
@@ -284,7 +394,136 @@ public class Inpainting {
 		//Key of its smoothed result with the neighbors of the index at version targetVersion
 		volatile String smoothTarget = null;
 		volatile long targetVersion = -1;
+		//Holes on a coarse grid (holeGrid()), to compare the holes of the neighbors; null if unknown
+		long[] holeBits = null;
 	}
+
+	//Coarse grid of the holes of the frames: columns (rows in proportion)
+	static final int HOLE_GRID_W = 160;
+	//Holes of two images "nearly the same" (F -> F+1 carry, neighbors of the smoothing): pixels hole in one image only,
+	//at most this part of the pixels hole in either
+	public static final double HOLES_DIFF_MAX = 0.25;
+
+	/**
+	 * The holes of an aW x aH image on a coarse grid (a cell is a hole when one of its pixels is)
+	 */
+	static long[] holeGrid(boolean[] aHoles,int aW,int aH) {
+		int aGW = Math.min(HOLE_GRID_W, aW);
+		int aGH = Math.max(1, (int)Math.round(aH*aGW/(double)aW));
+		long[] aBits = new long[(aGW*aGH+63)/64+1];
+		aBits[aBits.length-1] = ((long)aGW << 32) | aGH;
+		for(int y = 0;y < aH;y++) {
+			int gy = Math.min(aGH-1, y*aGH/aH);
+			for(int x = 0;x < aW;x++) {
+				if(aHoles[y*aW+x]) {
+					int g = gy*aGW+Math.min(aGW-1, x*aGW/aW);
+					aBits[g >> 6] |= 1L << (g & 63);
+				}
+			}
+		}
+		return aBits;
+	}
+
+	/**
+	 * Difference of two hole grids (see holesDiff()), -1 if not comparable
+	 */
+	static double gridDiff(long[] aA,long[] aB) {
+		if(aA == null || aB == null || aA.length != aB.length || aA[aA.length-1] != aB[aB.length-1]) {
+			return -1;
+		}
+		long aXor = 0, aUnion = 0;
+		for(int i = 0;i < aA.length-1;i++) {
+			aXor += Long.bitCount(aA[i] ^ aB[i]);
+			aUnion += Long.bitCount(aA[i] | aB[i]);
+		}
+		long aCells = (aA[aA.length-1] >>> 32)*(aA[aA.length-1] & 0xFFFFFFFFL);
+		return aUnion < Math.max(1, aCells/1000) ? 0 : aXor/(double)aUnion;
+	}
+
+	/**
+	 * Difference of the holes of two images: pixels hole in one only, part of the pixels hole in either (0 when
+	 * neither has holes worth counting)
+	 */
+	public static double holesDiff(boolean[] aA,boolean[] aB) {
+		long aXor = 0, aUnion = 0;
+		for(int i = 0;i < aA.length;i++) {
+			if(aA[i] || aB[i]) {
+				aUnion++;
+				if(aA[i] != aB[i]) {
+					aXor++;
+				}
+			}
+		}
+		return aUnion < aA.length/1000 ? 0 : aXor/(double)aUnion;
+	}
+
+	/**
+	 * Last filled image of a stream (mode, view, size, 8 bits or HDR), for the F -> F+1 carry
+	 */
+	static class Carry {
+		long time;
+		long[] grid;
+		boolean[] holes;
+		int[] pix;
+		float[] fpix;
+	}
+	final Map<String,Carry> carries = new HashMap<String,Carry>();
+	//Last carry: difference of the holes with the previous image (-1: not compared), carried or not
+	public volatile double lastCarryDiff = -1;
+	public volatile boolean lastCarried = false;
+
+	/**
+	 * F -> F+1 carry of the hole filling (interpolation or AI), after it: when the previous image of the stream is
+	 * the frame just before (at most CARRY_FRAMES frames of the montage) and its holes are nearly the same
+	 * (HOLES_DIFF_MAX), the pixels hole in both take its colors: still or nearly still shots keep the same filling
+	 * (no flicker); a motion or a cut (holes moved) keeps its own filling. 8 bits (aPix) or HDR (aFPix, RGBA)
+	 */
+	static final double CARRY_FRAMES = 2.5;
+	void carry(int aMode,boolean aIsL,long aTime,int aW,int aH,boolean[] aHoles,int[] aPix,float[] aFPix) {
+		if(aHoles == null) {
+			return;
+		}
+		String aStream = aMode+(aIsL ? "L" : "R")+aW+"x"+aH+(aFPix != null ? "f" : "");
+		Carry aPrev;
+		synchronized(carries) {
+			aPrev = carries.get(aStream);
+		}
+		boolean aCarried = false;
+		double aDiff = -1;
+		if(aPrev != null && aTime > aPrev.time && aTime-aPrev.time <= CARRY_FRAMES*frameMS() && aPrev.holes.length == aHoles.length) {
+			//On the coarse grid: a hole moved by a pixel or two (slow motion) is still the same hole
+			aDiff = gridDiff(aPrev.grid, holeGrid(aHoles, aW, aH));
+			if(aDiff >= 0 && aDiff <= HOLES_DIFF_MAX) {
+				aCarried = true;
+				for(int p = 0;p < aHoles.length;p++) {
+					if(!aHoles[p] || !aPrev.holes[p]) {
+						continue;
+					}
+					if(aPix != null) {
+						if((aPix[p] & 0xFF000000) != 0) {
+							aPix[p] = aPrev.pix[p];
+						}
+					}
+					else if(aFPix[4*p+3] > 0) {
+						System.arraycopy(aPrev.fpix, 4*p, aFPix, 4*p, 4);
+					}
+				}
+			}
+		}
+		lastCarryDiff = aDiff;
+		lastCarried = aCarried;
+		Carry aC = new Carry();
+		aC.time = aTime;
+		aC.holes = aHoles.clone();
+		aC.grid = holeGrid(aHoles, aW, aH);
+		aC.pix = aPix == null ? null : aPix.clone();
+		aC.fpix = aFPix == null ? null : aFPix.clone();
+		synchronized(carries) {
+			carries.put(aStream, aC);
+		}
+	}
+
+
 
 	//Side of the gray thumbnails of the sources
 	static final int THUMB = 24;
@@ -389,7 +628,7 @@ public class Inpainting {
 	 */
 	Patch patch(Plan aPlan,Frame aF,boolean[] aHoles,RGBSource aRGB) throws Exception {
 		Patch aRaw = null;
-		if(cached.contains(aF.key)) {
+		if(cached().contains(aF.key)) {
 			float[] aV = load(aF.key, aF.w, aF.h);
 			if(aV != null) {
 				aRaw = new Patch(lastIdx.get(), aV);
@@ -411,7 +650,10 @@ public class Inpainting {
 			store(aF.key, aF.w, aF.h, aIdx, aVals);
 			aRaw = new Patch(aIdx, aVals);
 		}
+		long[] aGrid = holeGrid(aHoles, aF.w, aF.h);
+		aF.holeBits = aGrid;
 		aF = register(aF);
+		aF.holeBits = aGrid;
 		if(aPlan == Plan.PRECOMPUTE) {
 			return aRaw;
 		}
@@ -649,7 +891,7 @@ public class Inpainting {
 			}
 		}
 		for(Frame aO : aCands) {
-			if(aO.key.equals(aF.key) || !cached.contains(aO.key)) {
+			if(aO.key.equals(aF.key) || !cached().contains(aO.key)) {
 				continue;
 			}
 			Integer aPH = aParams == null ? null : aParams.get(aO.time);
@@ -661,6 +903,11 @@ public class Inpainting {
 			}
 			if(aPH != aO.paramsHash) {
 				//Made before a change of the parameters
+				continue;
+			}
+			double aHD = gridDiff(aF.holeBits, aO.holeBits);
+			if(aHD > HOLES_DIFF_MAX) {
+				//Its holes moved (motion, cut): not mixed
 				continue;
 			}
 			double aD = 0;
@@ -704,7 +951,7 @@ public class Inpainting {
 			return null;
 		}
 		String aSK = smoothKey(aF, aNs);
-		if(cached.contains(aSK)) {
+		if(cached().contains(aSK)) {
 			float[] aV = load(aSK, aF.w, aF.h);
 			if(aV != null) {
 				aF.smoothKey = aSK;
@@ -715,7 +962,7 @@ public class Inpainting {
 			return null;
 		}
 		if(aRaw == null) {
-			float[] aV = cached.contains(aF.key) ? load(aF.key, aF.w, aF.h) : null;
+			float[] aV = cached().contains(aF.key) ? load(aF.key, aF.w, aF.h) : null;
 			if(aV == null) {
 				return null;
 			}
@@ -791,7 +1038,7 @@ public class Inpainting {
 				aPH = params.apply(aF.time).hashCode();
 				aParams.put(aF.time, aPH);
 			}
-			if(aPH != aF.paramsHash || !cached.contains(aF.key)) {
+			if(aPH != aF.paramsHash || !cached().contains(aF.key)) {
 				continue;
 			}
 			aCounts[1]++;
@@ -806,7 +1053,7 @@ public class Inpainting {
 					aF.smoothTarget = aSK;
 					aF.targetVersion = aVersion;
 				}
-				if(aSK.equals(aF.key) || cached.contains(aSK)) {
+				if(aSK.equals(aF.key) || cached().contains(aSK)) {
 					aF.smoothKey = aSK;
 					aCounts[0]++;
 				}
@@ -814,7 +1061,7 @@ public class Inpainting {
 					aTodo.add(aF);
 				}
 			}
-			else if(aDone != null && (aDone.equals(aF.key) || cached.contains(aDone))) {
+			else if(aDone != null && (aDone.equals(aF.key) || cached().contains(aDone))) {
 				aCounts[0]++;
 			}
 		}
@@ -879,7 +1126,12 @@ public class Inpainting {
 		try {
 			File aF = cacheFile(aKey);
 			File aTmp = new File(aF.getPath()+".tmp"+Thread.currentThread().threadId());
-			try(DataOutputStream aOut = new DataOutputStream(new BufferedOutputStream(new GZIPOutputStream(new FileOutputStream(aTmp), 1 << 16)))) {
+			try(DataOutputStream aOut = new DataOutputStream(new BufferedOutputStream(new GZIPOutputStream(new FileOutputStream(aTmp), 1 << 16) {
+				{
+					//Files of the session: fast rather than small
+					def.setLevel(java.util.zip.Deflater.BEST_SPEED);
+				}
+			}))) {
 				aOut.writeInt(aW);
 				aOut.writeInt(aH);
 				aOut.writeInt(aIdx.length);
@@ -894,7 +1146,7 @@ public class Inpainting {
 				aTmp.delete();
 				return;
 			}
-			cached.add(aKey);
+			cached().add(aKey);
 		}
 		catch(Throwable t) {
 			t.printStackTrace(System.err);
@@ -925,7 +1177,7 @@ public class Inpainting {
 			return aPatch;
 		}
 		catch(Throwable t) {
-			cached.remove(aKey);
+			cached().remove(aKey);
 			return null;
 		}
 	}
@@ -947,6 +1199,102 @@ public class Inpainting {
 		public static volatile boolean rendering = false;
 		//A project is being opened: nothing until the user chose (GUI.InpaintGUI.afterOpen())
 		public static volatile boolean held = false;
+		//Interrupted by the user (progress window): nothing until resumed (resumeComputing())
+		public static volatile boolean stopped = false;
+		//The images made are shown in the monitor, the time cursor on them (checkbox of the progress window)
+		public static volatile boolean follow = true;
+		//Owner of the display of the monitor while it shows the images made (MonitorGUI.setRendering())
+		static final Object SHOW = new Object();
+		static volatile boolean showing = false;
+
+		/**
+		 * Interruption by the user: the images done are kept with the project (InpaintVideos), the rest waits for
+		 * resumeComputing()
+		 */
+		public static void stopComputing() {
+			stopped = true;
+			unshow();
+			if(tde != null) {
+				InpaintVideos.save(tde);
+			}
+			redrawRuler(true);
+		}
+
+		public static void resumeComputing() {
+			stopped = false;
+			followAnchor = null;
+			follow = true;
+			redrawRuler(true);
+		}
+
+		/**
+		 * An image just made: shown in the monitor, the time cursor on it
+		 */
+		static void show(Clip aClip,long aTime) {
+			if(!follow || tde.gui == null || tde.gui.monitorGUI == null) {
+				return;
+			}
+			BufferedImage[] aLR = aClip.lastFinal();
+			if(aLR == null) {
+				return;
+			}
+			com.cubaix.TDenlive.GUI.MonitorGUI aM = tde.gui.monitorGUI;
+			if(!showing) {
+				showing = true;
+				//Where the time cursor goes back when all is done
+				showStartMS = tde.timeLineStack.getRequestedTimePosMS();
+				tde.gui.display.syncExec(() -> {
+					//Not over a rendering
+					if(!aM.isRendering()) {
+						aM.setRendering(true, SHOW);
+					}
+				});
+			}
+			aM.showBuilding(SHOW, aLR[0], aLR[1]);
+			tde.gui.display.asyncExec(() -> {
+				if(!aM.isShownBy(SHOW)) {
+					return;
+				}
+				tde.timeLineStack.setRequestedTimePosMS(aTime);
+				tde.gui.timeLinesGUI.redraw();
+				if(tde.gui.monitorRulerGUI != null) {
+					tde.gui.monitorRulerGUI.redraw();
+				}
+			});
+		}
+
+		static volatile long showStartMS = 0;
+
+		/**
+		 * Back to the normal display of the monitor
+		 */
+		public static void unshow() {
+			unshow(false);
+		}
+
+		/**
+		 * Same, aBack: the computation is over, the time cursor goes back where it was when the display started
+		 */
+		static void unshow(boolean aBack) {
+			if(!showing || tde == null || tde.gui == null || tde.gui.display == null || tde.gui.display.isDisposed()) {
+				return;
+			}
+			showing = false;
+			long aStart = showStartMS;
+			tde.gui.display.asyncExec(() -> {
+				if(tde.gui.monitorGUI == null) {
+					return;
+				}
+				boolean aMine = tde.gui.monitorGUI.isShownBy(SHOW);
+				tde.gui.monitorGUI.releaseRendering(SHOW);
+				if(aBack && aMine) {
+					tde.timeLineStack.setRequestedTimePosMS(aStart);
+					tde.gui.timeLinesGUI.redraw();
+					tde.gui.monitorGUI.redraw();
+				}
+			});
+		}
+
 		//Held while an image is precomputed (never with a syncExec inside: the GUI thread can wait for it)
 		static final Object BUSY = new Object();
 		static int suspended = 0;
@@ -969,6 +1317,7 @@ public class Inpainting {
 			}
 		}
 		static long lastRulerMS = 0;
+		static long lastCountMS = 0;
 
 		static synchronized void start(TDenlive aTDe) {
 			tde = aTDe;
@@ -996,7 +1345,7 @@ public class Inpainting {
 					return true;
 				}
 			}
-			if(rendering || held || tde.gui == null || tde.gui.monitorGUI == null) {
+			if(stopped || rendering || held || InpaintVideos.restoring || tde.gui == null || tde.gui.monitorGUI == null) {
 				return true;
 			}
 			return tde.gui.playerControlGUI != null && tde.gui.playerControlGUI.isPlaying();
@@ -1029,7 +1378,14 @@ public class Inpainting {
 					if(!paused()) {
 						aTask = nextTask();
 					}
-					else if(total > 0) {
+					else if(stopped && !held && !rendering && !InpaintVideos.restoring && tde.gui != null && tde.gui.monitorGUI != null
+							&& System.currentTimeMillis()-lastCountMS > 2000) {
+						//Interrupted: the counts follow the changes of the settings (out of date), nothing is computed
+						lastCountMS = System.currentTimeMillis();
+						nextTask();
+						redrawRuler(true);
+					}
+					if(aTask == null && paused() && total > 0) {
 						if(held) {
 							//Project being opened: the progress of the previous one is gone
 							total = 0;
@@ -1042,6 +1398,8 @@ public class Inpainting {
 						}
 					}
 					if(aTask == null) {
+						//Nothing computed: done (the cursor back where it was), or paused
+						unshow(!paused() && status() == null);
 						Thread.sleep(500);
 						continue;
 					}
@@ -1066,7 +1424,8 @@ public class Inpainting {
 								&& aTask.frame.id.startsWith(""+tde.gui.monitorGUI.processingMode)) {
 							tde.gui.display.asyncExec(() -> tde.gui.monitorGUI.redraw());
 						}
-						redrawRuler(false);
+						redrawRuler(done >= total);
+						autoSaveIndex(done >= total);
 						continue;
 					}
 					synchronized(tde.gui.monitorGUI) {
@@ -1084,13 +1443,15 @@ public class Inpainting {
 					}
 					aTask.inp.doneSigs.add(aTask.sig);
 					done = Math.min(done+1, total);
+					show(aTask.clip, aTask.time);
 					long aCursor = tde.timeLineStack.getRequestedTimePosMS();
 					if(aTask.mode == tde.gui.monitorGUI.processingMode && aCursor >= aTask.clip.getStartTimeMS() && aCursor < aTask.clip.getStartTimeMS()+aTask.clip.getDurationMS()
 							&& Math.abs(aCursor-aTask.time) <= 500.0/(tde.config.outFps > 0 ? tde.config.outFps : 30)) {
 						//The image shown is ready
 						tde.gui.display.asyncExec(() -> tde.gui.monitorGUI.redraw());
 					}
-					redrawRuler(false);
+					redrawRuler(done >= total);
+					autoSaveIndex(done >= total);
 				}
 				catch(Throwable t) {
 					t.printStackTrace(System.err);
@@ -1103,7 +1464,33 @@ public class Inpainting {
 			}
 		}
 
-		static void redrawRuler(boolean aForce) {
+		/**
+		 * Nothing left to precompute (images and smoothing) for the clips of the montage shown
+		 */
+		public static boolean allDone() {
+			try {
+				return tde != null && nextTask() == null;
+			}
+			catch(Throwable t) {
+				t.printStackTrace(System.err);
+				return false;
+			}
+		}
+
+		/**
+		 * At the end of a precomputation, the images of a saved project are written as videos (see InpaintVideos):
+		 * a project closed without being saved again keeps them
+		 */
+		static void autoSaveIndex(boolean aEnd) {
+			if(aEnd && tde != null) {
+				InpaintVideos.save(tde);
+			}
+		}
+
+		public static void redrawRuler(boolean aForce) {
+			if(tde == null) {
+				return;
+			}
 			long aNow = System.currentTimeMillis();
 			if(!aForce && aNow-lastRulerMS < 500) {
 				return;
@@ -1121,17 +1508,25 @@ public class Inpainting {
 		}
 
 		/**
-		 * The hole filling settings of the depth processors of the clips of the video lines
+		 * The hole filling settings of the depth processors of the clips of the video lines (not those whose holes are left transparent)
 		 */
+		/** A depth processor whose holes are left transparent ("Show the holes") */
+		static boolean showsHoles(Processor aP) {
+			return aP instanceof Depthmap ? ((Depthmap)aP).showHoles : (aP instanceof DepthmapStereo && ((DepthmapStereo)aP).showHoles);
+		}
+
 		public static Vector<Inpainting> all(TDenlive aTDe) {
 			Vector<Inpainting> aAll = new Vector<Inpainting>();
 			for(VideoTimeLine aTL : new Vector<VideoTimeLine>(aTDe.timeLineStack.videoTimeLineStack)) {
 				for(Clip aClip : new Vector<Clip>(aTL.clipList)) {
 					for(Processor aP : new Vector<Processor>(aClip.getProcessors())) {
 						if(aP instanceof Depthmap) {
-							aAll.add(((Depthmap)aP).inpainting);
+							if(!((Depthmap)aP).showHoles) {
+								aAll.add(((Depthmap)aP).inpainting);
+							}
 						}
-						else if(aP instanceof DepthmapStereo) {
+						else if(aP instanceof DepthmapStereo && !((DepthmapStereo)aP).showHoles) {
+							//Holes left transparent: nothing to fill, nothing to precompute
 							aAll.add(((DepthmapStereo)aP).inpainting);
 						}
 					}
@@ -1154,17 +1549,42 @@ public class Inpainting {
 		 * The image to precompute (null if none), with the progress: the mode of the monitor first, then the
 		 * other preview, then the rendering; the nearest to the time cursor first
 		 */
+		//Time from which the images shown in the monitor go forward (follow), null when not set
+		static volatile Long followAnchor = null;
+
+		/**
+		 * Order of an image at aT: shown in the monitor (follow), forward from where the computation started (to
+		 * the end, then from the start), so that the time cursor moves on regularly (the nearest to the cursor in both
+		 * directions, with the cursor moved by each image shown, stayed around the start); else the nearest to the
+		 * time cursor first
+		 */
+		static long order(long aT,long aCursor) {
+			Long aAnchor = followAnchor;
+			if(aAnchor == null) {
+				return Math.abs(aT-aCursor)*2;
+			}
+			long aD = aT-aAnchor;
+			return 2*(aD >= 0 ? aD : aD+(1L << 40));
+		}
+
 		static Task nextTask() throws Exception {
 			int aMonitorMode = tde.gui.monitorGUI.processingMode;
 			int[] aModes = {TDConfig.PROCESSING_MODE_WORK, TDConfig.PROCESSING_MODE_FULLSCREEN, TDConfig.PROCESSING_MODE_RENDER};
 			double aFps = tde.config.outFps > 0 ? tde.config.outFps : 30;
 			long aCursor = tde.timeLineStack.getRequestedTimePosMS();
+			if(!follow || stopped) {
+				followAnchor = null;
+			}
+			else if(followAnchor == null) {
+				followAnchor = aCursor;
+			}
 			Task aBest = null;
 			long aBestDist = Long.MAX_VALUE;
 			int aTotal = 0;
 			int aDone = 0;
 			Vector<VideoTimeLine> aLines = new Vector<VideoTimeLine>(tde.timeLineStack.videoTimeLineStack);
 			Vector<Inpainting> aInps = new Vector<Inpainting>();
+			Map<Inpainting,int[]> aCounts = new HashMap<Inpainting,int[]>();
 			for(VideoTimeLine aTL : aLines) {
 				if(!aTL.isActive) {
 					continue;
@@ -1179,12 +1599,14 @@ public class Inpainting {
 							aP.saveProject(aBefore);
 							continue;
 						}
-						if(!aP.isActive || !Inpainter.isReady(tde.tdeDir) || !Inpainter.capable()) {
+						if(!aP.isActive || !Inpainter.isReady(tde.tdeDir) || !Inpainter.capable() || showsHoles(aP)) {
+							//Holes left transparent: nothing to fill (left out of all() too, so never asked at the opening)
 							break;
 						}
 						if(!aInps.contains(aInp)) {
 							aInps.add(aInp);
 						}
+						int[] aIC = aCounts.computeIfAbsent(aInp, k -> new int[2]);
 						if(aInp.doneSigs.size() > 200000) {
 							aInp.doneSigs.clear();
 						}
@@ -1214,11 +1636,13 @@ public class Inpainting {
 										continue;
 									}
 									aTotal++;
+									aIC[1]++;
 									if(aInp.doneSigs.contains(aSig)) {
 										aDone++;
+										aIC[0]++;
 										continue;
 									}
-									long aDist = aTier+Math.abs(aT-aCursor)*2;
+									long aDist = aTier+order(aT, aCursor);
 									if(aDist < aBestDist) {
 										aBestDist = aDist;
 										aBest = task(aClip, aInp, aMode, aT, aSig);
@@ -1247,12 +1671,14 @@ public class Inpainting {
 										continue;
 									}
 									aTotal++;
+									aIC[1]++;
 									if(aInp.doneSigs.contains(aSig)) {
 										aDone++;
+										aIC[0]++;
 										continue;
 									}
 									//The time cursor first, then its frame, then the nearest
-									long aDist = aTier+Math.abs(aT-aCursor)*2+(aOff == 0 ? 0 : 1);
+									long aDist = aTier+order(aT, aCursor)+(aOff == 0 ? 0 : 1);
 									if(aDist < aBestDist) {
 										aBestDist = aDist;
 										aBest = task(aClip, aInp, aMode, aT, aSig);
@@ -1268,7 +1694,13 @@ public class Inpainting {
 			int[] aSC = {0, 0};
 			for(Inpainting aInp : aInps) {
 				Vector<Frame> aTodo = new Vector<Frame>();
-				aInp.smoothTasks(aTodo, aSC, aBest == null || aBest.frame != null);
+				int[] aOne = {0, 0};
+				aInp.smoothTasks(aTodo, aOne, aBest == null || aBest.frame != null);
+				aSC[0] += aOne[0];
+				aSC[1] += aOne[1];
+				int[] aIC = aCounts.computeIfAbsent(aInp, k -> new int[2]);
+				aIC[0] += aOne[0];
+				aIC[1] += aOne[1];
 				for(Frame aF : aTodo) {
 					long aDist = Math.abs(aF.time-aCursor);
 					if(aBest == null || (aBest.frame != null && aDist < aBestDist)) {
@@ -1279,8 +1711,18 @@ public class Inpainting {
 					}
 				}
 			}
+			long aNowMS = System.currentTimeMillis();
+			for(Map.Entry<Inpainting,int[]> aE : aCounts.entrySet()) {
+				aE.getKey().countDone = aE.getValue()[0];
+				aE.getKey().countTotal = aE.getValue()[1];
+				aE.getKey().countedMS = aNowMS;
+			}
 			aTotal += aSC[1];
 			aDone += aSC[0];
+			if(aBest == null) {
+				//All done: the next computation starts from the time cursor of then
+				followAnchor = null;
+			}
 			boolean aChanged = aTotal != total || aDone != done;
 			total = aTotal;
 			done = aDone;

@@ -38,6 +38,8 @@ public class Depthmap extends Processor {
 	public ComputedDepthmap computed = null;
 	//Show the depth map instead of the result on the monitor (not when rendering, not saved)
 	public boolean showDepth = false;
+	//Holes of the conversion left transparent, neither interpolated nor inpainted (monitor and rendering; saved when set)
+	public boolean showHoles = false;
 	//Holes filled by an inpainting model instead of the interpolation (option, saved), see Inpainting
 	public Inpainting inpainting = new Inpainting(this, aT -> {
 		Key aK = getInterKeyGT(aT);
@@ -101,6 +103,10 @@ public class Depthmap extends Processor {
 					o++;
 					inpainting.setModesText(aOs.elementAt(o).text);
 				}
+				if("showHoles".equalsIgnoreCase(aT.tagName)) {
+					o++;
+					showHoles = Boolean.parseBoolean(aOs.elementAt(o).text);
+				}
 				if("blackIsFront".equalsIgnoreCase(aT.tagName)) {
 					o++;
 					keys.lastElement().blackIsFront = Boolean.parseBoolean(aOs.elementAt(o).text);
@@ -126,6 +132,9 @@ public class Depthmap extends Processor {
 		}
 		if(inpainting.enabled) {
 			aSB.append("							<inpaintModes>" + inpainting.modesText() + "</inpaintModes>\n");
+		}
+		if(showHoles) {
+			aSB.append("							<showHoles>true</showHoles>\n");
 		}
 		if(computed != null) {
 			computed.save(aSB, "							");
@@ -294,7 +303,9 @@ public class Depthmap extends Processor {
 					@Override
 					public void run() {
 						//Force refresh
-						tde.gui.processorGUI.setProcessors(((Clip)targetMedia).getProcessors());
+						if(tde.gui.processorGUI != null) {
+							tde.gui.processorGUI.setProcessors(((Clip)targetMedia).getProcessors());
+						}
 					}
 				});
 			}
@@ -372,13 +383,18 @@ public class Depthmap extends Processor {
 		}
 		try {
 			//Inpainting of the holes: what to do, time of the parameters (rounded to the frames on the monitor)
-			Inpainting.Plan aPlan = inpainting.plan(aProcessingMode);
+			//Holes left transparent (rendering too): Plan.HOLES, no model, no filling carried from the image before
+			Inpainting.Plan aPlan = showHoles ? Inpainting.Plan.HOLES : inpainting.plan(aProcessingMode);
 			long aKT = inpainting.snap(aTime, aProcessingMode);
 			long aStartMS = System.currentTimeMillis();
 			inpainting.beginFrame();
 			BufferedImage aBISrc = aMedia.getWorkLeft(aProcessingMode,aTime);
 			//Depth map: the computed one (of the left view), else the right view of the media (2D + depth map)
 			ComputedDepthmap aCD = computed;
+			if(aCD != null && aCD.clip != null && targetMedia instanceof Clip && !aCD.covers((Clip)targetMedia, aTime)) {
+				//Beyond the part computed of an interrupted depth map: not converted
+				return;
+			}
 			BufferedImage aBIR = ImageUtils.fitTo(aCD != null && aCD.clip != null
 					? aCD.clip.getWorkLeft(aProcessingMode,aTime)
 					: aMedia.getWorkRight(aProcessingMode,aTime), aBISrc);
@@ -471,6 +487,53 @@ public class Depthmap extends Processor {
 		return aOut;
 	}
 
+	//Consolidation of the holes: a pixel where the horizontal gradient of the depth map (normalized 0..1, central
+	//difference) times the width is above this is not moved (a hole): the soft edge of a depth map between a near
+	//object and the background, whose pixels mixing both were spread across the hole
+	public static final double STEEP_GRADIENT = 20;
+
+	/** Pixels of the line y of a depth map (8 bits ARGB) whose horizontal gradient is steep (see STEEP_GRADIENT) */
+	static boolean[] steep(int[] aDM,int y,int aW,double aMin,double aMax) {
+		double[] aZ = new double[aW];
+		boolean[] aIn = new boolean[aW];
+		for(int x = 0;x < aW;x++) {
+			int p = aDM[y*aW+x];
+			aIn[x] = ((p>>24) & 0xFF) == 255;
+			aZ[x] = (((p>>16) & 0xFF)+((p>>8) & 0xFF)+(p & 0xFF))/(3.0*255);
+		}
+		return steep(aZ, aIn, aW, aMin, aMax);
+	}
+
+	/** Same for a float depth map (RGBA) */
+	static boolean[] steep(float[] aDM,int y,int aW,double aMin,double aMax) {
+		double[] aZ = new double[aW];
+		boolean[] aIn = new boolean[aW];
+		for(int x = 0;x < aW;x++) {
+			int i = 4*(y*aW+x);
+			aIn[x] = aDM[i+3] >= 1f;
+			aZ[x] = (aDM[i]+aDM[i+1]+aDM[i+2])/3.0;
+		}
+		return steep(aZ, aIn, aW, aMin, aMax);
+	}
+
+	static boolean[] steep(double[] aZ,boolean[] aIn,int aW,double aMin,double aMax) {
+		boolean[] aRes = new boolean[aW];
+		double aR = aMax-aMin > 1e-9 ? aMax-aMin : 1;
+		double aTh = STEEP_GRADIENT/aW;
+		for(int x = 0;x < aW;x++) {
+			if(!aIn[x]) {
+				continue;
+			}
+			int xl = x > 0 && aIn[x-1] ? x-1 : x;
+			int xr = x < aW-1 && aIn[x+1] ? x+1 : x;
+			if(xr > xl) {
+				aRes[x] = Math.abs(aZ[xr]-aZ[xl])/(aR*(xr-xl)) > aTh;
+			}
+		}
+		return aRes;
+	}
+
+
 	BufferedImage processAwtImage(BufferedImage aBI,BufferedImage aDM,int aProcessingMode,long aTime,boolean aIsL,Inpainting.Plan aPlan) {
 		int aWidth = aBI.getWidth();
 		int aHeight = aBI.getHeight();
@@ -482,7 +545,8 @@ public class Depthmap extends Processor {
 		int[] aDMDB = ((DataBufferInt)aDM.getRaster().getDataBuffer()).getData();
 		int[] aFDB = ((DataBufferInt)aFBI.getRaster().getDataBuffer()).getData();
 		//Pixels filled by the interpolation of the edges of the holes, for the inpainting model
-		boolean[] aHoles = aPlan != Inpainting.Plan.NONE ? new boolean[aWidth*aHeight] : null;
+		//(also without the model: the F -> F+1 carry of the filling compares them, Inpainting.carry())
+		boolean[] aHoles = new boolean[aWidth*aHeight];
 		//Side of the foreground of the holes (Inpainting.side(), weighted by their lengths)
 		long aSide = 0;
 		
@@ -514,6 +578,7 @@ public class Depthmap extends Processor {
 		}
 		for(int y = 0;y<aHeight;y++) {
 			//Reverse
+			boolean[] aSteep = steep(aDMDB, y, aWidth, aMin, aMax);
 			double[] aDLineZ = new double[aWidth];
 			double[] aDLineA = new double[aWidth];
 			double[] aLineZSrc = new double[aWidth];
@@ -531,6 +596,11 @@ public class Depthmap extends Processor {
 
 				if(aDMA < 255.0) {
 					//Nothing here, not a fully opaque depthmap
+					continue;
+				}
+
+				if(aSteep[x]) {
+					//Steep horizontal gradient of the depth map (an edge): a hole, nothing moved there
 					continue;
 				}
 
@@ -608,7 +678,7 @@ public class Depthmap extends Processor {
 							int aGN = (int)((aDMBG*(aEndX - ix)+aDMEG*(ix - aBegX))/((double)(aEndX - aBegX)));
 							int aBN = (int)((aDMBB*(aEndX - ix)+aDMEB*(ix - aBegX))/((double)(aEndX - aBegX)));
 							//With the inpainting model: a hole for it (the depth stays interpolated: nothing behind shows through)
-							aFDB[y*aWidth+ix] = aHoles != null ? 0 : (aAlphaN<<24)|(aRN<<16)|(aGN<<8)|aBN;
+							aFDB[y*aWidth+ix] = aPlan != Inpainting.Plan.NONE ? 0 : (aAlphaN<<24)|(aRN<<16)|(aGN<<8)|aBN;
 						}
 					}
 				}
@@ -746,11 +816,21 @@ public class Depthmap extends Processor {
 			}
 		}
 
-		if(aHoles != null && Inpainting.hasHoles(aHoles)) {
+		if(aPlan == Inpainting.Plan.HOLES) {
+			//Holes shown as they are: transparent, nothing filled nor carried
+			for(int p = 0;p < aHoles.length;p++) {
+				if(aHoles[p]) {
+					aFDB[p] = 0;
+				}
+			}
+			return aFBI;
+		}
+		if(aPlan != Inpainting.Plan.NONE && Inpainting.hasHoles(aHoles)) {
 			//Holes filled by the inpainting model instead of the interpolation (see Inpainting); none: the model is
 			//neither loaded nor run, nothing cached
 			inpainting.fill(aPlan, inpainting.frame(aDB, aDMDB, aWidth, aHeight, aTime, aIsL, aSide < 0, aProcessingMode), aFDB, aWidth, aHeight, aHoles);
 		}
+		inpainting.carry(aProcessingMode, aIsL, aTime, aWidth, aHeight, aHoles, aFDB, null);
 		return aFBI;
 	}
 
@@ -765,7 +845,8 @@ public class Depthmap extends Processor {
 		float[] aDMDB = ((DataBufferFloat)aDM.getRaster().getDataBuffer()).getData();
 		float[] aFDB = ((DataBufferFloat)aFBI.getRaster().getDataBuffer()).getData();
 		//Pixels filled by the interpolation of the edges of the holes, for the inpainting model
-		boolean[] aHoles = aPlan != Inpainting.Plan.NONE ? new boolean[aWidth*aHeight] : null;
+		//(also without the model: the F -> F+1 carry of the filling compares them, Inpainting.carry())
+		boolean[] aHoles = new boolean[aWidth*aHeight];
 		//Side of the foreground of the holes (Inpainting.side(), weighted by their lengths)
 		long aSide = 0;
 
@@ -798,6 +879,7 @@ public class Depthmap extends Processor {
 		}
 		for(int y = 0;y<aHeight;y++) {
 			//Reverse
+			boolean[] aSteep = steep(aDMDB, y, aWidth, aMin, aMax);
 			double[] aDLineZ = new double[aWidth];
 			double[] aDLineA = new double[aWidth];
 			int aLastX = -1;
@@ -813,6 +895,11 @@ public class Depthmap extends Processor {
 
 				if(aDMA < 1.0) {
 					//Nothing here, not a fully opaque depthmap
+					continue;
+				}
+
+				if(aSteep[x]) {
+					//Steep horizontal gradient of the depth map (an edge): a hole, nothing moved there
 					continue;
 				}
 
@@ -895,10 +982,10 @@ public class Depthmap extends Processor {
 							double aGN = ((aDMBG*(aEndX - ix)+aDMEG*(ix - aBegX))/((double)(aEndX - aBegX)));
 							double aBN = ((aDMBB*(aEndX - ix)+aDMEB*(ix - aBegX))/((double)(aEndX - aBegX)));
 							//With the inpainting model: a hole for it (the depth stays interpolated: nothing behind shows through)
-							aFDB[y*aWidth*4+ix*4] = aHoles != null ? 0 : (float)aRN;
-							aFDB[y*aWidth*4+ix*4+1] = aHoles != null ? 0 : (float)aGN;
-							aFDB[y*aWidth*4+ix*4+2] = aHoles != null ? 0 : (float)aBN;
-							aFDB[y*aWidth*4+ix*4+3] = aHoles != null ? 0 : (float)aAlphaN;
+							aFDB[y*aWidth*4+ix*4] = aPlan != Inpainting.Plan.NONE ? 0 : (float)aRN;
+							aFDB[y*aWidth*4+ix*4+1] = aPlan != Inpainting.Plan.NONE ? 0 : (float)aGN;
+							aFDB[y*aWidth*4+ix*4+2] = aPlan != Inpainting.Plan.NONE ? 0 : (float)aBN;
+							aFDB[y*aWidth*4+ix*4+3] = aPlan != Inpainting.Plan.NONE ? 0 : (float)aAlphaN;
 						}
 					}
 				}
@@ -1048,11 +1135,21 @@ public class Depthmap extends Processor {
 			}
 		}
 
-		if(aHoles != null && Inpainting.hasHoles(aHoles)) {
+		if(aPlan == Inpainting.Plan.HOLES) {
+			//Holes shown as they are: transparent, nothing filled nor carried
+			for(int p = 0;p < aHoles.length;p++) {
+				if(aHoles[p]) {
+					aFDB[4*p] = aFDB[4*p+1] = aFDB[4*p+2] = aFDB[4*p+3] = 0f;
+				}
+			}
+			return aFBI;
+		}
+		if(aPlan != Inpainting.Plan.NONE && Inpainting.hasHoles(aHoles)) {
 			//Holes filled by the inpainting model instead of the interpolation (see Inpainting); none: the model is
 			//neither loaded nor run, nothing cached
 			inpainting.fill(aPlan, inpainting.frame(aDB, aDMDB, aWidth, aHeight, aTime, aIsL, aSide < 0, aProcessingMode), aFDB, aWidth, aHeight, aHoles);
 		}
+		inpainting.carry(aProcessingMode, aIsL, aTime, aWidth, aHeight, aHoles, null, aFDB);
 		return aFBI;
 	}
 }

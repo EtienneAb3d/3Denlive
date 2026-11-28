@@ -172,6 +172,37 @@ public class TimeLineStack extends Media {
 		tde.selected.clips.clear();
 	}
 
+	/**
+	 * New line asked by the user (buttons of the time lines): just above the selected line of that kind (else the
+	 * line of the main selected clip, if of that kind), else on top of the stack; the lines named again by their place
+	 */
+	public void addLineAboveSelection(boolean aAudio) {
+		@SuppressWarnings("unchecked")
+		Vector<VideoTimeLine> aStack = aAudio ? (Vector<VideoTimeLine>)(Vector<?>)audioTimeLineStack : videoTimeLineStack;
+		VideoTimeLine aSel = null;
+		for(int i = tde.selected.timeLines.size()-1;i >= 0 && aSel == null;i--) {
+			VideoTimeLine aTL = tde.selected.timeLines.elementAt(i);
+			if(aStack.contains(aTL)) {
+				aSel = aTL;
+			}
+		}
+		if(aSel == null && !tde.selected.clips.isEmpty()) {
+			Clip aMain = tde.selected.clips.lastElement();
+			for(VideoTimeLine aTL : aStack) {
+				if(aTL.containsClip(aMain)) {
+					aSel = aTL;
+					break;
+				}
+			}
+		}
+		int aIdx = aSel == null ? aStack.size() : aStack.indexOf(aSel)+1;
+		VideoTimeLine aNew = aAudio ? new AudioTimeLine(tde, "A") : new VideoTimeLine(tde, "V");
+		aStack.add(aIdx, aNew);
+		for(int t = 0;t < aStack.size();t++) {
+			aStack.elementAt(t).setName((aAudio ? "A" : "V")+(t+1));
+		}
+	}
+
 	public AudioTimeLine addAudioTimeLine() {
 		AudioTimeLine aTL = new AudioTimeLine(tde, "A"+(audioTimeLineStack.size()+1));
 		audioTimeLineStack.add(aTL);
@@ -400,6 +431,23 @@ public class TimeLineStack extends Media {
 	/**
 	 * Time line which holds aClip, null if none
 	 */
+	/**
+	 * First time of the montage that is not in an opening fade: the earliest time a clip of an active video line is
+	 * fully shown (its start + its fade in), 0 without clip
+	 */
+	public long firstFullImageMS() {
+		long aT = Long.MAX_VALUE;
+		for(VideoTimeLine aTL : new Vector<VideoTimeLine>(videoTimeLineStack)) {
+			if(!aTL.isActive) {
+				continue;
+			}
+			for(Clip aC : new Vector<Clip>(aTL.clipList)) {
+				aT = Math.min(aT, aC.getStartTimeMS()+Math.max(0, aC.fadeInMS));
+			}
+		}
+		return aT == Long.MAX_VALUE ? 0 : aT;
+	}
+
 	public VideoTimeLine getLineOf(Clip aClip) {
 		Vector<VideoTimeLine> aTLs = new Vector<VideoTimeLine>(videoTimeLineStack);
 		aTLs.addAll(audioTimeLineStack);
@@ -767,12 +815,12 @@ public class TimeLineStack extends Media {
 		aGC.drawImage(tde.gui.imgsSwt.getIcon("burger.png"), 62, 8);
 		menuBounds = new Rectangle(62,8,16,16);
 
-		aW += tde.config.thumbW;
+		aW += tde.config.lineHeadW();
 		
 		aGC.setForeground(tde.gui.colorsSwt.CUBAIX_BLUE);
-		aGC.drawLine(tde.config.thumbW, 0, tde.config.thumbW, tde.config.thumbH);
+		aGC.drawLine(tde.config.lineHeadW(), 0, tde.config.lineHeadW(), tde.config.thumbH);
 
-		aGC.setClipping(new Rectangle(tde.config.thumbW+1,0,aClippingR.width-aClippingR.x-tde.config.thumbW-1,aClippingR.height));//Ruler fixed at the top
+		aGC.setClipping(new Rectangle(tde.config.lineHeadW()+1,0,aClippingR.width-aClippingR.x-tde.config.lineHeadW()-1,aClippingR.height));//Ruler fixed at the top
 		long aTime = 0;
 		int aHC = 0;
 		int aWC = 0;
@@ -796,7 +844,7 @@ public class TimeLineStack extends Media {
 		
 		aH += aHC*2+1;
 		
-		rulerBounds = new Rectangle(aX+tde.config.thumbW, 0, aClippingR.width-aX, aHC*2);
+		rulerBounds = new Rectangle(aX+tde.config.lineHeadW(), 0, aClippingR.width-aX, aHC*2);
 		
 		aClippingR.y = rulerBounds.height;
 		for(int t = videoTimeLineStack.size()-1;t >= 0;t--) {
@@ -828,10 +876,10 @@ public class TimeLineStack extends Media {
 		}
 		
 		//Cursor
-		aGC.setClipping(new Rectangle(tde.config.thumbW+1,0
-				,aClippingR.width-aClippingR.x-tde.config.thumbW-1,aClippingR.height));
+		aGC.setClipping(new Rectangle(tde.config.lineHeadW()+1,0
+				,aClippingR.width-aClippingR.x-tde.config.lineHeadW()-1,aClippingR.height));
 		aGC.setForeground(tde.gui.colorsSwt.CUBAIX_PINK);
-		int aTimePosX = aX + tde.config.thumbW+(int)(requestedTimePosMS*(double)pixPerMS);
+		int aTimePosX = aX + tde.config.lineHeadW()+(int)(requestedTimePosMS*(double)pixPerMS);
 		aGC.drawLine(aTimePosX, aHC*2, aTimePosX, aY+aH);
 		aGC.drawLine(aTimePosX, aHC*2, aTimePosX-5, aHC*2-10);
 		aGC.drawLine(aTimePosX, aHC*2, aTimePosX+5, aHC*2-10);
@@ -859,12 +907,12 @@ public class TimeLineStack extends Media {
 		aGC.drawImage(tde.gui.imgsAwt.getIcon("burger.png"), 62, 8,null);
 		menuBounds = new Rectangle(62,8,16,16);
 
-		aW += tde.config.thumbW;
+		aW += tde.config.lineHeadW();
 		
 		aGC.setColor(tde.gui.colorsAwt.CUBAIX_BLUE);
-		aGC.drawLine(tde.config.thumbW, 0, tde.config.thumbW, tde.config.thumbH);
+		aGC.drawLine(tde.config.lineHeadW(), 0, tde.config.lineHeadW(), tde.config.thumbH);
 
-		aGC.setClip(tde.config.thumbW+1,0,aClippingR.width-aClippingR.x-tde.config.thumbW-1,aClippingR.height);//Ruler fixed at the top
+		aGC.setClip(tde.config.lineHeadW()+1,0,aClippingR.width-aClippingR.x-tde.config.lineHeadW()-1,aClippingR.height);//Ruler fixed at the top
 		long aTime = 0;
 		int aHC = 0;
 		int aWC = 0;
@@ -889,7 +937,7 @@ public class TimeLineStack extends Media {
 		
 		aH += aHC*2+1;
 		
-		rulerBounds = new Rectangle(aX+tde.config.thumbW, 0, aClippingR.width-aX, aHC*2);
+		rulerBounds = new Rectangle(aX+tde.config.lineHeadW(), 0, aClippingR.width-aX, aHC*2);
 		
 		aClippingR.y = rulerBounds.height;
 		for(int t = videoTimeLineStack.size()-1;t >= 0;t--) {
@@ -927,12 +975,12 @@ public class TimeLineStack extends Media {
 		}
 		
 		//Cursor
-		aGC.setClip(tde.config.thumbW+1,0
-				,aClippingR.width-aClippingR.x-tde.config.thumbW-1,aClippingR.height);
+		aGC.setClip(tde.config.lineHeadW()+1,0
+				,aClippingR.width-aClippingR.x-tde.config.lineHeadW()-1,aClippingR.height);
 		//Place of a media dragged from the media list
 		VideoTimeLine aDropLine = dropLine;
 		if(aDropLine != null && aDropLine.bounds != null) {
-			int aDropX = aX+tde.config.thumbW+(int)(dropStartMS*pixPerMS);
+			int aDropX = aX+tde.config.lineHeadW()+(int)(dropStartMS*pixPerMS);
 			int aDropW = Math.max(4, (int)(dropDurationMS*pixPerMS));
 			aGC.setColor(new Color(121,44,125,60));
 			aGC.fillRect(aDropX, aDropLine.bounds.y, aDropW, aDropLine.bounds.height);
@@ -945,7 +993,7 @@ public class TimeLineStack extends Media {
 		rangeEraseBounds = null;
 		long aRS = rangeStartMS, aRE = rangeEndMS;
 		if(aRS >= 0 && aRE > aRS) {
-			int aRX = aX+tde.config.thumbW+(int)(aRS*pixPerMS);
+			int aRX = aX+tde.config.lineHeadW()+(int)(aRS*pixPerMS);
 			int aRW = Math.max(1, (int)((aRE-aRS)*pixPerMS));
 			aGC.setColor(new Color(110,170,255,60));
 			aGC.fillRect(aRX, 0, aRW, aY+aH);
@@ -971,7 +1019,7 @@ public class TimeLineStack extends Media {
 		cursorBottomY = aY+aH;
 		if(cursorInImage) {
 			aGC.setColor(tde.gui.colorsAwt.CUBAIX_PINK);
-			int aTimePosX = aX + tde.config.thumbW+(int)(requestedTimePosMS*(double)pixPerMS);
+			int aTimePosX = aX + tde.config.lineHeadW()+(int)(requestedTimePosMS*(double)pixPerMS);
 			aGC.drawLine(aTimePosX, cursorTopY, aTimePosX, cursorBottomY);
 			aGC.drawLine(aTimePosX, cursorTopY, aTimePosX-5, cursorTopY-10);
 			aGC.drawLine(aTimePosX, cursorTopY, aTimePosX+5, cursorTopY-10);
@@ -984,11 +1032,11 @@ public class TimeLineStack extends Media {
 	@Override
 	public boolean selectWidget(int aX, int aY) {
 		if(addBounds != null && addBounds.contains(aX,aY)) {
-			addVideoTimeLine();
+			addLineAboveSelection(false);
 			return true;
 		}
 		if(soundBounds != null && soundBounds.contains(aX,aY)) {
-			addAudioTimeLine();
+			addLineAboveSelection(true);
 			return true;
 		}
 		if(rangeEraseBounds != null && rangeEraseBounds.contains(aX,aY)) {
@@ -1198,7 +1246,7 @@ public class TimeLineStack extends Media {
 	 * 1 = its start, 2 = its end, 0 = none
 	 */
 	public int rangeEdgeAt(int aX,int aY) {
-		if(!hasTimeRange() || rulerBounds == null || aX < tde.config.thumbW
+		if(!hasTimeRange() || rulerBounds == null || aX < tde.config.lineHeadW()
 				|| (rangeEraseBounds != null && rangeEraseBounds.contains(aX, aY))) {
 			return 0;
 		}
@@ -1240,7 +1288,7 @@ public class TimeLineStack extends Media {
 	 * Line whose head (name, checkbox... left of the clips) is at this place, null if none
 	 */
 	public VideoTimeLine getLineHeadAt(int aX, int aY) {
-		if(aX < 0 || aX >= tde.config.thumbW) {
+		if(aX < 0 || aX >= tde.config.lineHeadW()) {
 			return null;
 		}
 		return getLineAtY(aY);
@@ -1464,11 +1512,8 @@ public class TimeLineStack extends Media {
 							continue;
 						}
 						
-						float aAlpha = aTL.getAlpha(aTime);
-						Composite comp = AlphaComposite.getInstance(AlphaComposite.SRC_OVER,aAlpha);
-						aGL2.setComposite(comp );
-				         
-						aGL2.drawImage(aBI,0,0, null);
+						//Float images (HDR) composed without loss
+						com.cubaix.TDenlive.utils.FloatDraw.draw(aGL2, aAssembledBIL, aBI, null, aTL.getAlpha(aTime));
 					}
 					workLeft = aAssembledBIL;
 					aGL2.dispose();
@@ -1496,11 +1541,7 @@ public class TimeLineStack extends Media {
 						if(aBI == null) {
 							continue;
 						}
-						float aAlpha = aTL.getAlpha(aTime);
-						Composite comp = AlphaComposite.getInstance(AlphaComposite.SRC_OVER,aAlpha);
-						aGR2.setComposite(comp );
-
-						aGR2.drawImage(aBI,0,0, null);
+						com.cubaix.TDenlive.utils.FloatDraw.draw(aGR2, aAssembledBIR, aBI, null, aTL.getAlpha(aTime));
 					}
 					workRight = aAssembledBIR;
 					aGR2.dispose();

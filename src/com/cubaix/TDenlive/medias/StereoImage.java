@@ -15,6 +15,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import com.cubaix.TDenlive.TDConfig;
 import com.cubaix.TDenlive.TDenlive;
 import com.cubaix.TDenlive.GUI.Drawable;
+import com.cubaix.TDenlive.utils.FloatDraw;
 import com.cubaix.TDenlive.utils.ImageUtils;
 import com.cubaix.TDenlive.utils.MpoReader;
 import com.cubaix.TDenlive.xml.XmlObject;
@@ -111,12 +112,39 @@ public class StereoImage extends Media {
 					libName=com.cubaix.TDenlive.shapes.Shape.decode(aOs.elementAt(o).text.trim());
 					continue;
 				}
+				if("anaglyph".equalsIgnoreCase(aT.tagName)) {
+					anaglyph=aOs.elementAt(++o).text.trim();
+					continue;
+				}
+				if("montageUID".equalsIgnoreCase(aT.tagName)) {
+					montageUID=Long.parseLong(aOs.elementAt(++o).text.trim());
+					continue;
+				}
+				if("montageSig".equalsIgnoreCase(aT.tagName)) {
+					montageSig=aOs.elementAt(++o).text.trim();
+					if(montageSig.equals("-")) {
+						montageSig = null;
+					}
+					continue;
+				}
+				if("montageStale".equalsIgnoreCase(aT.tagName)) {
+					montageStale="true".equalsIgnoreCase(aOs.elementAt(++o).text.trim());
+					continue;
+				}
 				o = openProjectSub(aOs, o);
 			}
 		}
 		return o;
 	}
 	
+	//Final rendering of a montage of the project (Montage): its UID (0: an ordinary media), the signature of the montage
+	//when rendered, and whether it is out of date (saved: a project reopened later knows it)
+	public long montageUID = 0;
+	//Kind of anaglyph of a single file (Anaglyph.TYPES: its views taken from its color layers), null: not an anaglyph
+	public String anaglyph = null;
+	public String montageSig = null;
+	public boolean montageStale = false;
+
 	public int openProjectSub(Vector<XmlObject> aOs,int o) throws Exception{
 		//To be defined in sub-classes
 		return o;
@@ -141,13 +169,22 @@ public class StereoImage extends Media {
 		aSB.append("		<"+aType+">\n");
 		aSB.append("			<UID>" + UID + "</UID>\n");
 		aSB.append("			<stereo>" + origStereo + "</stereo>\n");
-		aSB.append("			<pathL>" + pathL + "</pathL>\n");
-		aSB.append("			<pathR>" + pathR + "</pathR>\n");
+		aSB.append("			<pathL>" + com.cubaix.TDenlive.utils.ProjectFiles.forSave(pathL) + "</pathL>\n");
+		aSB.append("			<pathR>" + com.cubaix.TDenlive.utils.ProjectFiles.forSave(pathR) + "</pathR>\n");
 		aSB.append("			<rotateL>" + rotateL + "</rotateL>\n");
 		aSB.append("			<rotateR>" + rotateR + "</rotateR>\n");
 		aSB.append("			<durationMS>" + durationMS + "</durationMS>\n");
 		aSB.append("			<anamorphW>" + anamorphW + "</anamorphW>\n");
 		saveLibName(aSB);
+		if(com.cubaix.TDenlive.utils.Anaglyph.isAnaglyph(anaglyph)) {
+			aSB.append("			<anaglyph>" + anaglyph + "</anaglyph>\n");
+		}
+		if(montageUID > 0) {
+			//Final rendering of a montage of the project (see Montage)
+			aSB.append("			<montageUID>" + montageUID + "</montageUID>\n");
+			aSB.append("			<montageSig>" + (montageSig == null ? "-" : montageSig) + "</montageSig>\n");
+			aSB.append("			<montageStale>" + montageStale + "</montageStale>\n");
+		}
 		saveProjectSub(aSB);
 		aSB.append("		</"+aType+">\n");
 	}
@@ -171,11 +208,11 @@ public class StereoImage extends Media {
 	}
 	
 	String findPath(String aPath) {
-		if(new File(aPath).exists()) {
-			return aPath;
-		}
-		if(new File(tde.projectDir+File.separatorChar+new File(aPath).getName()).exists()) {
-			return tde.projectDir+File.separatorChar+new File(aPath).getName();
+		//As it is, else relative to the project folder or found under it with its sub folders (project folder
+		//moved: Montages/<file> of the renderings of the montages, AI/...)
+		String aFound = com.cubaix.TDenlive.utils.ProjectFiles.resolve(tde, aPath);
+		if(aFound != null) {
+			return aFound;
 		}
 		return tde.lastDir+File.separatorChar+new File(aPath).getName();
 	}
@@ -193,20 +230,32 @@ public class StereoImage extends Media {
 		origStereo = 0;
 		pathL = findPath(aPathL);
 		pathR = findPath(aPathR);
+		if(com.cubaix.TDenlive.utils.Anaglyph.isAnaglyph(anaglyph)) {
+			//Its decodings keep the color layers apart (Ffmpeg.anaglyphFilter())
+			com.cubaix.TDenlive.ffmpeg.Ffmpeg.markAnaglyph(pathL);
+		}
 		origHdr = tde.config.processingHdr[0];
 		Graphics2D aG;
 		BufferedImage aOrig = loadImage(pathL,aProcessingMode,aTime,true);
 		int aWidth = aOrig.getWidth();
 		int aHeight = aOrig.getHeight();
-		loadedLeft = ImageUtils.createImage(aWidth, aHeight,tde.config.processingHdr[0]);
+		loadedLeft = ImageUtils.createImage(aWidth, aHeight,tde.config.processingHdr[0] || FloatDraw.isFloat(aOrig));
 		aG = (Graphics2D)loadedLeft.getGraphics();
-		aG.drawImage(aOrig,0, 0,null);
+		FloatDraw.draw(aG, loadedLeft, aOrig, 0, 0, 0, 0);
 		aG.dispose();
-		aOrig = loadImage(pathR,aProcessingMode,aTime,false);
-		loadedRight = ImageUtils.createImage(aWidth, aHeight,tde.config.processingHdr[0]);
-		aG = (Graphics2D)loadedRight.getGraphics();
-		aG.drawImage(aOrig,0, 0,null);
-		aG.dispose();
+		if(com.cubaix.TDenlive.utils.Anaglyph.isAnaglyph(anaglyph)) {
+			//One file, both views taken from its color layers (the file read once)
+			BufferedImage aAna = loadedLeft;
+			loadedLeft = com.cubaix.TDenlive.utils.Anaglyph.view(aAna, anaglyph, true);
+			loadedRight = com.cubaix.TDenlive.utils.Anaglyph.view(aAna, anaglyph, false);
+		}
+		else {
+			aOrig = loadImage(pathR,aProcessingMode,aTime,false);
+			loadedRight = ImageUtils.createImage(aWidth, aHeight,tde.config.processingHdr[0] || FloatDraw.isFloat(aOrig));
+			aG = (Graphics2D)loadedRight.getGraphics();
+			FloatDraw.draw(aG, loadedRight, aOrig, 0, 0, 0, 0);
+			aG.dispose();
+		}
 
 		if(origRes <= 0) {
 			origRes = aHeight;
@@ -232,13 +281,13 @@ public class StereoImage extends Media {
 		int aWidth = aOrig.getWidth()/2;
 		int aHeight = origRes = aOrig.getHeight();
 		origRatio = aWidth/(double)aHeight;
-		loadedLeft = ImageUtils.createImage(aWidth, aHeight,tde.config.processingHdr[0]);
+		loadedLeft = ImageUtils.createImage(aWidth, aHeight,tde.config.processingHdr[0] || FloatDraw.isFloat(aOrig));
 		aG = (Graphics2D)loadedLeft.getGraphics();
-		aG.drawImage(aOrig,-aWidth, 0,null);
+		FloatDraw.draw(aG, loadedLeft, aOrig, -aWidth, 0, 0, 0);
 		aG.dispose();
-		loadedRight = ImageUtils.createImage(aWidth, aHeight,tde.config.processingHdr[0]);
+		loadedRight = ImageUtils.createImage(aWidth, aHeight,tde.config.processingHdr[0] || FloatDraw.isFloat(aOrig));
 		aG = (Graphics2D)loadedRight.getGraphics();
-		aG.drawImage(aOrig,0, 0,null);
+		FloatDraw.draw(aG, loadedRight, aOrig, 0, 0, 0, 0);
 		aG.dispose();
 
 		fileName = new File(pathL).getName();
@@ -263,13 +312,13 @@ public class StereoImage extends Media {
 		int aWidth = aOrig.getWidth()/2;
 		int aHeight = origRes = aOrig.getHeight();
 		origRatio = aWidth/(double)aHeight;
-		BufferedImage aOrigLeft = ImageUtils.createImage(aWidth, aHeight,tde.config.processingHdr[0]);
+		BufferedImage aOrigLeft = ImageUtils.createImage(aWidth, aHeight,tde.config.processingHdr[0] || FloatDraw.isFloat(aOrig));
 		aG = (Graphics2D)aOrigLeft.getGraphics();
-		aG.drawImage(aOrig,0, 0,null);
+		FloatDraw.draw(aG, aOrigLeft, aOrig, 0, 0, 0, 0);
 		aG.dispose();
-		BufferedImage aOrigRight = ImageUtils.createImage(aWidth, aHeight,tde.config.processingHdr[0]);
+		BufferedImage aOrigRight = ImageUtils.createImage(aWidth, aHeight,tde.config.processingHdr[0] || FloatDraw.isFloat(aOrig));
 		aG = (Graphics2D)aOrigRight.getGraphics();
-		aG.drawImage(aOrig,-aWidth, 0,null);
+		FloatDraw.draw(aG, aOrigRight, aOrig, -aWidth, 0, 0, 0);
 		aG.dispose();
 
 		fileName = new File(pathL).getName();
@@ -296,16 +345,16 @@ public class StereoImage extends Media {
 		int aWidth = origWidth = aOrig.getWidth();
 		int aHeight = origHeight = origRes = aOrig.getHeight();
 		origRatio = aWidth/(double)aHeight;
-		loadedLeft = ImageUtils.createImage(aWidth, aHeight,tde.config.processingHdr[0]);
+		loadedLeft = ImageUtils.createImage(aWidth, aHeight,tde.config.processingHdr[0] || FloatDraw.isFloat(aOrig));
 		aG = (Graphics2D)loadedLeft.getGraphics();
-		aG.drawImage(aOrig,0, 0,null);
+		FloatDraw.draw(aG, loadedLeft, aOrig, 0, 0, 0, 0);
 		aG.dispose();
 		aOrig = aIs[1];
 		aWidth = aOrig.getWidth();
 		aHeight = aOrig.getHeight();
-		loadedRight = ImageUtils.createImage(aWidth, aHeight,tde.config.processingHdr[0]);
+		loadedRight = ImageUtils.createImage(aWidth, aHeight,tde.config.processingHdr[0] || FloatDraw.isFloat(aOrig));
 		aG = (Graphics2D)loadedRight.getGraphics();
-		aG.drawImage(aOrig,0, 0,null);
+		FloatDraw.draw(aG, loadedRight, aOrig, 0, 0, 0, 0);
 		aG.dispose();
 		
 		fileName = new File(pathL).getName();
@@ -325,21 +374,21 @@ public class StereoImage extends Media {
 			int aHeight = loadedLeft.getHeight();
 			AffineTransform aAT = null;
 			if(rotateL.equals("180") || rotateL.equals("0")) {
-				rotatedLeft = ImageUtils.createImage((int)(Double.parseDouble(anamorphW)*aWidth),aHeight,tde.config.processingHdr[0]);
+				rotatedLeft = ImageUtils.createImage((int)(Double.parseDouble(anamorphW)*aWidth),aHeight,tde.config.processingHdr[0] || FloatDraw.isFloat(loadedLeft));
 				aAT = AffineTransform.getTranslateInstance(aWidth/2,aHeight/2);
 				aAT.concatenate(AffineTransform.getRotateInstance(Math.PI*Double.parseDouble(rotateL)/180.0));
 				aAT.concatenate(AffineTransform.getTranslateInstance(-aWidth/2,-aHeight/2));
 				aAT.concatenate(AffineTransform.getScaleInstance(Double.parseDouble(anamorphW), 1.0));
 			}
 			else {
-				rotatedLeft = ImageUtils.createImage(aHeight,(int)(Double.parseDouble(anamorphW)*aWidth),tde.config.processingHdr[0]);
+				rotatedLeft = ImageUtils.createImage(aHeight,(int)(Double.parseDouble(anamorphW)*aWidth),tde.config.processingHdr[0] || FloatDraw.isFloat(loadedLeft));
 				aAT = AffineTransform.getTranslateInstance(aHeight/2,aWidth/2);
 				aAT.concatenate(AffineTransform.getRotateInstance(Math.PI*Double.parseDouble(rotateL)/180.0));
 				aAT.concatenate(AffineTransform.getTranslateInstance(-aWidth/2,-aHeight/2));
 				aAT.concatenate(AffineTransform.getScaleInstance(Double.parseDouble(anamorphW), 1.0));
 			}
 			Graphics2D aG = (Graphics2D)rotatedLeft.getGraphics();
-			aG.drawImage(loadedLeft, aAT, null);
+			FloatDraw.draw(aG, rotatedLeft, loadedLeft, aAT, 1f);
 			aG.dispose();
 		}
 		if(rotateR.equals("0") && Double.parseDouble(anamorphW) == 1) {
@@ -350,21 +399,21 @@ public class StereoImage extends Media {
 			int aHeight = loadedRight.getHeight();
 			AffineTransform aAT = null;
 			if(rotateR.equals("180") || rotateR.equals("0")) {
-				rotatedRight = ImageUtils.createImage((int)(Double.parseDouble(anamorphW)*aWidth),aHeight,tde.config.processingHdr[0]);
+				rotatedRight = ImageUtils.createImage((int)(Double.parseDouble(anamorphW)*aWidth),aHeight,tde.config.processingHdr[0] || FloatDraw.isFloat(loadedRight));
 				aAT = AffineTransform.getTranslateInstance(aWidth/2,aHeight/2);
 				aAT.concatenate(AffineTransform.getRotateInstance(Math.PI*Double.parseDouble(rotateR)/180.0));
 				aAT.concatenate(AffineTransform.getTranslateInstance(-aWidth/2,-aHeight/2));
 				aAT.concatenate(AffineTransform.getScaleInstance(Double.parseDouble(anamorphW), 1.0));
 			}
 			else {
-				rotatedRight = ImageUtils.createImage(aHeight,(int)(Double.parseDouble(anamorphW)*aWidth),tde.config.processingHdr[0]);
+				rotatedRight = ImageUtils.createImage(aHeight,(int)(Double.parseDouble(anamorphW)*aWidth),tde.config.processingHdr[0] || FloatDraw.isFloat(loadedRight));
 				aAT = AffineTransform.getTranslateInstance(aHeight/2,aWidth/2);
 				aAT.concatenate(AffineTransform.getRotateInstance(Math.PI*Double.parseDouble(rotateR)/180.0));
 				aAT.concatenate(AffineTransform.getTranslateInstance(-aWidth/2,-aHeight/2));
 				aAT.concatenate(AffineTransform.getScaleInstance(Double.parseDouble(anamorphW), 1.0));
 			}
 			Graphics2D aG = (Graphics2D)rotatedRight.getGraphics();
-			aG.drawImage(loadedRight, aAT, null);
+			FloatDraw.draw(aG, rotatedRight, loadedRight, aAT, 1f);
 			aG.dispose();
 		}
 		buildThumb();
@@ -439,7 +488,21 @@ public class StereoImage extends Media {
 	
 	@Override
 	public void buildThumb() {
-		setThumbAwt(ImageUtils.toRes(rotatedLeft != null ? rotatedLeft : loadedLeft, tde.config.thumbH,false,true,true));
+		if(com.cubaix.TDenlive.utils.Anaglyph.isAnaglyph(anaglyph) && loadedRight != null) {
+			//Imported anaglyph: the whole anaglyph image (both views summed), not the left view alone
+			BufferedImage aL = ImageUtils.toRes(rotatedLeft != null ? rotatedLeft : loadedLeft, tde.config.thumbH, false, true, false);
+			BufferedImage aR = ImageUtils.toRes(rotatedRight != null ? rotatedRight : loadedRight, tde.config.thumbH, false, true, false);
+			BufferedImage aA = com.cubaix.TDenlive.utils.Anaglyph.combine(aL, aR);
+			BufferedImage aT = ImageUtils.createImage(aA.getWidth(), aA.getHeight());
+			ImageUtils.checkerBck(aT, 5);
+			java.awt.Graphics2D aG = aT.createGraphics();
+			aG.drawImage(aA, 0, 0, null);
+			aG.dispose();
+			setThumbAwt(aT);
+		}
+		else {
+			setThumbAwt(ImageUtils.toRes(rotatedLeft != null ? rotatedLeft : loadedLeft, tde.config.thumbH,false,true,true));
+		}
 		setThumbSwt(ImageUtils.imageToSwt(tde.gui.display,getThumbAwt(),false));
 	}
 	

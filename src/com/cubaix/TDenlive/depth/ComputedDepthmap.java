@@ -38,10 +38,25 @@ public class ComputedDepthmap {
 	 * Depth map file of a source file, in aDir (null: next to the source)
 	 */
 	public static String depthPath(String aSrc,String aDir,boolean aVideo) {
+		return depthPath(aSrc, aDir, aVideo, com.cubaix.TDenlive.ffmpeg.Ffmpeg.isAnaglyph(aSrc));
+	}
+
+	//An anaglyph: one depth map per view (its color layers), side by side left | right in one file of this suffix
+	//(the single map of the anaglyph as a 2D file, before, is not read for it)
+	public static final String SUFFIX_ANAGLYPH = SUFFIX+"LR";
+
+	public static String depthPath(String aSrc,String aDir,boolean aVideo,boolean aAnaglyph) {
 		File aIn = new File(aSrc);
 		String aBase = aIn.getName().replaceAll("[.][^.]*$", "");
 		File aDirF = aDir == null ? aIn.getAbsoluteFile().getParentFile() : new File(aDir);
-		return new File(aDirF, aBase+SUFFIX+(aVideo ? ".mp4" : ".png")).getPath();
+		return new File(aDirF, aBase+(aAnaglyph ? SUFFIX_ANAGLYPH : SUFFIX)+(aVideo ? ".mp4" : ".png")).getPath();
+	}
+
+	/**
+	 * Stereo layout of the depth map file of a media: that of the source, parallel (2) for an anaglyph
+	 */
+	public static int layoutOf(StereoImage aSI) {
+		return com.cubaix.TDenlive.utils.Anaglyph.isAnaglyph(aSI.anaglyph) ? 2 : aSI.origStereo;
 	}
 
 	/**
@@ -62,7 +77,43 @@ public class ComputedDepthmap {
 				return aP;
 			}
 		}
+		if(aVideo) {
+			//Interrupted computation: its frames done so far (DepthConverter.videoPass())
+			for(String aDir : new String[] {null, aTDe.getWorkCacheDir()}) {
+				String aOut = depthPath(aSrc, aDir, aVideo);
+				String aP = partialPath(aOut);
+				if(!new File(aP).isFile()) {
+					//Interrupted before the partial files existed: made from its segments (joined, not encoded again)
+					DepthConverter.makePartial(aOut);
+				}
+				if(new File(aP).isFile()) {
+					return aP;
+				}
+			}
+		}
 		return null;
+	}
+
+	/**
+	 * The frames of an interrupted depth video computed so far, joined (shown and used for that part, replaced by the
+	 * whole map at the end of the computation)
+	 */
+	public static String partialPath(String aOut) {
+		return aOut.replaceAll("[.]mp4$", "")+".partial.mp4";
+	}
+
+	//One of the files is the part of an interrupted computation: beyond it, no depth (covers())
+	public boolean partial = false;
+
+	/**
+	 * The depth maps hold the image of aTarget at aTime (always, unless partial: up to the frames computed)
+	 */
+	public boolean covers(Clip aTarget,long aTime) {
+		if(!partial || clip == null) {
+			return true;
+		}
+		long aDur = clip.getMedia().getDurationMS();
+		return aDur > 0 && aTarget.mediaTimeMS(aTime) < aDur-1;
 	}
 
 	/**
@@ -84,6 +135,54 @@ public class ComputedDepthmap {
 		String aL = findDepth(aTDe, aSrcs[0], aVideo);
 		String aR = aSrcs.length > 1 ? findDepth(aTDe, aSrcs[1], aVideo) : aL;
 		return aL == null || aR == null ? null : new String[] {aL, aR};
+	}
+
+	/**
+	 * Interrupted computation of the depth maps of a video (see DepthConverter.videoPass()): the id of its model, ""
+	 * if unknown (a file done, the other not started), null if none (never started, or complete)
+	 */
+	public static String partialModel(TDenlive aTDe,StereoImage aSI) {
+		if(!(aSI instanceof StereoMovie)) {
+			return null;
+		}
+		//Complete: every whole map there (the partial ones do not count)
+		boolean aAll = true;
+		for(String aSrc : sources(aSI)) {
+			aAll &= new File(depthPath(aSrc, writeDir(aTDe.getWorkCacheDir(), aSrc), true)).isFile()
+					|| new File(depthPath(aSrc, aTDe.getWorkCacheDir(), true)).isFile();
+		}
+		if(aAll) {
+			return null;
+		}
+		String aModel = null;
+		boolean aSomeDone = false;
+		for(String aSrc : sources(aSI)) {
+			String aOut = depthPath(aSrc, writeDir(aTDe.getWorkCacheDir(), aSrc), true);
+			String aM = DepthConverter.partModel(aOut);
+			if(aM != null) {
+				aModel = aM;
+			}
+			aSomeDone |= new File(aOut).isFile();
+		}
+		return aModel != null ? aModel : (aSomeDone ? "" : null);
+	}
+
+	/**
+	 * Part of the depth maps of a video already computed (0..1) when interrupted, -1 if unknown
+	 */
+	public static double partialFraction(TDenlive aTDe,StereoImage aSI) {
+		String[] aSrcs = sources(aSI);
+		double aSum = 0;
+		for(String aSrc : aSrcs) {
+			String aOut = depthPath(aSrc, writeDir(aTDe.getWorkCacheDir(), aSrc), true);
+			if(new File(aOut).isFile()) {
+				aSum += 1;
+				continue;
+			}
+			double aF = DepthConverter.partFraction(aOut, aSI.getDurationMS());
+			aSum += Math.max(0, aF);
+		}
+		return aSum/aSrcs.length;
 	}
 
 	/**
@@ -150,7 +249,8 @@ public class ComputedDepthmap {
 		ComputedDepthmap aCD = new ComputedDepthmap();
 		aCD.files = aFiles;
 		aCD.target = aTarget;
-		aCD.clip = aTarget.addPairedClip(loadMedia(aTDe, aFiles, aSI.origStereo), 1);
+		aCD.partial = aFiles[0].endsWith(".partial.mp4") || aFiles[1].endsWith(".partial.mp4");
+		aCD.clip = aTarget.addPairedClip(loadMedia(aTDe, aFiles, layoutOf(aSI)), 1);
 		aCD.clip.followsOrientation = true;
 		return aCD;
 	}

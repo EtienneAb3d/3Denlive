@@ -26,9 +26,10 @@ public class StringUtils {
 		File aIn = new File(aPath);
 		String aBase = aIn.getName().replaceAll("[.][^.]*$", "");
 		if(aWorkCacheDir == null) {
-			return new File(aIn.getParentFile(), aBase+"_3De_WorkCopyHQ.mp4").getPath();
+			return new File(aIn.getParentFile(), aBase+(com.cubaix.TDenlive.ffmpeg.Ffmpeg.isAnaglyph(aPath) ? "_a" : "")+"_3De_WorkCopyHQ.mp4").getPath();
 		}
-		String aKey = Integer.toHexString(aIn.getAbsolutePath().hashCode());
+		//An anaglyph: its own copy (layers kept apart, 4:4:4: see Ffmpeg.anaglyphFilter()), made again from the older ones
+		String aKey = Integer.toHexString(aIn.getAbsolutePath().hashCode())+(com.cubaix.TDenlive.ffmpeg.Ffmpeg.isAnaglyph(aPath) ? "a" : "");
 		return new File(aWorkCacheDir, aBase.replaceAll("[^A-Za-z0-9._-]", "_")+"_"+aKey+"_3De_WorkCopyHQ.mp4").getPath();
 	}
 

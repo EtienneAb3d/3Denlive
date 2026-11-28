@@ -49,7 +49,7 @@ public class TDConfig {
 	final public static int[] RESVALUES = new int[]{
 			720//1st media
 			,288,480,576,720,1080,1440,2160,4320};
-	final public static String[] HDRLIST = new String[]{"STD","HDR"};
+	final public static String[] HDRLIST = new String[]{"SDR","HDR"};
 	final public static String[] FPSLIST = new String[] {"25","30","50","60"};
 	
 	public String lng = "FR";
@@ -103,6 +103,14 @@ public class TDConfig {
 	public int sashWith = 2;
 	public int thumbW = 80;//160/2
 	public int thumbH = 45;//90/2
+
+	/**
+	 * Width of the heads of the time lines (left of the clips): a thumbnail, the title and the buttons, as the rows
+	 * of the lists
+	 */
+	public int lineHeadW() {
+		return thumbW+120;
+	}
 	
 	public boolean fastMode = false;
 	
@@ -131,6 +139,9 @@ public class TDConfig {
 	public double outFps = 30;
 	
 	public int renderedDefaultRes = 5;//FullHD
+	//Dynamic range of the rendered videos (RendererGUI): SDR = H.264 8 bits, HLG / PQ = HDR HEVC 10 bits
+	final public static String[] OUTPUT_HDR = new String[]{"SDR","HLG","PQ"};
+	public String renderOutputHdr = "SDR";
 	
 	public void loadGeneral(String aPath) {
 		try {
@@ -276,6 +287,11 @@ public class TDConfig {
 						processingHdr[2] = "true".equalsIgnoreCase(aVs[2]);
 						continue;
 					}
+					if("renderOutputHdr".equalsIgnoreCase(aT.tagName)) {
+						String aV = aOs.elementAt(++o).text.trim();
+						renderOutputHdr = java.util.Arrays.asList(OUTPUT_HDR).contains(aV) ? aV : OUTPUT_HDR[0];
+						continue;
+					}
 					if("processingResNames".equalsIgnoreCase(aT.tagName)) {
 						o++;
 						String[] aVs = aOs.elementAt(o).text.split("\t");
@@ -330,6 +346,7 @@ public class TDConfig {
 			aOut.write("<renderDir>"+renderDir+"</renderDir>\n");
 			aOut.write("<fastMode>"+fastMode+"</fastMode>\n");
 			aOut.write("<processingHdr>"+processingHdr[0]+"\t"+processingHdr[1]+"\t"+processingHdr[2]+"</processingHdr>\n");
+			aOut.write("<renderOutputHdr>"+renderOutputHdr+"</renderOutputHdr>\n");
 			aOut.write("<processingResNames>"+processingResNames[0]+"\t"+processingResNames[1]+"\t"+processingResNames[2]+"</processingResNames>\n");
 			aOut.write("<processingResValues>"+processingResValues[0]+"\t"+processingResValues[1]+"\t"+processingResValues[2]+"</processingResValues>\n");
 			aOut.write("<outRatio>"+outRatio+"</outRatio>\n");

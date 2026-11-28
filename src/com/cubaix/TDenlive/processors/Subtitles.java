@@ -252,6 +252,11 @@ public class Subtitles extends Shapes {
 				}
 				if("file".equalsIgnoreCase(aT.tagName)) {
 					aPath = Shape.decode(aOs.elementAt(++o).text.trim());
+					//Written relative to the project folder when inside it (or moved with it)
+					String aFound = com.cubaix.TDenlive.utils.ProjectFiles.resolve(tde, aPath);
+					if(aFound != null) {
+						aPath = aFound;
+					}
 				}
 				if("cue".equalsIgnoreCase(aT.tagName)) {
 					String[] aParts = aOs.elementAt(++o).text.trim().split(";", 3);
@@ -297,7 +302,7 @@ public class Subtitles extends Shapes {
 		aSB.append("						<Subtitles>\n");
 		synchronized (keys) {
 			if(filePath != null) {
-				aSB.append("							<file>" + Shape.encode(filePath) + "</file>\n");
+				aSB.append("							<file>" + Shape.encode(com.cubaix.TDenlive.utils.ProjectFiles.forSave(filePath)) + "</file>\n");
 			}
 			for(Key aK : keys) {
 				aSB.append("							<Key>\n");

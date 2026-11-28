@@ -6,6 +6,7 @@
 	<entry label="SaveAs">Save as</entry>
 	<entry label="OverwriteFile">The file already exists. Replace it?</entry>
 	<entry label="SaveBeforeQuit">The project has unsaved changes. Save them before quitting?</entry>
+	<entry label="SaveBeforeOpen">The project has unsaved changes. Save them before opening another project?</entry>
 	<entry label="SaveError">The project could not be saved:</entry>
 	<entry label="Untitled">New project</entry>
 	<entry label="PackDone">Project packed into:</entry>
@@ -491,6 +492,7 @@
 	<entry label="Wobble">Wobble</entry>
 </EntrySet>
 <EntrySet label="MediaOpen">
+	<entry label="ListTitle">Media</entry>
 	<entry label="DropTitle">Dropped files</entry>
 	<entry label="DropAsk">%N% file(s) dropped in the media library. What is their type (the same for all)?</entry>
 	<entry label="DropPairs">Left and right: the files, sorted by name, are taken two by two (left view, then right view).</entry>
@@ -505,6 +507,7 @@
 	<entry label="OpenP">Add a parallel view/video</entry>
 	<entry label="OpenLR">Add a left and right view/video</entry>
 	<entry label="OpenFlat">Add a not-stereo view/video</entry>
+	<entry label="OpenAnaglyph">Add an anaglyph view/video:</entry>
 	<entry label="OpenAudio">Add a sound (music, voice...)</entry>
 	<entry label="Audio">Sound</entry>
 	<entry label="WorkCopyProcessing">3De is preparing a working copy of the file\nwith smaller size and frame rate</entry>
@@ -533,6 +536,7 @@
 	<entry label="Name">Name</entry>
 	<entry label="Occurrences">Occurrences in the time lines</entry>
 	<entry label="NoOccurrence">Not used in the time lines</entry>
+	<entry label="OccMontage">Montage</entry>
 	<entry label="OccLine">Line</entry>
 	<entry label="OccStart">Start</entry>
 	<entry label="OccEnd">End</entry>
@@ -632,6 +636,7 @@
 	<entry label="MoveClipUp">Move to above timeline</entry>
 	<entry label="MoveClipDown">Move to below timeline</entry>
 	<entry label="DuplicateClipUp">Duplicate to above timeline</entry>
+	<entry label="ClipToNewMontage">Put the clip into a new montage</entry>
 	<entry label="TwinToAudioClip">Create a twin audio</entry>
 	<entry label="StartTime">Start</entry>
 	<entry label="ShiftTime">Shift</entry>
@@ -700,17 +705,32 @@
 	<entry label="ProgressCount">%DONE% / %TOTAL% images (%PERCENT%%)</entry>
 	<entry label="ProgressNote">Meanwhile the monitor shows the holes filled by interpolation; the images done show the AI result. The editing can go on.</entry>
 	<entry label="Hide">Hide</entry>
+	<entry label="Restoring">Reading the images precomputed in a previous session: %DONE% / %TOTAL% (%PERCENT%%)</entry>
+	<entry label="RestoringNote">They are saved with the project as videos; the computation of the missing images starts once they are read.</entry>
+	<entry label="Recompute">Recompute the disocclusion</entry>
+	<entry label="RecomputeAsk">The images of the AI hole filling already computed for this clip are removed and computed again. Continue?</entry>
+	<entry label="StateUpToDate">Up to date (%TOTAL% images)</entry>
+	<entry label="StateStale">Not up to date: %LEFT% of %TOTAL% images to compute</entry>
+	<entry label="StateStopped">(computation interrupted)</entry>
+	<entry label="Interrupt">Interrupt</entry>
+	<entry label="Resume">Resume the computation</entry>
+	<entry label="Later">Later</entry>
+	<entry label="Interrupted">Computation interrupted: the images done are kept with the project.</entry>
+	<entry label="Follow">Show the images under construction in the monitor</entry>
 	<entry label="AllClips">These settings will apply to the %N% clips concerned.</entry>
 	<entry label="NoGpu">This machine cannot run the model on a graphics card (Apple Silicon or NVIDIA with %GB% GB free): on the processor it would be far too slow. The holes stay filled by interpolation.</entry>
 	<entry label="OpenNoGpu">This project fills the holes of %N% clip(s) with AI, but this machine cannot run the model on a graphics card (Apple Silicon or NVIDIA with %GB% GB free). The holes stay filled by interpolation; the settings of the clips are kept in the project.</entry>
 	<entry label="OpenUnsupported">This project fills the holes of %N% clip(s) with AI, but AI hole filling is not available on this platform. The holes stay filled by interpolation; the settings of the clips are kept in the project.</entry>
-	<entry label="OpenMissing">This project fills the holes of %N% clip(s) with AI, but the precomputed images are not available (they are only kept during a session). Start their precomputation now, or change the configuration (the same for all these clips)?</entry>
+	<entry label="OpenMissing">This project fills the holes of %N% clip(s) with AI, but some of its precomputed images are missing (never computed, interrupted, or removed from the WorkCache folder of the project). Start their precomputation now, or change the configuration (the same for all these clips)?</entry>
 	<entry label="OpenStart">Start the precomputations</entry>
+	<entry label="HolesShownOff">The holes of this clip are filled again, but some of its precomputed images are missing or out of date. Start their precomputation now?</entry>
 	<entry label="OpenConfigure">Reconfigure...</entry>
 </EntrySet>
 <EntrySet label="DepthmapStereo">
 	<entry label="BlackIsFront">Black is front</entry>
 	<entry label="Depthmap">Depth map</entry>
+	<entry label="Recolor">Recolorize</entry>
+	<entry label="RecolorFill">Fill the holes with the recolorization</entry>
 </EntrySet>
 <EntrySet label="SaveProject">
 	<entry label="Title">Save the project</entry>
@@ -1678,6 +1698,10 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="Cancel">Cancel</entry>
 	<entry label="Starting">Starting...</entry>
 	<entry label="Canceling">Canceling...</entry>
+	<entry label="Interrupt">Interrupt</entry>
+	<entry label="Resume">Resume the computation</entry>
+	<entry label="Interrupted">Computation of the depth map interrupted at %P% %: the frames done are kept, the button "Resume the computation" of the processor finishes it.</entry>
+	<entry label="OfferResume">The computation of the depth maps of %N% clip(s) was interrupted:%LIST%\nResume it now (one after the other)?</entry>
 	<entry label="DownloadingRuntime">Downloading ONNX Runtime:</entry>
 	<entry label="DownloadingModel">Downloading the %MODEL% model:</entry>
 	<entry label="LoadingModel">Loading the %MODEL% model...</entry>
@@ -1698,7 +1722,12 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="OnCpuNoGpu">Running on the CPU: no usable GPU</entry>
 	<entry label="OnCpuError">Running on the CPU: the GPU failed</entry>
 	<entry label="Show">Show the depth map</entry>
+	<entry label="ShowHoles">Show the holes</entry>
 	<entry label="Computed">(computed)</entry>
+	<entry label="StateDone">Depth maps computed</entry>
+	<entry label="StatePartial">Partly computed (%P% %): interrupted</entry>
+	<entry label="StateNone">Not computed</entry>
+	<entry label="StateNone2D">Not computed: the right view of the media is the depth map</entry>
 	<entry label="Replace">A depth map already exists next to the media: it will be replaced.</entry>
 	<entry label="NvidiaNote">NVIDIA graphics card found: the GPU version of the engine is used. It needs CUDA 12 and cuDNN 9 installed, else the computation runs on the CPU.</entry>
 	<entry label="OnCpuCuda">Running on the CPU: the NVIDIA card needs CUDA 12 and cuDNN 9 installed</entry>
@@ -1976,10 +2005,16 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="SoundMute">Mute</entry>
 	<entry label="DeleteLineTitle">Delete the line</entry>
 	<entry label="DeleteLineNotEmpty">The line %NAME% holds %N% clip(s). Delete them with the line?</entry>
+	<entry label="ToNewMontage">Put the selected clips into a new montage</entry>
 </EntrySet>
 <EntrySet label="Renderer">
 	<entry label="ProcessingRes">Rendering quality</entry>
 	<entry label="OutputRes">Video quality</entry>
+	<entry label="ProcessingHdr">Processing dynamic range</entry>
+	<entry label="OutputHdr">Video dynamic range</entry>
+	<entry label="OutputHdr_SDR">SDR (H.264 8 bits)</entry>
+	<entry label="OutputHdr_HLG">HDR HLG (HEVC 10 bits)</entry>
+	<entry label="OutputHdr_PQ">HDR10 PQ (HEVC 10 bits)</entry>
 	<entry label="OutputFPS">Video FPS</entry>
 	<entry label="FFmpegVideoOpts">Add FFmpeg video parameters (https://ffmpeg.org/ffmpeg.html)</entry>
 	<entry label="FFmpegVideoOptsEx">Example: -b:v 6000k -maxrate:v 9000k -minrate:v 0</entry>
@@ -2046,6 +2081,9 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="Settings">Settings: interface language, render folder, quality of the work, presentation and rendering modes</entry>
 	<entry label="Machine">Evaluation of the machine: what the AI can do here, on the GPU or on the CPU, model by model</entry>
 	<entry label="Render">Render the montage to a video file or an image sequence</entry>
+	<entry label="CopyImage">Copy an illustration to the clipboard: the image of the monitor at the resolution of its settings, the window of the application or the whole screen</entry>
+	<entry label="LineTitle">Title of the line, shown in its head (empty: its name by position, V1, A1...)</entry>
+	<entry label="LineClips">Clips of the line by start: a click puts the time cursor at the start of the clip</entry>
 	<entry label="News">News of 3Denlive (web site)</entry>
 	<entry label="Guide">User guide (web site)</entry>
 	<entry label="WebSite">3Denlive web site</entry>
@@ -2120,6 +2158,7 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="MonitorZoomIn">Zoom in the preview</entry>
 	<entry label="MonitorZoomOut">Zoom out the preview</entry>
 	<entry label="MonitorZoomFit">Fit the preview to the window</entry>
+	<entry label="MonitorZoomPercent">Zoom of the preview</entry>
 
 	<entry label="AddVideoLine">Add a video time line</entry>
 	<entry label="AddAudioLine">Add a sound time line</entry>
@@ -2132,7 +2171,7 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="LineUp">Move this whole line up (with its clips)</entry>
 	<entry label="LineDown">Move this whole line down (with its clips)</entry>
 	<entry label="LineTrash">Delete this whole line (with its clips)</entry>
-	<entry label="Ruler">Click or drag to move the time cursor</entry>
+	<entry label="Ruler">Click or drag to move the time cursor (a click on the violet text of the AI hole filling precomputation shows its progress window again)</entry>
 
 	<entry label="ProcTitle">Click to show / hide the settings of this processor</entry>
 	<entry label="KeySelect">Adds to the selection the key under the time cursor, or else the nearest one on its left (yellow square). A change of a setting gives the same value to all the selected keys, and the settings show the values of the last selected key</entry>
@@ -2151,9 +2190,13 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="ProcLib_StereoAligner">Align the left and right views (position, size, rotation)</entry>
 	<entry label="ProcLib_ColorAdapter">Adapt the reds and cyans to reduce the ghosting of anaglyphs</entry>
 	<entry label="DepthShow">Show the depth map on the monitor instead of the result (not in the rendering)</entry>
+	<entry label="DepthShowHoles">Leave the holes of the conversion transparent, without any filling (interpolation or AI), on the monitor and in the final rendering</entry>
 	<entry label="Inpaint">Method that fills the holes uncovered behind the foreground, for each precision level (work resolution, full screen, final rendering): interpolation of their edges, or an artificial intelligence (LaMa) precomputed in background or only at the final rendering.</entry>
 	<entry label="InpaintLight">Method that fills the holes uncovered behind the foreground, for each precision level (work resolution, full screen, final rendering): interpolation of their edges, or an artificial intelligence (light_inpaint_v1 of iw3) precomputed in background or only at the final rendering.</entry>
 	<entry label="DepthConvert">Compute the depth map(s) of the clip with an artificial intelligence (Depth Anything V2), into the WorkCache folder of the project</entry>
+	<entry label="DepthResume">Finish the interrupted computation of the depth map, from the last frame done (same model)</entry>
+	<entry label="InpaintRecompute">Remove the images of the AI hole filling of this clip and compute them again from the start</entry>
+	<entry label="InpaintState">State of the precomputation of the AI hole filling of this clip. Click: the progress window (interrupt / resume the computation), also after it was closed.</entry>
 	<entry label="ProcLib_Depthmap">Build a stereo pair from a 2D image and its depth map</entry>
 	<entry label="ProcLib_DepthmapStereo">Change the depth of a stereo pair with a depth map</entry>
 	<entry label="ProcLib_HueSaturation">Change the hue, saturation and brightness</entry>
@@ -2188,6 +2231,8 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="CloseWindow">Close this window</entry>
 	<entry label="RenderProcessingRes">Resolution of the image processing (before encoding)</entry>
 	<entry label="RenderOutputRes">Resolution of the output video</entry>
+	<entry label="RenderProcessingHdr">SDR: images computed in 8 bits. HDR: computed in floating point (more precision, highlights above white kept for an HDR video), slower and more memory</entry>
+	<entry label="RenderOutputHdr">SDR: usual video (H.264 8 bits, played everywhere). HLG: HDR also shown correctly by SDR screens (HEVC 10 bits). PQ (HDR10): HDR of the TVs and streaming (HEVC 10 bits); without an HDR screen it looks dark and dull. Video files only (not image sequences); the anaglyphs stay in 8-bit colors</entry>
 	<entry label="RenderFPS">Frames per second of the output video</entry>
 	<entry label="RenderFFmpegOpts">Extra ffmpeg parameters for the video encoding (optional)</entry>
 	<entry label="RenderOutputFile">Path of the output file, without the format suffix (_P, _X...) added for each format checked. With a pattern like "3De_%04d.png", image sequences are written</entry>
@@ -2203,6 +2248,8 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="OpenP">Image or video with the left view on the left and the right view on the right (MPO files too)</entry>
 	<entry label="OpenLR">Two separate files: first the left view, then the right view</entry>
 	<entry label="OpenFlat">2D image or video, used for both eyes</entry>
+	<entry label="OpenAnaglyph">Anaglyph (one file): each view keeps the color layers of its filter (red / cyan: red on the left, green and blue on the right); the anaglyph mode of the same colors gives back the original image</entry>
+	<entry label="AnaglyphType">Kind of anaglyph: color of the filter of the left eye, then of the right eye</entry>
 	<entry label="OpenAudio">Sound file, placed on a sound time line</entry>
 
 	<entry label="SecureCropLeft">Crop the left border so that the empty areas made by the alignment are not visible</entry>
@@ -2217,10 +2264,13 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="LumaChoice">Luma mask of the transition</entry>
 	<entry label="FrameChoice">Frame image laid over the clip</entry>
 	<entry label="BlackIsFront">Check if the dark areas of the depth map are in the front</entry>
+	<entry label="DepthRecolor">Each view takes the color layers it lacks (an imported anaglyph: red in one view, cyan in the other) from the other view, at the pixel matched with the depth maps. The areas seen by one view only take the colors of the background next to them. The conversion and its hole filling then work on the recolorized views.</entry>
+	<entry label="DepthRecolorFill">Anaglyph converted as it is (Recolorize unchecked): its holes are filled (interpolation or AI) on the recolorized views, which hold the colors of the scene, instead of the red / cyan views; each view then keeps only its own color layers. The imperfections of the recolorization only touch the holes. Only useful for an anaglyph. Off by default.</entry>
 	<entry label="ClipSoundOn">Hear the sound of this clip</entry>
 	<entry label="MoveClipUp">Move this clip to the time line above</entry>
 	<entry label="MoveClipDown">Move this clip to the time line below</entry>
 	<entry label="DuplicateClipUp">Copy this clip to the time line above (copy without sound)</entry>
+	<entry label="ClipToNewMontage">Move this clip (with its linked clips) into a new montage: its final rendering is computed then takes its place here (heavy clips computed apart)</entry>
 	<entry label="UnlinkTwins">Unlink the twin clips: they can then be moved separately</entry>
 	<entry label="TrashClip">Delete this clip from the time line</entry>
 	<entry label="CutAtPos">Cut this clip at the time cursor: its second part becomes a new clip</entry>
@@ -2230,12 +2280,14 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="KeyFrames">Key frames of this processor on the clip duration: click or drag to move the time cursor</entry>
 	<entry label="HScroll">Scroll the time lines (touchpad and tilt wheel work too)</entry>
 	<entry label="MediaName">Name of the media in the media list, the clips and the choices (empty: the file name)</entry>
-	<entry label="MediaOccurrences">Clips of this media in the time lines: a click puts the time cursor at its start</entry>
+	<entry label="MediaOccurrences">Clips of this media in the time lines of all the montages: a click opens the montage and puts the time cursor at its start</entry>
 	<entry label="MediaUsedBy">Medias of the media list that use this one (3D textures...): a click selects that media</entry>
 	<entry label="MediaUses">Medias of the media list used by this one (3D textures...): a click selects that media</entry>
 	<entry label="MediaInProcessors">Processors of the clips that use this media (depth map, mask...): a click selects the clip and opens the processor</entry>
 	<entry label="ClipStart">Go to the start of the selected clip (or of the montage if no clip is selected)</entry>
 	<entry label="ClipEnd">Go to the end of the selected clip (or of the montage if no clip is selected)</entry>
+	<entry label="MontageStart">Go to the start of the montage (or of the library media shown in the monitor)</entry>
+	<entry label="MontageEnd">Go to the end of the montage (or of the library media shown in the monitor)</entry>
 	<entry label="StepSeconds">Step in seconds of the double arrows</entry>
 	<entry label="StepBack">Go back in the montage by the step in seconds</entry>
 	<entry label="StepForward">Go forward in the montage by the step in seconds</entry>
@@ -2367,6 +2419,14 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="Histogram_Mode">Red, green and blue superposed, or the luminance. Red marks: clipped blacks or whites</entry>
 	<entry label="Waveform_Mode">Luminance, or red, green and blue side by side (parade); lines at 0, 25, 50, 75, 100 %</entry>
 	<entry label="Vectorscope_Mode">x2 enlarges the center, for little saturated images. Squares: colors at 75 %, brown line: skin tones</entry>
+	<entry label="MontageAdd">Add a montage</entry>
+	<entry label="MontageOccurrences">Clips of the rendering of this montage in the time lines of all the montages: a click opens that montage at the start of the clip</entry>
+	<entry label="MontageList">Montages of the project, as the medias of the media list: a click selects a montage (its rendering in the monitor, its properties), a double click or a drag onto a time line includes its rendering in the montage edited. The pencil opens a montage in the time lines; a click on Master opens it</entry>
+	<entry label="MontageTrash">Delete this montage (the montages that include it keep its last rendering as an ordinary video)</entry>
+	<entry label="MontageEdit">Open this montage in the time lines to edit it</entry>
+	<entry label="MontageName">Name of the montage, shown in the montage library and on the clips of its rendering</entry>
+	<entry label="MontageRender">Compute the final rendering of this montage, used by the montages that include it</entry>
+	<entry label="MontageGoTo">Select this montage</entry>
 </EntrySet>
 <EntrySet label="Machine">
 	<entry label="Title">Evaluation of the machine</entry>
@@ -2400,4 +2460,106 @@ Compute the depth maps of both views from the clip (artificial intelligence, Dep
 	<entry label="TipNo">Not possible: this model needs a GPU with %NEED% GB of memory (%CAP% GB on this machine).</entry>
 	<entry label="TipNa">Not available on this system.</entry>
 	<entry label="Legend">Green GPU: fast. Red CPU: possible, but much slower. Red No: not possible without a large enough GPU. Gray: not available on this system. Evaluated on the total memory of the GPU: other applications using it may make a model run on the CPU at the time of the computation.</entry>
+</EntrySet>
+<EntrySet label="Montage">
+	<entry label="Occurrences">Occurrences in the montages</entry>
+	<entry label="NoOccurrence">Its rendering is used in no montage</entry>
+	<entry label="Title">Montages</entry>
+	<entry label="NewName">New montage</entry>
+	<entry label="Editing">(edited)</entry>
+	<entry label="EditButton">Edit in the time lines</entry>
+	<entry label="MainState">Whole project</entry>
+	<entry label="StateNone">No rendering</entry>
+	<entry label="StateStale">Rendering out of date</entry>
+	<entry label="StateOk">Rendering up to date</entry>
+	<entry label="MainNoRender">Main montage: it is never included in another montage</entry>
+	<entry label="PropsTitle">Montage</entry>
+	<entry label="Name">Name</entry>
+	<entry label="Duration">Duration</entry>
+	<entry label="RenderLabel">Rendering</entry>
+	<entry label="RenderNow">Compute the rendering</entry>
+	<entry label="RenderAgain">Compute the rendering again</entry>
+	<entry label="Includes">Includes the montages</entry>
+	<entry label="IncludedIn">Included in the montages</entry>
+	<entry label="NoneListed">None</entry>
+	<entry label="DeleteConfirm">Delete the montage « %s » and its clips?</entry>
+	<entry label="DeleteUsed">It is included in: %l. These montages keep its last rendering as an ordinary video of the library.</entry>
+	<entry label="MainNotIncluded">The main montage (the whole project) cannot be included in another montage.</entry>
+	<entry label="NotItself">A montage cannot be included in itself.</entry>
+	<entry label="Loop">The montage « %s » already includes « %t » (directly or through other montages): including it in « %t » would make a loop (each update of one would ask for one of the other, endlessly). Inclusion refused.</entry>
+	<entry label="Empty">The montage « %s » is empty: nothing to include.</entry>
+	<entry label="WillRender">The final rendering of the montage « %s » must be computed to include it: now, or later (a still image « Montage not computed » takes its place meanwhile)?</entry>
+	<entry label="AlsoRender">The renderings of these montages it includes will be updated first: %l.</entry>
+	<entry label="InsertStale">These renderings are out of date: %l.\n\nYes: compute them again before the inclusion.\nNo: include the outdated version.</entry>
+	<entry label="ExtractAsk">The %n selected clips (with their linked clips) will be moved into a new montage, whose final rendering will be computed now and then take their place here.</entry>
+	<entry label="ExtractAskOne">This clip (with its linked clips) will be moved into a new montage, whose final rendering will be computed now and then take its place here.</entry>
+	<entry label="ExtractNotRendered">The clips are in the montage « %s », but its rendering was not computed: include it when you want (button of its row or drag onto a time line).</entry>
+	<entry label="ExtractPlaceholder">The clips are in the montage « %s », whose rendering was not computed: a still image « Montage not computed » takes their place until it is rendered (its button, or the rendering of the montage that includes it).</entry>
+	<entry label="NotComputed">Montage not computed</entry>
+	<entry label="ComputeNow">Compute</entry>
+	<entry label="ComputeLater">Compute later</entry>
+	<entry label="PlaceholderInfo">The montage « %s » is not computed yet: a still image « Montage not computed » takes its place until it is rendered (its button, or the rendering of the montage that includes it).</entry>
+	<entry label="RenderStale">The renderings of these included montages are out of date: %l.\n\nYes: compute them again first (advised).\nNo: keep the outdated versions for this rendering.\nCancel: do nothing.</entry>
+	<entry label="UpdateAsk">The montage « %t » includes montages changed since their rendering: %l.\n\nUpdate their renderings now?</entry>
+	<entry label="RenderTitle">Rendering of the montages</entry>
+	<entry label="Rendering">Rendering of the montage « %s »...</entry>
+	<entry label="RenderProgress">Rendering of the montage « %s »: image %DONE% / %TOTAL%</entry>
+	<entry label="RenderError">The rendering of the montage failed:</entry>
+</EntrySet>
+<EntrySet label="MediaInfo">
+	<entry label="File">File</entry>
+	<entry label="Tags">Tags</entry>
+	<entry label="Container">Container</entry>
+	<entry label="FileSize">File size</entry>
+	<entry label="Duration">Duration</entry>
+	<entry label="Bitrate">Bit rate</entry>
+	<entry label="Default">(default)</entry>
+	<entry label="Video">Video</entry>
+	<entry label="Audio">Audio</entry>
+	<entry label="Subtitle">Subtitles</entry>
+	<entry label="Codec">Codec</entry>
+	<entry label="Language">Language</entry>
+	<entry label="Resolution">Resolution</entry>
+	<entry label="Aspect">Display aspect ratio</entry>
+	<entry label="Fps">Frames per second</entry>
+	<entry label="PixFmt">Pixel format</entry>
+	<entry label="BitDepth">Bit depth</entry>
+	<entry label="Range">Range</entry>
+	<entry label="RangeTv">Limited (TV)</entry>
+	<entry label="RangePc">Full (PC)</entry>
+	<entry label="Colors">Colors (matrix / primaries / transfer)</entry>
+	<entry label="Dynamic">Dynamic range</entry>
+	<entry label="SampleRate">Sample rate</entry>
+	<entry label="Channels">Channels</entry>
+	<entry label="SampleFormat">Sample format</entry>
+	<entry label="Scan">Scan</entry>
+	<entry label="Progressive">Progressive</entry>
+	<entry label="Interlaced">Interlaced</entry>
+</EntrySet>
+<EntrySet label="Line">
+	<entry label="PropsTitle">Video time line</entry>
+	<entry label="PropsTitleAudio">Sound time line</entry>
+	<entry label="Title">Title:</entry>
+	<entry label="Info">Contents:</entry>
+	<entry label="InfoText">%N% clips, end at %END%</entry>
+	<entry label="Inactive">inactive</entry>
+	<entry label="Clips">Clips of the line</entry>
+	<entry label="NoClip">No clip on this line</entry>
+	<entry label="ClipCol">Clip</entry>
+</EntrySet>
+<EntrySet label="Copy">
+	<entry label="Monitor">Copy the monitor (%RES% lines)</entry>
+	<entry label="Window">Copy the window of the application</entry>
+	<entry label="Screen">Copy the whole screen</entry>
+	<entry label="Failed">The copy to the clipboard failed:</entry>
+	<entry label="MonitorEmpty">Nothing in the monitor to copy</entry>
+</EntrySet>
+<EntrySet label="Anaglyph">
+	<entry label="Type_redCyan">Red / cyan</entry>
+	<entry label="Type_cyanRed">Cyan / red</entry>
+	<entry label="Type_greenMagenta">Green / magenta</entry>
+	<entry label="Type_magentaGreen">Magenta / green</entry>
+	<entry label="Type_amberBlue">Amber / blue (ColorCode 3-D)</entry>
+	<entry label="Type_redBlue">Red / blue</entry>
+	<entry label="Type_redGreen">Red / green</entry>
 </EntrySet>

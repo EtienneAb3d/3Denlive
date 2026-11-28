@@ -102,6 +102,11 @@ public class VideoFrameGUI {
 		Process aP = null;
 		try {
 			String aVf = crop == null ? "" : crop;
+			//HDR video: tone mapped to SDR
+			String aSdr = Ffmpeg.sdrFilter(path);
+			if(aSdr != null) {
+				aVf = aSdr+(aVf.isEmpty() ? "" : ","+aVf);
+			}
 			if(aMaxW > 0) {
 				aVf += (aVf.isEmpty() ? "" : ",")+"scale='min("+aMaxW+",iw)':-2";
 			}

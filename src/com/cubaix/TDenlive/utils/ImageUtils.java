@@ -35,14 +35,14 @@ public class ImageUtils {
 		}
 		BufferedImage aBI = ImageIO.read(new File(aPath));
 		if(aBI == null) {
-			//A format ImageIO does not read (WebP...): decoded by ffmpeg
+			//A format ImageIO does not read (WebP, HEIC / HEIF, AVIF...): decoded by ffmpeg (HEIC tile grids included)
 			aBI = loadWithFfmpeg(aPath);
 		}
 		return aBI;
 	}
 
 	/**
-	 * First image of aPath decoded by ffmpeg (formats unknown to ImageIO: WebP, animated WebP...), as an RGBA PNG
+	 * First image of aPath decoded by ffmpeg (formats unknown to ImageIO: WebP, animated WebP, HEIC / HEIF, AVIF...), as an RGBA PNG
 	 * through a pipe; null if ffmpeg can't read it
 	 */
 	static BufferedImage loadWithFfmpeg(String aPath) throws Exception {
@@ -89,9 +89,50 @@ public class ImageUtils {
 		BufferedImage aOut = createImage(aRef.getWidth(), aRef.getHeight(), aRef.getRaster().getDataBuffer() instanceof java.awt.image.DataBufferFloat);
 		java.awt.Graphics2D aG = aOut.createGraphics();
 		aG.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		aG.drawImage(aBI, 0, 0, aRef.getWidth(), aRef.getHeight(), null);
+		if(FloatDraw.isFloat(aBI)) {
+			FloatDraw.draw(aG, aOut, aBI, 0, 0, aRef.getWidth(), aRef.getHeight());
+		}
+		else {
+			aG.drawImage(aBI, 0, 0, aRef.getWidth(), aRef.getHeight(), null);
+		}
 		aG.dispose();
 		return aOut;
+	}
+
+	/**
+	 * The image shows nothing for a thumbnail: (nearly) black, uniform or transparent (32 x 32 samples, the
+	 * transparent parts counted as black): the start of a video or of a montage fading in from black
+	 */
+	static public final boolean isEmptyImage(BufferedImage aBI) {
+		if(aBI == null) {
+			return true;
+		}
+		int aW = aBI.getWidth(), aH = aBI.getHeight();
+		if(aW <= 0 || aH <= 0) {
+			return true;
+		}
+		final int N = 32;
+		double aSum = 0, aSum2 = 0, aMax = 0;
+		int aN = 0;
+		boolean aFloat = aBI.getRaster().getDataBuffer() instanceof DataBufferFloat;
+		BufferedImage aI = aFloat ? FloatDraw.clamped(aBI) : aBI;
+		for(int j = 0;j < N;j++) {
+			int y = (int)((j+0.5)*aH/N);
+			for(int i = 0;i < N;i++) {
+				int x = (int)((i+0.5)*aW/N);
+				int c = aI.getRGB(x, y);
+				double a = (aI.getColorModel().hasAlpha() ? (c >>> 24) : 255)/255.0;
+				double l = a*(0.299*((c >> 16) & 255)+0.587*((c >> 8) & 255)+0.114*(c & 255));
+				aSum += l;
+				aSum2 += l*l;
+				aMax = Math.max(aMax, l);
+				aN++;
+			}
+		}
+		double aMean = aSum/aN;
+		double aStd = Math.sqrt(Math.max(0, aSum2/aN-aMean*aMean));
+		//Black (even with some noise or a faint start of a fade), or one color only
+		return aMax < 40 || (aMean < 24 && aStd < 8) || aStd < 2;
 	}
 
 	static public final BufferedImage createImage(int aWidth,int aHeight,boolean aHdr) {
@@ -148,7 +189,13 @@ public class ImageUtils {
 			chessBck(aHdrBI);
 		}
 		
-		g2.drawImage(aBI,0,0,aWidth,aHeight,null);
+		if(FloatDraw.isFloat(aBI)) {
+			//Values above 1 kept (HDR video), else clamped
+			FloatDraw.draw(g2, aHdrBI, aBI, 0, 0, aWidth, aHeight);
+		}
+		else {
+			g2.drawImage(aBI,0,0,aWidth,aHeight,null);
+		}
 		g2.dispose();
 
 		return aHdrBI;
@@ -220,10 +267,11 @@ public class ImageUtils {
 				float aG = aDBF[0][y*aWidth*4+x*4+1];//Green
 				float aB = aDBF[0][y*aWidth*4+x*4+2];//Blue
 				float aA = aDBF[0][y*aWidth*4+x*4+3];//Alpha
-				int aPix = (((int)(aA*255)) & 0xFF) << 24
-						| (((int)(aR*255)) & 0xFF) << 16
-						| (((int)(aG*255)) & 0xFF) << 8
-						| (((int)(aB*255)) & 0xFF)
+				//Clamped: the values above 1 (HDR) would wrap
+				int aPix = FloatDraw.to8(aA) << 24
+						| FloatDraw.to8(aR) << 16
+						| FloatDraw.to8(aG) << 8
+						| FloatDraw.to8(aB)
 						;
 				aID.setPixel(x, y, aPix);
 			}

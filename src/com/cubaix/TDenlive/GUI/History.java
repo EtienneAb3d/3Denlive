@@ -72,6 +72,8 @@ public class History {
 		Point timeLinesOrigin = null;
 		double pixPerMS = 0;
 		Point mediaListOrigin = null;
+		//Montage shown (see Montage)
+		long montageUID = 0;
 	}
 
 	/**
@@ -280,23 +282,34 @@ public class History {
 	static String mediaXml(Media aM) throws Exception {
 		StringBuffer aSB = new StringBuffer();
 		aM.saveProject(aSB);
-		return aSB.toString();
+		return withoutStale(aSB.toString());
 	}
 
+	/**
+	 * Without the out of date flags of the renderings of the montages: computed from the montages
+	 * (Montage.refreshStates()), they are not a change of the user
+	 */
+	static String withoutStale(String aXml) {
+		return aXml.replaceAll("<montageStale>[^<]*</montageStale>", "");
+	}
+
+	//The clips of all the montages
 	Vector<Clip> allClips() {
 		Vector<Clip> aClips = new Vector<Clip>();
-		for(VideoTimeLine aTL : new Vector<VideoTimeLine>(tde.timeLineStack.videoTimeLineStack)) {
-			aClips.addAll(aTL.clipList);
-		}
-		for(AudioTimeLine aTL : new Vector<AudioTimeLine>(tde.timeLineStack.audioTimeLineStack)) {
-			aClips.addAll(aTL.clipList);
+		for(com.cubaix.TDenlive.medias.TimeLineStack aS : tde.allStacks()) {
+			for(VideoTimeLine aTL : new Vector<VideoTimeLine>(aS.videoTimeLineStack)) {
+				aClips.addAll(aTL.clipList);
+			}
+			for(AudioTimeLine aTL : new Vector<AudioTimeLine>(aS.audioTimeLineStack)) {
+				aClips.addAll(aTL.clipList);
+			}
 		}
 		return aClips;
 	}
 
 	State capture() throws Exception {
 		State aS = new State();
-		aS.xml = tde.projectXml();
+		aS.xml = withoutStale(tde.projectXml());
 		Vector<Media> aMs = new Vector<Media>(tde.mediaList.mediaList);
 		aS.medias = aMs.toArray(new Media[0]);
 		aS.mediaXmls = new String[aS.medias.length];
@@ -349,6 +362,17 @@ public class History {
 			//New vectors: the threads still drawing the old ones are not disturbed
 			tde.mediaList.mediaList = aMedias;
 			Vector<XmlObject> aOs = new XmlMinimalParser().parseXml(aS.xml);
+			//The montages: the main one, then the others (the same objects for the same UIDs)
+			com.cubaix.TDenlive.medias.Montage aMain = tde.mainMontage();
+			com.cubaix.TDenlive.medias.Montage aActive = tde.montage;
+			java.util.HashMap<Long,com.cubaix.TDenlive.medias.Montage> aOldMs = new java.util.HashMap<Long,com.cubaix.TDenlive.medias.Montage>();
+			for(com.cubaix.TDenlive.medias.Montage aM : tde.montages) {
+				aOldMs.put(aM.UID, aM);
+			}
+			Vector<com.cubaix.TDenlive.medias.Montage> aNewMs = new Vector<com.cubaix.TDenlive.medias.Montage>();
+			aNewMs.add(aMain);
+			aMain.name = null;
+			tde.setActiveMontage(aMain);
 			tde.timeLineStack.videoTimeLineStack = new Vector<VideoTimeLine>();
 			tde.timeLineStack.audioTimeLineStack = new Vector<AudioTimeLine>();
 			for(int o = 0;o < aOs.size();o++) {
@@ -365,7 +389,20 @@ public class History {
 				else if("TimeLineList".equalsIgnoreCase(aT.tagName)) {
 					o = tde.timeLineStack.openProject(aOs, o);
 				}
+				else if("masterName".equalsIgnoreCase(aT.tagName)) {
+					o = com.cubaix.TDenlive.medias.Montage.openMasterName(tde, aOs, o);
+				}
+				else if("Montage".equalsIgnoreCase(aT.tagName)) {
+					com.cubaix.TDenlive.medias.Montage[] aM = new com.cubaix.TDenlive.medias.Montage[1];
+					o = com.cubaix.TDenlive.medias.Montage.openProject(tde, aOs, o, aM, aUID -> aOldMs.get(aUID));
+					if(aM[0] != null && !aNewMs.contains(aM[0])) {
+						aNewMs.add(aM[0]);
+					}
+				}
 			}
+			tde.montages = aNewMs;
+			tde.setActiveMontage(aNewMs.contains(aActive) ? aActive : aMain);
+			com.cubaix.TDenlive.medias.Montage.refreshStates(tde);
 			for(Clip aC : allClips()) {
 				String aFlags = aS.actives.get(aC.UID);
 				Vector<Processor> aPs = aC.getProcessors();
@@ -392,6 +429,12 @@ public class History {
 		lastView = captureView();
 		updateButtons();
 		aGUI.mediaListGUI.redraw();
+		if(aGUI.montageListGUI != null) {
+			aGUI.montageListGUI.redraw();
+		}
+		if(aGUI.montagePropsGUI != null) {
+			aGUI.montagePropsGUI.refresh();
+		}
 		aGUI.timeLinesGUI.redraw();
 		if(aGUI.monitorGUI != null) {
 			aGUI.monitorGUI.redraw();
@@ -421,6 +464,7 @@ public class History {
 		ViewState aV = new ViewState();
 		TDeGUI aGUI = tde.gui;
 		try {
+			aV.montageUID = tde.montage != null ? tde.montage.UID : 0;
 			MonitorGUI aMon = aGUI.monitorGUI;
 			if(aMon != null && aMon.canvas != null && !aMon.canvas.isDisposed()) {
 				aV.monitorShown = true;
@@ -501,6 +545,17 @@ public class History {
 			return;
 		}
 		TDeGUI aGUI = tde.gui;
+		//Montage shown
+		com.cubaix.TDenlive.medias.Montage aVM = tde.montageByUID(aV.montageUID);
+		if(aVM != null && aVM != tde.montage) {
+			if(aGUI.timeLinesGUI != null && tde.montage != null) {
+				tde.montage.timeLinesOrigin = new Point(aGUI.timeLinesGUI.origin.x, aGUI.timeLinesGUI.origin.y);
+			}
+			tde.setActiveMontage(aVM);
+			if(aGUI.timeLinesGUI != null) {
+				aGUI.timeLinesGUI.showZoom();
+			}
+		}
 		//Selection
 		tde.selected.medias.clear();
 		for(Media aM : tde.mediaList.mediaList) {

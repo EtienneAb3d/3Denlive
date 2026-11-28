@@ -251,13 +251,35 @@ public abstract class Media extends Drawable {
 			aSB.append("\n");
 		}
 		catch(com.drew.imaging.ImageProcessingException e) {
-			//A format without EXIF / XMP support (WebM, MKV...): no metadata, not an error
+			//A format without EXIF / XMP support (WebM, MKV...): its characteristics below only
 			System.out.println("No metadata for "+aFile.getName()+": "+e.getMessage());
 		}
 		catch(Throwable t) {
 			t.printStackTrace(System.err);
 		}
+		addStreamInfo(aSB, aPath);
 		metaData = aSB.toString();
+	}
+
+	/**
+	 * Characteristics of a video or sound file given by ffmpeg (codec, resolution, frame rate, HDR, sound, tags...),
+	 * whatever its format: the reader of the metadata knows neither WebM / MKV nor the codecs
+	 */
+	void addStreamInfo(StringBuffer aSB, String aPath) {
+		try {
+			String aLow = aPath == null ? "" : aPath.toLowerCase();
+			if(!aLow.matches(MediaList.VIDEO_FILE_RE) && !aLow.matches(".*[.](mp3|wav|wave|ogg|oga|opus|flac|aac|m4a|wma|aif|aiff|ac3|mka)")) {
+				return;
+			}
+			String aInfo = com.cubaix.TDenlive.ffmpeg.MediaInfo.describe(aPath,
+					k -> tde.gui != null && tde.gui.lngs != null ? tde.gui.lngs.get(k) : k, tde.config.lng);
+			if(!aInfo.isEmpty()) {
+				aSB.append(aInfo).append("\n");
+			}
+		}
+		catch(Throwable t) {
+			t.printStackTrace(System.err);
+		}
 	}
 
 	public BufferedImage getThumbAwt() {

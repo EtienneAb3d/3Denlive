@@ -53,6 +53,10 @@ public class TDeGUI {
 
 	static public final int MULTIPROPSPANEL_PROPS = 0;
 	static public final int MULTIPROPSPANEL_PROCESSORS = 1;
+	//Properties of the active montage (name, rendering, inclusions)
+	static public final int MULTIPROPSPANEL_MONTAGE = 2;
+	//Properties of a time line (click on its head)
+	static public final int MULTIPROPSPANEL_LINE = 3;
 	
 	TDenlive tde = null;
 	
@@ -72,6 +76,8 @@ public class TDeGUI {
 	public Composite toolBar = null;	
 	public MediaListControlGUI mediaListControlGUI = null;
 	public MediaListGUI mediaListGUI = null;
+	//Library of the montages, below the media list
+	public MontageListGUI montageListGUI = null;
 	
 	public CompositePanel multiMonitorPanel = null;
 	public WebBrowserGUI browserGUI = null;
@@ -83,6 +89,8 @@ public class TDeGUI {
 	public CompositePanel multiPropsPanel = null;
 	public MediaPropsGUI propsGUI = null;
 	public ProcessorsGUI processorGUI = null;
+	public MontagePropsGUI montagePropsGUI = null;
+	public LinePropsGUI linePropsGUI = null;
 	
 	public ProcessorLibGUI processorLibGUI = null;
 	
@@ -91,6 +99,8 @@ public class TDeGUI {
 	//Main panels, horizontal (lists, monitor, properties) and vertical (top, timelines)
 	SashForm sashFormH = null;
 	SashForm sashFormV = null;
+	//Left column: media list (top), montages (bottom)
+	SashForm sashFormLeft = null;
 	
 	Cursor waitCursor = null;
 
@@ -104,6 +114,10 @@ public class TDeGUI {
 	}
 	
 	void openProject() {
+		//The project in progress first
+		if(!confirmSave("Generic.SaveBeforeOpen")) {
+			return;
+		}
 		FileDialog aFD = new FileDialog (shell, SWT.OPEN);
 		String [] filterNames = new String [] {"3De projects"};
 		String [] filterExtensions = new String [] {"*.3De"};
@@ -140,6 +154,8 @@ public class TDeGUI {
 					display.syncExec(() -> history.reset());
 					display.asyncExec(() -> {
 						InpaintGUI.afterOpen(tde);
+						//The depth maps whose computation was interrupted
+						DepthmapConvertGUI.offerResume(tde);
 						//After its question (modal): the 3D scenes not computed here
 						SceneConvertGUI.offerMissing(tde);
 					});
@@ -332,21 +348,30 @@ public class TDeGUI {
 		if(exitConfirmed) {
 			return true;
 		}
-		if(tde.isModified()) {
-			MessageBox aMB = new MessageBox(shell, SWT.ICON_WARNING|SWT.YES|SWT.NO|SWT.CANCEL);
-			aMB.setText("3Denlive");
-			String aName = tde.projectName == null ? lngs.get("Generic.Untitled") : tde.projectName;
-			aMB.setMessage(aName+"\n"+lngs.get("Generic.SaveBeforeQuit"));
-			int aAnswer = aMB.open();
-			if(aAnswer == SWT.CANCEL) {
-				return false;
-			}
-			if(aAnswer == SWT.YES && !saveProject(false)) {
-				return false;
-			}
+		if(!confirmSave("Generic.SaveBeforeQuit")) {
+			return false;
 		}
 		exitConfirmed = true;
 		return true;
+	}
+
+	/**
+	 * If the project was modified since its last opening or saving, asks (message aMsgKey) to save it first: false
+	 * if the user cancels (or the saving fails)
+	 */
+	public boolean confirmSave(String aMsgKey) {
+		if(!tde.isModified()) {
+			return true;
+		}
+		MessageBox aMB = new MessageBox(shell, SWT.ICON_WARNING|SWT.YES|SWT.NO|SWT.CANCEL);
+		aMB.setText("3Denlive");
+		String aName = tde.projectName == null ? lngs.get("Generic.Untitled") : tde.projectName;
+		aMB.setMessage(aName+"\n"+lngs.get(aMsgKey));
+		int aAnswer = aMB.open();
+		if(aAnswer == SWT.CANCEL) {
+			return false;
+		}
+		return aAnswer != SWT.YES || saveProject(false);
 	}
 
 	private void createGUI() {
@@ -363,6 +388,7 @@ public class TDeGUI {
 		frames = new Frames(tde);
 		history = new History(tde);
 		installHoverFrames();
+		installDialogsInFront();
 				
 		shell = new Shell(display,SWT.SHELL_TRIM);
 		updateTitle();
@@ -418,6 +444,13 @@ public class TDeGUI {
 		}
 		String aName = tde.projectName == null ? lngs.get("Generic.Untitled") : tde.projectName.replaceAll("(?i)([.]3de)+$", "");
 		shell.setText("3Denlive "+tde.TDeVersion+" ["+aName+"]");
+		//The main montage is named after the project
+		if(montageListGUI != null) {
+			montageListGUI.redraw();
+		}
+		if(montagePropsGUI != null) {
+			montagePropsGUI.refresh();
+		}
 	}
 
 	public void setLanguage(String aLng) {
@@ -469,6 +502,11 @@ public class TDeGUI {
 		}
 		int[] aWeightsH = sashFormH.getWeights();
 		int[] aWeightsV = sashFormV.getWeights();
+		int[] aWeightsLeft = sashFormLeft != null && !sashFormLeft.isDisposed() ? sashFormLeft.getWeights() : null;
+		boolean aMontagePanel = montagePropsGUI != null && !montagePropsGUI.container.isDisposed();
+		com.cubaix.TDenlive.medias.Montage aShownMontage = aMontagePanel ? montagePropsGUI.shown : null;
+		com.cubaix.TDenlive.medias.Montage aSelMontage = montageListGUI != null ? montageListGUI.selected : null;
+		Point aMontageListOrigin = montageListGUI != null ? new Point(montageListGUI.origin.x, montageListGUI.origin.y) : null;
 		MonitorGUI aOldMonitor = monitorGUI;
 		MonitorControlGUI aOldMonitorControl = monitorControlGUI;
 		//Left or right eye only: colored glasses button
@@ -486,6 +524,8 @@ public class TDeGUI {
 			toolBar = null;
 			mediaListControlGUI = null;
 			mediaListGUI = null;
+			montageListGUI = null;
+			montagePropsGUI = null;
 			multiMonitorPanel = null;
 			browserGUI = null;
 			monitorControlGUI = null;
@@ -500,6 +540,9 @@ public class TDeGUI {
 			createContents();
 			sashFormH.setWeights(aWeightsH);
 			sashFormV.setWeights(aWeightsV);
+			if(aWeightsLeft != null) {
+				sashFormLeft.setWeights(aWeightsLeft);
+			}
 
 			if(aOldMonitor != null) {
 				setMultiMonitorPanel(MULTIMONITORPANEL_MONITOR);
@@ -521,8 +564,17 @@ public class TDeGUI {
 				setMultiPropsPanel(MULTIPROPSPANEL_PROCESSORS);
 				processorGUI.setProcessors(aOldProcessors);
 			}
+			else if(aMontagePanel) {
+				setMultiPropsPanel(MULTIPROPSPANEL_MONTAGE);
+				montagePropsGUI.setMontage(aShownMontage);
+			}
 			else if(aOldPropsMedia != null) {
 				propsGUI.setMedia(aOldPropsMedia);
+			}
+			montageListGUI.selected = aSelMontage;
+			if(aMontageListOrigin != null) {
+				montageListGUI.origin.x = aMontageListOrigin.x;
+				montageListGUI.origin.y = aMontageListOrigin.y;
 			}
 			timeLinesGUI.origin.x = aTimeLinesOrigin.x;
 			timeLinesGUI.origin.y = aTimeLinesOrigin.y;
@@ -542,6 +594,127 @@ public class TDeGUI {
 	
 	public void setWaitCursor(boolean aWaitOn) {
 		setWaitCursor(aWaitOn, shell);
+	}
+
+	/**
+	 * Shows aM: its time lines, in the monitor, and its properties panel. aOffer: proposes to make again the
+	 * renderings of the montages it includes that are out of date (MontageRenderGUI.offerUpdates())
+	 */
+	/** The montages, the one edited first */
+	public static java.util.List<com.cubaix.TDenlive.medias.Montage> montagesEditedFirst(TDenlive aTDe) {
+		java.util.List<com.cubaix.TDenlive.medias.Montage> aMs = new java.util.ArrayList<com.cubaix.TDenlive.medias.Montage>();
+		if(aTDe.montage != null) {
+			aMs.add(aTDe.montage);
+		}
+		for(com.cubaix.TDenlive.medias.Montage aM : aTDe.montages) {
+			if(aM != aTDe.montage) {
+				aMs.add(aM);
+			}
+		}
+		return aMs;
+	}
+
+	/**
+	 * Clips of aMedia in the time lines of all the montages: {montage, clip}, the montage edited first, then by
+	 * montage, by start
+	 */
+	public static java.util.List<Object[]> occurrencesOf(TDenlive aTDe, com.cubaix.TDenlive.medias.Media aMedia) {
+		java.util.List<Object[]> aL = new java.util.ArrayList<Object[]>();
+		if(aMedia == null) {
+			return aL;
+		}
+		for(com.cubaix.TDenlive.medias.Montage aM : montagesEditedFirst(aTDe)) {
+			java.util.Vector<com.cubaix.TDenlive.medias.Clip> aClips = aM.stack.clipsOf(aMedia);
+			aClips.sort((aA, aB) -> Long.compare(aA.getStartTimeMS(), aB.getStartTimeMS()));
+			for(com.cubaix.TDenlive.medias.Clip aC : aClips) {
+				aL.add(new Object[] {aM, aC});
+			}
+		}
+		return aL;
+	}
+
+	/**
+	 * The montage aM (null: the one edited) edited in the time lines if not yet (its panel shown), then the time
+	 * cursor at the start of aClip, the montage in the monitor, its line scrolled into view
+	 */
+	public void goToClip(com.cubaix.TDenlive.medias.Montage aM, com.cubaix.TDenlive.medias.Clip aClip) {
+		if(aM != null && aM != tde.montage) {
+			if(MontageRenderGUI.isRunning()) {
+				return;
+			}
+			showMontage(aM, false);
+		}
+		com.cubaix.TDenlive.medias.TimeLineStack aTLS = tde.timeLineStack;
+		if(aTLS == null) {
+			return;
+		}
+		long aT = aClip.getStartTimeMS();
+		//A play in progress paused first (its thread would set the time again)
+		PlayerControlGUI.pauseForEdit(tde);
+		aTLS.setRequestedTimePosMS(aT);
+		if(monitorGUI != null) {
+			monitorGUI.setMedia(aTLS);
+		}
+		if(playerControlGUI != null) {
+			playerControlGUI.showClock(aT);
+		}
+		timeLinesGUI.showLine(aTLS.getLineOf(aClip));
+		timeLinesGUI.redraw();
+		if(monitorGUI != null) {
+			monitorGUI.redraw();
+		}
+		if(monitorRulerGUI != null) {
+			monitorRulerGUI.redraw();
+		}
+	}
+
+	public void showMontage(com.cubaix.TDenlive.medias.Montage aM, boolean aOffer) {
+		if(aM == null || !tde.montages.contains(aM)) {
+			return;
+		}
+		if(aM != tde.montage) {
+			if(playerControlGUI != null && (playerControlGUI.playing || playerControlGUI.paused)) {
+				playerControlGUI.setPlaying(false);
+			}
+			if(timeLinesGUI != null && tde.montage != null) {
+				tde.montage.timeLinesOrigin = new Point(timeLinesGUI.origin.x, timeLinesGUI.origin.y);
+			}
+			tde.timeLineStack.clearDropPreview();
+			tde.timeLineStack.clearSelection();
+			tde.setActiveMontage(aM);
+			tde.timeLineStack.clearSelection();
+			if(timeLinesGUI != null) {
+				timeLinesGUI.origin.x = aM.timeLinesOrigin != null ? aM.timeLinesOrigin.x : 0;
+				timeLinesGUI.origin.y = aM.timeLinesOrigin != null ? aM.timeLinesOrigin.y : 0;
+				timeLinesGUI.showZoom();
+				timeLinesGUI.lastFollowedTimeMS = tde.timeLineStack.getRequestedTimePosMS();
+			}
+		}
+		setMultiMonitorPanel(MULTIMONITORPANEL_MONITOR);
+		setMultiPropsPanel(MULTIPROPSPANEL_MONTAGE);
+		if(montageListGUI != null) {
+			montageListGUI.selected = aM;
+		}
+		if(montagePropsGUI != null) {
+			montagePropsGUI.setMontage(aM);
+		}
+		if(monitorGUI != null) {
+			monitorGUI.setMedia(tde.timeLineStack);
+			playerControlGUI.showClock(tde.timeLineStack.getTimePosMS());
+			monitorGUI.redraw();
+		}
+		if(monitorRulerGUI != null) {
+			monitorRulerGUI.redraw();
+		}
+		if(timeLinesGUI != null) {
+			timeLinesGUI.redraw();
+		}
+		if(montageListGUI != null) {
+			montageListGUI.redraw();
+		}
+		if(aOffer) {
+			display.asyncExec(() -> MontageRenderGUI.offerUpdates(tde, aM));
+		}
 	}
 	public void setWaitCursor(boolean aWaitOn,Shell aShell) {
 		//Force main thread to update the cursor
@@ -591,7 +764,7 @@ public class TDeGUI {
 		aTB.heightHint = h(25);
 		toolBar.setLayoutData(aTB);
 		applyColorFont(toolBar);
-		GridLayout aGL = new GridLayout(15, false);
+		GridLayout aGL = new GridLayout(16, false);
 		applyNoMargin(aGL);
 		toolBar.setLayout(aGL);
 
@@ -723,7 +896,8 @@ public class TDeGUI {
 			}
 			@Override
 			public void mouseDown(MouseEvent arg0) {
-				new RendererGUI(tde);
+				//The renderings of the montages it includes made again first if out of date (or kept, asked)
+				MontageRenderGUI.beforeRender(tde, () -> new RendererGUI(tde));
 			}
 			@Override
 			public void mouseDoubleClick(MouseEvent arg0) {
@@ -754,6 +928,22 @@ public class TDeGUI {
 		GridData aSpaceGD = new GridData(GridData.FILL_HORIZONTAL);
 		aSpaceGD.heightHint = h(25);
 		aSpace.setLayoutData(aSpaceGD);
+
+		//Illustrations: the monitor, the window or the screen copied to the clipboard (menu)
+		CLabel aCopy = new CLabel(toolBar,SWT.NONE);
+		aCopy.setImage(tde.gui.imgsSwt.getIcon("copy.png"));
+		aCopy.setAlignment(SWT.CENTER);
+		GridData aCopyGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
+		aCopyGD.widthHint = 32;
+		aCopyGD.heightHint = h(25);
+		aCopy.setLayoutData(aCopyGD);
+		applyColorFont(aCopy);
+		tip(aCopy, "CopyImage");
+		aCopy.addListener(SWT.MouseDown, e -> {
+			if(e.button == 1) {
+				ScreenCopyGUI.show(tde, aCopy);
+			}
+		});
 
 		CLabel aNewsSite = new CLabel(toolBar,SWT.NONE);
 		aNewsSite.setImage(tde.gui.imgsSwt.getIcon("lamp.png"));
@@ -851,8 +1041,16 @@ public class TDeGUI {
 		aSashFormH.setBackground(colorsSwt.CUBAIX_BLUE);
 
 		// Create the panels
-		mediaListControlGUI = new MediaListControlGUI(tde, aSashFormH);
+		//Left column: the media list (2/3) above the montages (1/3), the separation dragged with the mouse
+		Composite aLeft = new Composite(aSashFormH, SWT.NONE);
+		aLeft.setLayout(new FillLayout());
+		final SashForm aSashFormLeft = sashFormLeft = new SashForm(aLeft, SWT.VERTICAL);
+		aSashFormLeft.SASH_WIDTH = tde.config.sashWith;
+		aSashFormLeft.setBackground(colorsSwt.CUBAIX_BLUE);
+		mediaListControlGUI = new MediaListControlGUI(tde, aSashFormLeft);
 		mediaListGUI = new MediaListGUI(tde,mediaListControlGUI.getContainer());
+		montageListGUI = new MontageListGUI(tde, aSashFormLeft);
+		aSashFormLeft.setWeights(new int[] {2,1});
 		
 		multiMonitorPanel = new CompositePanel(tde, aSashFormH);
 		setMultiMonitorPanel(MULTIMONITORPANEL_BROWSER);
@@ -927,10 +1125,20 @@ public class TDeGUI {
 		setMultiMonitorPanel(MULTIMONITORPANEL_BROWSER, WebBrowserGUI.demosURL(tde));
 	}
 	
+	/** The properties of the time line aLine in the processors area */
+	public void showLineProps(com.cubaix.TDenlive.medias.VideoTimeLine aLine) {
+		if(aLine == null) {
+			return;
+		}
+		setMultiPropsPanel(MULTIPROPSPANEL_LINE);
+		linePropsGUI.setLine(aLine);
+	}
+
 	public void setMultiPropsPanel(int aKind) {
 		if(aKind == MULTIPROPSPANEL_PROPS) {
 			if(propsGUI == null || propsGUI.container.isDisposed() || propsGUI.treeView.tree.isDisposed()) {
 				processorGUI = null;
+				montagePropsGUI = null;
 				multiPropsPanel.clean();//Dispose all contents
 				propsGUI = new MediaPropsGUI(tde, multiPropsPanel.getContainer());
 				multiPropsPanel.getContainer().layout(true);
@@ -939,10 +1147,31 @@ public class TDeGUI {
 		else if(aKind == MULTIPROPSPANEL_PROCESSORS) {
 			if(processorGUI == null || processorGUI.container.isDisposed()) {
 				propsGUI = null;
+				montagePropsGUI = null;
 				multiPropsPanel.clean();//Dispose all contents
 				processorGUI = new ProcessorsGUI(tde, multiPropsPanel.getContainer());
 				multiPropsPanel.getContainer().layout(true);
 			}
+		}
+		else if(aKind == MULTIPROPSPANEL_LINE) {
+			if(linePropsGUI == null || linePropsGUI.container.isDisposed()) {
+				propsGUI = null;
+				processorGUI = null;
+				montagePropsGUI = null;
+				multiPropsPanel.clean();//Dispose all contents
+				linePropsGUI = new LinePropsGUI(tde, multiPropsPanel.getContainer());
+				multiPropsPanel.getContainer().layout(true);
+			}
+		}
+		else if(aKind == MULTIPROPSPANEL_MONTAGE) {
+			if(montagePropsGUI == null || montagePropsGUI.container.isDisposed()) {
+				propsGUI = null;
+				processorGUI = null;
+				multiPropsPanel.clean();//Dispose all contents
+				montagePropsGUI = new MontagePropsGUI(tde, multiPropsPanel.getContainer());
+				multiPropsPanel.getContainer().layout(true);
+			}
+			montagePropsGUI.refresh();
 		}
 	}
 	
@@ -955,6 +1184,55 @@ public class TDeGUI {
 	 * Light gray frame on the controls acting as buttons (labels with an action on click) while the
 	 * mouse is over them: else nothing shows that they can be clicked
 	 */
+	/**
+	 * The secondary windows (progress, panels, dialogs: shells of the main window, and theirs) always in front of the
+	 * main window: on macOS an ordinary child window goes behind the main one at the first click in it, and a window
+	 * opened while a modal question of the system is shown may never be put on the screen. After a click in the main
+	 * window or its activation, each visible one is ordered above (without taking the focus)
+	 */
+	void installDialogsInFront() {
+		display.addFilter(SWT.MouseDown, e -> {
+			if(e.widget instanceof org.eclipse.swt.widgets.Control && !e.widget.isDisposed()
+					&& ((org.eclipse.swt.widgets.Control)e.widget).getShell() == shell) {
+				dialogsInFront();
+			}
+		});
+		display.addFilter(SWT.Activate, e -> {
+			if(e.widget == shell) {
+				dialogsInFront();
+			}
+		});
+	}
+
+	boolean dialogsFrontPending = false;
+
+	/**
+	 * Every visible secondary window ordered above the main window (once the event is handled)
+	 */
+	public void dialogsInFront() {
+		if(dialogsFrontPending || display == null || display.isDisposed()) {
+			return;
+		}
+		dialogsFrontPending = true;
+		display.asyncExec(() -> {
+			dialogsFrontPending = false;
+			if(shell == null || shell.isDisposed()) {
+				return;
+			}
+			frontOf(shell);
+		});
+	}
+
+	static void frontOf(Shell aParent) {
+		for(Shell aC : aParent.getShells()) {
+			if(aC.isDisposed() || !aC.isVisible() || aC.getMinimized()) {
+				continue;
+			}
+			aC.moveAbove(null);
+			frontOf(aC);
+		}
+	}
+
 	void installHoverFrames() {
 		display.addFilter(SWT.MouseEnter, e -> {
 			if(!(e.widget instanceof Control)) {

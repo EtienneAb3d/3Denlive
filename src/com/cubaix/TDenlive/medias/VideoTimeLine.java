@@ -61,6 +61,11 @@ public class VideoTimeLine extends Media {
 						|| "/TimeLine".equalsIgnoreCase(aT.tagName)) {
 					return o;
 				}
+				if("lineTitle".equalsIgnoreCase(aT.tagName)) {
+					o++;
+					String aV = com.cubaix.TDenlive.shapes.Shape.decode(aOs.elementAt(o).text);
+					title = aV == null || aV.trim().isEmpty() ? null : aV;
+				}
 				if("isActive".equalsIgnoreCase(aT.tagName)) {
 					o++;
 					isActive = !"false".equalsIgnoreCase(aOs.elementAt(o).text);
@@ -95,6 +100,7 @@ public class VideoTimeLine extends Media {
 		aSB.append("			<VideoTimeLine>\n");
 		aSB.append("				<isActive>" + isActive + "</isActive>\n");
 		aSB.append("				<soundSource>" + SOUND_NAMES[soundSource] + "</soundSource>\n");
+		saveTitle(aSB);
 		for(Clip aTL : clipList) {
 			aTL.saveProject(aSB);
 		}
@@ -200,12 +206,41 @@ public class VideoTimeLine extends Media {
 		clipList.clear();
 	}
 	
+	//Title given by the user (line panel, saved as <lineTitle>), null: its name by position (V1, A1...)
+	public String title = null;
+
+	/** Name shown: its title, else its name by position */
 	public String getName() {
+		return title != null && !title.trim().isEmpty() ? title : name;
+	}
+
+	/** Name by position (V1, A1...), given again when the lines move */
+	/** <lineTitle> when the user gave one */
+	void saveTitle(StringBuffer aSB) {
+		if(title != null && !title.trim().isEmpty()) {
+			aSB.append("				<lineTitle>" + com.cubaix.TDenlive.shapes.Shape.encode(title) + "</lineTitle>\n");
+		}
+	}
+
+	public String defaultName() {
 		return name;
 	}
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	/**
+	 * Thumbnail of the line: that of the media of its first clip (by start), null without clip
+	 */
+	public Media firstMedia() {
+		Clip aFirst = null;
+		for(Clip aC : new Vector<Clip>(clipList)) {
+			if(aC.getMedia() != null && (aFirst == null || aC.getStartTimeMS() < aFirst.getStartTimeMS())) {
+				aFirst = aC;
+			}
+		}
+		return aFirst == null ? null : aFirst.getMedia();
 	}
 
 	@Override
@@ -216,20 +251,21 @@ public class VideoTimeLine extends Media {
 		aGC.fillRectangle(aClippingR.x, aY, aClippingR.width, tde.config.thumbH);
 		
 		aGC.setFont(tde.gui.fontsSwt.robotoBold);
-		aGC.drawText(name, aClippingR.x+10, aY+10);
+		aGC.drawText(getName(), aClippingR.x+tde.config.thumbW+6, aY+4);
 //		Point aTPN = aGC.stringExtent(name);
 		//Some else to write...
 		//..
 		
-		isActiveCheckboxBounds = new Rectangle(aClippingR.x+tde.config.thumbW-20, aY+8, 16, 16);
+		isActiveCheckboxBounds = new Rectangle(aClippingR.x+tde.config.thumbW+26, aY+24, 16, 16);
 		aGC.drawImage(tde.gui.imgsSwt.getIcon(isActive?"checkboxBlackChecked.gif":"checkboxBlackUnchecked.gif")
 				, isActiveCheckboxBounds.x, isActiveCheckboxBounds.y);
 		
+		int aHeadW = tde.config.lineHeadW();
 		aGC.setForeground(tde.gui.colorsSwt.CUBAIX_BLUE);
-		aGC.drawLine(tde.config.thumbW, aY, tde.config.thumbW, aY+tde.config.thumbH);
+		aGC.drawLine(aHeadW, aY, aHeadW, aY+tde.config.thumbH);
 		
-		int aStart = aX+tde.config.thumbW;
-		Rectangle aClippingNew = new Rectangle(aClippingR.x+tde.config.thumbW+2, aY, aClippingR.width-tde.config.thumbW, tde.config.thumbH);
+		int aStart = aX+aHeadW;
+		Rectangle aClippingNew = new Rectangle(aClippingR.x+aHeadW+2, aY, aClippingR.width-aHeadW, tde.config.thumbH);
 		int aW = 0;
 		for(Clip aC : clipList) {
 			Rectangle aR = aC.drawSwt(aGC, aStart, aY, aClippingNew);
@@ -254,16 +290,42 @@ public class VideoTimeLine extends Media {
 		aGC.fillRect(aClippingR.x, aY, aClippingR.width, aRowH);
 		aGC.setColor(selState == 0 ? tde.gui.colorsAwt.CUBAIX_BLUE : tde.gui.colorsAwt.WHITE);
 		
+		//Head as the rows of the lists: thumbnail (media of the first clip), title, trash on the right; below the
+		//title the sound source, the checkbox and the arrows
+		int aHeadW = tde.config.lineHeadW();
+		int aX0 = aClippingR.x;
+		Media aFM = firstMedia();
+		java.awt.image.BufferedImage aThumb = aFM == null ? null : aFM.getThumbAwt();
+		int aTW = tde.config.thumbW-4, aTH = Math.min(tde.config.thumbH, aRowH)-4;
+		if(aThumb != null && aThumb.getWidth() > 0 && aThumb.getHeight() > 0) {
+			double aK = Math.min(aTW/(double)aThumb.getWidth(), aTH/(double)aThumb.getHeight());
+			int aW2 = Math.max(1, (int)(aThumb.getWidth()*aK)), aH2 = Math.max(1, (int)(aThumb.getHeight()*aK));
+			aGC.drawImage(aThumb, aX0+2+(aTW-aW2)/2, aY+2+(aTH-aH2)/2, aW2, aH2, null);
+		}
+		else {
+			aGC.setColor(tde.gui.colorsAwt.LIGHTGRAY);
+			aGC.fillRect(aX0+2, aY+2, aTW, aTH);
+		}
+		int aTX = aX0+tde.config.thumbW+4;
+		//Trash on the right of the title: remove the whole line
+		lineTrashBounds = null;
+		if(canDelete) {
+			lineTrashBounds = new Rectangle(aX0+aHeadW-20, aY+4, 16, 16);
+			aGC.drawImage(tde.gui.imgsAwt.getIcon("trash.png"), lineTrashBounds.x, lineTrashBounds.y, 16, 16, null);
+		}
+		aGC.setColor(selState == 0 ? tde.gui.colorsAwt.CUBAIX_BLUE : tde.gui.colorsAwt.WHITE);
 		aGC.setFont(tde.gui.fontsAwt.robotoBold);
-		Rectangle2D aFR = aGC.getFontMetrics().getStringBounds(name,aGC);
-		aGC.drawString(name, aClippingR.x+10, aY+10+(int)aFR.getHeight());
+		java.awt.Shape aOldClip = aGC.getClip();
+		aGC.clipRect(aTX, aY, Math.max(1, aX0+aHeadW-24-aTX), aRowH);
+		java.awt.FontMetrics aFMt = aGC.getFontMetrics();
+		aGC.drawString(getName(), aTX, aY+4+aFMt.getAscent());
+		aGC.setClip(aOldClip);
 		
-		isActiveCheckboxBounds = new Rectangle(aClippingR.x+tde.config.thumbW-20, aY+8, 16, 16);
-		aGC.drawImage(tde.gui.imgsAwt.getIcon(isActive?"checkboxBlackChecked.gif":"checkboxBlackUnchecked.gif")
-				, isActiveCheckboxBounds.x, isActiveCheckboxBounds.y,null);
+		//Below the title: sound source (left / right video, mute), active checkbox, move the line up / down
+		int aIY = aY+24;
+		soundIconBounds = null;
 		if(hasSoundIcon()) {
-			//Sound source of the clips of the line (left / right video, mute), left of the checkbox
-			soundIconBounds = new Rectangle(isActiveCheckboxBounds.x-20, aY+8, 16, 16);
+			soundIconBounds = new Rectangle(aTX, aIY, 16, 16);
 			aGC.drawImage(tde.gui.imgsAwt.getIcon("sound.gif")
 					, soundIconBounds.x, soundIconBounds.y, 16, 16, null);
 			if(isSoundMuted()) {
@@ -274,31 +336,25 @@ public class VideoTimeLine extends Media {
 				aGC.setStroke(new BasicStroke(1));
 			}
 		}
-		
-		//Below the name: remove the whole line
-		lineTrashBounds = null;
-		if(canDelete) {
-			lineTrashBounds = new Rectangle(aClippingR.x+10, aY+28, 16, 16);
-			aGC.drawImage(tde.gui.imgsAwt.getIcon("trash.png"), lineTrashBounds.x, lineTrashBounds.y, 16, 16, null);
-		}
-		
-		//Below the sound icon and the checkbox: move the whole line up / down
+		isActiveCheckboxBounds = new Rectangle(aTX+22, aIY, 16, 16);
+		aGC.drawImage(tde.gui.imgsAwt.getIcon(isActive?"checkboxBlackChecked.gif":"checkboxBlackUnchecked.gif")
+				, isActiveCheckboxBounds.x, isActiveCheckboxBounds.y,null);
 		lineUpBounds = lineDownBounds = null;
 		if(canMoveUp) {
-			lineUpBounds = new Rectangle(isActiveCheckboxBounds.x-20, aY+28, 16, 16);
+			lineUpBounds = new Rectangle(aTX+44, aIY, 16, 16);
 			aGC.drawImage(tde.gui.imgsAwt.getIcon("arrowUp.png"), lineUpBounds.x, lineUpBounds.y, 16, 16, null);
 		}
 		if(canMoveDown) {
-			lineDownBounds = new Rectangle(isActiveCheckboxBounds.x, aY+28, 16, 16);
+			lineDownBounds = new Rectangle(aTX+64, aIY, 16, 16);
 			aGC.drawImage(tde.gui.imgsAwt.getIcon("arrowDown.png"), lineDownBounds.x, lineDownBounds.y, 16, 16, null);
 		}
 		
 		aGC.setColor(tde.gui.colorsAwt.CUBAIX_BLUE);
-		aGC.drawLine(tde.config.thumbW, aY, tde.config.thumbW, aY+aRowH);
+		aGC.drawLine(aHeadW, aY, aHeadW, aY+aRowH);
 		
-		int aStart = aX+tde.config.thumbW;
-		Rectangle aClippingNew = new Rectangle(aClippingR.x+tde.config.thumbW+2,Math.max(aClippingR.y,aY)
-				,aClippingR.width-tde.config.thumbW, aRowH);
+		int aStart = aX+aHeadW;
+		Rectangle aClippingNew = new Rectangle(aClippingR.x+aHeadW+2,Math.max(aClippingR.y,aY)
+				,aClippingR.width-aHeadW, aRowH);
 		int aW = 0;
 		//Copy: the GUI thread may add or remove clips while drawing
 		for(Clip aC : new Vector<Clip>(clipList)) {

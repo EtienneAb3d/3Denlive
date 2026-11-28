@@ -147,6 +147,8 @@ public class ParamProcessorGUI extends ProcessorGUI {
 		if(pp instanceof Loudness) {
 			infoL = new CLabel(wgt, SWT.NONE);
 			tde.gui.applyColorFont(infoL);
+			//A status, in violet as all the statuses of the processor panels
+			infoL.setForeground(tde.gui.colorsSwt.VIOLET);
 			infoL.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		}
 

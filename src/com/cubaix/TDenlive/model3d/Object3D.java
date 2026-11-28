@@ -462,7 +462,7 @@ public class Object3D {
 			if(textureFile() != null) {
 				//The path alone in its tag: gathered, packed and renamed like the paths of the medias
 				aSB.append(aIndent+"	<texture>file</texture>\n");
-				aSB.append(aIndent+"	<texturePath>" + textureFile() + "</texturePath>\n");
+				aSB.append(aIndent+"	<texturePath>" + com.cubaix.TDenlive.utils.ProjectFiles.forSave(textureFile()) + "</texturePath>\n");
 			}
 			else {
 				aSB.append(aIndent+"	<texture>" + texture + "</texture>\n");
@@ -484,7 +484,7 @@ public class Object3D {
 					if(ColorBck.Fill.isFile(aT)) {
 						//The path alone in its tag, as that of the object
 						aSB.append(aIndent+"	<faceTexture>" + f + ";file</faceTexture>\n");
-						aSB.append(aIndent+"	<faceTexturePath>" + aT.substring(ColorBck.Fill.FILE.length()) + "</faceTexturePath>\n");
+						aSB.append(aIndent+"	<faceTexturePath>" + com.cubaix.TDenlive.utils.ProjectFiles.forSave(aT.substring(ColorBck.Fill.FILE.length())) + "</faceTexturePath>\n");
 					}
 					else {
 						aSB.append(aIndent+"	<faceTexture>" + f + ";" + aT + "</faceTexture>\n");

@@ -855,16 +855,29 @@ public class AiMaskGUI {
 	 * Filters of the views of the video: {input, crop or null}
 	 */
 	String[][] viewInputs() {
+		return viewInputs(true);
+	}
+
+	/**
+	 * Input and filter (null: none) of each view; aSdr: with the tone mapping of an HDR video first
+	 * (Ffmpeg.sdrFilter())
+	 */
+	String[][] viewInputs(boolean aSdr) {
+		String aS0 = aSdr ? Ffmpeg.sdrFilter(src.path) : null;
 		switch(src.layout) {
 		case Source.SBS_P:
-			return new String[][] {{"0", "crop=iw/2:ih:0:0"}, {"0", "crop=iw/2:ih:iw/2:0"}};
+			return new String[][] {{"0", pre(aS0, "crop=iw/2:ih:0:0")}, {"0", pre(aS0, "crop=iw/2:ih:iw/2:0")}};
 		case Source.SBS_X:
-			return new String[][] {{"0", "crop=iw/2:ih:iw/2:0"}, {"0", "crop=iw/2:ih:0:0"}};
+			return new String[][] {{"0", pre(aS0, "crop=iw/2:ih:iw/2:0")}, {"0", pre(aS0, "crop=iw/2:ih:0:0")}};
 		case Source.TWO:
-			return new String[][] {{"0", null}, {"1", null}};
+			return new String[][] {{"0", aS0}, {"1", aSdr ? Ffmpeg.sdrFilter(src.pathR) : null}};
 		default:
-			return new String[][] {{"0", null}};
+			return new String[][] {{"0", aS0}};
 		}
+	}
+
+	static String pre(String aFirst, String aF) {
+		return aFirst == null ? aF : aFirst+","+aF;
 	}
 
 	/**
@@ -872,10 +885,13 @@ public class AiMaskGUI {
 	 * constant frame rate (fps filter: -vsync / -fps_mode depend on the version of ffmpeg): frame n = time n / fps
 	 */
 	String framesFilter(int aW,int aH) {
-		String[][] aIn = viewInputs();
+		boolean aSplit = src.layout == Source.SBS_P || src.layout == Source.SBS_X;
+		//One input split in two views: tone mapped once, before the split
+		String[][] aIn = viewInputs(!aSplit);
 		StringBuilder aF = new StringBuilder();
 		if(aIn.length == 2 && aIn[0][0].equals(aIn[1][0])) {
-			aF.append("[0:v]split=2[i0][i1];");
+			String aSdr = Ffmpeg.sdrFilter(src.path);
+			aF.append("[0:v]").append(aSdr == null ? "" : aSdr+",").append("split=2[i0][i1];");
 		}
 		for(int v = 0;v < aIn.length;v++) {
 			String aSrc = aIn.length == 2 && aIn[0][0].equals(aIn[1][0]) ? "[i"+v+"]" : "["+aIn[v][0]+":v]";

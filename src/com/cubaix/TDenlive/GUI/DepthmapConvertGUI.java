@@ -37,6 +37,52 @@ import com.cubaix.TDenlive.processors.Processor;
  * White is front (Black is front unchecked).
  */
 public class DepthmapConvertGUI {
+	/**
+	 * Status of the computed depth maps of a clip, right of the compute button (violet, as all the statuses of the
+	 * processor panels): computed, partly computed (interrupted video, with its part done), or not computed (aOwn:
+	 * what is used then). Polled every 2 s while shown (a computation ends, a resume).
+	 */
+	public static Label addState(TDenlive aTDe,Composite aRow,java.util.function.Supplier<ComputedDepthmap> aComputed,Clip aClip,String aOwnKey) {
+		final Label aL = new Label(aRow, SWT.WRAP);
+		aTDe.gui.applyColorFont(aL);
+		aL.setForeground(aTDe.gui.colorsSwt.VIOLET);
+		GridData aGD = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER);
+		aGD.widthHint = 100;
+		aL.setLayoutData(aGD);
+		Runnable[] aTick = {null};
+		aTick[0] = () -> {
+			if(aL.isDisposed()) {
+				return;
+			}
+			String aText;
+			try {
+				StereoImage aSI = aClip != null && aClip.getMedia() instanceof StereoImage ? (StereoImage)aClip.getMedia() : null;
+				ComputedDepthmap aCD = aComputed.get();
+				if(aSI != null && ComputedDepthmap.partialModel(aTDe, aSI) != null) {
+					double aF = ComputedDepthmap.partialFraction(aTDe, aSI);
+					aText = aTDe.gui.lngs.get("DepthConvert.StatePartial").replace("%P%", aF < 0 ? "?" : ""+(int)Math.floor(aF*100));
+				}
+				else if(aCD != null) {
+					aText = aTDe.gui.lngs.get("DepthConvert.StateDone");
+				}
+				else {
+					aText = aTDe.gui.lngs.get(aOwnKey);
+				}
+			}
+			catch(Throwable t) {
+				t.printStackTrace(System.err);
+				aText = "";
+			}
+			if(!aText.equals(aL.getText())) {
+				aL.setText(aText);
+				aL.getParent().layout(true);
+			}
+			aTDe.gui.display.timerExec(2000, aTick[0]);
+		};
+		aTick[0].run();
+		return aL;
+	}
+
 	//Model chosen last (default of the next choice)
 	static DepthModel lastModel = DepthModel.SMALL;
 	//One conversion at a time
@@ -123,6 +169,122 @@ public class DepthmapConvertGUI {
 		}
 		lastModel = aGUI.model;
 		aGUI.start();
+	}
+
+	/**
+	 * Resume the interrupted computation of the depth maps of the clip (same model, from the last frame done)
+	 */
+	public static void resume(TDenlive aTDe,Clip aClip,Processor aP) {
+		if(running) {
+			message(aTDe, SWT.ICON_INFORMATION, aTDe.gui.lngs.get("DepthConvert.Running"));
+			return;
+		}
+		if(!DepthEstimator.isPlatformSupported() || !(aClip.getMedia() instanceof StereoImage)) {
+			return;
+		}
+		DepthmapConvertGUI aGUI = new DepthmapConvertGUI(aTDe, aClip, aP);
+		String aId = ComputedDepthmap.partialModel(aTDe, (StereoImage)aClip.getMedia());
+		aGUI.model = aId == null || aId.isEmpty() ? null : DepthModel.byId(aId);
+		if(aGUI.model == null) {
+			aGUI.model = aGUI.chooseModel();
+			if(aGUI.model == null) {
+				return;
+			}
+		}
+		lastModel = aGUI.model;
+		aGUI.start();
+	}
+
+	/**
+	 * A clip whose depth map computation was interrupted and that has no depth map yet: the part computed given to its
+	 * processor (shown and used meanwhile; interruptions made before the partial maps were not noted in the project)
+	 */
+	public static void attachPartial(TDenlive aTDe,Clip aClip,Processor aP) {
+		try {
+			if(!(aClip.getMedia() instanceof StereoImage)) {
+				return;
+			}
+			ComputedDepthmap aHas = aP instanceof Depthmap ? ((Depthmap)aP).computed
+					: (aP instanceof DepthmapStereo ? ((DepthmapStereo)aP).computed : null);
+			if(aHas != null || ComputedDepthmap.partialModel(aTDe, (StereoImage)aClip.getMedia()) == null) {
+				return;
+			}
+			boolean aOk = new DepthmapConvertGUI(aTDe, aClip, aP).attach();
+			System.out.println("Depth maps: part computed of "+aClip.getMedia().displayName()+(aOk ? " given to the clip" : " not found"));
+		}
+		catch(Throwable t) {
+			t.printStackTrace(System.err);
+		}
+	}
+
+	//Clips whose interrupted depth maps are resumed one after the other (offerResume())
+	static final java.util.Vector<Object[]> RESUME_QUEUE = new java.util.Vector<Object[]>();
+
+	/**
+	 * After the opening of a project (GUI thread): the depth maps whose computation was interrupted, resumed
+	 * now (one after the other) or later (button "Resume the computation" of the processor)
+	 */
+	public static void offerResume(TDenlive aTDe) {
+		try {
+			if(!DepthEstimator.isPlatformSupported()) {
+				return;
+			}
+			java.util.Vector<Object[]> aTodo = new java.util.Vector<Object[]>();
+			java.util.HashSet<Long> aMedias = new java.util.HashSet<Long>();
+			for(com.cubaix.TDenlive.medias.TimeLineStack aTLS : aTDe.allStacks()) {
+				for(com.cubaix.TDenlive.medias.VideoTimeLine aTL : aTLS.videoTimeLineStack) {
+					for(Clip aC : aTL.clipList) {
+						Processor aP = aC.getDepthProcessor();
+						if(!(aP instanceof Depthmap || aP instanceof DepthmapStereo) || !(aC.getMedia() instanceof StereoImage)) {
+							continue;
+						}
+						if(aMedias.contains(aC.getMedia().UID)) {
+							attachPartial(aTDe, aC, aP);
+							continue;
+						}
+						if(ComputedDepthmap.partialModel(aTDe, (StereoImage)aC.getMedia()) != null) {
+							attachPartial(aTDe, aC, aP);
+							aMedias.add(aC.getMedia().UID);
+							aTodo.add(new Object[] {aC, aP});
+						}
+					}
+				}
+			}
+			System.out.println("Depth maps: "+aTodo.size()+" media(s) with an interrupted computation");
+			if(aTodo.isEmpty()) {
+				return;
+			}
+			StringBuilder aList = new StringBuilder();
+			for(Object[] aT : aTodo) {
+				Clip aC = (Clip)aT[0];
+				int aPct = (int)Math.round(100*Math.max(0, ComputedDepthmap.partialFraction(aTDe, (StereoImage)aC.getMedia())));
+				aList.append("\n- ").append(aC.getMedia().displayName()).append(" (").append(aPct).append(" %)");
+			}
+			MessageBox aMB = new MessageBox(aTDe.gui.shell, SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+			aMB.setText(aTDe.gui.lngs.get("DepthConvert.Title"));
+			aMB.setMessage(aTDe.gui.lngs.get("DepthConvert.OfferResume").replace("%N%", ""+aTodo.size()).replace("%LIST%", aList.toString()));
+			java.util.HashMap<Integer,String> aLabels = new java.util.HashMap<Integer,String>();
+			aLabels.put(SWT.YES, aTDe.gui.lngs.get("DepthConvert.Resume"));
+			aLabels.put(SWT.NO, aTDe.gui.lngs.get("Inpaint.Later"));
+			aMB.setButtonLabels(aLabels);
+			if(aMB.open() != SWT.YES) {
+				return;
+			}
+			RESUME_QUEUE.clear();
+			RESUME_QUEUE.addAll(aTodo);
+			resumeNext(aTDe);
+		}
+		catch(Throwable t) {
+			t.printStackTrace(System.err);
+		}
+	}
+
+	static void resumeNext(TDenlive aTDe) {
+		if(RESUME_QUEUE.isEmpty() || running) {
+			return;
+		}
+		Object[] aT = RESUME_QUEUE.remove(0);
+		resume(aTDe, (Clip)aT[0], (Processor)aT[1]);
 	}
 
 	static void message(TDenlive aTDe,int aIcon,String aText) {
@@ -281,7 +443,8 @@ public class DepthmapConvertGUI {
 		etaL = addLabel(shell, " ", 0);
 		deviceL = addLabel(shell, " ", 0);
 		Button aCancel = new Button(shell, SWT.PUSH);
-		aCancel.setText(lng("DepthConvert.Cancel"));
+		//A video: the frames done are kept, resumed later
+		aCancel.setText(lng(clip.getMedia() instanceof StereoMovie ? "DepthConvert.Interrupt" : "DepthConvert.Cancel"));
 		aCancel.setImage(tde.gui.imgsSwt.getIcon("stop.gif"));
 		tde.gui.applyColorFont(aCancel);
 		aCancel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
@@ -296,6 +459,10 @@ public class DepthmapConvertGUI {
 		shell.addListener(SWT.Close, e -> canceled = true);
 		center(shell);
 		shell.open();
+		//The depth maps under construction in the monitor (not over a rendering)
+		if(tde.gui.monitorGUI != null && !tde.gui.monitorGUI.isRendering()) {
+			tde.gui.monitorGUI.setRendering(true, this);
+		}
 
 		StereoImage aSI = (StereoImage)clip.getMedia();
 		String aWorkDir = tde.getWorkCacheDir();
@@ -314,12 +481,16 @@ public class DepthmapConvertGUI {
 						public boolean isCanceled() {
 							return canceled;
 						}
+						@Override
+						public void frame(java.awt.image.BufferedImage aL,java.awt.image.BufferedImage aR,double aMediaMS) {
+							showFrame(aL, aR, aMediaMS);
+						}
 					});
 					String[] aPaths = aDC.convert(aSI, force);
 					if(aPaths != null && !canceled) {
 						//Loaded here (videos: first frames, work copies), then given to the clip in the GUI thread
 						showStatus("DepthConvert.Loading", 0, 0);
-						ComputedDepthmap.loadMedia(tde, aPaths, aSI.origStereo);
+						ComputedDepthmap.loadMedia(tde, aPaths, ComputedDepthmap.layoutOf(aSI));
 						aResult = aPaths;
 					}
 				}
@@ -336,21 +507,76 @@ public class DepthmapConvertGUI {
 						if(!shell.isDisposed()) {
 							shell.dispose();
 						}
+						if(tde.gui.monitorGUI != null) {
+							tde.gui.monitorGUI.releaseRendering(DepthmapConvertGUI.this);
+						}
 						if(aErr != null) {
+							RESUME_QUEUE.clear();
 							message(tde, SWT.ICON_ERROR, lng("DepthConvert.Error")+"\n"+aErr);
 							return;
 						}
 						if(aPaths == null || canceled) {
+							RESUME_QUEUE.clear();
+							if(canceled && converter != null && converter.partDone >= 0) {
+								//Interrupted: the frames done are kept
+								//The part computed: shown and used meanwhile
+								attach();
+								tde.gui.monitorGUI.redraw();
+								message(tde, SWT.ICON_INFORMATION, lng("DepthConvert.Interrupted")
+										.replace("%P%", ""+(int)Math.round(100*converter.partDone)));
+								refreshPanel();
+							}
 							return;
 						}
 						if(!attach()) {
 							message(tde, SWT.ICON_ERROR, lng("DepthConvert.Error"));
 						}
+						resumeNext(tde);
 					}
 				});
 			}
 		});
 		aTh.start();
+	}
+
+	/**
+	 * The processors of the clip shown again (button "Resume the computation"), if it is the one shown
+	 */
+	void refreshPanel() {
+		if(tde.gui.processorGUI != null && !tde.selected.clips.isEmpty() && tde.selected.clips.lastElement() == clip) {
+			tde.gui.processorGUI.setProcessors(clip.getProcessors());
+		}
+	}
+
+	long lastCursorMS = 0;
+
+	/**
+	 * A depth map just computed: in the monitor, the time cursor on its image of the clip (any thread)
+	 */
+	void showFrame(java.awt.image.BufferedImage aL,java.awt.image.BufferedImage aR,double aMediaMS) {
+		if(tde.gui.monitorGUI == null || canceled) {
+			return;
+		}
+		tde.gui.monitorGUI.showBuilding(this, aL, aR);
+		long aNow = System.currentTimeMillis();
+		if(aMediaMS < 0 || aNow-lastCursorMS < 100) {
+			return;
+		}
+		lastCursorMS = aNow;
+		tde.gui.display.asyncExec(() -> {
+			if(!tde.gui.monitorGUI.isShownBy(this)) {
+				return;
+			}
+			long aT = clip.timeForMediaMS(aMediaMS);
+			if(aT < clip.getStartTimeMS() || aT >= clip.getStartTimeMS()+clip.getDurationMS()) {
+				return;
+			}
+			tde.timeLineStack.setRequestedTimePosMS(aT);
+			tde.gui.timeLinesGUI.redraw();
+			if(tde.gui.monitorRulerGUI != null) {
+				tde.gui.monitorRulerGUI.redraw();
+			}
+		});
 	}
 
 	void showStatus(String aKey,long aDone,long aTotal) {

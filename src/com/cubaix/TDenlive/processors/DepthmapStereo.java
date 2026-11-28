@@ -39,10 +39,20 @@ public class DepthmapStereo extends Processor {
 	public ComputedDepthmap computed = null;
 	//Show the depth map instead of the result on the monitor (not when rendering, not saved)
 	public boolean showDepth = false;
+	//Holes of the conversion left transparent, neither interpolated nor inpainted (monitor and rendering; saved when set)
+	public boolean showHoles = false;
+	//Recolorization: each view takes the color layers it lacks (an anaglyph imported) from the other view, at the
+	//pixel given by the depth maps (setting of the clip, saved), see depth.Recolorizer; the conversion and its hole
+	//filling then work on the recolorized views
+	public boolean recolor = false;
+	//Anaglyph converted as it is (not recolorized): its holes filled (interpolation / AI) on the recolorized views,
+	//then given back with the color layers of each view (convertRecolorFilled(), option of the clip)
+	public boolean recolorFill = false;
+	final com.cubaix.TDenlive.depth.Recolorizer recolorizer = new com.cubaix.TDenlive.depth.Recolorizer();
 	//Holes filled by an inpainting model instead of the interpolation (option, saved), see Inpainting
 	public Inpainting inpainting = new Inpainting(this, aT -> {
 		Key aK = getInterKeyGT(aT);
-		return aK.d+";"+aK.x+";"+aK.p+";"+aK.m+";"+aK.blackIsFront+";"+(aK.depthmapClipMedia == null ? (computed != null) : aK.depthmapClipMedia.getMedia().UID);
+		return aK.d+";"+aK.x+";"+aK.p+";"+aK.m+";"+aK.blackIsFront+";"+(aK.depthmapClipMedia == null ? (computed != null) : aK.depthmapClipMedia.getMedia().UID)+(recolor ? ";recolor" : "")+(!recolor && recolorFill ? ";recolorFill" : "");
 	});
 	
 	public DepthmapStereo(TDenlive aTDe,Media aTargetMedia) {
@@ -98,6 +108,18 @@ public class DepthmapStereo extends Processor {
 					o++;
 					inpainting.setOldOption(Boolean.parseBoolean(aOs.elementAt(o).text));
 				}
+				if("recolor".equalsIgnoreCase(aT.tagName)) {
+					o++;
+					recolor = Boolean.parseBoolean(aOs.elementAt(o).text);
+				}
+				if("recolorFill".equalsIgnoreCase(aT.tagName)) {
+					o++;
+					recolorFill = Boolean.parseBoolean(aOs.elementAt(o).text);
+				}
+				if("showHoles".equalsIgnoreCase(aT.tagName)) {
+					o++;
+					showHoles = Boolean.parseBoolean(aOs.elementAt(o).text);
+				}
 				if("inpaintModes".equalsIgnoreCase(aT.tagName)) {
 					o++;
 					inpainting.setModesText(aOs.elementAt(o).text);
@@ -132,6 +154,15 @@ public class DepthmapStereo extends Processor {
 			aSB.append("							<time>" + aK.time + "</time>\n");
 			aSB.append("							<blackIsFront>" + aK.blackIsFront + "</blackIsFront>\n");
 			aSB.append("							<depthmapClipMedia>" + (aK.depthmapClipMedia == null ? -1 : aK.depthmapClipMedia.getMedia().UID) + "</depthmapClipMedia>\n");
+		}
+		if(recolor) {
+			aSB.append("							<recolor>true</recolor>\n");
+		}
+		if(recolorFill) {
+			aSB.append("							<recolorFill>true</recolorFill>\n");
+		}
+		if(showHoles) {
+			aSB.append("							<showHoles>true</showHoles>\n");
 		}
 		if(inpainting.enabled) {
 			aSB.append("							<inpaintModes>" + inpainting.modesText() + "</inpaintModes>\n");
@@ -352,7 +383,9 @@ public class DepthmapStereo extends Processor {
 					@Override
 					public void run() {
 						//Force refresh
-						tde.gui.processorGUI.setProcessors(((Clip)targetMedia).getProcessors());
+						if(tde.gui.processorGUI != null) {
+							tde.gui.processorGUI.setProcessors(((Clip)targetMedia).getProcessors());
+						}
 					}
 				});
 			}
@@ -433,7 +466,9 @@ public class DepthmapStereo extends Processor {
 		}
 		try {
 			//Inpainting of the holes: what to do, time of the parameters (rounded to the frames on the monitor)
-			Inpainting.Plan aPlan = inpainting.plan(aProcessingMode);
+			//Holes left transparent (rendering too): no model, no filling carried from the image before
+			final boolean aShowHoles = showHoles;
+			Inpainting.Plan aPlan = aShowHoles ? Inpainting.Plan.NONE : inpainting.plan(aProcessingMode);
 			long aKT = inpainting.snap(aTime, aProcessingMode);
 			long aStartMS = System.currentTimeMillis();
 			inpainting.beginFrame();
@@ -442,6 +477,10 @@ public class DepthmapStereo extends Processor {
 			ComputedDepthmap aCD = computed;
 			Clip aDC = aKey.depthmapClipMedia != null ? aKey.depthmapClipMedia : (aCD != null ? aCD.clip : null);
 			if(aDC == null) {
+				return;
+			}
+			if(aCD != null && aDC == aCD.clip && targetMedia instanceof Clip && !aCD.covers((Clip)targetMedia, aTime)) {
+				//Beyond the part computed of an interrupted depth map: not converted
 				return;
 			}
 			BufferedImage aBISrcL = aMedia.getWorkLeft(aProcessingMode,aTime);
@@ -453,16 +492,43 @@ public class DepthmapStereo extends Processor {
 				aMedia.setWorkRight(aBIDMR);
 				return;
 			}
+			//Views recolorized (the layers missing in one view taken from the other by the depth maps)
+			if(recolor) {
+				BufferedImage[] aRec = recolorizer.recolor(aBISrcL, aBISrcR, aBIDML, aBIDMR, aKey.blackIsFront, aKT);
+				if(aRec != null) {
+					aBISrcL = aRec[0];
+					aBISrcR = aRec[1];
+					//Pixels without homologue erased: holes of the conversion (skipped by the depth maps)
+					aBIDML = com.cubaix.TDenlive.depth.Recolorizer.maskDepth(aBIDML, aRec[0]);
+					aBIDMR = com.cubaix.TDenlive.depth.Recolorizer.maskDepth(aBIDMR, aRec[1]);
+				}
+			}
 			//Depth maps mixed on the sources, then converted
 			BufferedImage aBIL = Depthmap.mixDepth(aBISrcL, aBIDML, aKey.m);
 			BufferedImage aBIR = Depthmap.mixDepth(aBISrcR, aBIDMR, aKey.m);
+			//Anaglyph not recolorized: its holes filled on the recolorized views (the AI and the interpolation see the
+			//colors of the scene, not one color layer), then given back with the layers of each view only
+			BufferedImage[] aRecPair = null;
+			if(!recolor && recolorFill && !showDepth && !aShowHoles) {
+				BufferedImage[] aRec = recolorizer.recolor(aBISrcL, aBISrcR, aBIDML, aBIDMR, aKey.blackIsFront, aKT);
+				if(aRec != null) {
+					aRecPair = new BufferedImage[] {Depthmap.mixDepth(aRec[0], aBIDML, aKey.m), Depthmap.mixDepth(aRec[1], aBIDMR, aKey.m)
+							//Their depth maps: the erased pixels are holes there (a superset of the holes of the views)
+							, com.cubaix.TDenlive.depth.Recolorizer.maskDepth(aBIDML, aRec[0]), com.cubaix.TDenlive.depth.Recolorizer.maskDepth(aBIDMR, aRec[1])};
+				}
+			}
+			final BufferedImage[] aRP = aRecPair;
+			final boolean[] aLayersL = aRP == null ? null : com.cubaix.TDenlive.depth.Recolorizer.layers(aBISrcL);
+			final boolean[] aLayersR = aRP == null ? null : com.cubaix.TDenlive.depth.Recolorizer.layers(aBISrcR);
+			final BufferedImage aDMLF = aBIDML, aDMRF = aBIDMR;
 			Par.Task aThL = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
-					BufferedImage aProcessedBIL = 
-							tde.config.processingHdr[aProcessingMode]?
-							processAwtHdr(aBIL,aBIDML,aProcessingMode,aKT,true,aPlan):
-								processAwtImage(aBIL,aBIDML,aProcessingMode,aKT,true,aPlan);
+					BufferedImage aProcessedBIL = aShowHoles ? withHoles(aBIL, aDMLF, aProcessingMode, aKT, true)
+							: aRP != null ? convertRecolorFilled(aBIL, aRP[0], aRP[2], aDMLF, aProcessingMode, aKT, true, aPlan, aLayersL)
+							: (tde.config.processingHdr[aProcessingMode]?
+							processAwtHdr(aBIL,aDMLF,aProcessingMode,aKT,true,aPlan,null):
+								processAwtImage(aBIL,aDMLF,aProcessingMode,aKT,true,aPlan,null));
 					aMedia.setWorkLeft(aProcessedBIL);
 				}
 			});
@@ -470,10 +536,11 @@ public class DepthmapStereo extends Processor {
 			Par.Task aThR = new Par.Task(new Runnable() {
 				@Override
 				public void run() {
-					BufferedImage aProcessedBIR = 
-							tde.config.processingHdr[aProcessingMode]?
-									processAwtHdr(aBIR,aBIDMR,aProcessingMode,aKT,false,aPlan):
-										processAwtImage(aBIR,aBIDMR,aProcessingMode,aKT,false,aPlan);
+					BufferedImage aProcessedBIR = aShowHoles ? withHoles(aBIR, aDMRF, aProcessingMode, aKT, false)
+							: aRP != null ? convertRecolorFilled(aBIR, aRP[1], aRP[3], aDMRF, aProcessingMode, aKT, false, aPlan, aLayersR)
+							: (tde.config.processingHdr[aProcessingMode]?
+									processAwtHdr(aBIR,aDMRF,aProcessingMode,aKT,false,aPlan,null):
+										processAwtImage(aBIR,aDMRF,aProcessingMode,aKT,false,aPlan,null));
 					aMedia.setWorkRight(aProcessedBIR);
 				}
 			});
@@ -487,7 +554,99 @@ public class DepthmapStereo extends Processor {
 		}
 	}
 	
-	BufferedImage processAwtImage(BufferedImage aBI,BufferedImage aDM,int aProcessingMode,long aTime,boolean aIsL,Inpainting.Plan aPlan) {
+	/**
+	 * Conversion of a view of an anaglyph (aBI: its own color layers aLayers) whose holes are filled on its recolorized
+	 * version aRec (same depth map, so the same holes): the recolorized view converted and filled as planned (the
+	 * interpolation, or the AI on colors), and its hole pixels given to the conversion of the view with only its own
+	 * layers (the others at 0, as in the anaglyph view)
+	 */
+	BufferedImage convertRecolorFilled(BufferedImage aBI,BufferedImage aRec,BufferedImage aRecDM,BufferedImage aDM,int aProcessingMode,long aTime,boolean aIsL,Inpainting.Plan aPlan,boolean[] aLayers) {
+		boolean aHdr = tde.config.processingHdr[aProcessingMode];
+		int aW = aBI.getWidth(), aH = aBI.getHeight();
+		boolean[] aHoles = new boolean[aW*aH];
+		BufferedImage aOut = aHdr ? processAwtHdr(aBI, aDM, aProcessingMode, aTime, aIsL, Inpainting.Plan.NONE, aHoles, false)
+				: processAwtImage(aBI, aDM, aProcessingMode, aTime, aIsL, Inpainting.Plan.NONE, aHoles, false);
+		if(!Inpainting.hasHoles(aHoles)) {
+			carryOut(aOut, aHdr, aProcessingMode, aTime, aIsL, aHoles);
+			return aOut;
+		}
+		BufferedImage aRecOut = aHdr ? processAwtHdr(aRec, aRecDM, aProcessingMode, aTime, aIsL, aPlan, null, false)
+				: processAwtImage(aRec, aRecDM, aProcessingMode, aTime, aIsL, aPlan, null, false);
+		if(aRecOut.getWidth() != aW || aRecOut.getHeight() != aH) {
+			carryOut(aOut, aHdr, aProcessingMode, aTime, aIsL, aHoles);
+			return aOut;
+		}
+		if(aHdr) {
+			float[] aO = ((DataBufferFloat)aOut.getRaster().getDataBuffer()).getData();
+			float[] aR = ((DataBufferFloat)aRecOut.getRaster().getDataBuffer()).getData();
+			for(int p = 0;p < aHoles.length;p++) {
+				if(aHoles[p]) {
+					for(int c = 0;c < 3;c++) {
+						aO[4*p+c] = aLayers[c] ? aR[4*p+c] : 0f;
+					}
+					aO[4*p+3] = aR[4*p+3];
+				}
+			}
+		}
+		else {
+			int[] aO = ((DataBufferInt)aOut.getRaster().getDataBuffer()).getData();
+			int[] aR = ((DataBufferInt)aRecOut.getRaster().getDataBuffer()).getData();
+			int aMask = 0xFF000000|(aLayers[0] ? 0xFF0000 : 0)|(aLayers[1] ? 0xFF00 : 0)|(aLayers[2] ? 0xFF : 0);
+			for(int p = 0;p < aHoles.length;p++) {
+				if(aHoles[p]) {
+					aO[p] = aR[p] & aMask;
+				}
+			}
+		}
+		carryOut(aOut, aHdr, aProcessingMode, aTime, aIsL, aHoles);
+		return aOut;
+	}
+
+	/**
+	 * View converted without any filling (interpolation, model, carry), its holes transparent (alpha 0)
+	 */
+	BufferedImage withHoles(BufferedImage aBI,BufferedImage aDM,int aProcessingMode,long aTime,boolean aIsL) {
+		boolean aHdr = tde.config.processingHdr[aProcessingMode];
+		boolean[] aHoles = new boolean[aBI.getWidth()*aBI.getHeight()];
+		BufferedImage aOut = aHdr ? processAwtHdr(aBI, aDM, aProcessingMode, aTime, aIsL, Inpainting.Plan.HOLES, aHoles, false)
+				: processAwtImage(aBI, aDM, aProcessingMode, aTime, aIsL, Inpainting.Plan.HOLES, aHoles, false);
+		if(aOut.getWidth()*aOut.getHeight() != aHoles.length) {
+			return aOut;
+		}
+		if(aHdr) {
+			float[] aO = ((DataBufferFloat)aOut.getRaster().getDataBuffer()).getData();
+			for(int p = 0;p < aHoles.length;p++) {
+				if(aHoles[p]) {
+					aO[4*p] = aO[4*p+1] = aO[4*p+2] = aO[4*p+3] = 0f;
+				}
+			}
+		}
+		else {
+			int[] aO = ((DataBufferInt)aOut.getRaster().getDataBuffer()).getData();
+			for(int p = 0;p < aHoles.length;p++) {
+				if(aHoles[p]) {
+					aO[p] = 0;
+				}
+			}
+		}
+		return aOut;
+	}
+
+	void carryOut(BufferedImage aOut,boolean aHdr,int aProcessingMode,long aTime,boolean aIsL,boolean[] aHoles) {
+		inpainting.carry(aProcessingMode, aIsL, aTime, aOut.getWidth(), aOut.getHeight(), aHoles,
+				aHdr ? null : ((DataBufferInt)aOut.getRaster().getDataBuffer()).getData(),
+				aHdr ? ((DataBufferFloat)aOut.getRaster().getDataBuffer()).getData() : null);
+	}
+
+	BufferedImage processAwtImage(BufferedImage aBI,BufferedImage aDM,int aProcessingMode,long aTime,boolean aIsL,Inpainting.Plan aPlan,boolean[] aHolesOut) {
+		return processAwtImage(aBI, aDM, aProcessingMode, aTime, aIsL, aPlan, aHolesOut, true);
+	}
+
+	/**
+	 * aCarry: the F -> F+1 carry of the filling (Inpainting.carry()) done here (not for the intermediate images of
+	 * convertRecolorFilled(), which carries its result)
+	 */
+	BufferedImage processAwtImage(BufferedImage aBI,BufferedImage aDM,int aProcessingMode,long aTime,boolean aIsL,Inpainting.Plan aPlan,boolean[] aHolesOut,boolean aCarry) {
 		int aWidth = aBI.getWidth();
 		int aHeight = aBI.getHeight();
 		BufferedImage aFBI = ImageUtils.createImage(aWidth, aHeight);
@@ -498,7 +657,8 @@ public class DepthmapStereo extends Processor {
 		int[] aDMDB = ((DataBufferInt)aDM.getRaster().getDataBuffer()).getData();
 		int[] aFDB = ((DataBufferInt)aFBI.getRaster().getDataBuffer()).getData();
 		//Pixels filled by the interpolation of the edges of the holes, for the inpainting model
-		boolean[] aHoles = aPlan != Inpainting.Plan.NONE ? new boolean[aWidth*aHeight] : null;
+		//(aHolesOut: the caller wants them, the model or not)
+		boolean[] aHoles = aHolesOut != null ? aHolesOut : new boolean[aWidth*aHeight];
 		//Side of the foreground of the holes (Inpainting.side(), weighted by their lengths)
 		long aSide = 0;
 		
@@ -530,6 +690,7 @@ public class DepthmapStereo extends Processor {
 		}
 		for(int y = 0;y<aHeight;y++) {
 			//Reverse
+			boolean[] aSteep = Depthmap.steep(aDMDB, y, aWidth, aMin, aMax);
 			double[] aDLineZ = new double[aWidth];
 			double[] aDLineA = new double[aWidth];
 			double[] aLineZSrc = new double[aWidth];
@@ -547,6 +708,11 @@ public class DepthmapStereo extends Processor {
 
 				if(aDMA < 255) {
 					//Nothing here, not a fully opaque depthmap
+					continue;
+				}
+
+				if(aSteep[x]) {
+					//Steep horizontal gradient of the depth map (an edge): a hole, nothing moved there
 					continue;
 				}
 
@@ -621,7 +787,7 @@ public class DepthmapStereo extends Processor {
 							int aGN = (int)((aDMBG*(aEndX - ix)+aDMEG*(ix - aBegX))/((double)(aEndX - aBegX)));
 							int aBN = (int)((aDMBB*(aEndX - ix)+aDMEB*(ix - aBegX))/((double)(aEndX - aBegX)));
 							//With the inpainting model: a hole for it (the depth stays interpolated: nothing behind shows through)
-							aFDB[y*aWidth+ix] = aHoles != null ? 0 : (aAlphaN<<24)|(aRN<<16)|(aGN<<8)|aBN;
+							aFDB[y*aWidth+ix] = aPlan != Inpainting.Plan.NONE ? 0 : (aAlphaN<<24)|(aRN<<16)|(aGN<<8)|aBN;
 						}
 					}
 				}
@@ -722,15 +888,22 @@ public class DepthmapStereo extends Processor {
 			}
 		}
 
-		if(aHoles != null && Inpainting.hasHoles(aHoles)) {
+		if(aPlan != Inpainting.Plan.NONE && aPlan != Inpainting.Plan.HOLES && Inpainting.hasHoles(aHoles)) {
 			//Holes filled by the inpainting model instead of the interpolation (see Inpainting); none: the model is
 			//neither loaded nor run, nothing cached
 			inpainting.fill(aPlan, inpainting.frame(aDB, aDMDB, aWidth, aHeight, aTime, aIsL, aSide < 0, aProcessingMode), aFDB, aWidth, aHeight, aHoles);
 		}
+		if(aCarry) {
+			inpainting.carry(aProcessingMode, aIsL, aTime, aWidth, aHeight, aHoles, aFDB, null);
+		}
 		return aFBI;
 	}
 
-	BufferedImage processAwtHdr(BufferedImage aBI,BufferedImage aDM,int aProcessingMode,long aTime,boolean aIsL,Inpainting.Plan aPlan) {
+	BufferedImage processAwtHdr(BufferedImage aBI,BufferedImage aDM,int aProcessingMode,long aTime,boolean aIsL,Inpainting.Plan aPlan,boolean[] aHolesOut) {
+		return processAwtHdr(aBI, aDM, aProcessingMode, aTime, aIsL, aPlan, aHolesOut, true);
+	}
+
+	BufferedImage processAwtHdr(BufferedImage aBI,BufferedImage aDM,int aProcessingMode,long aTime,boolean aIsL,Inpainting.Plan aPlan,boolean[] aHolesOut,boolean aCarry) {
 		int aWidth = aBI.getWidth();
 		int aHeight = aBI.getHeight();
 		BufferedImage aFBI = ImageUtils.createHdr(aWidth, aHeight);
@@ -741,7 +914,8 @@ public class DepthmapStereo extends Processor {
 		float[] aDMDB = ((DataBufferFloat)aDM.getRaster().getDataBuffer()).getData();
 		float[] aFDB = ((DataBufferFloat)aFBI.getRaster().getDataBuffer()).getData();
 		//Pixels filled by the interpolation of the edges of the holes, for the inpainting model
-		boolean[] aHoles = aPlan != Inpainting.Plan.NONE ? new boolean[aWidth*aHeight] : null;
+		//(aHolesOut: the caller wants them, the model or not)
+		boolean[] aHoles = aHolesOut != null ? aHolesOut : new boolean[aWidth*aHeight];
 		//Side of the foreground of the holes (Inpainting.side(), weighted by their lengths)
 		long aSide = 0;
 
@@ -774,6 +948,7 @@ public class DepthmapStereo extends Processor {
 		}
 		for(int y = 0;y<aHeight;y++) {
 			//Reverse
+			boolean[] aSteep = Depthmap.steep(aDMDB, y, aWidth, aMin, aMax);
 			double[] aDLineZ = new double[aWidth];
 			double[] aDLineA = new double[aWidth];
 			int aLastX = -1;
@@ -789,6 +964,11 @@ public class DepthmapStereo extends Processor {
 
 				if(aDMA < 1.0) {
 					//Nothing here
+					continue;
+				}
+
+				if(aSteep[x]) {
+					//Steep horizontal gradient of the depth map (an edge): a hole, nothing moved there
 					continue;
 				}
 
@@ -868,10 +1048,10 @@ public class DepthmapStereo extends Processor {
 							double aGN = ((aDMBG*(aEndX - ix)+aDMEG*(ix - aBegX))/((double)(aEndX - aBegX)));
 							double aBN = ((aDMBB*(aEndX - ix)+aDMEB*(ix - aBegX))/((double)(aEndX - aBegX)));
 							//With the inpainting model: a hole for it (the depth stays interpolated: nothing behind shows through)
-							aFDB[y*aWidth*4+ix*4] = aHoles != null ? 0 : (float)aRN;
-							aFDB[y*aWidth*4+ix*4+1] = aHoles != null ? 0 : (float)aGN;
-							aFDB[y*aWidth*4+ix*4+2] = aHoles != null ? 0 : (float)aBN;
-							aFDB[y*aWidth*4+ix*4+3] = aHoles != null ? 0 : (float)aAlphaN;
+							aFDB[y*aWidth*4+ix*4] = aPlan != Inpainting.Plan.NONE ? 0 : (float)aRN;
+							aFDB[y*aWidth*4+ix*4+1] = aPlan != Inpainting.Plan.NONE ? 0 : (float)aGN;
+							aFDB[y*aWidth*4+ix*4+2] = aPlan != Inpainting.Plan.NONE ? 0 : (float)aBN;
+							aFDB[y*aWidth*4+ix*4+3] = aPlan != Inpainting.Plan.NONE ? 0 : (float)aAlphaN;
 						}
 					}
 				}
@@ -982,10 +1162,13 @@ public class DepthmapStereo extends Processor {
 			}
 		}
 
-		if(aHoles != null && Inpainting.hasHoles(aHoles)) {
+		if(aPlan != Inpainting.Plan.NONE && aPlan != Inpainting.Plan.HOLES && Inpainting.hasHoles(aHoles)) {
 			//Holes filled by the inpainting model instead of the interpolation (see Inpainting); none: the model is
 			//neither loaded nor run, nothing cached
 			inpainting.fill(aPlan, inpainting.frame(aDB, aDMDB, aWidth, aHeight, aTime, aIsL, aSide < 0, aProcessingMode), aFDB, aWidth, aHeight, aHoles);
+		}
+		if(aCarry) {
+			inpainting.carry(aProcessingMode, aIsL, aTime, aWidth, aHeight, aHoles, null, aFDB);
 		}
 		return aFBI;
 	}

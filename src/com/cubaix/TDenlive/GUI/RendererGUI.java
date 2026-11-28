@@ -92,6 +92,10 @@ public class RendererGUI {
 		aNF.setGroupingUsed(false);
 		//Named after the project once saved, 3De_ before
 		String aPrefix = tde.projectName == null ? "3De_" : tde.projectName.replaceAll("(?i)([.]3de)+$", "")+"_";
+		if(tde.montage != null && !tde.montage.isMain()) {
+			//Another montage than the whole project: its name too
+			aPrefix += tde.montage.displayName(tde).replaceAll("[\\\\/:*?\"<>|\\p{Cntrl}]", "_").trim()+"_";
+		}
 		formatsOn[FfmpegEncoder.FORMAT_P] = true;
 		for(int i = 1;i < 10000;i++) {
 			pathOut = tde.renderDir+File.separatorChar+aPrefix+aNF.format(i)+".mp4";
@@ -109,11 +113,43 @@ public class RendererGUI {
 		shell.open();
 	}
 	
+	/** A row "label ...... combo" as those of the resolutions, read only, below the previous ones */
+	Combo comboRow(String aLabelKey, String aTipKey, String[] aItems) {
+		Composite aC = new Composite(shell,SWT.NONE);
+		GridData aCGD = new GridData(GridData.FILL_HORIZONTAL);
+		aCGD.heightHint = tde.gui.h(25);
+		aC.setLayoutData(aCGD);
+		tde.gui.applyColorFont(aC);
+		GridLayout aGL = new GridLayout(3, false);
+		tde.gui.applyNoMargin(aGL);
+		aC.setLayout(aGL);
+		CLabel aL = new CLabel(aC, SWT.NONE);
+		GridData aLGD = new GridData();
+		aLGD.heightHint = tde.gui.h(20);
+		aL.setLayoutData(aLGD);
+		aL.setText(tde.gui.lngs.get(aLabelKey));
+		tde.gui.applyColorFont(aL);
+		Composite aSpace = new Composite(aC, SWT.SEPARATOR|SWT.FILL);
+		tde.gui.applyColorFont(aSpace);
+		GridData aSGD = new GridData(GridData.FILL_HORIZONTAL);
+		aSGD.heightHint = tde.gui.h(25);
+		aSpace.setLayoutData(aSGD);
+		Combo aCombo = new Combo(aC, SWT.DROP_DOWN|SWT.READ_ONLY);
+		GridData aGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
+		aGD.heightHint = tde.gui.h(20);
+		aCombo.setLayoutData(aGD);
+		tde.gui.applyColorFont(aCombo);
+		tde.gui.tip(aCombo, aTipKey);
+		aCombo.setItems(aItems);
+		aGD.widthHint = tde.gui.comboW(aCombo, 80);
+		return aCombo;
+	}
+
 	void createContents() {
 		shell = new Shell(tde.gui.display);
 		shell.setText("3Denlive");
 		shell.setLayout(new GridLayout(1, false));
-		shell.setSize(600, 760+THUMB_H);
+		shell.setSize(600, 820+THUMB_H);
 		tde.gui.applyColorFont(shell);
 		shell.setImage(tde.gui.imgsSwt.getIcon("3Denlive32.png"));
 		
@@ -166,6 +202,14 @@ public class RendererGUI {
 			}
 		});
 		aProcessingRes.setText(tde.config.processingResNames[TDConfig.PROCESSING_MODE_RENDER]);
+
+		//Dynamic range of the processing: images in 8 bits, or floating point (as the setting of the RENDER mode)
+		Combo aProcHdr = comboRow("Renderer.ProcessingHdr", "RenderProcessingHdr", TDConfig.HDRLIST);
+		aProcHdr.select(tde.config.processingHdr[TDConfig.PROCESSING_MODE_RENDER] ? 1 : 0);
+		aProcHdr.addListener(SWT.Selection, e -> {
+			tde.config.processingHdr[TDConfig.PROCESSING_MODE_RENDER] = aProcHdr.getSelectionIndex() == 1;
+			tde.config.saveGeneral(tde.configPath);
+		});
 		
 		//Out res
 		Composite aOutRC = new Composite(shell,SWT.NONE);
@@ -217,6 +261,18 @@ public class RendererGUI {
 		});
 		outputRes = TDConfig.RESVALUES[tde.config.renderedDefaultRes];
 		aOutRes.setText(TDConfig.RESSHORTNAMES[tde.config.renderedDefaultRes]);
+
+		//Dynamic range of the video: SDR H.264 8 bits, or HDR HEVC 10 bits (HLG / PQ)
+		String[] aHdrNames = new String[TDConfig.OUTPUT_HDR.length];
+		for(int h = 0;h < aHdrNames.length;h++) {
+			aHdrNames[h] = tde.gui.lngs.get("Renderer.OutputHdr_"+TDConfig.OUTPUT_HDR[h]);
+		}
+		Combo aOutHdr = comboRow("Renderer.OutputHdr", "RenderOutputHdr", aHdrNames);
+		aOutHdr.select(Math.max(0, java.util.Arrays.asList(TDConfig.OUTPUT_HDR).indexOf(tde.config.renderOutputHdr)));
+		aOutHdr.addListener(SWT.Selection, e -> {
+			tde.config.renderOutputHdr = TDConfig.OUTPUT_HDR[Math.max(0, aOutHdr.getSelectionIndex())];
+			tde.config.saveGeneral(tde.configPath);
+		});
 		
 		//Out FPS
 		Composite aOutFPSC = new Composite(shell,SWT.NONE);
@@ -609,6 +665,11 @@ public class RendererGUI {
 			public void run() {
 				//No precomputation of the AI hole filling meanwhile: the image it computes, if any, ends first
 				com.cubaix.TDenlive.processors.Inpainting.Precomputer.rendering = true;
+				//HDR end to end (HLG / PQ video, HDR processing): the HDR videos keep their highlights; with an SDR
+				//processing or output they are tone mapped to SDR
+				com.cubaix.TDenlive.ffmpeg.Ffmpeg.hdrRendering = FfmpegEncoder.isVideo(pathOut)
+						&& FfmpegEncoder.isHdr(tde.config.renderOutputHdr)
+						&& tde.config.processingHdr[TDConfig.PROCESSING_MODE_RENDER];
 				if(tde.gui.monitorGUI != null) {
 					synchronized(tde.gui.monitorGUI) {
 					}
@@ -639,7 +700,11 @@ public class RendererGUI {
 					return;
 				}
 				renderer = new Renderer(tde,aWidth,aHeight,outputFPS,ffmpegVideoOpts,aPathsOut,aFormatsOut
-						,audioWav == null ? null : audioWav.getAbsolutePath(), anaglyph444);
+						,audioWav == null ? null : audioWav.getAbsolutePath(), anaglyph444
+						//HDR only for a video file (not an image sequence)
+						,FfmpegEncoder.isVideo(pathOut) ? tde.config.renderOutputHdr : null);
+				//Preview of the pages: not in the opening fades of the montage (then the first image not empty)
+				renderer.previewFromIndex = (int)Math.max(0, Math.ceil((tde.timeLineStack.firstFullImageMS()-startTimePos)*outputFPS/1000.0));
 				timeStartMS = System.currentTimeMillis();
 				countFrames = 0;
 				keyPass = null;
@@ -838,6 +903,7 @@ public class RendererGUI {
 		}
 		playing = false;
 		com.cubaix.TDenlive.processors.Inpainting.Precomputer.rendering = false;
+		com.cubaix.TDenlive.ffmpeg.Ffmpeg.hdrRendering = false;
 		if(renderer != null) {
 			renderer.stop();
 		}

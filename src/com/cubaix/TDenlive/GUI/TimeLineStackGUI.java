@@ -166,7 +166,7 @@ public class TimeLineStackGUI extends CanvasPanel {
 			return;
 		}
 		lastFollowedTimeMS = aTime;
-		int aVisibleW = aClientW-tde.config.thumbW;
+		int aVisibleW = aClientW-tde.config.lineHeadW();
 		if(aVisibleW <= 0) {
 			return;
 		}
@@ -183,7 +183,7 @@ public class TimeLineStackGUI extends CanvasPanel {
 	void zoomFit() {
 		TimeLineStack aTLS = tde.timeLineStack;
 		long aDuration = aTLS.getMaxTimePosMS();
-		int aVisibleW = canvas.getClientArea().width-tde.config.thumbW;
+		int aVisibleW = canvas.getClientArea().width-tde.config.lineHeadW();
 		if(aDuration <= 0 || aVisibleW <= 0) {
 			return;
 		}
@@ -226,13 +226,13 @@ public class TimeLineStackGUI extends CanvasPanel {
 		}
 		int aClientW = canvas.getClientArea().width;
 		long aAnchorTime = aTLS.getRequestedTimePosMS();
-		double aAnchorX = origin.x+tde.config.thumbW+aAnchorTime*aOldPix;//On screen
-		if(aAnchorX < tde.config.thumbW || aAnchorX > aClientW) {
-			aAnchorX = tde.config.thumbW;
+		double aAnchorX = origin.x+tde.config.lineHeadW()+aAnchorTime*aOldPix;//On screen
+		if(aAnchorX < tde.config.lineHeadW() || aAnchorX > aClientW) {
+			aAnchorX = tde.config.lineHeadW();
 			aAnchorTime = (long)(-origin.x/aOldPix);
 		}
 		aTLS.pixPerMS = aNewPix;
-		origin.x = (int)Math.min(0, aAnchorX-tde.config.thumbW-aAnchorTime*aNewPix);
+		origin.x = (int)Math.min(0, aAnchorX-tde.config.lineHeadW()-aAnchorTime*aNewPix);
 		adjustScrollBars();
 		redraw();
 	}
@@ -342,6 +342,10 @@ public class TimeLineStackGUI extends CanvasPanel {
 				selectionChanged();
 			}
 		});
+		//Heavy clips computed apart: they go into a new montage, whose rendering takes their place
+		menuItem("plusSquared.gif", "TimeLine.ToNewMontage", null, tde.selected.clips.size() > 0 && !MontageRenderGUI.isRunning(), () -> {
+			tde.gui.display.asyncExec(() -> tde.gui.montageListGUI.extractSelectedClips());
+		});
 		linesMenu.setLocation(canvas.toDisplay(aB.x, aB.y+aB.height));
 		linesMenu.setVisible(true);
 	}
@@ -377,7 +381,7 @@ public class TimeLineStackGUI extends CanvasPanel {
 	 */
 	int shortcutAt(int aX,int aY,int aState) {
 		TimeLineStack aTLS = tde.timeLineStack;
-		if(aTLS == null || aTLS.rulerBounds == null || aX < tde.config.thumbW
+		if(aTLS == null || aTLS.rulerBounds == null || aX < tde.config.lineHeadW()
 				|| (aTLS.rangeEraseBounds != null && aTLS.rangeEraseBounds.contains(aX, aY))) {
 			return SHORTCUT_NONE;
 		}
@@ -473,6 +477,23 @@ public class TimeLineStackGUI extends CanvasPanel {
 	}
 
 	/**
+	 * Click on a clip: its media shown selected in the media list, scrolled to it (nothing when the clip was
+	 * unselected by the click)
+	 */
+	void revealClipMedia(Clip aClip) {
+		try {
+			if(aClip != null && aClip.selState > 0 && tde.gui.mediaListGUI != null
+					//The rendering of a montage is not shown in the media list (see Montage)
+					&& com.cubaix.TDenlive.medias.Montage.of(tde, aClip.getMedia()) == null) {
+				tde.gui.mediaListGUI.revealMedia(aClip.getMedia());
+			}
+		}
+		catch(Throwable t) {
+			t.printStackTrace(System.err);
+		}
+	}
+
+	/**
 	 * Views refreshed after a change of the selection of clips made here (menu, rectangle)
 	 */
 	void selectionChanged() {
@@ -553,6 +574,16 @@ public class TimeLineStackGUI extends CanvasPanel {
 				//The data is only known at the drop: the media of the current drag
 				Media aMedia = MediaListGUI.draggedMedia;
 				Point aP = canvas.toControl(e.x, e.y);
+				if(aMedia == null && MontageListGUI.draggedMontage != null) {
+					//A montage: its rendering, when made, shows where it goes; else it is made at the drop
+					aMedia = MontageListGUI.draggedMontage.renderMedia(tde);
+					if(aMedia == null) {
+						tde.timeLineStack.clearDropPreview();
+						e.detail = tde.timeLineStack.getLineAtY(aP.y) != null ? DND.DROP_COPY : DND.DROP_NONE;
+						redraw();
+						return;
+					}
+				}
 				if(aMedia != null && tde.timeLineStack.setDropPreview(aMedia, aP.x, aP.y)) {
 					e.detail = DND.DROP_COPY;
 				}
@@ -582,6 +613,23 @@ public class TimeLineStackGUI extends CanvasPanel {
 			@Override
 			public void drop(DropTargetEvent e) {
 				tde.timeLineStack.clearDropPreview();
+				if(e.data instanceof String && ((String)e.data).startsWith(MontageListGUI.MONTAGE_DRAG_PREFIX)) {
+					//A montage of the montage list: its rendering (made first if needed), after the drop
+					Point aP = canvas.toControl(e.x, e.y);
+					com.cubaix.TDenlive.medias.Montage aM = null;
+					try {
+						aM = tde.montageByUID(Long.parseLong(((String)e.data).substring(MontageListGUI.MONTAGE_DRAG_PREFIX.length())));
+					}
+					catch(Throwable t) {
+						t.printStackTrace(System.err);
+					}
+					final com.cubaix.TDenlive.medias.Montage aDropped = aM;
+					if(aDropped != null) {
+						tde.gui.display.asyncExec(() -> tde.gui.montageListGUI.insert(aDropped, aP.x, aP.y));
+					}
+					redraw();
+					return;
+				}
 				Media aMedia = draggedMedia(e.data);
 				Point aP = canvas.toControl(e.x, e.y);
 				Clip aClip = aMedia == null ? null : tde.timeLineStack.dropMedia(aMedia, aP.x, aP.y);
@@ -665,6 +713,7 @@ public class TimeLineStackGUI extends CanvasPanel {
 					}
 					if(tde.selected.clips.size() > 0) {
 						tde.gui.processorGUI.setProcessors(tde.selected.clips.lastElement().getProcessors());
+						revealClipMedia(pendingClickClip);
 					}
 					else {
 						tde.gui.processorGUI.clean();
@@ -695,7 +744,7 @@ public class TimeLineStackGUI extends CanvasPanel {
 				boolean aShift = (e.stateMask & SWT.SHIFT) != 0;
 				TimeLineStack aTLS = tde.timeLineStack;
 				if(rangeMode) {
-					if(e.button == 1 && e.x >= tde.config.thumbW && aTLS.rulerBounds != null) {
+					if(e.button == 1 && e.x >= tde.config.lineHeadW() && aTLS.rulerBounds != null) {
 						//Start of the time range (on the ruler too)
 						rangeAnchorMS = aTLS.snapTimeMS(aTLS.getTimeAtX(e.x), (Clip)null, Math.round(CLIP_SNAP_PX/aTLS.pixPerMS));
 						aTLS.setTimeRange(rangeAnchorMS, rangeAnchorMS, 0);
@@ -733,7 +782,7 @@ public class TimeLineStackGUI extends CanvasPanel {
 					return;
 				}
 				if(rectMode) {
-					if(e.button == 1 && e.x >= tde.config.thumbW && aTLS.rulerBounds != null && e.y >= aTLS.rulerBounds.height) {
+					if(e.button == 1 && e.x >= tde.config.lineHeadW() && aTLS.rulerBounds != null && e.y >= aTLS.rulerBounds.height) {
 						//Start of the rectangle selection
 						rectStart = new Point(e.x, e.y);
 						aTLS.selectionRect = rectTo(e.x, e.y);
@@ -747,8 +796,10 @@ public class TimeLineStackGUI extends CanvasPanel {
 				pendingUnselect = false;
 				draggedClip = null;
 				Clip aHit = null;
+				VideoTimeLine aHeadHit = null;
 				if(!aTLS.selectWidget(e.x, e.y)) {
 					VideoTimeLine aHead = aTLS.getLineHeadAt(e.x, e.y);
+					aHeadHit = aHead;
 					aHit = aHead == null ? aTLS.getClipAt(e.x, e.y) : null;
 					if(aHead != null) {
 						//Head of a line (V1, A1...): all its clips; shift: lines added to the selection
@@ -791,6 +842,9 @@ public class TimeLineStackGUI extends CanvasPanel {
 					draggedClipLine = aTLS.getLineOf(aHit);
 					movedLineDelta = 0;
 				}
+				if(aHit != null) {
+					revealClipMedia(aHit);
+				}
 				tde.gui.setMultiPropsPanel(TDeGUI.MULTIPROPSPANEL_PROCESSORS);
 				tde.gui.setMultiMonitorPanel(TDeGUI.MULTIMONITORPANEL_MONITOR);
 				//Back to the montage (in the monitor and on the clock)
@@ -802,6 +856,10 @@ public class TimeLineStackGUI extends CanvasPanel {
 				else {
 					tde.gui.monitorGUI.setMedia(tde.timeLineStack);
 					tde.gui.processorGUI.clean();
+				}
+				if(aHeadHit != null) {
+					//Head of a line: its properties (title, clips)
+					tde.gui.showLineProps(aHeadHit);
 				}
 				redraw();
 				tde.gui.monitorGUI.redraw();
@@ -989,7 +1047,7 @@ public class TimeLineStackGUI extends CanvasPanel {
 		if(aTLS == null || lastDbl == null) {
 			return Integer.MIN_VALUE;
 		}
-		return lastDblOriginX+tde.config.thumbW+(int)(aTLS.getRequestedTimePosMS()*lastDblPixPerMS);
+		return lastDblOriginX+tde.config.lineHeadW()+(int)(aTLS.getRequestedTimePosMS()*lastDblPixPerMS);
 	}
 
 	/**
@@ -1004,7 +1062,7 @@ public class TimeLineStackGUI extends CanvasPanel {
 		}
 		Rectangle aCA = canvas.getClientArea();
 		int aTop = lastCursorTopY;
-		aGC.setClipping(tde.config.thumbW+1, 0, Math.max(0, aCA.width-tde.config.thumbW-1), aCA.height);
+		aGC.setClipping(tde.config.lineHeadW()+1, 0, Math.max(0, aCA.width-tde.config.lineHeadW()-1), aCA.height);
 		aGC.setForeground(tde.gui.colorsSwt.CUBAIX_PINK);
 		aGC.setLineWidth(1);
 		aGC.setAntialias(SWT.ON);

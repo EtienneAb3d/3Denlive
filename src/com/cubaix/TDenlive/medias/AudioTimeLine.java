@@ -32,6 +32,11 @@ public class AudioTimeLine extends VideoTimeLine {
 					o++;
 					isActive = !"false".equalsIgnoreCase(aOs.elementAt(o).text);
 				}
+				if("lineTitle".equalsIgnoreCase(aT.tagName)) {
+					o++;
+					String aV = com.cubaix.TDenlive.shapes.Shape.decode(aOs.elementAt(o).text);
+					title = aV == null || aV.trim().isEmpty() ? null : aV;
+				}
 				if("Clip".equalsIgnoreCase(aT.tagName)) {
 					Clip aC = new Clip(tde, null);
 					clipList.add(aC);
@@ -46,6 +51,7 @@ public class AudioTimeLine extends VideoTimeLine {
 	public void saveProject(StringBuffer aSB) throws Exception {
 		aSB.append("			<AudioTimeLine>\n");
 		aSB.append("				<isActive>" + isActive + "</isActive>\n");
+		saveTitle(aSB);
 		for(Clip aTL : clipList) {
 			aTL.saveProject(aSB);
 		}

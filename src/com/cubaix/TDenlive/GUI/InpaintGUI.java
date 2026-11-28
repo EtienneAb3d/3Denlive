@@ -53,7 +53,14 @@ public class InpaintGUI {
 	 * "Hole filling..." button of a depth map processor GUI
 	 */
 	public static Button addButton(TDenlive aTDe,Composite aParent,Inpainting aInp) {
-		final Button aB = new Button(aParent, SWT.PUSH);
+		//The hole filling button and, while the precomputation is interrupted, its resume button side by side
+		Composite aBRow = new Composite(aParent, SWT.NONE);
+		aBRow.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		GridLayout aBRL = new GridLayout(1, true);
+		aTDe.gui.applyNoMargin(aBRL);
+		aBRow.setLayout(aBRL);
+		aTDe.gui.applyColorFont(aBRow);
+		final Button aB = new Button(aBRow, SWT.PUSH);
 		aTDe.gui.applyColorFont(aB);
 		aTDe.gui.tip(aB, Inpainter.ENGINE == Inpainter.Engine.LAMA ? "Inpaint" : "InpaintLight");
 		aB.setText(buttonText(aTDe, aInp));
@@ -69,16 +76,147 @@ public class InpaintGUI {
 				}
 			}
 		});
+		if(Inpainting.Precomputer.stopped && aInp.enabled) {
+			//Precomputation interrupted: resumed from here too
+			aBRL.numColumns = 2;
+			final Button aR = new Button(aBRow, SWT.PUSH);
+			aTDe.gui.applyColorFont(aR);
+			aR.setText(aTDe.gui.lngs.get("Inpaint.Resume"));
+			aR.setImage(aTDe.gui.imgsSwt.getIcon("play.gif"));
+			GridData aRGD = new GridData(GridData.FILL_HORIZONTAL);
+			aRGD.heightHint = aTDe.gui.h(24);
+			aR.setLayoutData(aRGD);
+			aR.addSelectionListener(new SelectionAdapter() {
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					Inpainting.Precomputer.resumeComputing();
+					InpaintProgressGUI.dismissed = false;
+					Composite aP = aR.getParent();
+					aR.dispose();
+					//The hole filling button alone on its row
+					((GridLayout)aP.getLayout()).numColumns = 1;
+					aP.layout(true);
+				}
+			});
+		}
+		//State of the precomputation of the clip, and its computation from the start
+		Composite aRow = new Composite(aParent, SWT.NONE);
+		aRow.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		org.eclipse.swt.layout.GridLayout aRL = new org.eclipse.swt.layout.GridLayout(2, false);
+		aTDe.gui.applyNoMargin(aRL);
+		aRow.setLayout(aRL);
+		aTDe.gui.applyColorFont(aRow);
+		final Button aRecompute = new Button(aRow, SWT.PUSH);
+		aTDe.gui.applyColorFont(aRecompute);
+		aTDe.gui.tip(aRecompute, "InpaintRecompute");
+		aRecompute.setText(aTDe.gui.lngs.get("Inpaint.Recompute"));
+		aRecompute.setImage(aTDe.gui.imgsSwt.getIcon("rhino.gif"));
+		aRecompute.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				MessageBox aMB = new MessageBox(aTDe.gui.shell, SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+				aMB.setText(aTDe.gui.lngs.get("Inpaint.Title"));
+				aMB.setMessage(aTDe.gui.lngs.get("Inpaint.RecomputeAsk"));
+				if(aMB.open() != SWT.YES) {
+					return;
+				}
+				aInp.recompute();
+				InpaintProgressGUI.dismissed = false;
+				aTDe.gui.monitorGUI.redraw();
+			}
+		});
+		final Label aState = new Label(aRow, SWT.WRAP);
+		aTDe.gui.applyColorFont(aState);
+		//A click: the progress window of the precomputation (interrupt / resume), even after it was closed
+		aTDe.gui.tip(aState, "InpaintState");
+		aState.addListener(SWT.MouseDown, e -> InpaintProgressGUI.reopen(aTDe));
+		aState.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER));
+		Runnable[] aTick = {null};
+		aTick[0] = () -> {
+			if(aState.isDisposed()) {
+				return;
+			}
+			boolean aPre = aInp.enabled && (aInp.precomputes(0) || aInp.precomputes(1) || aInp.precomputes(2));
+			aRecompute.setEnabled(aInp.enabled);
+			String aText = " ";
+			if(aPre && System.currentTimeMillis()-aInp.countedMS < 10000 && aInp.countTotal > 0) {
+				int aLeft = aInp.countTotal-aInp.countDone;
+				aText = aLeft <= 0
+						? aTDe.gui.lngs.get("Inpaint.StateUpToDate").replace("%TOTAL%", ""+aInp.countTotal)
+						: aTDe.gui.lngs.get("Inpaint.StateStale").replace("%LEFT%", ""+aLeft).replace("%TOTAL%", ""+aInp.countTotal)
+							+(Inpainting.Precomputer.stopped ? " "+aTDe.gui.lngs.get("Inpaint.StateStopped") : "");
+				//A status, in violet as all the statuses of the processor panels
+				aState.setForeground(aTDe.gui.colorsSwt.VIOLET);
+			}
+			if(!aText.equals(aState.getText())) {
+				aState.setText(aText);
+				aRow.layout(true);
+			}
+			aTDe.gui.display.timerExec(1000, aTick[0]);
+		};
+		aTick[0].run();
 		return aB;
 	}
 
 	/**
-	 * After the opening of a project (GUI thread): the images precomputed by the model are not there (cache of
-	 * the session): the user starts their precomputation, or chooses other methods, one for all the clips
-	 * concerned. Without a GPU able to run the model: told that the holes stay interpolated.
+	 * "Show the holes" checked (aShow) or unchecked for the hole filling aInp (GUI thread): unchecked, its holes are
+	 * filled again; when it has images left to precompute, the user is asked first (the precomputation held meanwhile),
+	 * "Later" = interrupted (button "Resume the computation")
+	 */
+	public static void showHolesChanged(TDenlive aTDe,Inpainting aInp,boolean aShow,Runnable aApply) {
+		if(aShow || !aInp.enabled || !Inpainter.isReady(aTDe.tdeDir) || !Inpainter.capable() || Inpainting.Precomputer.stopped) {
+			aApply.run();
+			return;
+		}
+		boolean aPrecompute = false;
+		for(int m = 0;m < aInp.method.length;m++) {
+			aPrecompute |= aInp.precomputes(m);
+		}
+		if(!aPrecompute) {
+			aApply.run();
+			return;
+		}
+		Inpainting.Precomputer.held = true;
+		try {
+			aApply.run();
+			//Counts of the clips (this one included now)
+			Inpainting.Precomputer.allDone();
+			if(aInp.countTotal <= 0 || aInp.countDone >= aInp.countTotal) {
+				return;
+			}
+			InpaintGUI aGUI = new InpaintGUI(aTDe);
+			MessageBox aMB = new MessageBox(aTDe.gui.shell, SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+			aMB.setText(aGUI.lng("Inpaint.Title"));
+			aMB.setMessage(aGUI.lng("Inpaint.HolesShownOff"));
+			java.util.HashMap<Integer,String> aLabels = new java.util.HashMap<Integer,String>();
+			aLabels.put(SWT.YES, aGUI.lng("Inpaint.OpenStart"));
+			aLabels.put(SWT.NO, aGUI.lng("Inpaint.Later"));
+			aMB.setButtonLabels(aLabels);
+			if(aMB.open() == SWT.YES) {
+				InpaintProgressGUI.dismissed = false;
+			}
+			else {
+				//Later: interrupted, the button "Resume the computation" of the progress window or the processor
+				Inpainting.Precomputer.stopped = true;
+			}
+		}
+		catch(Throwable t) {
+			t.printStackTrace(System.err);
+		}
+		finally {
+			Inpainting.Precomputer.held = false;
+		}
+	}
+
+	/**
+	 * After the opening of a project (GUI thread): the images precomputed by the model in the previous sessions are
+	 * read back (InpaintVideos.load(): videos of the WorkCache of the project); when some are missing, the user starts their precomputation, or chooses
+	 * other methods, one for all the clips concerned. Without a GPU able to run the model: told that the holes stay interpolated.
 	 */
 	public static void afterOpen(TDenlive aTDe) {
 		try {
+			//An interruption of the previous project does not apply to this one
+			Inpainting.Precomputer.stopped = false;
 			java.util.Vector<Inpainting> aAi = new java.util.Vector<Inpainting>();
 			boolean aPrecompute = false;
 			for(Inpainting aI : Inpainting.Precomputer.all(aTDe)) {
@@ -102,16 +240,29 @@ public class InpaintGUI {
 				//Only at the rendering: nothing to precompute
 				return;
 			}
+			//The images precomputed in a previous session (WorkCache of the project): nothing to ask when all are there
+			com.cubaix.TDenlive.processors.InpaintVideos.load(aTDe);
+			if(Inpainter.isReady(aTDe.tdeDir) && Inpainting.Precomputer.allDone()) {
+				return;
+			}
 			Inpainting[] aInps = aAi.toArray(new Inpainting[0]);
 			while(true) {
-				MessageBox aMB = new MessageBox(aTDe.gui.shell, SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+				MessageBox aMB = new MessageBox(aTDe.gui.shell, SWT.ICON_QUESTION | SWT.YES | SWT.NO | SWT.CANCEL);
 				aMB.setText(aGUI.lng("Inpaint.Title"));
 				aMB.setMessage(aGUI.lng("Inpaint.OpenMissing").replace("%N%", ""+aInps.length));
 				java.util.HashMap<Integer,String> aLabels = new java.util.HashMap<Integer,String>();
 				aLabels.put(SWT.YES, aGUI.lng("Inpaint.OpenStart"));
 				aLabels.put(SWT.NO, aGUI.lng("Inpaint.OpenConfigure"));
+				aLabels.put(SWT.CANCEL, aGUI.lng("Inpaint.Later"));
 				aMB.setButtonLabels(aLabels);
-				if(aMB.open() == SWT.YES) {
+				int aAnswer = aMB.open();
+				if(aAnswer == SWT.CANCEL) {
+					//Later: interrupted, the button "Resume the computation" of the progress window or the processor
+					Inpainting.Precomputer.stopped = true;
+					break;
+				}
+				Inpainting.Precomputer.stopped = false;
+				if(aAnswer == SWT.YES) {
 					if(!Inpainter.isReady(aTDe.tdeDir) && !aGUI.download()) {
 						//Not downloaded: the holes stay interpolated until configured again
 						return;

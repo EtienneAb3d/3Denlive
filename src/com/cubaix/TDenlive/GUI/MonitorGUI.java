@@ -393,12 +393,24 @@ public class MonitorGUI {
 		return rendering;
 	}
 
+	//Who shows its images (null: a rendering; else a computation that shows its images under construction:
+	//inpainting precomputation, depth map), so that it ends only its own display
+	volatile Object renderOwner = null;
+
 	/**
 	 * Start (true) or end (false) the display of the images of a rendering
 	 */
 	public void setRendering(boolean aOn) {
+		setRendering(aOn, null);
+	}
+
+	/**
+	 * Same for the images under construction of a computation (aOwner), GUI thread
+	 */
+	public void setRendering(boolean aOn,Object aOwner) {
 		synchronized(this) {
 			rendering = aOn;
+			renderOwner = aOn ? aOwner : null;
 			renderPending = null;
 		}
 		if(!aOn) {
@@ -410,6 +422,39 @@ public class MonitorGUI {
 		}
 		if(!canvas.isDisposed()) {
 			canvas.redraw();
+		}
+	}
+
+	/**
+	 * End of the display of the images of aOwner, if they are still the ones shown (GUI thread)
+	 */
+	public void releaseRendering(Object aOwner) {
+		if(aOwner != null && rendering && renderOwner == aOwner) {
+			setRendering(false, null);
+			redraw();
+		}
+	}
+
+	/**
+	 * A rendering shows its images (not the images under construction of a computation)
+	 */
+	public boolean isRenderingOutput() {
+		return rendering && renderOwner == null;
+	}
+
+	/**
+	 * The monitor shows the images of aOwner
+	 */
+	public boolean isShownBy(Object aOwner) {
+		return rendering && aOwner != null && renderOwner == aOwner;
+	}
+
+	/**
+	 * Images under construction of aOwner (any thread): shown unless a rendering shows its own
+	 */
+	public void showBuilding(Object aOwner,BufferedImage aL,BufferedImage aR) {
+		if(renderOwner == aOwner && rendering) {
+			showRendered(aL, aR);
 		}
 	}
 
@@ -691,6 +736,10 @@ public class MonitorGUI {
 
 	void draw(GC aGC) {
 		Rectangle aClientR = canvas.getClientArea();
+		//Zoom shown in percent under the monitor (wheel, buttons, change of mixer)
+		if(tde.gui.playerControlGUI != null) {
+			tde.gui.playerControlGUI.showZoom(mixer.getZoom());
+		}
 		drawDbl(aGC);
 		int aY = drawWorkCopies(aGC, aClientR);
 		drawComputing(aGC, aClientR, aY);

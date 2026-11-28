@@ -25,19 +25,26 @@ public class MediaListControlGUI extends CompositePanel {
 	}
 	
 	void createContents() {
-		toolBar = new Composite(container, SWT.NULL);
-		GridData aTB = new GridData(GridData.FILL_HORIZONTAL);
-		aTB.heightHint = tde.gui.h(25);
-		toolBar.setLayoutData(aTB);
-		tde.gui.applyColorFont(toolBar);
-		GridLayout aGL = new GridLayout(6, false);
-		tde.gui.applyNoMargin(aGL);
-		toolBar.setLayout(aGL);
-		
-		addMedia = new CLabel(toolBar,SWT.NONE);
+		//Title "Medias" and its "+" button (as the montage list), the other buttons on a line below
+		Composite aHead = new Composite(container, SWT.NULL);
+		GridData aHGD = new GridData(GridData.FILL_HORIZONTAL);
+		aHGD.heightHint = tde.gui.h(25);
+		aHead.setLayoutData(aHGD);
+		tde.gui.applyColorFont(aHead);
+		GridLayout aHGL = new GridLayout(2, false);
+		tde.gui.applyNoMargin(aHGL);
+		aHead.setLayout(aHGL);
+
+		org.eclipse.swt.widgets.Label aTitle = new org.eclipse.swt.widgets.Label(aHead, SWT.NONE);
+		tde.gui.applyColorFont(aTitle);
+		aTitle.setFont(tde.gui.fontsSwt.robotoBold);
+		aTitle.setText(" "+tde.gui.lngs.get("MediaOpen.ListTitle"));
+		aTitle.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER));
+
+		addMedia = new CLabel(aHead,SWT.NONE);
 		addMedia.setImage(tde.gui.imgsSwt.getIcon("add.gif"));
 		addMedia.setAlignment(SWT.CENTER);
-		GridData aEdgesGD = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
+		GridData aEdgesGD = new GridData(GridData.HORIZONTAL_ALIGN_END);
 		aEdgesGD.widthHint = 32;
 		aEdgesGD.heightHint = tde.gui.h(25);
 		addMedia.setLayoutData(aEdgesGD);
@@ -53,6 +60,15 @@ public class MediaListControlGUI extends CompositePanel {
 			@Override
 			public void mouseDoubleClick(MouseEvent arg0) {}
 		});
+
+		toolBar = new Composite(container, SWT.NULL);
+		GridData aTB = new GridData(GridData.FILL_HORIZONTAL);
+		aTB.heightHint = tde.gui.h(25);
+		toolBar.setLayoutData(aTB);
+		tde.gui.applyColorFont(toolBar);
+		GridLayout aGL = new GridLayout(5, false);
+		tde.gui.applyNoMargin(aGL);
+		toolBar.setLayout(aGL);
 		
 		CLabel addColor = new CLabel(toolBar,SWT.NONE);
 		addColor.setImage(tde.gui.imgsSwt.getIcon("colourPalette.gif"));

@@ -6,6 +6,7 @@
 	<entry label="SaveAs">Guardar como</entry>
 	<entry label="OverwriteFile">O ficheiro já existe. Substituí-lo?</entry>
 	<entry label="SaveBeforeQuit">O projeto tem alterações não guardadas. Guardá-las antes de sair?</entry>
+	<entry label="SaveBeforeOpen">O projeto tem alterações não guardadas. Guardá-las antes de abrir outro projeto?</entry>
 	<entry label="SaveError">Não foi possível guardar o projeto:</entry>
 	<entry label="Untitled">Novo projeto</entry>
 	<entry label="PackDone">Projeto empacotado em:</entry>
@@ -491,6 +492,7 @@
 	<entry label="Wobble">Oscilação</entry>
 </EntrySet>
 <EntrySet label="MediaOpen">
+	<entry label="ListTitle">Mídias</entry>
 	<entry label="DropTitle">Ficheiros largados</entry>
 	<entry label="DropAsk">%N% ficheiro(s) largado(s) na biblioteca. Qual é o seu tipo (o mesmo para todos)?</entry>
 	<entry label="DropPairs">Esquerda e direita: os ficheiros, ordenados por nome, são tomados dois a dois (vista esquerda, depois vista direita).</entry>
@@ -505,6 +507,7 @@
 	<entry label="OpenP">Adicionar uma vista/vídeo paralelo</entry>
 	<entry label="OpenLR">Adicionar uma vista/vídeo esquerdo e direito</entry>
 	<entry label="OpenFlat">Adicionar uma vista/vídeo não estéreo</entry>
+	<entry label="OpenAnaglyph">Adicionar uma vista/vídeo anáglifo:</entry>
 	<entry label="OpenAudio">Adicionar um som (música, voz...)</entry>
 	<entry label="Audio">Som</entry>
 	<entry label="WorkCopyProcessing">O 3De está a preparar uma cópia de trabalho do ficheiro\ncom tamanho e taxa de imagens reduzidos</entry>
@@ -533,6 +536,7 @@
 	<entry label="Name">Nome</entry>
 	<entry label="Occurrences">Ocorrências nas linhas de tempo</entry>
 	<entry label="NoOccurrence">Não usado nas linhas de tempo</entry>
+	<entry label="OccMontage">Montagem</entry>
 	<entry label="OccLine">Linha</entry>
 	<entry label="OccStart">Início</entry>
 	<entry label="OccEnd">Fim</entry>
@@ -632,6 +636,7 @@
 	<entry label="MoveClipUp">Mover para a linha de tempo acima</entry>
 	<entry label="MoveClipDown">Mover para a linha de tempo abaixo</entry>
 	<entry label="DuplicateClipUp">Duplicar para a linha de tempo acima</entry>
+	<entry label="ClipToNewMontage">Colocar o clipe numa nova montagem</entry>
 	<entry label="TwinToAudioClip">Criar um gémeo áudio</entry>
 	<entry label="StartTime">Início</entry>
 	<entry label="ShiftTime">Desvio</entry>
@@ -700,17 +705,32 @@
 	<entry label="ProgressCount">%DONE% / %TOTAL% imagens (%PERCENT%%)</entry>
 	<entry label="ProgressNote">Entretanto, o monitor mostra os buracos preenchidos por interpolação; as imagens concluídas mostram o resultado da IA. A edição pode continuar.</entry>
 	<entry label="Hide">Ocultar</entry>
+	<entry label="Restoring">Leitura das imagens pré-calculadas numa sessão anterior: %DONE% / %TOTAL% (%PERCENT%%)</entry>
+	<entry label="RestoringNote">Estão guardadas com o projeto como vídeos; o cálculo das imagens em falta começa quando a leitura termina.</entry>
+	<entry label="Recompute">Recalcular a desoclusão</entry>
+	<entry label="RecomputeAsk">As imagens de preenchimento de buracos por IA já calculadas para este clipe são apagadas e calculadas de novo. Continuar?</entry>
+	<entry label="StateUpToDate">Atualizado (%TOTAL% imagens)</entry>
+	<entry label="StateStale">Não atualizado: %LEFT% de %TOTAL% imagens por calcular</entry>
+	<entry label="StateStopped">(cálculo interrompido)</entry>
+	<entry label="Interrupt">Interromper</entry>
+	<entry label="Resume">Retomar o cálculo</entry>
+	<entry label="Later">Mais tarde</entry>
+	<entry label="Interrupted">Cálculo interrompido: as imagens já feitas são guardadas com o projeto.</entry>
+	<entry label="Follow">Mostrar as imagens em construção no monitor</entry>
 	<entry label="AllClips">Estas definições aplicar-se-ão aos %N% clipes em causa.</entry>
 	<entry label="NoGpu">Esta máquina não consegue executar o modelo numa placa gráfica (Apple Silicon ou NVIDIA com %GB% GB livres): no processador seria demasiado lento. Os buracos continuam a ser preenchidos por interpolação.</entry>
 	<entry label="OpenNoGpu">Este projeto preenche os buracos de %N% clipe(s) com IA, mas esta máquina não consegue executar o modelo numa placa gráfica (Apple Silicon ou NVIDIA com %GB% GB livres). Os buracos continuam a ser preenchidos por interpolação; as definições dos clipes são mantidas no projeto.</entry>
 	<entry label="OpenUnsupported">Este projeto preenche os buracos de %N% clipe(s) com IA, mas o preenchimento de buracos com IA não está disponível nesta plataforma. Os buracos continuam a ser preenchidos por interpolação; as definições dos clipes são mantidas no projeto.</entry>
-	<entry label="OpenMissing">Este projeto preenche os buracos de %N% clipe(s) com IA, mas as imagens pré-calculadas não estão disponíveis (só são guardadas durante uma sessão). Lançar o seu pré-cálculo agora, ou alterar a configuração (a mesma para todos estes clipes)?</entry>
+	<entry label="OpenMissing">Este projeto preenche os buracos de %N% clipe(s) com IA, mas faltam algumas das suas imagens pré-calculadas (nunca calculadas, cálculo interrompido ou removidas da pasta WorkCache do projeto). Lançar o seu pré-cálculo agora, ou alterar a configuração (a mesma para todos estes clipes)?</entry>
 	<entry label="OpenStart">Lançar os pré-cálculos</entry>
+	<entry label="HolesShownOff">Os buracos deste clipe voltam a ser preenchidos, mas parte das suas imagens pré-calculadas falta ou está desatualizada. Iniciar o pré-cálculo agora?</entry>
 	<entry label="OpenConfigure">Reconfigurar...</entry>
 </EntrySet>
 <EntrySet label="DepthmapStereo">
 	<entry label="BlackIsFront">Preto à frente</entry>
 	<entry label="Depthmap">Mapa de profundidade</entry>
+	<entry label="Recolor">Recolorir</entry>
+	<entry label="RecolorFill">Preencher os buracos com a recolorização</entry>
 </EntrySet>
 <EntrySet label="SaveProject">
 	<entry label="Title">Guardar o projeto</entry>
@@ -1678,6 +1698,10 @@ Calcular os mapas de profundidade das duas vistas a partir do clipe (inteligênc
 	<entry label="Cancel">Cancelar</entry>
 	<entry label="Starting">A iniciar...</entry>
 	<entry label="Canceling">A cancelar...</entry>
+	<entry label="Interrupt">Interromper</entry>
+	<entry label="Resume">Retomar o cálculo</entry>
+	<entry label="Interrupted">Cálculo do mapa de profundidade interrompido a %P% %: as imagens feitas são guardadas, o botão «Retomar o cálculo» do processador terminá-lo-á.</entry>
+	<entry label="OfferResume">O cálculo dos mapas de profundidade de %N% clipe(s) foi interrompido:%LIST%\nRetomá-lo agora (um após o outro)?</entry>
 	<entry label="DownloadingRuntime">A transferir o ONNX Runtime:</entry>
 	<entry label="DownloadingModel">A transferir o modelo %MODEL%:</entry>
 	<entry label="LoadingModel">A carregar o modelo %MODEL%...</entry>
@@ -1698,7 +1722,12 @@ Calcular os mapas de profundidade das duas vistas a partir do clipe (inteligênc
 	<entry label="OnCpuNoGpu">Em execução no CPU: nenhuma GPU utilizável</entry>
 	<entry label="OnCpuError">Em execução no CPU: a GPU falhou</entry>
 	<entry label="Show">Mostrar o mapa de profundidade</entry>
+	<entry label="ShowHoles">Mostrar os buracos</entry>
 	<entry label="Computed">(calculado)</entry>
+	<entry label="StateDone">Mapas de profundidade calculados</entry>
+	<entry label="StatePartial">Cálculo parcial (%P% %): interrompido</entry>
+	<entry label="StateNone">Não calculados</entry>
+	<entry label="StateNone2D">Não calculado: a vista direita da mídia é o mapa de profundidade</entry>
 	<entry label="Replace">Já existe um mapa de profundidade junto do média: será substituído.</entry>
 	<entry label="NvidiaNote">Placa gráfica NVIDIA encontrada: é usada a versão GPU do motor. Requer o CUDA 12 e o cuDNN 9 instalados, senão o cálculo é feito no CPU.</entry>
 	<entry label="OnCpuCuda">Em execução no CPU: a placa NVIDIA requer o CUDA 12 e o cuDNN 9 instalados</entry>
@@ -1976,10 +2005,16 @@ Calcular os mapas de profundidade das duas vistas a partir do clipe (inteligênc
 	<entry label="SoundMute">Sem som</entry>
 	<entry label="DeleteLineTitle">Eliminar a faixa</entry>
 	<entry label="DeleteLineNotEmpty">A faixa %NAME% contém %N% clipe(s). Eliminá-los com a faixa?</entry>
+	<entry label="ToNewMontage">Colocar os clipes selecionados numa nova montagem</entry>
 </EntrySet>
 <EntrySet label="Renderer">
 	<entry label="ProcessingRes">Qualidade de renderização</entry>
 	<entry label="OutputRes">Qualidade do vídeo</entry>
+	<entry label="ProcessingHdr">Gama dinâmica do cálculo</entry>
+	<entry label="OutputHdr">Gama dinâmica do vídeo</entry>
+	<entry label="OutputHdr_SDR">SDR (H.264 8 bits)</entry>
+	<entry label="OutputHdr_HLG">HDR HLG (HEVC 10 bits)</entry>
+	<entry label="OutputHdr_PQ">HDR10 PQ (HEVC 10 bits)</entry>
 	<entry label="OutputFPS">FPS do vídeo</entry>
 	<entry label="FFmpegVideoOpts">Adicionar parâmetros de vídeo FFmpeg (https://ffmpeg.org/ffmpeg.html)</entry>
 	<entry label="FFmpegVideoOptsEx">Exemplo: -b:v 6000k -maxrate:v 9000k -minrate:v 0</entry>
@@ -2046,6 +2081,9 @@ Calcular os mapas de profundidade das duas vistas a partir do clipe (inteligênc
 	<entry label="Settings">Definições: idioma da interface, pasta de renderização, qualidade dos modos de trabalho, apresentação e renderização</entry>
 	<entry label="Machine">Avaliação da máquina: o que a IA pode fazer aqui, na GPU ou na CPU, modelo a modelo</entry>
 	<entry label="Render">Renderizar a montagem para um ficheiro de vídeo ou uma sequência de imagens</entry>
+	<entry label="CopyImage">Copiar uma ilustração para a área de transferência: a imagem do monitor na resolução das suas definições, a janela da aplicação ou o ecrã completo</entry>
+	<entry label="LineTitle">Título da linha, mostrado no seu separador (vazio: o seu nome por posição, V1, A1...)</entry>
+	<entry label="LineClips">Clips da linha por início: um clique coloca o cursor de tempo no início do clip</entry>
 	<entry label="News">Novidades do 3Denlive (site web)</entry>
 	<entry label="Guide">Guia do utilizador (site web)</entry>
 	<entry label="WebSite">Site web do 3Denlive</entry>
@@ -2120,6 +2158,7 @@ Calcular os mapas de profundidade das duas vistas a partir do clipe (inteligênc
 	<entry label="MonitorZoomIn">Ampliar a pré-visualização</entry>
 	<entry label="MonitorZoomOut">Reduzir a pré-visualização</entry>
 	<entry label="MonitorZoomFit">Ajustar a pré-visualização à janela</entry>
+	<entry label="MonitorZoomPercent">Zoom da pré-visualização</entry>
 
 	<entry label="AddVideoLine">Adicionar uma linha de tempo de vídeo</entry>
 	<entry label="AddAudioLine">Adicionar uma linha de tempo de som</entry>
@@ -2132,7 +2171,7 @@ Calcular os mapas de profundidade das duas vistas a partir do clipe (inteligênc
 	<entry label="LineUp">Mover toda esta linha para cima (com os seus clipes)</entry>
 	<entry label="LineDown">Mover toda esta linha para baixo (com os seus clipes)</entry>
 	<entry label="LineTrash">Eliminar toda esta faixa (com os seus clipes)</entry>
-	<entry label="Ruler">Clique ou arraste para mover o cursor de tempo</entry>
+	<entry label="Ruler">Clique ou arraste para mover o cursor de tempo (um clique no texto violeta do pré-cálculo do preenchimento por IA volta a mostrar a sua janela de progresso)</entry>
 
 	<entry label="ProcTitle">Clique para mostrar / ocultar as definições deste processador</entry>
 	<entry label="KeySelect">Adiciona à seleção a chave sob o cursor de tempo, ou então a mais próxima à sua esquerda (quadrado amarelo). Uma alteração de uma definição dá o mesmo valor a todas as chaves selecionadas, e as definições mostram os valores da última chave selecionada</entry>
@@ -2151,9 +2190,13 @@ Calcular os mapas de profundidade das duas vistas a partir do clipe (inteligênc
 	<entry label="ProcLib_StereoAligner">Alinhar as vistas esquerda e direita (posição, tamanho, rotação)</entry>
 	<entry label="ProcLib_ColorAdapter">Adaptar os vermelhos e cianos para reduzir as imagens fantasma dos anáglifos</entry>
 	<entry label="DepthShow">Mostrar o mapa de profundidade no monitor em vez do resultado (não na renderização)</entry>
+	<entry label="DepthShowHoles">Deixar os buracos da conversão em transparência, sem nenhum preenchimento (interpolação ou IA), no monitor e na renderização final</entry>
 	<entry label="Inpaint">Método de preenchimento dos buracos descobertos atrás do primeiro plano, para cada nível de precisão (resolução de trabalho, ecrã inteiro, renderização final): interpolação das suas bordas, ou uma inteligência artificial (LaMa) pré-calculada em segundo plano ou apenas na renderização final.</entry>
 	<entry label="InpaintLight">Método de preenchimento dos buracos descobertos atrás do primeiro plano, para cada nível de precisão (resolução de trabalho, ecrã inteiro, renderização final): interpolação das suas bordas, ou uma inteligência artificial (light_inpaint_v1 do iw3) pré-calculada em segundo plano ou apenas na renderização final.</entry>
 	<entry label="DepthConvert">Calcular o(s) mapa(s) de profundidade do clipe com uma inteligência artificial (Depth Anything V2), na pasta WorkCache do projeto</entry>
+	<entry label="DepthResume">Terminar o cálculo interrompido do mapa de profundidade, a partir da última imagem feita (mesmo modelo)</entry>
+	<entry label="InpaintRecompute">Apagar as imagens de preenchimento de buracos por IA deste clipe e calculá-las de novo desde o início</entry>
+	<entry label="InpaintState">Estado do pré-cálculo do preenchimento de buracos por IA deste clipe. Clique: a janela de progresso (interromper / retomar o cálculo), mesmo depois de a fechar.</entry>
 	<entry label="ProcLib_Depthmap">Construir um par estéreo a partir de uma imagem 2D e do seu mapa de profundidade</entry>
 	<entry label="ProcLib_DepthmapStereo">Alterar a profundidade de um par estéreo com um mapa de profundidade</entry>
 	<entry label="ProcLib_HueSaturation">Alterar a matiz, a saturação e o brilho</entry>
@@ -2188,6 +2231,8 @@ Calcular os mapas de profundidade das duas vistas a partir do clipe (inteligênc
 	<entry label="CloseWindow">Fechar esta janela</entry>
 	<entry label="RenderProcessingRes">Resolução do processamento da imagem (antes da codificação)</entry>
 	<entry label="RenderOutputRes">Resolução do vídeo de saída</entry>
+	<entry label="RenderProcessingHdr">SDR: imagens calculadas em 8 bits. HDR: calculadas em vírgula flutuante (mais precisão, altas luzes acima do branco conservadas para um vídeo HDR), mais lento e mais memória</entry>
+	<entry label="RenderOutputHdr">SDR: vídeo habitual (H.264 8 bits, reproduzido em todo o lado). HLG: HDR que também se vê corretamente em ecrãs SDR (HEVC 10 bits). PQ (HDR10): HDR dos televisores e do streaming (HEVC 10 bits); sem ecrã HDR parece escuro e baço. Apenas ficheiros de vídeo (não sequências de imagens); os anáglifos ficam em cores de 8 bits</entry>
 	<entry label="RenderFPS">Imagens por segundo do vídeo de saída</entry>
 	<entry label="RenderFFmpegOpts">Parâmetros ffmpeg adicionais para a codificação do vídeo (opcional)</entry>
 	<entry label="RenderOutputFile">Caminho do ficheiro de saída, sem o sufixo de formato (_P, _X...) acrescentado para cada formato marcado. Com um modelo como "3De_%04d.png", são escritas sequências de imagens</entry>
@@ -2203,6 +2248,8 @@ Calcular os mapas de profundidade das duas vistas a partir do clipe (inteligênc
 	<entry label="OpenP">Imagem ou vídeo com a vista esquerda à esquerda e a vista direita à direita (também ficheiros MPO)</entry>
 	<entry label="OpenLR">Dois ficheiros separados: primeiro a vista esquerda, depois a vista direita</entry>
 	<entry label="OpenFlat">Imagem ou vídeo 2D, usado para os dois olhos</entry>
+	<entry label="OpenAnaglyph">Anáglifo (um ficheiro): cada vista mantém as camadas de cor do seu filtro (vermelho / ciano: o vermelho à esquerda, o verde e o azul à direita); o modo anáglifo das mesmas cores devolve a imagem original</entry>
+	<entry label="AnaglyphType">Tipo de anáglifo: cor do filtro do olho esquerdo, depois do direito</entry>
 	<entry label="OpenAudio">Ficheiro de som, colocado numa linha de tempo de som</entry>
 
 	<entry label="SecureCropLeft">Recortar a margem esquerda para que as zonas vazias criadas pelo alinhamento não fiquem visíveis</entry>
@@ -2217,10 +2264,13 @@ Calcular os mapas de profundidade das duas vistas a partir do clipe (inteligênc
 	<entry label="LumaChoice">Máscara de luminância da transição</entry>
 	<entry label="FrameChoice">Imagem de moldura sobreposta ao clipe</entry>
 	<entry label="BlackIsFront">Marque se as zonas escuras do mapa de profundidade estão à frente</entry>
+	<entry label="DepthRecolor">Cada vista toma da outra as camadas de cor que lhe faltam (anáglifo importado: vermelho numa vista, ciano na outra), no píxel correspondente calculado com os mapas de profundidade. As zonas vistas por uma só vista tomam as cores do fundo vizinho. A conversão e o seu preenchimento de buracos trabalham depois sobre as vistas recoloridas.</entry>
+	<entry label="DepthRecolorFill">Anáglifo convertido tal como está (Recolorizar desmarcado): os seus buracos são preenchidos (interpolação ou IA) nas vistas recolorizadas, que têm as cores da cena, em vez das vistas vermelha / ciano; cada vista mantém depois só as suas próprias camadas de cor. As imperfeições da recolorização só tocam nos buracos. Útil só para um anáglifo. Desativado por predefinição.</entry>
 	<entry label="ClipSoundOn">Ouvir o som deste clipe</entry>
 	<entry label="MoveClipUp">Mover este clipe para a linha de tempo acima</entry>
 	<entry label="MoveClipDown">Mover este clipe para a linha de tempo abaixo</entry>
 	<entry label="DuplicateClipUp">Copiar este clipe para a linha de tempo acima (cópia sem som)</entry>
+	<entry label="ClipToNewMontage">Mover este clipe (com os seus clipes ligados) para uma nova montagem: a sua renderização final é calculada e depois ocupa o seu lugar aqui (clipes pesados calculados à parte)</entry>
 	<entry label="UnlinkTwins">Desligar os clipes gémeos: podem depois ser movidos separadamente</entry>
 	<entry label="TrashClip">Eliminar este clipe da linha de tempo</entry>
 	<entry label="CutAtPos">Cortar este clipe no cursor de tempo: a segunda parte torna-se um novo clipe</entry>
@@ -2230,12 +2280,14 @@ Calcular os mapas de profundidade das duas vistas a partir do clipe (inteligênc
 	<entry label="KeyFrames">Imagens-chave deste processador ao longo da duração do clipe: clique ou arraste para mover o cursor de tempo</entry>
 	<entry label="HScroll">Deslocar as linhas de tempo (o touchpad e a roda inclinável também funcionam)</entry>
 	<entry label="MediaName">Nome do media na biblioteca, nos clips e nas escolhas (vazio: o nome do ficheiro)</entry>
-	<entry label="MediaOccurrences">Clips deste media nas linhas de tempo: um clique coloca o cursor de tempo no seu início</entry>
+	<entry label="MediaOccurrences">Clips deste media nas linhas de tempo de todas as montagens: um clique abre a montagem e coloca o cursor de tempo no seu início</entry>
 	<entry label="MediaUsedBy">Media da biblioteca que usam este (texturas 3D...): um clique seleciona esse media</entry>
 	<entry label="MediaUses">Media da biblioteca usados por este (texturas 3D...): um clique seleciona esse media</entry>
 	<entry label="MediaInProcessors">Processadores dos clips que usam este media (mapa de profundidade, máscara...): um clique seleciona o clip e abre o processador</entry>
 	<entry label="ClipStart">Ir para o início do clipe selecionado (ou da montagem se nenhum clipe estiver selecionado)</entry>
 	<entry label="ClipEnd">Ir para o fim do clipe selecionado (ou da montagem se nenhum clipe estiver selecionado)</entry>
+	<entry label="MontageStart">Ir para o início da montagem (ou da mídia da biblioteca mostrada no monitor)</entry>
+	<entry label="MontageEnd">Ir para o fim da montagem (ou da mídia da biblioteca mostrada no monitor)</entry>
 	<entry label="StepSeconds">Passo em segundos das setas duplas</entry>
 	<entry label="StepBack">Recuar na montagem o passo em segundos</entry>
 	<entry label="StepForward">Avançar na montagem o passo em segundos</entry>
@@ -2367,6 +2419,14 @@ Calcular os mapas de profundidade das duas vistas a partir do clipe (inteligênc
 	<entry label="Histogram_Mode">Vermelho, verde e azul sobrepostos, ou a luminância. Marcas vermelhas: pretos ou brancos cortados</entry>
 	<entry label="Waveform_Mode">Luminância, ou vermelho, verde e azul lado a lado (parada); linhas a 0, 25, 50, 75, 100 %</entry>
 	<entry label="Vectorscope_Mode">x2 amplia o centro, para imagens pouco saturadas. Quadrados: cores a 75 %, linha castanha: tons de pele</entry>
+	<entry label="MontageAdd">Adicionar uma montagem</entry>
+	<entry label="MontageOccurrences">Clips da renderização desta montagem nas linhas de tempo de todas as montagens: um clique abre essa montagem no início do clip</entry>
+	<entry label="MontageList">Montagens do projeto, como os media da biblioteca: um clique seleciona uma montagem (a sua renderização no monitor, as suas propriedades), um duplo clique ou arrastar para uma linha de tempo inclui a sua renderização na montagem em edição. O lápis abre uma montagem nas linhas de tempo; um clique em Master abre-a</entry>
+	<entry label="MontageTrash">Eliminar esta montagem (as montagens que a incluem mantêm a sua última renderização como um vídeo normal)</entry>
+	<entry label="MontageEdit">Abrir esta montagem nas linhas de tempo para a editar</entry>
+	<entry label="MontageName">Nome da montagem, mostrado na biblioteca de montagens e nos clipes da sua renderização</entry>
+	<entry label="MontageRender">Calcular a renderização final desta montagem, usada pelas montagens que a incluem</entry>
+	<entry label="MontageGoTo">Selecionar esta montagem</entry>
 </EntrySet>
 <EntrySet label="Machine">
 	<entry label="Title">Avaliação da máquina</entry>
@@ -2400,4 +2460,106 @@ Calcular os mapas de profundidade das duas vistas a partir do clipe (inteligênc
 	<entry label="TipNo">Impossível: este modelo precisa de uma GPU com %NEED% GB de memória (%CAP% GB nesta máquina).</entry>
 	<entry label="TipNa">Não disponível neste sistema.</entry>
 	<entry label="Legend">GPU em verde: rápido. CPU em vermelho: possível, mas muito mais lento. Não em vermelho: impossível sem uma GPU suficiente. Cinza: não disponível neste sistema. Avaliado pela memória total da GPU: outras aplicações que a ocupem podem fazer um modelo passar para a CPU no momento do cálculo.</entry>
+</EntrySet>
+<EntrySet label="Montage">
+	<entry label="Occurrences">Ocorrências nas montagens</entry>
+	<entry label="NoOccurrence">A sua renderização não é usada em nenhuma montagem</entry>
+	<entry label="Title">Montagens</entry>
+	<entry label="NewName">Nova montagem</entry>
+	<entry label="Editing">(em edição)</entry>
+	<entry label="EditButton">Editar nas linhas de tempo</entry>
+	<entry label="MainState">Projeto completo</entry>
+	<entry label="StateNone">Sem renderização</entry>
+	<entry label="StateStale">Renderização desatualizada</entry>
+	<entry label="StateOk">Renderização atualizada</entry>
+	<entry label="MainNoRender">Montagem principal: nunca é incluída noutra montagem</entry>
+	<entry label="PropsTitle">Montagem</entry>
+	<entry label="Name">Nome</entry>
+	<entry label="Duration">Duração</entry>
+	<entry label="RenderLabel">Renderização</entry>
+	<entry label="RenderNow">Calcular a renderização</entry>
+	<entry label="RenderAgain">Recalcular a renderização</entry>
+	<entry label="Includes">Inclui as montagens</entry>
+	<entry label="IncludedIn">Incluída nas montagens</entry>
+	<entry label="NoneListed">Nenhuma</entry>
+	<entry label="DeleteConfirm">Eliminar a montagem « %s » e os seus clipes?</entry>
+	<entry label="DeleteUsed">Está incluída em: %l. Estas montagens mantêm a sua última renderização como um vídeo normal da biblioteca.</entry>
+	<entry label="MainNotIncluded">A montagem principal (o projeto completo) não pode ser incluída noutra montagem.</entry>
+	<entry label="NotItself">Uma montagem não pode ser incluída em si mesma.</entry>
+	<entry label="Loop">A montagem « %s » já inclui « %t » (diretamente ou através de outras montagens): incluí-la em « %t » criaria um ciclo (cada atualização de uma pediria uma da outra, sem fim). Inclusão recusada.</entry>
+	<entry label="Empty">A montagem « %s » está vazia: nada a incluir.</entry>
+	<entry label="WillRender">A renderização final da montagem « %s » tem de ser calculada para a incluir: agora ou mais tarde (uma imagem fixa « Montagem não calculada » substitui-a entretanto)?</entry>
+	<entry label="AlsoRender">As renderizações destas montagens que inclui serão atualizadas primeiro: %l.</entry>
+	<entry label="InsertStale">Estas renderizações estão desatualizadas: %l.\n\nSim: recalculá-las antes da inclusão.\nNão: incluir a versão desatualizada.</entry>
+	<entry label="ExtractAsk">Os %n clipes selecionados (com os seus clipes ligados) serão movidos para uma nova montagem, cuja renderização final será calculada agora e depois ocupará o seu lugar aqui.</entry>
+	<entry label="ExtractAskOne">Este clipe (com os seus clipes ligados) será movido para uma nova montagem, cuja renderização final será calculada agora e depois ocupará o seu lugar aqui.</entry>
+	<entry label="ExtractNotRendered">Os clipes estão na montagem « %s », mas a sua renderização não foi calculada: inclua-a quando quiser (botão da sua linha ou arrastar para uma linha de tempo).</entry>
+	<entry label="ExtractPlaceholder">Os clipes estão na montagem « %s », cuja renderização não foi calculada: uma imagem fixa « Montagem não calculada » substitui-os até ao seu cálculo (o seu botão, ou a renderização da montagem que a inclui).</entry>
+	<entry label="NotComputed">Montagem não calculada</entry>
+	<entry label="ComputeNow">Calcular</entry>
+	<entry label="ComputeLater">Calcular mais tarde</entry>
+	<entry label="PlaceholderInfo">A montagem « %s » ainda não está calculada: uma imagem fixa « Montagem não calculada » substitui-a até ao seu cálculo (o seu botão, ou a renderização da montagem que a inclui).</entry>
+	<entry label="RenderStale">As renderizações destas montagens incluídas estão desatualizadas: %l.\n\nSim: recalculá-las primeiro (recomendado).\nNão: manter as versões desatualizadas para esta renderização.\nCancelar: não fazer nada.</entry>
+	<entry label="UpdateAsk">A montagem « %t » inclui montagens alteradas desde a sua renderização: %l.\n\nAtualizar agora as suas renderizações?</entry>
+	<entry label="RenderTitle">Renderização das montagens</entry>
+	<entry label="Rendering">Renderização da montagem « %s »...</entry>
+	<entry label="RenderProgress">Renderização da montagem « %s »: imagem %DONE% / %TOTAL%</entry>
+	<entry label="RenderError">A renderização da montagem falhou:</entry>
+</EntrySet>
+<EntrySet label="MediaInfo">
+	<entry label="File">Ficheiro</entry>
+	<entry label="Tags">Etiquetas</entry>
+	<entry label="Container">Contentor</entry>
+	<entry label="FileSize">Tamanho do ficheiro</entry>
+	<entry label="Duration">Duração</entry>
+	<entry label="Bitrate">Taxa de bits</entry>
+	<entry label="Default">(predefinida)</entry>
+	<entry label="Video">Vídeo</entry>
+	<entry label="Audio">Áudio</entry>
+	<entry label="Subtitle">Legendas</entry>
+	<entry label="Codec">Codec</entry>
+	<entry label="Language">Idioma</entry>
+	<entry label="Resolution">Resolução</entry>
+	<entry label="Aspect">Proporção de imagem</entry>
+	<entry label="Fps">Imagens por segundo</entry>
+	<entry label="PixFmt">Formato de píxel</entry>
+	<entry label="BitDepth">Profundidade de bits</entry>
+	<entry label="Range">Intervalo</entry>
+	<entry label="RangeTv">Limitado (TV)</entry>
+	<entry label="RangePc">Completo (PC)</entry>
+	<entry label="Colors">Cores (matriz / primárias / transferência)</entry>
+	<entry label="Dynamic">Gama dinâmica</entry>
+	<entry label="SampleRate">Frequência de amostragem</entry>
+	<entry label="Channels">Canais</entry>
+	<entry label="SampleFormat">Formato das amostras</entry>
+	<entry label="Scan">Varrimento</entry>
+	<entry label="Progressive">Progressivo</entry>
+	<entry label="Interlaced">Entrelaçado</entry>
+</EntrySet>
+<EntrySet label="Line">
+	<entry label="PropsTitle">Linha de tempo de vídeo</entry>
+	<entry label="PropsTitleAudio">Linha de tempo de som</entry>
+	<entry label="Title">Título:</entry>
+	<entry label="Info">Conteúdo:</entry>
+	<entry label="InfoText">%N% clips, fim em %END%</entry>
+	<entry label="Inactive">inativa</entry>
+	<entry label="Clips">Clips da linha</entry>
+	<entry label="NoClip">Nenhum clip nesta linha</entry>
+	<entry label="ClipCol">Clip</entry>
+</EntrySet>
+<EntrySet label="Copy">
+	<entry label="Monitor">Copiar o monitor (%RES% linhas)</entry>
+	<entry label="Window">Copiar a janela da aplicação</entry>
+	<entry label="Screen">Copiar o ecrã completo</entry>
+	<entry label="Failed">A cópia para a área de transferência falhou:</entry>
+	<entry label="MonitorEmpty">Nada para copiar no monitor</entry>
+</EntrySet>
+<EntrySet label="Anaglyph">
+	<entry label="Type_redCyan">Vermelho / ciano</entry>
+	<entry label="Type_cyanRed">Ciano / vermelho</entry>
+	<entry label="Type_greenMagenta">Verde / magenta</entry>
+	<entry label="Type_magentaGreen">Magenta / verde</entry>
+	<entry label="Type_amberBlue">Âmbar / azul (ColorCode 3-D)</entry>
+	<entry label="Type_redBlue">Vermelho / azul</entry>
+	<entry label="Type_redGreen">Vermelho / verde</entry>
 </EntrySet>

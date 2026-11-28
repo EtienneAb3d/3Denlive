@@ -357,7 +357,7 @@ public class Chromakey extends Processor {
 		}
 		
 		Key aKey = getInterKeyGT(aTime);
-		aFG.drawImage(aBI,0,0,null);
+		com.cubaix.TDenlive.utils.FloatDraw.draw(aFG, aFBI, aBI, 0, 0, 0, 0);
 
 		double aBevel = aKey.bevel <= 0.0 ? 0.001/255.0:aKey.bevel;
 		
