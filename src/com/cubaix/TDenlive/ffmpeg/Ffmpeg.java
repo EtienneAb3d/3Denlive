@@ -196,10 +196,8 @@ public class Ffmpeg {
 	}
 
 	static String findFfmpeg() {
-		if(new File("/usr/bin/ffmpeg").exists()) {
-			return "/usr/bin/ffmpeg";
-		}
-
+		//The ffmpeg of the delivery first: the one of the machine may lack features (ffmpeg 8 of Ubuntu decodes only
+		//the first 512 x 512 tile of a HEIC tile grid)
 		String os = System.getProperty("os.name").toLowerCase();
 		boolean isWindows = os.contains("windows");
 		boolean isMac = os.contains("mac");
@@ -226,7 +224,7 @@ public class Ffmpeg {
 				}
 			}
 		}
-		for(String aCandidate : new String[] {"/opt/homebrew/bin/ffmpeg", "/usr/local/bin/ffmpeg"}) {
+		for(String aCandidate : new String[] {"/usr/bin/ffmpeg", "/opt/homebrew/bin/ffmpeg", "/usr/local/bin/ffmpeg"}) {
 			if(new File(aCandidate).canExecute()) {
 				return aCandidate;
 			}

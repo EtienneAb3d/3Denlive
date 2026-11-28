@@ -1394,13 +1394,36 @@ public class TDeGUI {
 				}
 			}
 			//8 bits per channel (also from an HDR rendering), the alpha of the montage kept
-			BufferedImage aBI = ImageUtils.createImage(aBIL.getWidth()+aBIR.getWidth(), Math.max(aBIL.getHeight(), aBIR.getHeight()));
-			Graphics aG = aBI.getGraphics();
-			aG.drawImage(aBIL, 0, 0, null);
-			aG.drawImage(aBIR, aBIL.getWidth(), 0, null);
-			aG.dispose();
-			ImageUtils.saveImage(aOut.getAbsolutePath(), aBI);
-			tde.mediaList.loadImageP(aOut.getAbsolutePath(), TDConfig.PROCESSING_MODE_RENDER, 0);
+			//The part of each view shown by the zoom and position of the monitor, at the size of the view
+			com.cubaix.TDenlive.processors.Mixer aMix = monitorGUI.mixer;
+			double aZ = aMix == null ? 1.0 : aMix.getZoom();
+			double aX = aMix == null ? 0.0 : aMix.getX();
+			double aY = aMix == null ? 0.0 : aMix.getY();
+			//Monitor in an anaglyph mode: the anaglyph of that mode (one image at the size of a view), imported as an
+			//anaglyph of the colors of its glasses
+			String aAnaType = aMix instanceof com.cubaix.TDenlive.processors.AnaMixer
+					? ((com.cubaix.TDenlive.processors.AnaMixer)aMix).anaglyphType() : null;
+			if(aAnaType != null) {
+				com.cubaix.TDenlive.processors.AnaMixer aAna = (com.cubaix.TDenlive.processors.AnaMixer)aMix.copyMode();
+				aAna.setZoom(aZ);
+				aAna.setX(aX);
+				aAna.setY(aY);
+				BufferedImage aBI = aAna.mix2Awt(aBIL, aBIR, TDConfig.PROCESSING_MODE_RENDER
+						, new org.eclipse.swt.graphics.Rectangle(0, 0, aBIL.getWidth(), aBIL.getHeight()));
+				ImageUtils.saveImage(aOut.getAbsolutePath(), aBI);
+				tde.mediaList.loadImageAnaglyph(aOut.getAbsolutePath(), aAnaType, TDConfig.PROCESSING_MODE_RENDER, 0);
+			}
+			else {
+				BufferedImage aBI = ImageUtils.createImage(aBIL.getWidth()+aBIR.getWidth(), Math.max(aBIL.getHeight(), aBIR.getHeight()));
+				java.awt.Graphics2D aG = aBI.createGraphics();
+				aG.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+				aG.setRenderingHint(java.awt.RenderingHints.KEY_RENDERING, java.awt.RenderingHints.VALUE_RENDER_QUALITY);
+				drawZoomed(aG, aBIL, 0, aZ, aX, aY);
+				drawZoomed(aG, aBIR, aBIL.getWidth(), aZ, aX, aY);
+				aG.dispose();
+				ImageUtils.saveImage(aOut.getAbsolutePath(), aBI);
+				tde.mediaList.loadImageP(aOut.getAbsolutePath(), TDConfig.PROCESSING_MODE_RENDER, 0);
+			}
 			if(mediaListGUI != null) {
 				mediaListGUI.redraw();
 			}
@@ -1414,6 +1437,19 @@ public class TDeGUI {
 			return;
 		}
 		shell.setCursor(null);
+	}
+
+	/**
+	 * aView drawn at aDX, at its size, cropped as the mixer of the monitor shows it (Mixer.resize()): zoom aZ,
+	 * position aX / aY (parts of the view); a zoom below 1 leaves transparent margins
+	 */
+	static void drawZoomed(java.awt.Graphics2D aG, BufferedImage aView, int aDX, double aZ, double aX, double aY) {
+		int aW = aView.getWidth();
+		int aH = aView.getHeight();
+		double aSX = aX*aW+aW*0.5*(1.0-1.0/aZ);
+		double aSY = aY*aH+aH*0.5*(1.0-1.0/aZ);
+		aG.drawImage(com.cubaix.TDenlive.utils.FloatDraw.clamped(aView), aDX, 0, aDX+aW, aH
+				, (int)aSX, (int)aSY, (int)(aSX+aW/aZ), (int)(aSY+aH/aZ), null);
 	}
 
 	/**

@@ -77,7 +77,7 @@ public class ScreenCopyGUI {
 		return System.getProperty("os.name").toLowerCase().contains("mac");
 	}
 
-	/** The monitor in its view mode at the resolution of its processing mode */
+	/** The monitor in its view mode at the resolution of its processing mode, the part shown by its zoom and position */
 	static void copyMonitor(TDenlive aTDe) {
 		TDeGUI aGUI = aTDe.gui;
 		MonitorGUI aMon = aGUI.monitorGUI;
@@ -90,6 +90,10 @@ public class ScreenCopyGUI {
 		Media aMedia = aMon.media;
 		int aMode = aMon.processingMode;
 		com.cubaix.TDenlive.processors.Mixer aMixer = aMon.mixer.copyMode();
+		//The part of the image shown: zoom and position of the monitor
+		aMixer.setZoom(aMon.mixer.getZoom());
+		aMixer.setX(aMon.mixer.getX());
+		aMixer.setY(aMon.mixer.getY());
 		shutter();
 		//Computed apart under the lock of the monitor (the UI thread must not wait for it: its processors may
 		//syncExec), copied by the UI thread

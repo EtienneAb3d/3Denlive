@@ -60,6 +60,25 @@ public class AnaMixer extends Mixer {
 		return process2SwtImage(aMedia,aProcessingMode,aTargetSize,aTime);
 	}
 
+	/**
+	 * Kind of anaglyph of utils.Anaglyph.TYPES made by this mode (the colors of the filters of the glasses: Dubois and
+	 * Zhang-Allister are red / cyan), null when the mode does not make an anaglyph (interlaced, one view)
+	 */
+	public String anaglyphType() {
+		switch(mode) {
+		case 0:
+		case 3:
+		case 4:
+			return "redCyan";
+		case 1:
+			return "amberBlue";
+		case 2:
+			return "greenMagenta";
+		default:
+			return null;
+		}
+	}
+
 	@Override
 	public Mixer copyMode() {
 		return new AnaMixer(tde,null,mode);
@@ -83,7 +102,7 @@ public class AnaMixer extends Mixer {
 	/**
 	 * Mixed image (not HDR) fitted in aTargetSize
 	 */
-	BufferedImage mix2Awt(final BufferedImage aLI,final BufferedImage aRI,int aProcessingMode,Rectangle aTargetSize) {
+	public BufferedImage mix2Awt(final BufferedImage aLI,final BufferedImage aRI,int aProcessingMode,Rectangle aTargetSize) {
 		final int aW = aLI.getWidth();
 		final int aH = aLI.getHeight();
 		double aFact = Math.min(aTargetSize.width/(double)aW, aTargetSize.height / (double) aH);
